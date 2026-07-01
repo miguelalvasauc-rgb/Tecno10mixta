@@ -1,0 +1,1 @@
+# Tecno10mixta
