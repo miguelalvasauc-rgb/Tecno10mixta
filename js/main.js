@@ -14,6 +14,40 @@
    ========================================================= */
 
 // Cada registro incluye "grupo": 'todos' | '3C' | '3E'
+const DATOS_AVISOS = [
+  {
+    id: "av1",
+    grupo: "todos",
+    fecha: "2026-07-02",
+    titulo: "Cambio de horario del taller",
+    descripcion: "La sesión del viernes se recorre una hora por evento escolar.",
+    prioridad: "importante",
+  },
+  {
+    id: "av2",
+    grupo: "3E",
+    fecha: "2026-06-30",
+    titulo: "Traer material para impresión 3D",
+    descripcion: "Recuerda traer tu USB con el diseño terminado la próxima clase.",
+    prioridad: "recordatorio",
+  },
+  {
+    id: "av3",
+    grupo: "3C",
+    fecha: "2026-06-28",
+    titulo: "Grupos de trabajo confirmados",
+    descripcion: "Ya están publicados los equipos para el proyecto de robótica.",
+    prioridad: "general",
+  },
+  {
+    id: "av4",
+    grupo: "todos",
+    fecha: "2026-06-25",
+    titulo: "Bienvenida al bimestre",
+    descripcion: "Consulta la sección de Rúbricas para conocer los criterios de evaluación.",
+  },
+];
+
 const DATOS_RUBRICAS = [
   {
     id: "r1",
@@ -165,6 +199,10 @@ const DATOS_EVENTOS = [
 // Sheets, por ejemplo:
 //   const resp = await fetch(URL_API_SHEETS + "Rubricas");
 //   return await resp.json();
+async function obtenerAvisos() {
+  return DATOS_AVISOS;
+}
+
 async function obtenerRubricas() {
   return DATOS_RUBRICAS;
 }
@@ -226,6 +264,12 @@ function crearBadgeGrupo(grupo) {
   return span;
 }
 
+function textoPrioridad(prioridad) {
+  if (prioridad === "importante") return "Importante";
+  if (prioridad === "recordatorio") return "Recordatorio";
+  return "General";
+}
+
 function mostrarSinResultados(contenedor, mensaje) {
   contenedor.innerHTML = "";
   const parrafo = document.createElement("p");
@@ -237,6 +281,61 @@ function mostrarSinResultados(contenedor, mensaje) {
 /* =========================================================
    5. RENDERIZADO DE SECCIONES
    ========================================================= */
+
+async function renderizarAvisos() {
+  const contenedor = document.getElementById("contenedor-avisos");
+  const datos = (await obtenerAvisos())
+    .filter(elementoCoincideConGrupo)
+    .sort((a, b) => b.fecha.localeCompare(a.fecha)); // más reciente primero
+
+  if (datos.length === 0) {
+    mostrarSinResultados(contenedor, "No hay avisos por el momento.");
+    return;
+  }
+
+  contenedor.innerHTML = "";
+  datos.forEach((item) => {
+    const fecha = new Date(item.fecha + "T00:00:00");
+    const li = document.createElement("li");
+    li.className = "aviso-tarjeta";
+
+    const fechaBox = document.createElement("div");
+    fechaBox.className = "aviso-tarjeta__fecha";
+    const diaSpan = document.createElement("div");
+    diaSpan.textContent = String(fecha.getDate());
+    const mesSpan = document.createElement("span");
+    mesSpan.textContent = fecha.toLocaleDateString("es-MX", { month: "short" });
+    fechaBox.append(diaSpan, mesSpan);
+
+    const cuerpo = document.createElement("div");
+    cuerpo.className = "aviso-tarjeta__cuerpo";
+
+    const cabecera = document.createElement("div");
+    cabecera.className = "aviso-tarjeta__cabecera";
+    const titulo = document.createElement("h3");
+    titulo.textContent = item.titulo;
+
+    const etiquetas = document.createElement("div");
+    etiquetas.className = "aviso-tarjeta__etiquetas";
+    etiquetas.appendChild(crearBadgeGrupo(item.grupo));
+    if (item.prioridad) {
+      const badgePrioridad = document.createElement("span");
+      badgePrioridad.className = "badge-prioridad";
+      badgePrioridad.dataset.prioridad = item.prioridad;
+      badgePrioridad.textContent = textoPrioridad(item.prioridad);
+      etiquetas.appendChild(badgePrioridad);
+    }
+
+    cabecera.append(titulo, etiquetas);
+
+    const descripcion = document.createElement("p");
+    descripcion.textContent = item.descripcion;
+
+    cuerpo.append(cabecera, descripcion);
+    li.append(fechaBox, cuerpo);
+    contenedor.appendChild(li);
+  });
+}
 
 async function renderizarRubricas() {
   const contenedor = document.getElementById("contenedor-rubricas");
@@ -572,6 +671,7 @@ function alternarMenuMovil() {
 
 async function renderizarTodo() {
   await Promise.all([
+    renderizarAvisos(),
     renderizarRubricas(),
     renderizarTareas(),
     renderizarActividades(),
