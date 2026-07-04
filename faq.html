@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preguntas frecuentes · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
+  <meta name="description" content="Preguntas frecuentes sobre entrega de trabajos, calificación, uso del sitio y contacto — Educación Tecnológica 3°C y 3°E, Esc. Sec. No. 10 Mixta 'Fernando Hernández Alcalá'.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a href="#main-content" class="enlace-saltar">Saltar al contenido principal</a>
+
+  <!-- ===================== ENCABEZADO ===================== -->
+  <header class="encabezado">
+    <div class="encabezado__marca">
+      <img
+        src="assets/logo-10mixta.jpg"
+        alt="Logo institucional de la Escuela Secundaria No. 10 Mixta Fernando Hernández Alcalá"
+        class="encabezado__logo">
+      <div class="encabezado__texto">
+        <p class="encabezado__eyebrow">Educación Tecnológica</p>
+        <h1 class="encabezado__titulo">Escuela Secundaria No. 10 Mixta</h1>
+        <p class="encabezado__subtitulo">&ldquo;Fernando Hernández Alcalá&rdquo;</p>
+      </div>
+    </div>
+
+    <div class="encabezado__controles">
+      <div class="campo-grupo">
+        <label for="selector-grupo">Grupo</label>
+        <select id="selector-grupo" aria-label="Filtrar contenido por grupo">
+          <option value="todos">Todos los grupos</option>
+          <option value="3C">3°C</option>
+          <option value="3E">3°E</option>
+        </select>
+      </div>
+
+      <!-- Botón de cambio de tema claro/oscuro. La preferencia se guarda en localStorage para que no se pierda al navegar entre páginas. -->
+      <button id="boton-tema" class="boton-tema" type="button" aria-pressed="true" aria-label="Cambiar a modo claro">
+        <span class="boton-tema__icono" aria-hidden="true">☀️</span>
+        <span class="boton-tema__texto">Modo claro</span>
+      </button>
+
+      <button id="boton-menu" class="boton-menu" type="button" aria-label="Abrir menú de navegación" aria-expanded="false" aria-controls="nav-principal">
+        <span aria-hidden="true">☰</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== NAVEGACIÓN ===================== -->
+  <nav id="nav-principal" class="nav-principal">
+    <a href="index.html">Inicio</a>
+    <a href="#entrega-trabajos">Entrega de trabajos</a>
+    <a href="#calificacion">Calificación</a>
+    <a href="#uso-del-sitio">Uso del sitio</a>
+    <a href="#contacto-dudas">Contacto y dudas</a>
+  </nav>
+
+  <!-- ===================== MIGAS DE PAN ===================== -->
+  <nav aria-label="breadcrumb" class="migas-de-pan">
+    <ol>
+      <li><a href="index.html">Inicio</a></li>
+      <li class="migas-de-pan__separador" aria-hidden="true">/</li>
+      <li><span class="migas-de-pan__actual" aria-current="page">Preguntas frecuentes</span></li>
+    </ol>
+  </nav>
+
+  <main id="main-content">
+    <!-- ===================== INTRODUCCIÓN ===================== -->
+    <section id="faq-intro" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>Preguntas frecuentes</h2>
+        <p>Resuelve tus dudas más comunes sobre el curso, organizadas por tema.</p>
+      </div>
+    </section>
+
+    <!-- ===================== ENTREGA DE TRABAJOS ===================== -->
+    <section id="entrega-trabajos" class="seccion seccion--alterna">
+      <div class="seccion__encabezado">
+        <h2>Entrega de trabajos</h2>
+      </div>
+      <div class="faq-lista">
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Cómo se califica si entrego a tiempo o tarde?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Toda actividad entregada en tiempo y forma tendrá el valor máximo de la rúbrica correspondiente. Si se entrega fuera de tiempo, el valor máximo se reduce a la mitad, ya que en muchas ocasiones el trabajo tardío corresponde a una copia de un compañero que sí cumplió en tiempo.</p>
+        </details>
+
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Puedo reentregar un trabajo si me fue mal o no entregué?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Solo se aceptan reentregas por situación médica justificada (enfermedad), y debe acompañarse del justificante médico correspondiente. Fuera de este caso, no se reciben reentregas.</p>
+        </details>
+
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿En qué formato debo entregar mis trabajos?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Los formatos aceptados son PDF, Word, Excel o PowerPoint. No se aceptan fotos, salvo que el profesor lo indique expresamente (por ejemplo, en trabajos hechos en cartulina que no se puedan subir como archivo digital).</p>
+        </details>
+
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Qué pasa si no llevo mi USB al laboratorio de cómputo?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Podrás entrar al taller, pero no podrás realizar la práctica correspondiente ni guardar tus archivos en las computadoras, ya que el equipo cuenta con un programa que borra todo uso al apagarse o reiniciarse. Deberás trabajar la actividad posteriormente, y tendrá una ponderación menor por no haberse realizado en la sesión correspondiente.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===================== CALIFICACIÓN ===================== -->
+    <section id="calificacion" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>Calificación</h2>
+      </div>
+      <div class="faq-lista">
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Cómo se calcula mi calificación del trimestre?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Se obtiene sumando el desempeño en actividades, tareas, rúbricas y proyectos del periodo. El peso de cada rubro puede variar ligeramente entre trimestres.</p>
+        </details>
+
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Cómo se calcula mi calificación final del año?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Se obtiene sumando las calificaciones de los 3 trimestres. La calificación mínima aprobatoria en cada trimestre es 6.</p>
+        </details>
+
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Qué pasa si repruebo algún trimestre?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Si repruebas 2 trimestres, deberás presentar examen extraordinario — a menos que en el último trimestre obtengas una calificación de 8 o superior, en cuyo caso no será necesario.</p>
+        </details>
+
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Qué significa cada nivel de la rúbrica (Excelente/Bueno/Regular/Deficiente)?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Cada rúbrica dentro del sitio se puede desplegar dando clic para ver el detalle de puntos y descripción de cada nivel.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===================== USO DEL SITIO ===================== -->
+    <section id="uso-del-sitio" class="seccion seccion--alterna">
+      <div class="seccion__encabezado">
+        <h2>Uso del sitio</h2>
+      </div>
+      <div class="faq-lista">
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Qué significa el checklist de "Marcar como completada"?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Es una herramienta personal para que organices tu propio avance — te ayuda a llevar control visual de qué tareas ya trabajaste. Marcarla no significa que la tarea fue entregada ni evaluada; la entrega real siempre es a través del medio que indique el profesor.</p>
+        </details>
+
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Por qué no veo la misma información que mi compañero de otro grupo?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">El sitio filtra el contenido según el grupo seleccionado (3°C o 3°E), ya que algunas tareas, rúbricas o fechas pueden variar entre grupos.</p>
+        </details>
+
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Cómo cambio entre trimestres?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Usa el selector "Trimestre 1 / 2 / 3" ubicado en la parte superior del sitio, junto al selector de grupo.</p>
+        </details>
+
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿El sitio funciona en el celular?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Sí, el sitio está diseñado para verse bien tanto en computadora como en celular o tablet.</p>
+        </details>
+
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Qué pasa si falté el día que se explicó un tema nuevo?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">La responsabilidad de ponerte al corriente es tuya. Puedes apoyarte revisando el Temario del trimestre en el sitio y consultando con un compañero lo que se vio en clase.</p>
+        </details>
+
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Dónde puedo consultar el reglamento completo del taller?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Puedes descargarlo desde la sección de Tareas, dentro de "Reglamento del taller firmado", o solicitarlo directamente al profesor por el formulario de Contacto.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===================== CONTACTO Y DUDAS ===================== -->
+    <section id="contacto-dudas" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>Contacto y dudas</h2>
+      </div>
+      <div class="faq-lista">
+        <details class="tarjeta tarjeta-rubrica">
+          <summary class="tarjeta-rubrica__resumen">
+            <p class="faq-item__pregunta">¿Cómo le hago si tengo una duda sobre una tarea?</p>
+            <span class="tarjeta-rubrica__icono" aria-hidden="true">▾</span>
+          </summary>
+          <p class="faq-item__respuesta">Usa el formulario de "Contacto" al final de la página de inicio, describiendo tu duda con claridad.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== PIE DE PÁGINA ===================== -->
+  <footer class="pie">
+    <p>Escuela Secundaria No. 10 Mixta &ldquo;Fernando Hernández Alcalá&rdquo; · Educación Tecnológica</p>
+    <p class="pie__grupos">Grupos 3°C y 3°E</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

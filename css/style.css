@@ -1005,6 +1005,32 @@ summary:focus-visible {
   border-left-color: #D64545;
 }
 
+/* ---------- Preguntas frecuentes (faq.html) ---------- */
+/* Reutiliza el mismo acordeón <details>/<summary> de las rúbricas
+   (.tarjeta-rubrica), solo con una pregunta + respuesta en vez de la
+   cabecera con badges y la lista de niveles. */
+.faq-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.faq-item__pregunta {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.faq-item__respuesta {
+  margin: 0.75rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-borde);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-texto-suave);
+}
+
 /* ---------- Videos ---------- */
 .cuadricula-videos {
   display: grid;
