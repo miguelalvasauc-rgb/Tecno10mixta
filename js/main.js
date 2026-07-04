@@ -739,6 +739,51 @@ function crearEnlaceDescarga(url) {
   return enlace;
 }
 
+// Clave de localStorage para el progreso personal de una tarea: única
+// por trimestre y por tarea, para que no se mezcle el progreso de
+// "tarea t1 del Trimestre 1" con el de "tarea t1 del Trimestre 2".
+// Es independiente del grupo seleccionado a propósito: es progreso del
+// alumno en este navegador, no una propiedad del grupo.
+function claveProgresoTarea(idTarea) {
+  return "progreso_trimestre" + TRIMESTRE_ACTUAL + "_" + idTarea;
+}
+
+function tareaEstaCompletada(idTarea) {
+  return localStorage.getItem(claveProgresoTarea(idTarea)) === "true";
+}
+
+// Recalcula "X de Y tareas completadas" y la barra de progreso a partir
+// de la lista de tareas actualmente visible (ya filtrada por grupo).
+function actualizarResumenProgresoTareas(datos) {
+  const resumen = document.getElementById("resumen-progreso-tareas");
+  if (!resumen) return;
+
+  resumen.innerHTML = "";
+  if (datos.length === 0) return;
+
+  const total = datos.length;
+  const completadas = datos.filter((item) => tareaEstaCompletada(item.id)).length;
+  const porcentaje = Math.round((completadas / total) * 100);
+
+  const texto = document.createElement("p");
+  texto.className = "resumen-progreso__texto";
+  texto.textContent = completadas + " de " + total + " tareas completadas";
+
+  const barra = document.createElement("div");
+  barra.className = "barra-progreso";
+  barra.setAttribute("role", "progressbar");
+  barra.setAttribute("aria-valuenow", String(completadas));
+  barra.setAttribute("aria-valuemin", "0");
+  barra.setAttribute("aria-valuemax", String(total));
+  barra.setAttribute("aria-label", "Progreso de tareas completadas");
+  const relleno = document.createElement("div");
+  relleno.className = "barra-progreso__relleno";
+  relleno.style.width = porcentaje + "%";
+  barra.appendChild(relleno);
+
+  resumen.append(texto, barra);
+}
+
 function mostrarSinResultados(contenedor, mensaje) {
   contenedor.innerHTML = "";
   const parrafo = document.createElement("p");
@@ -941,6 +986,7 @@ async function renderizarTareas() {
 
   if (datos.length === 0) {
     mostrarSinResultados(contenedor, "No hay tareas registradas para este grupo.");
+    actualizarResumenProgresoTareas(datos);
     return;
   }
 
@@ -975,8 +1021,36 @@ async function renderizarTareas() {
     if (item.archivoUrl) {
       tarjeta.appendChild(crearEnlaceDescarga(item.archivoUrl));
     }
+
+    // Checklist de progreso personal: guardado en localStorage, aparte
+    // por completo del filtro de grupo (ver claveProgresoTarea).
+    const completada = tareaEstaCompletada(item.id);
+    tarjeta.classList.toggle("tarjeta--completada", completada);
+
+    const checklist = document.createElement("label");
+    checklist.className = "checklist-tarea";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "checklist-tarea__input";
+    checkbox.checked = completada;
+    const textoChecklist = document.createElement("span");
+    textoChecklist.className = "checklist-tarea__texto";
+    textoChecklist.textContent = completada ? "Completada" : "Marcar como completada";
+
+    checkbox.addEventListener("change", () => {
+      localStorage.setItem(claveProgresoTarea(item.id), String(checkbox.checked));
+      tarjeta.classList.toggle("tarjeta--completada", checkbox.checked);
+      textoChecklist.textContent = checkbox.checked ? "Completada" : "Marcar como completada";
+      actualizarResumenProgresoTareas(datos);
+    });
+
+    checklist.append(checkbox, textoChecklist);
+    tarjeta.appendChild(checklist);
+
     contenedor.appendChild(tarjeta);
   });
+
+  actualizarResumenProgresoTareas(datos);
 }
 
 async function renderizarActividades() {

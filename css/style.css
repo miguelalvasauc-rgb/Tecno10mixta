@@ -825,6 +825,91 @@ summary:focus-visible {
   border-radius: 999px;
 }
 
+/* ---------- Checklist de progreso personal (Tareas) ---------- */
+
+/* Tarjeta marcada como completada: opacidad reducida + título tachado,
+   además de un borde verde (mismo verde que "entregada"/"finalizado"). */
+.tarjeta--completada {
+  opacity: 0.72;
+  border-color: #3FA34D;
+}
+
+.tarjeta--completada .tarjeta__cabecera h3 {
+  text-decoration: line-through;
+  text-decoration-color: #3FA34D;
+  text-decoration-thickness: 2px;
+}
+
+.resumen-progreso {
+  margin-bottom: 1.1rem;
+}
+
+.resumen-progreso__texto {
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+}
+
+.checklist-tarea {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--color-borde);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+  cursor: pointer;
+}
+
+.checklist-tarea__input {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  position: relative;
+  border: 2px solid var(--color-turquesa);
+  border-radius: 5px;
+  background-color: var(--color-superficie);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.checklist-tarea__input:checked {
+  background-color: var(--color-turquesa);
+}
+
+.checklist-tarea__input:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 6px;
+  height: 11px;
+  border: solid #04211D;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Modo claro: el turquesa sobre el fondo blanco de la tarjeta no llega
+   a 3:1 (mismo problema ya corregido en nav, foco y botón flotante),
+   así que el checkbox usa navy en su lugar en los dos estados. */
+:root[data-theme="claro"] .checklist-tarea__input {
+  border-color: #1B3A6B;
+}
+
+:root[data-theme="claro"] .checklist-tarea__input:checked {
+  background-color: #1B3A6B;
+}
+
+:root[data-theme="claro"] .checklist-tarea__input:checked::after {
+  border-color: #E8EEF4;
+}
+
 /* ---------- Rúbricas expandibles (acordeón con <details>/<summary>) ---------- */
 .tarjeta-rubrica {
   position: relative;
