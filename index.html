@@ -51,6 +51,7 @@
     <a href="#avisos">Avisos</a>
     <a href="#calendario">Calendario</a>
     <a href="#trimestres">Trimestres</a>
+    <a href="#contacto">Contacto</a>
   </nav>
 
   <main>
@@ -117,6 +118,49 @@
           <p>Rúbricas, tareas, actividades, proyectos y videos del tercer trimestre.</p>
         </a>
       </div>
+    </section>
+
+    <!-- ===================== CONTACTO ===================== -->
+    <section id="contacto" class="seccion seccion--alterna">
+      <div class="seccion__encabezado">
+        <h2>Contacto</h2>
+        <p>¿Tienes dudas o comentarios? Escríbenos y te responderemos pronto.</p>
+      </div>
+
+      <!--
+        Formulario gestionado por Netlify Forms (sin backend externo).
+        Para que Netlify lo detecte automáticamente al desplegar el sitio:
+        1. El <form> debe conservar el atributo data-netlify="true".
+        2. El atributo "name" del <form> y el valor del input oculto
+           "form-name" deben coincidir (aquí ambos son "contacto").
+        3. Este archivo debe publicarse tal cual (sin build step), para
+           que el rastreador de formularios de Netlify encuentre el HTML.
+
+        Configurar en Netlify: Site settings > Forms > Notifications >
+        agregar notificación por email a [correo de la escuela o del
+        responsable del sitio].
+      -->
+      <form id="formulario-contacto" name="contacto" method="POST" data-netlify="true" class="formulario-contacto">
+        <input type="hidden" name="form-name" value="contacto">
+
+        <div class="campo-formulario">
+          <label for="contacto-nombre">Nombre</label>
+          <input type="text" id="contacto-nombre" name="nombre" autocomplete="name" required>
+        </div>
+
+        <div class="campo-formulario">
+          <label for="contacto-correo">Correo del alumno o padre/tutor</label>
+          <input type="email" id="contacto-correo" name="correo" autocomplete="email" required>
+        </div>
+
+        <div class="campo-formulario">
+          <label for="contacto-mensaje">Mensaje</label>
+          <textarea id="contacto-mensaje" name="mensaje" rows="5" required></textarea>
+        </div>
+
+        <button type="submit" class="boton-enviar">Enviar mensaje</button>
+        <p id="contacto-estado" class="formulario__estado" role="status" aria-live="polite"></p>
+      </form>
     </section>
   </main>
 

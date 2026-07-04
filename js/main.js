@@ -162,6 +162,11 @@ const DATOS_RUBRICAS = {
   ],
 };
 
+// "archivoUrl" es un campo OPCIONAL para Tareas y Actividades: si se
+// agrega (por ejemplo con un link para compartir de Google Drive), la
+// tarjeta muestra un botón "📎 Descargar material" que abre esa URL en
+// una pestaña nueva. Para adjuntar material a cualquier tarea o
+// actividad, basta con añadir esta propiedad al objeto correspondiente.
 const DATOS_TAREAS = {
   1: [
     {
@@ -179,6 +184,7 @@ const DATOS_TAREAS = {
       descripcion: "Entregar el reglamento de seguridad e higiene firmado por el tutor.",
       fechaEntrega: "2025-08-29",
       estado: "entregada",
+      archivoUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
     },
     {
       id: "t3",
@@ -213,6 +219,7 @@ const DATOS_TAREAS = {
       descripcion: "Modelar una pieza con al menos dos medidas ajustables.",
       fechaEntrega: "2026-01-16",
       estado: "entregada",
+      archivoUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
     },
     {
       id: "t3",
@@ -247,6 +254,7 @@ const DATOS_TAREAS = {
       descripcion: "Modelar una pieza sencilla para su posterior impresión 3D.",
       fechaEntrega: "2026-07-08",
       estado: "pendiente",
+      archivoUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
     },
     {
       id: "t3",
@@ -275,6 +283,7 @@ const DATOS_ACTIVIDADES = {
       titulo: "Recorrido e identificación de herramientas",
       descripcion: "Recorrido por el taller e identificación de herramientas y zonas de seguridad.",
       fecha: "2025-08-25",
+      archivoUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
     },
     {
       id: "a2",
@@ -645,6 +654,16 @@ function textoPrioridad(prioridad) {
   return "General";
 }
 
+function crearEnlaceDescarga(url) {
+  const enlace = document.createElement("a");
+  enlace.className = "enlace-descarga";
+  enlace.href = url;
+  enlace.target = "_blank";
+  enlace.rel = "noopener noreferrer";
+  enlace.textContent = "📎 Descargar material";
+  return enlace;
+}
+
 function mostrarSinResultados(contenedor, mensaje) {
   contenedor.innerHTML = "";
   const parrafo = document.createElement("p");
@@ -840,6 +859,9 @@ async function renderizarTareas() {
     meta.appendChild(estado);
 
     tarjeta.append(cabecera, descripcion, fecha, meta);
+    if (item.archivoUrl) {
+      tarjeta.appendChild(crearEnlaceDescarga(item.archivoUrl));
+    }
     contenedor.appendChild(tarjeta);
   });
 }
@@ -875,6 +897,9 @@ async function renderizarActividades() {
     fecha.textContent = "Fecha: " + formatearFecha(item.fecha);
 
     tarjeta.append(cabecera, descripcion, fecha);
+    if (item.archivoUrl) {
+      tarjeta.appendChild(crearEnlaceDescarga(item.archivoUrl));
+    }
     contenedor.appendChild(tarjeta);
   });
 }
@@ -1130,7 +1155,57 @@ async function alCambiarGrupo(evento) {
 }
 
 /* =========================================================
-   9. INICIALIZACIÓN
+   9. FORMULARIO DE CONTACTO (Netlify Forms)
+   ========================================================= */
+
+// Convierte los datos del formulario al formato que espera Netlify
+// ("application/x-www-form-urlencoded") para poder enviarlos con fetch
+// y así evitar que la página se recargue al enviar el mensaje.
+function codificarDatosFormulario(datos) {
+  return Object.keys(datos)
+    .map((clave) => encodeURIComponent(clave) + "=" + encodeURIComponent(datos[clave]))
+    .join("&");
+}
+
+async function alEnviarContacto(evento) {
+  evento.preventDefault();
+
+  const formulario = evento.target;
+  const boton = formulario.querySelector("button[type='submit']");
+  const estado = document.getElementById("contacto-estado");
+  const datos = {};
+  new FormData(formulario).forEach((valor, clave) => {
+    datos[clave] = valor;
+  });
+
+  boton.disabled = true;
+  estado.dataset.estado = "";
+  estado.textContent = "Enviando…";
+
+  try {
+    // Netlify procesa cualquier POST a la propia página que incluya
+    // "form-name" con el nombre del formulario declarado en el HTML.
+    const respuesta = await fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: codificarDatosFormulario(datos),
+    });
+
+    if (!respuesta.ok) throw new Error("Respuesta no válida de Netlify Forms");
+
+    estado.dataset.estado = "exito";
+    estado.textContent = "Gracias, tu mensaje fue enviado.";
+    formulario.reset();
+  } catch (error) {
+    estado.dataset.estado = "error";
+    estado.textContent = "No se pudo enviar el mensaje. Intenta de nuevo más tarde.";
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+/* =========================================================
+   10. INICIALIZACIÓN
    ========================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1145,4 +1220,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("boton-tema").addEventListener("click", alternarTema);
   document.getElementById("selector-grupo").addEventListener("change", alCambiarGrupo);
   document.getElementById("boton-menu").addEventListener("click", alternarMenuMovil);
+
+  // El formulario de contacto solo existe en la portada (index.html).
+  const formularioContacto = document.getElementById("formulario-contacto");
+  if (formularioContacto) {
+    formularioContacto.addEventListener("submit", alEnviarContacto);
+  }
 });

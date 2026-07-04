@@ -870,6 +870,109 @@ input:focus-visible {
   color: var(--color-texto-suave);
 }
 
+/* ---------- Enlace de descarga (tareas/actividades) ---------- */
+.enlace-descarga {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: flex-start;
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--color-turquesa);
+  border: 1px solid var(--color-turquesa);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.enlace-descarga:hover,
+.enlace-descarga:focus-visible {
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+}
+
+/* ---------- Formulario de contacto ---------- */
+.formulario-contacto {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 640px;
+  margin: 0 auto;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: var(--sombra);
+}
+
+.campo-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.campo-formulario label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.campo-formulario input,
+.campo-formulario textarea {
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.campo-formulario textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.boton-enviar {
+  align-self: flex-start;
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+
+.boton-enviar:hover,
+.boton-enviar:focus-visible {
+  filter: brightness(1.1);
+}
+
+.boton-enviar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.formulario__estado {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  min-height: 1.2em;
+}
+
+.formulario__estado[data-estado="exito"] {
+  color: #3FA34D;
+}
+
+.formulario__estado[data-estado="error"] {
+  color: #D64545;
+}
+
 /* ---------- Entrega de trabajos ---------- */
 .entrega__formulario {
   background-color: var(--color-superficie);
