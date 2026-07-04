@@ -1131,6 +1131,68 @@ textarea:focus-visible {
   font-weight: 700;
 }
 
+/* ---------- Botón flotante "Volver arriba" ---------- */
+.boton-volver-arriba {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 60;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--color-turquesa);
+  color: #04211D;
+  font-size: 1.4rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--sombra);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s;
+}
+
+/* En modo claro el turquesa no da suficiente contraste para un ícono
+   blanco (~2.5:1); se usa navy, que sí cumple (~9.6:1). Modo oscuro
+   conserva turquesa + ícono oscuro (~6.8:1). */
+:root[data-theme="claro"] .boton-volver-arriba {
+  background-color: #1B3A6B;
+  color: #E8EEF4;
+}
+
+.boton-volver-arriba--visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0s;
+}
+
+.boton-volver-arriba:hover,
+.boton-volver-arriba:focus-visible {
+  filter: brightness(1.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boton-volver-arriba {
+    transition: opacity 0.01ms linear, visibility 0.01ms linear;
+    transform: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .boton-volver-arriba {
+    right: 1rem;
+    bottom: 1rem;
+    width: 44px;
+    height: 44px;
+    font-size: 1.25rem;
+  }
+}
+
 /* ---------- Mensaje "sin resultados" ---------- */
 .sin-resultados {
   color: var(--color-texto-suave);

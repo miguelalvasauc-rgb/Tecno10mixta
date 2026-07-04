@@ -1154,6 +1154,45 @@ function actualizarMigaDeSeccion(enlaceActivo) {
   item.hidden = false;
 }
 
+// Botón flotante "Volver arriba": solo existe en las páginas de
+// trimestre (no en la portada), así que si no se encuentra el botón la
+// función simplemente no hace nada.
+function activarBotonVolverArriba() {
+  const boton = document.getElementById("boton-volver-arriba");
+  if (!boton) return;
+
+  const UMBRAL_PX = 400;
+  let actualizacionPendiente = false;
+
+  function actualizarVisibilidad() {
+    const visible = window.scrollY > UMBRAL_PX;
+    boton.classList.toggle("boton-volver-arriba--visible", visible);
+    actualizacionPendiente = false;
+  }
+
+  // requestAnimationFrame evita recalcular en cada pixel de scroll: como
+  // mucho se actualiza una vez por frame, aunque el navegador dispare
+  // el evento "scroll" muchas más veces que eso.
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (actualizacionPendiente) return;
+      actualizacionPendiente = true;
+      window.requestAnimationFrame(actualizarVisibilidad);
+    },
+    { passive: true }
+  );
+
+  actualizarVisibilidad(); // por si la página carga con scroll ya restaurado
+
+  boton.addEventListener("click", () => {
+    const prefiereMovimientoReducido = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    window.scrollTo({ top: 0, behavior: prefiereMovimientoReducido ? "auto" : "smooth" });
+  });
+}
+
 // Resalta en el menú el enlace de la sección que se está viendo mientras
 // el usuario hace scroll (ej. Temario, Rúbricas, Tareas…). Se basa en
 // IntersectionObserver en vez de un listener de "scroll" para no volver a
@@ -1324,6 +1363,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("selector-grupo").addEventListener("change", alCambiarGrupo);
   document.getElementById("boton-menu").addEventListener("click", alternarMenuMovil);
   activarResaltadoDeNavegacion();
+  activarBotonVolverArriba();
 
   // El formulario de contacto solo existe en la portada (index.html).
   const formularioContacto = document.getElementById("formulario-contacto");
