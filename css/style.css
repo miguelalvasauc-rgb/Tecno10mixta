@@ -1197,6 +1197,46 @@ summary:focus-visible {
   color: var(--color-acento-texto);
 }
 
+/* Bug de contraste detectado de paso: en modo claro, el relleno turquesa
+   + texto blanco de :hover/:focus-visible da ~2.5:1 (falla). Se usa
+   navy + texto claro, igual que en el resto del sitio. */
+:root[data-theme="claro"] .enlace-descarga:hover,
+:root[data-theme="claro"] .enlace-descarga:focus-visible {
+  background-color: #1B3A6B;
+  color: #E8EEF4;
+}
+
+/* Botón principal de una tarea (instrucciones formales): más prominente
+   que .enlace-descarga, con relleno sólido en vez de solo contorno. */
+.enlace-instrucciones {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+  margin-top: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  background-color: var(--color-turquesa);
+  color: #04211D;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  transition: filter 0.2s ease;
+}
+
+.enlace-instrucciones:hover,
+.enlace-instrucciones:focus-visible {
+  filter: brightness(1.1);
+}
+
+/* Mismo ajuste de contraste que en el resto del sitio: turquesa + texto
+   oscuro funciona en modo oscuro (~6.8:1), pero en modo claro se necesita
+   navy + texto claro (~9.6:1) porque turquesa + blanco falla (~2.5:1). */
+:root[data-theme="claro"] .enlace-instrucciones {
+  background-color: #1B3A6B;
+  color: #E8EEF4;
+}
+
 /* ---------- Formulario de contacto ---------- */
 .formulario-contacto {
   display: flex;

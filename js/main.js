@@ -237,11 +237,18 @@ const DATOS_RUBRICAS = {
   ],
 };
 
-// "archivoUrl" es un campo OPCIONAL para Tareas y Actividades: si se
-// agrega (por ejemplo con un link para compartir de Google Drive), la
-// tarjeta muestra un botón "📎 Descargar material" que abre esa URL en
-// una pestaña nueva. Para adjuntar material a cualquier tarea o
-// actividad, basta con añadir esta propiedad al objeto correspondiente.
+// Cada tarea puede incluir dos campos de archivo OPCIONALES, con roles
+// distintos:
+// - "instruccionesUrl": el PDF (u otro documento) con las instrucciones
+//   formales y completas de la tarea (qué se pide, cómo se evalúa,
+//   formato de entrega, etc.). Es la acción principal de la tarjeta:
+//   se muestra como el botón más visible, "📄 Ver instrucciones completas".
+// - "materialApoyoUrl": opcional, para plantillas, ejemplos u otros
+//   recursos adicionales. Se muestra como un botón secundario y más
+//   discreto, "📎 Material de apoyo", y puede omitirse si no aplica.
+// Para agregar cualquiera de los dos a una tarea nueva, basta con
+// añadir la propiedad correspondiente (con el link real de Google
+// Drive u otro servicio) al objeto de esa tarea.
 const DATOS_TAREAS = {
   1: [
     {
@@ -259,7 +266,7 @@ const DATOS_TAREAS = {
       descripcion: "Entregar el reglamento de seguridad e higiene firmado por el tutor.",
       fechaEntrega: "2025-08-29",
       estado: "entregada",
-      archivoUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
+      instruccionesUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
     },
     {
       id: "t3",
@@ -294,7 +301,7 @@ const DATOS_TAREAS = {
       descripcion: "Modelar una pieza con al menos dos medidas ajustables.",
       fechaEntrega: "2026-01-16",
       estado: "entregada",
-      archivoUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
+      instruccionesUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
     },
     {
       id: "t3",
@@ -329,7 +336,7 @@ const DATOS_TAREAS = {
       descripcion: "Modelar una pieza sencilla para su posterior impresión 3D.",
       fechaEntrega: "2026-07-08",
       estado: "pendiente",
-      archivoUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
+      instruccionesUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
     },
     {
       id: "t3",
@@ -347,9 +354,26 @@ const DATOS_TAREAS = {
       fechaEntrega: "2026-06-29",
       estado: "entregada",
     },
+    {
+      id: "t5",
+      grupo: "3C",
+      titulo: "Reporte de avance: brazo robótico",
+      descripcion: "Entrega parcial con diagrama y lista de materiales del prototipo.",
+      fechaEntrega: "2026-07-20",
+      estado: "pendiente",
+      // Ejemplo con AMBOS campos: instrucciones formales + material de
+      // apoyo (en este caso, una plantilla de diagrama).
+      instruccionesUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
+      materialApoyoUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
+    },
   ],
 };
 
+// "archivoUrl" sigue siendo el campo OPCIONAL para Actividades: muestra
+// un único botón "📎 Descargar material" (mismo estilo secundario que
+// "materialApoyoUrl" en Tareas). Las actividades no distinguen entre
+// instrucciones formales y material de apoyo; para esa distinción ver
+// "instruccionesUrl"/"materialApoyoUrl" en DATOS_TAREAS.
 const DATOS_ACTIVIDADES = {
   1: [
     {
@@ -729,13 +753,25 @@ function textoPrioridad(prioridad) {
   return "General";
 }
 
-function crearEnlaceDescarga(url) {
+function crearEnlaceDescarga(url, texto) {
   const enlace = document.createElement("a");
   enlace.className = "enlace-descarga";
   enlace.href = url;
   enlace.target = "_blank";
   enlace.rel = "noopener noreferrer";
-  enlace.textContent = "📎 Descargar material";
+  enlace.textContent = texto || "📎 Descargar material";
+  return enlace;
+}
+
+// Botón principal de una tarea: más prominente que crearEnlaceDescarga,
+// para las instrucciones formales (ver "instruccionesUrl" en DATOS_TAREAS).
+function crearEnlaceInstrucciones(url) {
+  const enlace = document.createElement("a");
+  enlace.className = "enlace-instrucciones";
+  enlace.href = url;
+  enlace.target = "_blank";
+  enlace.rel = "noopener noreferrer";
+  enlace.textContent = "📄 Ver instrucciones completas";
   return enlace;
 }
 
@@ -1018,8 +1054,14 @@ async function renderizarTareas() {
     meta.appendChild(estado);
 
     tarjeta.append(cabecera, descripcion, fecha, meta);
-    if (item.archivoUrl) {
-      tarjeta.appendChild(crearEnlaceDescarga(item.archivoUrl));
+
+    // "instruccionesUrl" es la acción principal (botón destacado);
+    // "materialApoyoUrl" es opcional y se ve como botón secundario.
+    if (item.instruccionesUrl) {
+      tarjeta.appendChild(crearEnlaceInstrucciones(item.instruccionesUrl));
+    }
+    if (item.materialApoyoUrl) {
+      tarjeta.appendChild(crearEnlaceDescarga(item.materialApoyoUrl, "📎 Material de apoyo"));
     }
 
     // Checklist de progreso personal: guardado en localStorage, aparte
