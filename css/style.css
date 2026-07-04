@@ -77,6 +77,37 @@ a {
   border: 0;
 }
 
+/* Skip link: oculto fuera de pantalla por defecto, visible al recibir foco
+   por teclado (Tab). Debe ser el primer elemento enfocable de cada página. */
+.enlace-saltar {
+  position: fixed;
+  top: -60px;
+  left: 1rem;
+  z-index: 1000;
+  background-color: var(--color-primario);
+  color: #E8EEF4;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 0 8px 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.enlace-saltar:focus {
+  top: 0;
+}
+
+/* Anillo propio en vez del genérico: el skip link se superpone al header
+   (ambos con top:0), así que un anillo dibujado "hacia afuera" caería
+   sobre el navy del header y sería invisible en modo claro. Se dibuja
+   hacia ADENTRO (offset negativo) contra el propio fondo navy del
+   enlace, que es igual en los dos temas, para que siempre se vea. */
+.enlace-saltar:focus-visible {
+  outline: 3px solid #E8EEF4;
+  outline-offset: -4px;
+}
+
 /* ---------- Encabezado ---------- */
 .encabezado {
   display: flex;
@@ -348,9 +379,32 @@ a {
 a:focus-visible,
 button:focus-visible,
 select:focus-visible,
-input:focus-visible {
+input:focus-visible,
+textarea:focus-visible {
   outline: 3px solid var(--color-turquesa);
   outline-offset: 2px;
+}
+
+/* En modo claro, el turquesa institucional sobre fondos claros no alcanza
+   el contraste mínimo de 3:1 que pide WCAG para indicadores de foco
+   (queda en ~2.5:1). Se usa el navy institucional, que sí lo cumple
+   (~11:1) sobre los fondos claros del sitio. Modo oscuro no se toca. */
+:root[data-theme="claro"] a:focus-visible,
+:root[data-theme="claro"] button:focus-visible,
+:root[data-theme="claro"] select:focus-visible,
+:root[data-theme="claro"] input:focus-visible,
+:root[data-theme="claro"] textarea:focus-visible {
+  outline-color: #1B3A6B;
+}
+
+/* Excepción: el header (.encabezado) es navy en AMBOS temas, así que un
+   anillo navy ahí sería invisible (1:1 de contraste). Sus controles
+   (selector de grupo, toggle de tema, pestañas de trimestre, botón de
+   menú) vuelven al turquesa, que sí contrasta contra el navy (4.53:1). */
+:root[data-theme="claro"] .encabezado a:focus-visible,
+:root[data-theme="claro"] .encabezado button:focus-visible,
+:root[data-theme="claro"] .encabezado select:focus-visible {
+  outline-color: var(--color-turquesa);
 }
 
 /* ---------- Hero ---------- */
