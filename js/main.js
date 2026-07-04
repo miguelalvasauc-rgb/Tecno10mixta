@@ -74,56 +74,261 @@ const DATOS_EVENTOS = [
 // puntos. La tarjeta de rúbrica los muestra al expandirse.
 const DATOS_RUBRICAS = {
   1: [
+    // ===== PROYECTO: MI CHATBOT EN PAPEL (Secuencia 1 - IA) =====
     {
-      id: "r1",
+      id: "s1c1",
+      secuencia: "🧠 Secuencia 1 — Inteligencia Artificial · Proyecto: Mi Chatbot en Papel",
       grupo: "todos",
-      titulo: "Rúbrica de bitácora de taller",
-      descripcion: "Evalúa el registro diario de actividades, orden y limpieza en el taller.",
-      ponderacion: "15%",
+      titulo: "🧠 Conceptualización de IA",
+      descripcion: "Evalúa qué tan bien el alumno define y ejemplifica los conceptos de IA, Machine Learning y Procesamiento de Lenguaje Natural (NLP).",
+      ponderacion: "4 de 24 pts — Proyecto: Mi Chatbot en Papel",
       niveles: [
-        { nivel: "Excelente", puntos: "18-20", descripcion: "Registra diariamente cada actividad con fecha, materiales usados y observaciones; el taller siempre queda ordenado y limpio." },
-        { nivel: "Bueno", puntos: "14-17", descripcion: "Registra la mayoría de las actividades con detalle suficiente; el taller generalmente queda ordenado." },
-        { nivel: "Regular", puntos: "10-13", descripcion: "Registro incompleto o con poco detalle; orden y limpieza irregulares." },
-        { nivel: "Deficiente", puntos: "0-9", descripcion: "Bitácora incompleta o sin evidencia de orden y limpieza en el taller." },
+        { nivel: "Excelente", puntos: "4", descripcion: "Define IA, ML y NLP con ejemplos propios y claros." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Define IA y ML con ejemplos del libro o básicos." },
+        { nivel: "Regular", puntos: "2", descripcion: "Define IA de forma vaga, confunde términos." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No logra definir IA, copia definiciones sin entender." },
       ],
     },
     {
-      id: "r2",
+      id: "s1c2",
+      secuencia: "🧠 Secuencia 1 — Inteligencia Artificial · Proyecto: Mi Chatbot en Papel",
       grupo: "todos",
-      titulo: "Rúbrica de exposición: introducción a la tecnología",
-      descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
-      ponderacion: "20%",
+      titulo: "🤖 Uso de Asistentes Virtuales",
+      descripcion: "Evalúa la identificación de funciones de asistentes virtuales (Siri, Alexa, Google Assistant) y propuestas de mejora.",
+      ponderacion: "4 de 24 pts — Proyecto: Mi Chatbot en Papel",
       niveles: [
-        { nivel: "Excelente", puntos: "18-20", descripcion: "Explica con claridad el concepto y la evolución de la tecnología, con ejemplos propios y buen manejo del tiempo." },
-        { nivel: "Bueno", puntos: "14-17", descripcion: "Explica el tema correctamente, con apoyos visuales adecuados aunque con imprecisiones menores." },
-        { nivel: "Regular", puntos: "10-13", descripcion: "Expone el tema de forma superficial o memorizada, con apoyo visual limitado." },
-        { nivel: "Deficiente", puntos: "0-9", descripcion: "No domina el tema o no logra comunicar las ideas principales." },
+        { nivel: "Excelente", puntos: "4", descripcion: "Identifica 5+ funciones de asistentes y propone mejoras." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Identifica 3-4 funciones de asistentes virtuales." },
+        { nivel: "Regular", puntos: "2", descripcion: "Identifica 1-2 funciones básicas de asistentes." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No identifica funciones de asistentes virtuales." },
       ],
     },
     {
-      id: "r3",
-      grupo: "3C",
-      titulo: "Rúbrica de práctica: herramientas de mano",
-      descripcion: "Uso correcto y seguro de herramientas básicas del taller.",
-      ponderacion: "15%",
+      id: "s1c3",
+      secuencia: "🧠 Secuencia 1 — Inteligencia Artificial · Proyecto: Mi Chatbot en Papel",
+      grupo: "todos",
+      titulo: "💬 Diseño de Chatbot",
+      descripcion: "Evalúa la lógica y creatividad del árbol de decisión del chatbot elaborado en papel.",
+      ponderacion: "4 de 24 pts — Proyecto: Mi Chatbot en Papel",
       niveles: [
-        { nivel: "Excelente", puntos: "18-20", descripcion: "Identifica y usa cada herramienta de forma correcta y segura, siguiendo el procedimiento completo." },
-        { nivel: "Bueno", puntos: "14-17", descripcion: "Usa las herramientas correctamente con supervisión mínima." },
-        { nivel: "Regular", puntos: "10-13", descripcion: "Requiere corrección frecuente en el uso o en las medidas de seguridad." },
-        { nivel: "Deficiente", puntos: "0-9", descripcion: "Usa las herramientas de forma incorrecta o insegura." },
+        { nivel: "Excelente", puntos: "4", descripcion: "Diseña chatbot con 8+ interacciones lógicas y creativas." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Diseña chatbot con 5-7 interacciones coherentes." },
+        { nivel: "Regular", puntos: "2", descripcion: "Diseña chatbot con 3-4 interacciones simples." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "Chatbot incompleto o sin lógica de diálogo." },
       ],
     },
     {
-      id: "r4",
-      grupo: "3E",
-      titulo: "Rúbrica de práctica: uso del multímetro",
-      descripcion: "Mediciones correctas de voltaje, corriente y resistencia.",
-      ponderacion: "15%",
+      id: "s1c4",
+      secuencia: "🧠 Secuencia 1 — Inteligencia Artificial · Proyecto: Mi Chatbot en Papel",
+      grupo: "todos",
+      titulo: "🎨 IA en Creatividad",
+      descripcion: "Evalúa las propuestas creativas del alumno sobre cómo la IA puede apoyar procesos artísticos.",
+      ponderacion: "4 de 24 pts — Proyecto: Mi Chatbot en Papel",
       niveles: [
-        { nivel: "Excelente", puntos: "18-20", descripcion: "Configura el multímetro y mide voltaje, corriente y resistencia correctamente en todos los casos." },
-        { nivel: "Bueno", puntos: "14-17", descripcion: "Realiza la mayoría de las mediciones correctamente, con pequeños errores de lectura." },
-        { nivel: "Regular", puntos: "10-13", descripcion: "Comete errores frecuentes al configurar el equipo o interpretar las mediciones." },
-        { nivel: "Deficiente", puntos: "0-9", descripcion: "No logra configurar el multímetro ni obtener mediciones válidas." },
+        { nivel: "Excelente", puntos: "4", descripcion: "Genera 3+ propuestas creativas usando IA (dibujo/texto)." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Genera 2 propuestas creativas con ayuda de IA." },
+        { nivel: "Regular", puntos: "2", descripcion: "Genera 1 propuesta creativa con mucha ayuda." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No genera propuestas creativas." },
+      ],
+    },
+    {
+      id: "s1c5",
+      secuencia: "🧠 Secuencia 1 — Inteligencia Artificial · Proyecto: Mi Chatbot en Papel",
+      grupo: "todos",
+      titulo: "🤝 Trabajo Colaborativo",
+      descripcion: "Evalúa la participación, liderazgo y aporte del alumno durante el desarrollo del proyecto.",
+      ponderacion: "4 de 24 pts — Proyecto: Mi Chatbot en Papel",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Lidera equipo, distribuye tareas y motiva a todos." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Participa activamente, respeta turnos y aporta ideas." },
+        { nivel: "Regular", puntos: "2", descripcion: "Participa poco, necesita recordatorios del docente." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No participa o dificulta el trabajo del equipo." },
+      ],
+    },
+    {
+      id: "s1c6",
+      secuencia: "🧠 Secuencia 1 — Inteligencia Artificial · Proyecto: Mi Chatbot en Papel",
+      grupo: "todos",
+      titulo: "📝 Presentación y Ortografía",
+      descripcion: "Evalúa la calidad, ortografía y estructura del documento final entregado.",
+      ponderacion: "4 de 24 pts — Proyecto: Mi Chatbot en Papel",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Documento impecable, sin errores, estructura profesional." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Mínimos errores, estructura clara y legible." },
+        { nivel: "Regular", puntos: "2", descripcion: "Errores frecuentes, estructura desorganizada." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "Documento ilegible, plagio evidente o no entrega." },
+      ],
+    },
+
+    // ===== PROYECTO: MI METAVERSO EDUCATIVO (Secuencia 2 - RV) =====
+    {
+      id: "s2c1",
+      secuencia: "🥽 Secuencia 2 — Realidad Virtual · Proyecto: Mi Metaverso Educativo",
+      grupo: "todos",
+      titulo: "🥽 Diferenciación AR/VR/MR",
+      descripcion: "Evalúa la capacidad de distinguir Realidad Aumentada, Virtual y Mixta con ejemplos propios.",
+      ponderacion: "4 de 24 pts — Proyecto: Mi Metaverso Educativo",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Diferencia AR/VR/MR con 5+ ejemplos propios de cada uno." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Diferencia AR/VR con 3-4 ejemplos de cada uno." },
+        { nivel: "Regular", puntos: "2", descripcion: "Diferencia AR/VR de forma confusa o con pocos ejemplos." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No diferencia AR/VR, confunde conceptos." },
+      ],
+    },
+    {
+      id: "s2c2",
+      secuencia: "🥽 Secuencia 2 — Realidad Virtual · Proyecto: Mi Metaverso Educativo",
+      grupo: "todos",
+      titulo: "🏗️ Diseño de Mundo Virtual",
+      descripcion: "Evalúa el detalle y coherencia del mundo virtual diseñado en papel/cartulina.",
+      ponderacion: "4 de 24 pts — Proyecto: Mi Metaverso Educativo",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Diseña mundo virtual detallado (mapa, personajes, historia) en papel/cartulina." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Diseña mundo virtual básico (mapa + 2 elementos) en papel/cartulina." },
+        { nivel: "Regular", puntos: "2", descripcion: "Diseño de mundo virtual incompleto o poco detallado." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No realiza diseño de mundo virtual." },
+      ],
+    },
+    {
+      id: "s2c3",
+      secuencia: "🥽 Secuencia 2 — Realidad Virtual · Proyecto: Mi Metaverso Educativo",
+      grupo: "todos",
+      titulo: "🎮 Aplicaciones Prácticas",
+      descripcion: "Evalúa las propuestas de aplicaciones reales de AR/VR en educación, salud o industria.",
+      ponderacion: "4 de 24 pts — Proyecto: Mi Metaverso Educativo",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Propone 4+ aplicaciones reales de AR/VR en educación, salud o industria." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Propone 2-3 aplicaciones reales de AR/VR." },
+        { nivel: "Regular", puntos: "2", descripcion: "Propone 1 aplicación de AR/VR de forma vaga." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No propone aplicaciones reales." },
+      ],
+    },
+    {
+      id: "s2c4",
+      secuencia: "🥽 Secuencia 2 — Realidad Virtual · Proyecto: Mi Metaverso Educativo",
+      grupo: "todos",
+      titulo: "🌐 Comprensión del Metaverso",
+      descripcion: "Evalúa la comprensión crítica del metaverso, sus ventajas y riesgos.",
+      ponderacion: "4 de 24 pts — Proyecto: Mi Metaverso Educativo",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Explica metaverso con ventajas, riesgos y propuesta ética." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Explica metaverso con ventajas y riesgos básicos." },
+        { nivel: "Regular", puntos: "2", descripcion: "Define metaverso de forma superficial." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No logra definir metaverso." },
+      ],
+    },
+    {
+      id: "s2c5",
+      secuencia: "🥽 Secuencia 2 — Realidad Virtual · Proyecto: Mi Metaverso Educativo",
+      grupo: "todos",
+      titulo: "🎨 Creatividad Visual",
+      descripcion: "Evalúa el uso creativo de colores, texturas y espacio en el material entregado.",
+      ponderacion: "4 de 24 pts — Proyecto: Mi Metaverso Educativo",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Diseño visual excepcional, uso creativo de colores, texturas y espacio." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Diseño visual agradable, buen uso de colores y espacio." },
+        { nivel: "Regular", puntos: "2", descripcion: "Diseño visual básico, poco cuidado en presentación." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "Diseño visual descuidado o ausente." },
+      ],
+    },
+    {
+      id: "s2c6",
+      secuencia: "🥽 Secuencia 2 — Realidad Virtual · Proyecto: Mi Metaverso Educativo",
+      grupo: "todos",
+      titulo: "📋 Documentación y Presentación",
+      descripcion: "Evalúa la estructura y completitud del documento entregado.",
+      ponderacion: "4 de 24 pts — Proyecto: Mi Metaverso Educativo",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Documento completo, con portada, índice, conclusiones y bibliografía." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Documento completo, estructura clara, mínimos errores." },
+        { nivel: "Regular", puntos: "2", descripcion: "Documento incompleto, errores frecuentes." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No entrega documento o plagio evidente." },
+      ],
+    },
+
+    // ===== PROYECTO: DISEÑA TU ROBOT IDEAL (Secuencia 3 - Robótica) =====
+    {
+      id: "s3c1",
+      secuencia: "🤖 Secuencia 3 — Robótica · Proyecto: Diseña tu Robot Ideal",
+      grupo: "todos",
+      titulo: "🔧 Evaluación de Sistemas Tecnológicos",
+      descripcion: "Evalúa el análisis crítico de sistemas robóticos con criterios técnicos.",
+      ponderacion: "4 de 24 pts — Proyecto: Diseña tu Robot Ideal",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Evalúa 3+ sistemas robóticos con criterios técnicos (función, eficiencia, impacto)." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Evalúa 2 sistemas robóticos con criterios básicos." },
+        { nivel: "Regular", puntos: "2", descripcion: "Evalúa 1 sistema robótico de forma superficial." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No evalúa sistemas robóticos." },
+      ],
+    },
+    {
+      id: "s3c2",
+      secuencia: "🤖 Secuencia 3 — Robótica · Proyecto: Diseña tu Robot Ideal",
+      grupo: "todos",
+      titulo: "⚙️ Relación Robótica-IA-Automatización",
+      descripcion: "Evalúa la comprensión de la relación entre robótica, IA y automatización.",
+      ponderacion: "4 de 24 pts — Proyecto: Diseña tu Robot Ideal",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Explica relación con 4+ ejemplos concretos y diagrama de flujo." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Explica relación con 2-3 ejemplos y diagrama simple." },
+        { nivel: "Regular", puntos: "2", descripcion: "Menciona relación pero sin ejemplos claros." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No establece relación entre robótica, IA y automatización." },
+      ],
+    },
+    {
+      id: "s3c3",
+      secuencia: "🤖 Secuencia 3 — Robótica · Proyecto: Diseña tu Robot Ideal",
+      grupo: "todos",
+      titulo: "💻 Programación de Robot (Papel)",
+      descripcion: "Evalúa el diseño del algoritmo del robot con condicionales y bucles en papel/cartulina.",
+      ponderacion: "4 de 24 pts — Proyecto: Diseña tu Robot Ideal",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Diseña algoritmo con 10+ pasos, condicionales y bucles en papel/cartulina." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Diseña algoritmo con 6-9 pasos y algunas condicionales en papel/cartulina." },
+        { nivel: "Regular", puntos: "2", descripcion: "Diseña algoritmo con 3-5 pasos, secuencial básico." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No diseña algoritmo o es incompleto." },
+      ],
+    },
+    {
+      id: "s3c4",
+      secuencia: "🤖 Secuencia 3 — Robótica · Proyecto: Diseña tu Robot Ideal",
+      grupo: "todos",
+      titulo: "🤖 Lógica de Decisiones y Sensores",
+      descripcion: "Evalúa la identificación de sensores/actuadores y los escenarios de decisión propuestos.",
+      ponderacion: "4 de 24 pts — Proyecto: Diseña tu Robot Ideal",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Identifica 5+ sensores/actuadores y propone 3+ escenarios de decisión." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Identifica 3-4 sensores/actuadores y propone 2 escenarios." },
+        { nivel: "Regular", puntos: "2", descripcion: "Identifica 1-2 sensores/actuadores, 1 escenario simple." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No identifica sensores/actuadores." },
+      ],
+    },
+    {
+      id: "s3c5",
+      secuencia: "🤖 Secuencia 3 — Robótica · Proyecto: Diseña tu Robot Ideal",
+      grupo: "todos",
+      titulo: "🎨 Diseño de Robot Ideal",
+      descripcion: "Evalúa la innovación, funcionalidad y presentación técnica del diseño del robot.",
+      ponderacion: "4 de 24 pts — Proyecto: Diseña tu Robot Ideal",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Diseño robot innovador, con función social, dibujo técnico y lista de materiales." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Diseño robot funcional, dibujo claro y lista de materiales básica." },
+        { nivel: "Regular", puntos: "2", descripcion: "Diseño robot básico, poco detallado." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No presenta diseño de robot." },
+      ],
+    },
+    {
+      id: "s3c6",
+      secuencia: "🤖 Secuencia 3 — Robótica · Proyecto: Diseña tu Robot Ideal",
+      grupo: "todos",
+      titulo: "📊 Presentación del Proyecto",
+      descripcion: "Evalúa el dominio del tema y la claridad de la presentación oral final.",
+      ponderacion: "4 de 24 pts — Proyecto: Diseña tu Robot Ideal",
+      niveles: [
+        { nivel: "Excelente", puntos: "4", descripcion: "Presentación oral clara, dominio del tema, responde preguntas con seguridad." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Presentación oral clara, con algunas dudas al responder." },
+        { nivel: "Regular", puntos: "2", descripcion: "Presentación oral con dificultades, lectura excesiva." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No presenta o no domina el tema." },
       ],
     },
   ],
@@ -949,68 +1154,90 @@ async function renderizarRubricas() {
     return;
   }
 
-  contenedor.innerHTML = "";
+  // Agrupar conservando el orden de aparición en el array de datos.
+  const grupos = new Map();
   datos.forEach((item) => {
-    // <details>/<summary> nativo: Tab + Enter/Espacio ya funcionan solos,
-    // y el estado expandido/colapsado se anuncia a lectores de pantalla
-    // sin necesidad de manejar aria-expanded a mano con JS.
-    const tarjeta = document.createElement("details");
-    tarjeta.className = "tarjeta tarjeta-rubrica";
+    const clave = item.secuencia || "Otras rúbricas";
+    if (!grupos.has(clave)) grupos.set(clave, []);
+    grupos.get(clave).push(item);
+  });
 
-    const resumen = document.createElement("summary");
-    resumen.className = "tarjeta-rubrica__resumen";
+  contenedor.innerHTML = "";
 
-    const cabecera = document.createElement("div");
-    cabecera.className = "tarjeta__cabecera";
-    const titulo = document.createElement("h3");
-    titulo.textContent = item.titulo;
-    cabecera.appendChild(titulo);
-    cabecera.appendChild(crearBadgeGrupo(item.grupo));
+  grupos.forEach((itemsDelGrupo, nombreGrupo) => {
+    const bloqueGrupo = document.createElement("div");
+    bloqueGrupo.className = "rubricas-grupo";
 
-    const descripcion = document.createElement("p");
-    descripcion.textContent = item.descripcion;
+    const tituloGrupo = document.createElement("h3");
+    tituloGrupo.className = "rubricas-grupo__titulo";
+    tituloGrupo.textContent = nombreGrupo;
+    bloqueGrupo.appendChild(tituloGrupo);
 
-    const meta = document.createElement("div");
-    meta.className = "tarjeta__meta";
-    const ponderacion = document.createElement("span");
-    ponderacion.className = "badge-estado";
-    ponderacion.textContent = "Vale " + item.ponderacion;
-    meta.appendChild(ponderacion);
+    const cuadriculaGrupo = document.createElement("div");
+    cuadriculaGrupo.className = "cuadricula";
 
-    const icono = document.createElement("span");
-    icono.className = "tarjeta-rubrica__icono";
-    icono.setAttribute("aria-hidden", "true");
-    icono.textContent = "▾";
+    itemsDelGrupo.forEach((item) => {
+      const tarjeta = document.createElement("details");
+      tarjeta.className = "tarjeta tarjeta-rubrica";
 
-    resumen.append(cabecera, descripcion, meta, icono);
+      const resumen = document.createElement("summary");
+      resumen.className = "tarjeta-rubrica__resumen";
 
-    const niveles = document.createElement("ul");
-    niveles.className = "tarjeta-rubrica__niveles";
-    (item.niveles || []).forEach((nivelInfo) => {
-      const li = document.createElement("li");
-      li.className = "nivel-item";
-      li.dataset.nivel = nivelInfo.nivel.toLowerCase();
+      const cabecera = document.createElement("div");
+      cabecera.className = "tarjeta__cabecera";
+      const titulo = document.createElement("h4");
+      titulo.textContent = item.titulo;
+      cabecera.appendChild(titulo);
+      cabecera.appendChild(crearBadgeGrupo(item.grupo));
 
-      const cabeceraNivel = document.createElement("div");
-      cabeceraNivel.className = "nivel-item__cabecera";
-      const nombreNivel = document.createElement("span");
-      nombreNivel.className = "nivel-item__nombre";
-      nombreNivel.textContent = nivelInfo.nivel;
-      const puntosNivel = document.createElement("span");
-      puntosNivel.className = "nivel-item__puntos";
-      puntosNivel.textContent = nivelInfo.puntos + " pts";
-      cabeceraNivel.append(nombreNivel, puntosNivel);
+      const descripcion = document.createElement("p");
+      descripcion.textContent = item.descripcion;
 
-      const descripcionNivel = document.createElement("p");
-      descripcionNivel.className = "nivel-item__descripcion";
-      descripcionNivel.textContent = nivelInfo.descripcion;
+      const meta = document.createElement("div");
+      meta.className = "tarjeta__meta";
+      const ponderacion = document.createElement("span");
+      ponderacion.className = "badge-estado";
+      ponderacion.textContent = "Vale " + item.ponderacion;
+      meta.appendChild(ponderacion);
 
-      li.append(cabeceraNivel, descripcionNivel);
-      niveles.appendChild(li);
+      const icono = document.createElement("span");
+      icono.className = "tarjeta-rubrica__icono";
+      icono.setAttribute("aria-hidden", "true");
+      icono.textContent = "▾";
+
+      resumen.append(cabecera, descripcion, meta, icono);
+
+      const niveles = document.createElement("ul");
+      niveles.className = "tarjeta-rubrica__niveles";
+      (item.niveles || []).forEach((nivelInfo) => {
+        const li = document.createElement("li");
+        li.className = "nivel-item";
+        li.dataset.nivel = nivelInfo.nivel.toLowerCase();
+
+        const cabeceraNivel = document.createElement("div");
+        cabeceraNivel.className = "nivel-item__cabecera";
+        const nombreNivel = document.createElement("span");
+        nombreNivel.className = "nivel-item__nombre";
+        nombreNivel.textContent = nivelInfo.nivel;
+        const puntosNivel = document.createElement("span");
+        puntosNivel.className = "nivel-item__puntos";
+        puntosNivel.textContent = nivelInfo.puntos + " pts";
+        cabeceraNivel.append(nombreNivel, puntosNivel);
+
+        const descripcionNivel = document.createElement("p");
+        descripcionNivel.className = "nivel-item__descripcion";
+        descripcionNivel.textContent = nivelInfo.descripcion;
+
+        li.append(cabeceraNivel, descripcionNivel);
+        niveles.appendChild(li);
+      });
+
+      tarjeta.append(resumen, niveles);
+      cuadriculaGrupo.appendChild(tarjeta);
     });
 
-    tarjeta.append(resumen, niveles);
-    contenedor.appendChild(tarjeta);
+    bloqueGrupo.appendChild(cuadriculaGrupo);
+    contenedor.appendChild(bloqueGrupo);
   });
 }
 

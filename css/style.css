@@ -731,6 +731,42 @@ summary:focus-visible {
   gap: 1.1rem;
 }
 
+/* #contenedor-rubricas trae class="cuadricula" desde el HTML (para el
+   caso sin agrupar). Al agrupar por secuencia, sus hijos directos pasan
+   a ser bloques .rubricas-grupo que deben apilarse, no comportarse como
+   columnas del grid exterior; la cuadrícula real queda en el grid
+   anidado dentro de cada grupo. */
+#contenedor-rubricas.cuadricula {
+  display: block;
+}
+
+.rubricas-grupo {
+  margin-bottom: 2rem;
+}
+
+.rubricas-grupo:last-child {
+  margin-bottom: 0;
+}
+
+.rubricas-grupo__titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primario);
+  border-left: 4px solid var(--color-acento);
+  padding-left: 0.7rem;
+  margin: 0 0 1rem 0;
+}
+
+:root[data-theme="oscuro"] .rubricas-grupo__titulo {
+  color: var(--color-texto);
+}
+
+.tarjeta-rubrica h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--color-texto);
+}
+
 .tarjeta {
   background-color: var(--color-superficie);
   border: 1px solid var(--color-borde);
