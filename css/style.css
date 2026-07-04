@@ -276,6 +276,20 @@ a {
   border-bottom-color: var(--color-turquesa);
 }
 
+/* Corrección de contraste en modo claro: el texto gris claro por defecto
+   (var(--color-texto-suave), ~7:1) se reemplaza por un gris oscuro con
+   mejor lectura, y el turquesa institucional en :hover/:focus-visible
+   (2.49:1 sobre fondo blanco, no cumple AA) se cambia por el navy
+   institucional (11.27:1). El modo oscuro no se toca. */
+:root[data-theme="claro"] .nav-principal a {
+  color: #1f2937;
+}
+
+:root[data-theme="claro"] .nav-principal a:hover,
+:root[data-theme="claro"] .nav-principal a:focus-visible {
+  color: #1B3A6B;
+}
+
 /* ---------- Enfoque accesible ---------- */
 a:focus-visible,
 button:focus-visible,
