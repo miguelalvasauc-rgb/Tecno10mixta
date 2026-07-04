@@ -69,6 +69,9 @@ const DATOS_EVENTOS = [
 // El resto del contenido SÍ depende del trimestre. Cada constante es un
 // objeto { 1: [...], 2: [...], 3: [...] } para que, más adelante, cada
 // clave se pueda mapear a su propia pestaña de Google Sheets.
+// "niveles" describe los 4 niveles de desempeño de cada rúbrica
+// (Excelente, Bueno, Regular, Deficiente) sobre una escala de 0 a 20
+// puntos. La tarjeta de rúbrica los muestra al expandirse.
 const DATOS_RUBRICAS = {
   1: [
     {
@@ -77,6 +80,12 @@ const DATOS_RUBRICAS = {
       titulo: "Rúbrica de bitácora de taller",
       descripcion: "Evalúa el registro diario de actividades, orden y limpieza en el taller.",
       ponderacion: "15%",
+      niveles: [
+        { nivel: "Excelente", puntos: "18-20", descripcion: "Registra diariamente cada actividad con fecha, materiales usados y observaciones; el taller siempre queda ordenado y limpio." },
+        { nivel: "Bueno", puntos: "14-17", descripcion: "Registra la mayoría de las actividades con detalle suficiente; el taller generalmente queda ordenado." },
+        { nivel: "Regular", puntos: "10-13", descripcion: "Registro incompleto o con poco detalle; orden y limpieza irregulares." },
+        { nivel: "Deficiente", puntos: "0-9", descripcion: "Bitácora incompleta o sin evidencia de orden y limpieza en el taller." },
+      ],
     },
     {
       id: "r2",
@@ -84,6 +93,12 @@ const DATOS_RUBRICAS = {
       titulo: "Rúbrica de exposición: introducción a la tecnología",
       descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
       ponderacion: "20%",
+      niveles: [
+        { nivel: "Excelente", puntos: "18-20", descripcion: "Explica con claridad el concepto y la evolución de la tecnología, con ejemplos propios y buen manejo del tiempo." },
+        { nivel: "Bueno", puntos: "14-17", descripcion: "Explica el tema correctamente, con apoyos visuales adecuados aunque con imprecisiones menores." },
+        { nivel: "Regular", puntos: "10-13", descripcion: "Expone el tema de forma superficial o memorizada, con apoyo visual limitado." },
+        { nivel: "Deficiente", puntos: "0-9", descripcion: "No domina el tema o no logra comunicar las ideas principales." },
+      ],
     },
     {
       id: "r3",
@@ -91,6 +106,12 @@ const DATOS_RUBRICAS = {
       titulo: "Rúbrica de práctica: herramientas de mano",
       descripcion: "Uso correcto y seguro de herramientas básicas del taller.",
       ponderacion: "15%",
+      niveles: [
+        { nivel: "Excelente", puntos: "18-20", descripcion: "Identifica y usa cada herramienta de forma correcta y segura, siguiendo el procedimiento completo." },
+        { nivel: "Bueno", puntos: "14-17", descripcion: "Usa las herramientas correctamente con supervisión mínima." },
+        { nivel: "Regular", puntos: "10-13", descripcion: "Requiere corrección frecuente en el uso o en las medidas de seguridad." },
+        { nivel: "Deficiente", puntos: "0-9", descripcion: "Usa las herramientas de forma incorrecta o insegura." },
+      ],
     },
     {
       id: "r4",
@@ -98,6 +119,12 @@ const DATOS_RUBRICAS = {
       titulo: "Rúbrica de práctica: uso del multímetro",
       descripcion: "Mediciones correctas de voltaje, corriente y resistencia.",
       ponderacion: "15%",
+      niveles: [
+        { nivel: "Excelente", puntos: "18-20", descripcion: "Configura el multímetro y mide voltaje, corriente y resistencia correctamente en todos los casos." },
+        { nivel: "Bueno", puntos: "14-17", descripcion: "Realiza la mayoría de las mediciones correctamente, con pequeños errores de lectura." },
+        { nivel: "Regular", puntos: "10-13", descripcion: "Comete errores frecuentes al configurar el equipo o interpretar las mediciones." },
+        { nivel: "Deficiente", puntos: "0-9", descripcion: "No logra configurar el multímetro ni obtener mediciones válidas." },
+      ],
     },
   ],
   2: [
@@ -107,6 +134,12 @@ const DATOS_RUBRICAS = {
       titulo: "Rúbrica de programación básica (Arduino)",
       descripcion: "Lógica del programa, comentarios y funcionamiento del circuito.",
       ponderacion: "25%",
+      niveles: [
+        { nivel: "Excelente", puntos: "18-20", descripcion: "El programa funciona sin errores, el código está comentado y organizado, y resuelve el problema planteado." },
+        { nivel: "Bueno", puntos: "14-17", descripcion: "El programa funciona con errores menores o comentarios incompletos." },
+        { nivel: "Regular", puntos: "10-13", descripcion: "El programa funciona parcialmente o requiere ayuda para corregir errores." },
+        { nivel: "Deficiente", puntos: "0-9", descripcion: "El programa no funciona o no se entrega evidencia de funcionamiento." },
+      ],
     },
     {
       id: "r2",
@@ -114,6 +147,12 @@ const DATOS_RUBRICAS = {
       titulo: "Rúbrica de bitácora de taller",
       descripcion: "Evalúa el registro diario de actividades, orden y limpieza en el taller.",
       ponderacion: "15%",
+      niveles: [
+        { nivel: "Excelente", puntos: "18-20", descripcion: "Registro diario completo, detallado y con reflexión sobre el avance del proyecto." },
+        { nivel: "Bueno", puntos: "14-17", descripcion: "Registro constante con detalle adecuado en la mayoría de las sesiones." },
+        { nivel: "Regular", puntos: "10-13", descripcion: "Registro con vacíos o descripciones muy breves." },
+        { nivel: "Deficiente", puntos: "0-9", descripcion: "Bitácora incompleta o sin relación con el trabajo realizado." },
+      ],
     },
     {
       id: "r3",
@@ -121,6 +160,12 @@ const DATOS_RUBRICAS = {
       titulo: "Rúbrica de exposición: sensores y actuadores",
       descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
       ponderacion: "20%",
+      niveles: [
+        { nivel: "Excelente", puntos: "18-20", descripcion: "Explica el funcionamiento de cada sensor y actuador con ejemplos y muestra un circuito funcionando." },
+        { nivel: "Bueno", puntos: "14-17", descripcion: "Explica correctamente la mayoría de los conceptos, con demostración parcial." },
+        { nivel: "Regular", puntos: "10-13", descripcion: "Explicación confusa o sin demostración práctica." },
+        { nivel: "Deficiente", puntos: "0-9", descripcion: "No identifica correctamente los sensores ni los actuadores." },
+      ],
     },
     {
       id: "r4",
@@ -128,6 +173,12 @@ const DATOS_RUBRICAS = {
       titulo: "Rúbrica de exposición: diseño asistido por computadora",
       descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
       ponderacion: "20%",
+      niveles: [
+        { nivel: "Excelente", puntos: "18-20", descripcion: "Presenta un modelo 3D propio, explica el proceso de diseño y domina las herramientas utilizadas." },
+        { nivel: "Bueno", puntos: "14-17", descripcion: "Presenta el modelo y explica el proceso con algunas imprecisiones." },
+        { nivel: "Regular", puntos: "10-13", descripcion: "Modelo incompleto o explicación superficial del proceso." },
+        { nivel: "Deficiente", puntos: "0-9", descripcion: "No presenta un modelo funcional ni explica el proceso de diseño." },
+      ],
     },
   ],
   3: [
@@ -137,6 +188,12 @@ const DATOS_RUBRICAS = {
       titulo: "Rúbrica de proyecto tecnológico",
       descripcion: "Criterios de diseño, funcionalidad, trabajo en equipo y presentación final.",
       ponderacion: "40%",
+      niveles: [
+        { nivel: "Excelente", puntos: "18-20", descripcion: "El prototipo funciona completamente, resuelve el problema planteado, con buen trabajo en equipo y presentación clara." },
+        { nivel: "Bueno", puntos: "14-17", descripcion: "El prototipo funciona con fallas menores; presentación adecuada." },
+        { nivel: "Regular", puntos: "10-13", descripcion: "El prototipo presenta fallas importantes o el trabajo en equipo es desigual." },
+        { nivel: "Deficiente", puntos: "0-9", descripcion: "El prototipo no funciona o no se presenta." },
+      ],
     },
     {
       id: "r2",
@@ -144,6 +201,12 @@ const DATOS_RUBRICAS = {
       titulo: "Rúbrica de bitácora de taller",
       descripcion: "Evalúa el registro diario de actividades, orden y limpieza en el taller.",
       ponderacion: "15%",
+      niveles: [
+        { nivel: "Excelente", puntos: "18-20", descripcion: "Registro diario completo del avance del proyecto, con fotos y reflexión." },
+        { nivel: "Bueno", puntos: "14-17", descripcion: "Registro constante con detalle suficiente." },
+        { nivel: "Regular", puntos: "10-13", descripcion: "Registro incompleto o con poco detalle." },
+        { nivel: "Deficiente", puntos: "0-9", descripcion: "Bitácora ausente o sin relación con el proyecto." },
+      ],
     },
     {
       id: "r3",
@@ -151,6 +214,12 @@ const DATOS_RUBRICAS = {
       titulo: "Rúbrica de exposición: robótica básica",
       descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
       ponderacion: "20%",
+      niveles: [
+        { nivel: "Excelente", puntos: "18-20", descripcion: "Explica con claridad los principios de movimiento del robot y demuestra su funcionamiento." },
+        { nivel: "Bueno", puntos: "14-17", descripcion: "Explica correctamente con una demostración parcial." },
+        { nivel: "Regular", puntos: "10-13", descripcion: "Explicación incompleta o sin demostración." },
+        { nivel: "Deficiente", puntos: "0-9", descripcion: "No domina los conceptos básicos de robótica." },
+      ],
     },
     {
       id: "r4",
@@ -158,6 +227,12 @@ const DATOS_RUBRICAS = {
       titulo: "Rúbrica de exposición: impresión 3D",
       descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
       ponderacion: "20%",
+      niveles: [
+        { nivel: "Excelente", puntos: "18-20", descripcion: "Explica el proceso completo de impresión 3D y muestra una pieza impresa por el propio alumno." },
+        { nivel: "Bueno", puntos: "14-17", descripcion: "Explica el proceso correctamente, con una pieza impresa parcialmente terminada." },
+        { nivel: "Regular", puntos: "10-13", descripcion: "Explicación superficial o sin pieza impresa." },
+        { nivel: "Deficiente", puntos: "0-9", descripcion: "No demuestra comprensión del proceso de impresión 3D." },
+      ],
     },
   ],
 };
@@ -795,8 +870,14 @@ async function renderizarRubricas() {
 
   contenedor.innerHTML = "";
   datos.forEach((item) => {
-    const tarjeta = document.createElement("article");
-    tarjeta.className = "tarjeta";
+    // <details>/<summary> nativo: Tab + Enter/Espacio ya funcionan solos,
+    // y el estado expandido/colapsado se anuncia a lectores de pantalla
+    // sin necesidad de manejar aria-expanded a mano con JS.
+    const tarjeta = document.createElement("details");
+    tarjeta.className = "tarjeta tarjeta-rubrica";
+
+    const resumen = document.createElement("summary");
+    resumen.className = "tarjeta-rubrica__resumen";
 
     const cabecera = document.createElement("div");
     cabecera.className = "tarjeta__cabecera";
@@ -815,7 +896,39 @@ async function renderizarRubricas() {
     ponderacion.textContent = "Vale " + item.ponderacion;
     meta.appendChild(ponderacion);
 
-    tarjeta.append(cabecera, descripcion, meta);
+    const icono = document.createElement("span");
+    icono.className = "tarjeta-rubrica__icono";
+    icono.setAttribute("aria-hidden", "true");
+    icono.textContent = "▾";
+
+    resumen.append(cabecera, descripcion, meta, icono);
+
+    const niveles = document.createElement("ul");
+    niveles.className = "tarjeta-rubrica__niveles";
+    (item.niveles || []).forEach((nivelInfo) => {
+      const li = document.createElement("li");
+      li.className = "nivel-item";
+      li.dataset.nivel = nivelInfo.nivel.toLowerCase();
+
+      const cabeceraNivel = document.createElement("div");
+      cabeceraNivel.className = "nivel-item__cabecera";
+      const nombreNivel = document.createElement("span");
+      nombreNivel.className = "nivel-item__nombre";
+      nombreNivel.textContent = nivelInfo.nivel;
+      const puntosNivel = document.createElement("span");
+      puntosNivel.className = "nivel-item__puntos";
+      puntosNivel.textContent = nivelInfo.puntos + " pts";
+      cabeceraNivel.append(nombreNivel, puntosNivel);
+
+      const descripcionNivel = document.createElement("p");
+      descripcionNivel.className = "nivel-item__descripcion";
+      descripcionNivel.textContent = nivelInfo.descripcion;
+
+      li.append(cabeceraNivel, descripcionNivel);
+      niveles.appendChild(li);
+    });
+
+    tarjeta.append(resumen, niveles);
     contenedor.appendChild(tarjeta);
   });
 }
