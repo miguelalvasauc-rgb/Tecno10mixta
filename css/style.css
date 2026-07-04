@@ -1158,10 +1158,18 @@ textarea:focus-visible {
 
 /* En modo claro el turquesa no da suficiente contraste para un ícono
    blanco (~2.5:1); se usa navy, que sí cumple (~9.6:1). Modo oscuro
-   conserva turquesa + ícono oscuro (~6.8:1). */
+   conserva turquesa + ícono oscuro (~6.8:1).
+
+   El navy por sí solo se camufla contra el footer, que también es
+   navy (~1:1 de contraste ahí). Se agrega un borde claro: no hace
+   falta contra el fondo normal de la página (el relleno navy ya da
+   ~10.5:1 ahí), pero sobre el footer navy ese borde da ~9.6:1 y
+   rompe el camuflaje. Se probó reemplazar el relleno por turquesa,
+   pero eso falla contra el fondo normal de la página (~2.3:1). */
 :root[data-theme="claro"] .boton-volver-arriba {
   background-color: #1B3A6B;
   color: #E8EEF4;
+  border: 3px solid #E8EEF4;
 }
 
 .boton-volver-arriba--visible {
