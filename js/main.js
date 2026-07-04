@@ -1133,6 +1133,27 @@ function alternarMenuMovil() {
   boton.setAttribute("aria-expanded", String(abierto));
 }
 
+// Actualiza el tercer nivel de las migas de pan ("Inicio > Trimestre X >
+// [Sección]") con el nombre de la sección que el observer marcó como
+// activa. Si la página no tiene migas de pan (por ejemplo la portada),
+// los getElementById devuelven null y la función no hace nada.
+function actualizarMigaDeSeccion(enlaceActivo) {
+  if (!enlaceActivo) return;
+
+  const separador = document.getElementById("miga-separador-seccion");
+  const item = document.getElementById("miga-item-seccion");
+  const texto = document.getElementById("miga-seccion");
+  const migaTrimestre = document.getElementById("miga-trimestre");
+  if (!separador || !item || !texto) return;
+
+  texto.textContent = enlaceActivo.textContent;
+  texto.setAttribute("aria-current", "page");
+  if (migaTrimestre) migaTrimestre.removeAttribute("aria-current");
+
+  separador.hidden = false;
+  item.hidden = false;
+}
+
 // Resalta en el menú el enlace de la sección que se está viendo mientras
 // el usuario hace scroll (ej. Temario, Rúbricas, Tareas…). Se basa en
 // IntersectionObserver en vez de un listener de "scroll" para no volver a
@@ -1164,6 +1185,7 @@ function activarResaltadoDeNavegacion() {
     enlaces.forEach((enlace) => {
       enlace.classList.toggle("nav-link--activo", enlace === enlaceActivo);
     });
+    actualizarMigaDeSeccion(enlaceActivo);
   }
 
   // El header y el propio menú son "sticky", así que se descuenta su

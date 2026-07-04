@@ -64,6 +64,20 @@
     <a href="#entrega">Entrega de trabajos</a>
   </nav>
 
+  <!-- ===================== MIGAS DE PAN ===================== -->
+  <!-- El tercer nivel (sección) se completa por JS conforme se hace scroll,
+       reutilizando la misma detección de sección visible del menú (ver
+       activarResaltadoDeNavegacion en js/main.js). Empieza oculto. -->
+  <nav aria-label="breadcrumb" class="migas-de-pan">
+    <ol>
+      <li><a href="index.html">Inicio</a></li>
+      <li class="migas-de-pan__separador" aria-hidden="true">/</li>
+      <li><span id="miga-trimestre" class="migas-de-pan__actual" aria-current="page">Trimestre 1</span></li>
+      <li id="miga-separador-seccion" class="migas-de-pan__separador" aria-hidden="true" hidden>/</li>
+      <li id="miga-item-seccion" hidden><span id="miga-seccion" class="migas-de-pan__actual"></span></li>
+    </ol>
+  </nav>
+
   <!-- Recordatorio para evitar confundir el contenido de este trimestre con el de otro. -->
   <div class="banner-trimestre">
     <p>Estás viendo el <strong>Trimestre 1</strong>. Todo el contenido de esta página corresponde únicamente a este periodo.</p>
