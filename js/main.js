@@ -1133,6 +1133,87 @@ function alternarMenuMovil() {
   boton.setAttribute("aria-expanded", String(abierto));
 }
 
+// Resalta en el menú el enlace de la sección que se está viendo mientras
+// el usuario hace scroll (ej. Temario, Rúbricas, Tareas…). Se basa en
+// IntersectionObserver en vez de un listener de "scroll" para no volver a
+// calcular esto en cada pixel de desplazamiento. La marca visual (clase
+// .nav-link--activo) se aplica al enlace del menú aunque el menú esté
+// colapsado en móvil, así que ya aparece resaltado al abrirlo.
+function activarResaltadoDeNavegacion() {
+  if (typeof IntersectionObserver === "undefined") return;
+
+  const nav = document.getElementById("nav-principal");
+  if (!nav) return;
+
+  const enlaces = Array.from(nav.querySelectorAll('a[href^="#"]'));
+  if (enlaces.length === 0) return;
+
+  const seccionPorEnlace = new Map();
+  const secciones = [];
+  enlaces.forEach((enlace) => {
+    const id = enlace.getAttribute("href").slice(1);
+    const seccion = document.getElementById(id);
+    if (seccion) {
+      seccionPorEnlace.set(seccion, enlace);
+      secciones.push(seccion);
+    }
+  });
+  if (secciones.length === 0) return;
+
+  function marcarActivo(enlaceActivo) {
+    enlaces.forEach((enlace) => {
+      enlace.classList.toggle("nav-link--activo", enlace === enlaceActivo);
+    });
+  }
+
+  // El header y el propio menú son "sticky", así que se descuenta su
+  // altura del observador para que una sección cuente como "vista" justo
+  // al aparecer debajo de esas barras fijas (y no detrás de ellas).
+  const encabezado = document.querySelector(".encabezado");
+  const altoFijo = (encabezado ? encabezado.offsetHeight : 0) + nav.offsetHeight;
+
+  // IntersectionObserver solo manda, en cada llamada, las secciones cuyo
+  // estado CAMBIÓ (entró o salió), no todas las que siguen visibles. Por
+  // eso se guarda el último estado conocido de cada sección en este mapa
+  // y, en cada evento, se recalcula la activa usando todo lo que sigue
+  // intersectando (no solo lo que cambió en esa llamada).
+  const ultimoEstadoPorSeccion = new Map();
+
+  const observador = new IntersectionObserver(
+    (entradas) => {
+      entradas.forEach((entrada) => ultimoEstadoPorSeccion.set(entrada.target, entrada));
+
+      const visibles = Array.from(ultimoEstadoPorSeccion.values()).filter(
+        (entrada) => entrada.isIntersecting
+      );
+      if (visibles.length === 0) return;
+
+      // De las secciones visibles, se prefiere la que ya cruzó el borde
+      // superior del viewport y está más cerca de él (la que se está
+      // leyendo ahora mismo). Si ninguna lo ha cruzado todavía (por
+      // ejemplo, al inicio de la página), se toma la más próxima a entrar.
+      const yaCruzadas = visibles.filter((entrada) => entrada.boundingClientRect.top <= 0);
+      const elegida =
+        yaCruzadas.length > 0
+          ? yaCruzadas.reduce((a, b) =>
+              a.boundingClientRect.top >= b.boundingClientRect.top ? a : b
+            )
+          : visibles.reduce((a, b) =>
+              a.boundingClientRect.top <= b.boundingClientRect.top ? a : b
+            );
+
+      marcarActivo(seccionPorEnlace.get(elegida.target));
+    },
+    {
+      root: null,
+      rootMargin: "-" + (altoFijo + 16) + "px 0px -65% 0px",
+      threshold: 0,
+    }
+  );
+
+  secciones.forEach((seccion) => observador.observe(seccion));
+}
+
 async function renderizarTodo() {
   await Promise.all([
     renderizarAvisos(),
@@ -1220,6 +1301,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("boton-tema").addEventListener("click", alternarTema);
   document.getElementById("selector-grupo").addEventListener("change", alCambiarGrupo);
   document.getElementById("boton-menu").addEventListener("click", alternarMenuMovil);
+  activarResaltadoDeNavegacion();
 
   // El formulario de contacto solo existe en la portada (index.html).
   const formularioContacto = document.getElementById("formulario-contacto");

@@ -290,6 +290,17 @@ a {
   color: #1B3A6B;
 }
 
+/* Indicador de sección activa: JS (activarResaltadoDeNavegacion) agrega
+   esta clase al enlace de la sección visible mientras se hace scroll. */
+.nav-principal a.nav-link--activo {
+  color: var(--color-turquesa);
+  border-bottom-color: var(--color-turquesa);
+}
+
+:root[data-theme="claro"] .nav-principal a.nav-link--activo {
+  color: #1B3A6B;
+}
+
 /* ---------- Enfoque accesible ---------- */
 a:focus-visible,
 button:focus-visible,
