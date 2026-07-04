@@ -1,18 +1,28 @@
 /* =========================================================
    Educación Tecnológica 3°C / 3°E — Esc. Sec. No. 10 Mixta
-   Lógica de: tema claro/oscuro, filtro por grupo, y
-   renderizado de rúbricas, tareas, actividades, proyectos,
-   videos y calendario a partir de datos de ejemplo.
+   Lógica compartida por las 4 páginas del sitio (portada y
+   trimestre-1/2/3): tema claro/oscuro, filtro por grupo, y
+   renderizado de avisos, calendario, rúbricas, tareas,
+   actividades, proyectos y videos a partir de datos de ejemplo.
+
+   Cada página solo tiene en el DOM los contenedores que le
+   corresponden (la portada no tiene #contenedor-rubricas, los
+   trimestres no tienen #contenedor-avisos, etc.), así que cada
+   función de renderizado se sale sin hacer nada si no encuentra
+   su contenedor. Esto permite usar un único main.js para todo
+   el sitio.
 
    Los datos de ejemplo están listos para sustituirse por
    llamadas a la API de Google Sheets: cada función
-   "obtener..." es la única pieza que habría que cambiar.
+   "obtener..." es la única pieza que habría que cambiar
+   (idealmente una pestaña de Sheets por trimestre).
    ========================================================= */
 
 /* =========================================================
    1. DATOS DE EJEMPLO (placeholder de Google Sheets)
    ========================================================= */
 
+// Avisos y calendario son generales: no cambian por trimestre.
 // Cada registro incluye "grupo": 'todos' | '3C' | '3E'
 const DATOS_AVISOS = [
   {
@@ -44,141 +54,7 @@ const DATOS_AVISOS = [
     grupo: "todos",
     fecha: "2026-06-25",
     titulo: "Bienvenida al bimestre",
-    descripcion: "Consulta la sección de Rúbricas para conocer los criterios de evaluación.",
-  },
-];
-
-const DATOS_RUBRICAS = [
-  {
-    id: "r1",
-    grupo: "todos",
-    titulo: "Rúbrica de proyecto tecnológico",
-    descripcion: "Criterios de diseño, funcionalidad, trabajo en equipo y presentación final.",
-    ponderacion: "40%",
-  },
-  {
-    id: "r2",
-    grupo: "todos",
-    titulo: "Rúbrica de bitácora de taller",
-    descripcion: "Evalúa el registro diario de actividades, orden y limpieza en el taller.",
-    ponderacion: "15%",
-  },
-  {
-    id: "r3",
-    grupo: "3C",
-    titulo: "Rúbrica de exposición: Robótica básica",
-    descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
-    ponderacion: "20%",
-  },
-  {
-    id: "r4",
-    grupo: "3E",
-    titulo: "Rúbrica de exposición: Impresión 3D",
-    descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
-    ponderacion: "20%",
-  },
-];
-
-const DATOS_TAREAS = [
-  {
-    id: "t1",
-    grupo: "3C",
-    titulo: "Investigación: historia de la robótica",
-    descripcion: "Resumen de una cuartilla con al menos tres fuentes confiables.",
-    fechaEntrega: "2026-07-10",
-    estado: "pendiente",
-  },
-  {
-    id: "t2",
-    grupo: "3E",
-    titulo: "Diseño de pieza en software CAD",
-    descripcion: "Modelar una pieza sencilla para su posterior impresión 3D.",
-    fechaEntrega: "2026-07-08",
-    estado: "pendiente",
-  },
-  {
-    id: "t3",
-    grupo: "todos",
-    titulo: "Reglamento del taller firmado",
-    descripcion: "Entregar el reglamento de seguridad e higiene firmado por el tutor.",
-    fechaEntrega: "2026-07-04",
-    estado: "atrasada",
-  },
-  {
-    id: "t4",
-    grupo: "3C",
-    titulo: "Reporte de práctica: circuito serie-paralelo",
-    descripcion: "Reporte con diagrama, mediciones y conclusiones.",
-    fechaEntrega: "2026-06-29",
-    estado: "entregada",
-  },
-];
-
-const DATOS_ACTIVIDADES = [
-  {
-    id: "a1",
-    grupo: "todos",
-    titulo: "Dinámica de introducción al taller",
-    descripcion: "Recorrido por el taller e identificación de herramientas y zonas de seguridad.",
-    fecha: "2026-07-03",
-  },
-  {
-    id: "a2",
-    grupo: "3C",
-    titulo: "Práctica guiada: sensores y actuadores",
-    descripcion: "Armado de circuito básico con sensor de luz y LED.",
-    fecha: "2026-07-06",
-  },
-  {
-    id: "a3",
-    grupo: "3E",
-    titulo: "Práctica guiada: primeros pasos en diseño 3D",
-    descripcion: "Exploración de herramientas básicas del software de modelado.",
-    fecha: "2026-07-06",
-  },
-];
-
-const DATOS_PROYECTOS = [
-  {
-    id: "p1",
-    grupo: "3C",
-    titulo: "Brazo robótico simple",
-    descripcion: "Prototipo funcional de brazo robótico controlado con servomotores.",
-    avance: 45,
-    fechaEntrega: "2026-08-14",
-  },
-  {
-    id: "p2",
-    grupo: "3E",
-    titulo: "Maqueta impresa en 3D",
-    descripcion: "Diseño y fabricación de una maqueta funcional para la feria escolar.",
-    avance: 30,
-    fechaEntrega: "2026-08-14",
-  },
-];
-
-const DATOS_VIDEOS = [
-  {
-    id: "v1",
-    grupo: "todos",
-    titulo: "Seguridad e higiene en el taller",
-    descripcion: "Normas básicas antes de manipular herramientas y equipo.",
-    // TODO: reemplazar por el ID real del video de YouTube.
-    idYoutube: "REEMPLAZAR_ID_VIDEO_1",
-  },
-  {
-    id: "v2",
-    grupo: "3C",
-    titulo: "Introducción a la robótica educativa",
-    descripcion: "Conceptos básicos de sensores, actuadores y controladores.",
-    idYoutube: "REEMPLAZAR_ID_VIDEO_2",
-  },
-  {
-    id: "v3",
-    grupo: "3E",
-    titulo: "Fundamentos de impresión 3D",
-    descripcion: "Cómo funciona una impresora 3D y tipos de filamento.",
-    idYoutube: "REEMPLAZAR_ID_VIDEO_3",
+    descripcion: "Elige tu trimestre para consultar rúbricas y tareas vigentes.",
   },
 ];
 
@@ -190,6 +66,409 @@ const DATOS_EVENTOS = [
   { id: "e5", grupo: "todos", titulo: "Entrega final de proyectos", fecha: "2026-08-14" },
 ];
 
+// El resto del contenido SÍ depende del trimestre. Cada constante es un
+// objeto { 1: [...], 2: [...], 3: [...] } para que, más adelante, cada
+// clave se pueda mapear a su propia pestaña de Google Sheets.
+const DATOS_RUBRICAS = {
+  1: [
+    {
+      id: "r1",
+      grupo: "todos",
+      titulo: "Rúbrica de bitácora de taller",
+      descripcion: "Evalúa el registro diario de actividades, orden y limpieza en el taller.",
+      ponderacion: "15%",
+    },
+    {
+      id: "r2",
+      grupo: "todos",
+      titulo: "Rúbrica de exposición: introducción a la tecnología",
+      descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
+      ponderacion: "20%",
+    },
+    {
+      id: "r3",
+      grupo: "3C",
+      titulo: "Rúbrica de práctica: herramientas de mano",
+      descripcion: "Uso correcto y seguro de herramientas básicas del taller.",
+      ponderacion: "15%",
+    },
+    {
+      id: "r4",
+      grupo: "3E",
+      titulo: "Rúbrica de práctica: uso del multímetro",
+      descripcion: "Mediciones correctas de voltaje, corriente y resistencia.",
+      ponderacion: "15%",
+    },
+  ],
+  2: [
+    {
+      id: "r1",
+      grupo: "todos",
+      titulo: "Rúbrica de programación básica (Arduino)",
+      descripcion: "Lógica del programa, comentarios y funcionamiento del circuito.",
+      ponderacion: "25%",
+    },
+    {
+      id: "r2",
+      grupo: "todos",
+      titulo: "Rúbrica de bitácora de taller",
+      descripcion: "Evalúa el registro diario de actividades, orden y limpieza en el taller.",
+      ponderacion: "15%",
+    },
+    {
+      id: "r3",
+      grupo: "3C",
+      titulo: "Rúbrica de exposición: sensores y actuadores",
+      descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
+      ponderacion: "20%",
+    },
+    {
+      id: "r4",
+      grupo: "3E",
+      titulo: "Rúbrica de exposición: diseño asistido por computadora",
+      descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
+      ponderacion: "20%",
+    },
+  ],
+  3: [
+    {
+      id: "r1",
+      grupo: "todos",
+      titulo: "Rúbrica de proyecto tecnológico",
+      descripcion: "Criterios de diseño, funcionalidad, trabajo en equipo y presentación final.",
+      ponderacion: "40%",
+    },
+    {
+      id: "r2",
+      grupo: "todos",
+      titulo: "Rúbrica de bitácora de taller",
+      descripcion: "Evalúa el registro diario de actividades, orden y limpieza en el taller.",
+      ponderacion: "15%",
+    },
+    {
+      id: "r3",
+      grupo: "3C",
+      titulo: "Rúbrica de exposición: robótica básica",
+      descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
+      ponderacion: "20%",
+    },
+    {
+      id: "r4",
+      grupo: "3E",
+      titulo: "Rúbrica de exposición: impresión 3D",
+      descripcion: "Claridad, dominio del tema y uso de apoyos visuales en la exposición.",
+      ponderacion: "20%",
+    },
+  ],
+};
+
+const DATOS_TAREAS = {
+  1: [
+    {
+      id: "t1",
+      grupo: "todos",
+      titulo: "Investigación: evolución de la tecnología",
+      descripcion: "Línea del tiempo con al menos tres fuentes confiables.",
+      fechaEntrega: "2025-09-12",
+      estado: "entregada",
+    },
+    {
+      id: "t2",
+      grupo: "todos",
+      titulo: "Reglamento del taller firmado",
+      descripcion: "Entregar el reglamento de seguridad e higiene firmado por el tutor.",
+      fechaEntrega: "2025-08-29",
+      estado: "entregada",
+    },
+    {
+      id: "t3",
+      grupo: "3C",
+      titulo: "Reporte de práctica: uso seguro de herramientas",
+      descripcion: "Reporte con fotografías y conclusiones de la práctica.",
+      fechaEntrega: "2025-10-03",
+      estado: "entregada",
+    },
+    {
+      id: "t4",
+      grupo: "3E",
+      titulo: "Reporte de práctica: uso del multímetro",
+      descripcion: "Reporte con mediciones y conclusiones de la práctica.",
+      fechaEntrega: "2025-10-03",
+      estado: "entregada",
+    },
+  ],
+  2: [
+    {
+      id: "t1",
+      grupo: "3C",
+      titulo: "Programa básico en Arduino: parpadeo de LED",
+      descripcion: "Código comentado y evidencia en video del circuito funcionando.",
+      fechaEntrega: "2026-01-16",
+      estado: "entregada",
+    },
+    {
+      id: "t2",
+      grupo: "3E",
+      titulo: "Diseño de pieza en CAD paramétrico",
+      descripcion: "Modelar una pieza con al menos dos medidas ajustables.",
+      fechaEntrega: "2026-01-16",
+      estado: "entregada",
+    },
+    {
+      id: "t3",
+      grupo: "todos",
+      titulo: "Bitácora de avance de sensores",
+      descripcion: "Registro semanal de pruebas con sensores en clase.",
+      fechaEntrega: "2026-02-06",
+      estado: "entregada",
+    },
+    {
+      id: "t4",
+      grupo: "3C",
+      titulo: "Reporte de práctica: sensores de temperatura",
+      descripcion: "Reporte con diagrama, mediciones y conclusiones.",
+      fechaEntrega: "2025-12-12",
+      estado: "atrasada",
+    },
+  ],
+  3: [
+    {
+      id: "t1",
+      grupo: "3C",
+      titulo: "Investigación: historia de la robótica",
+      descripcion: "Resumen de una cuartilla con al menos tres fuentes confiables.",
+      fechaEntrega: "2026-07-10",
+      estado: "pendiente",
+    },
+    {
+      id: "t2",
+      grupo: "3E",
+      titulo: "Diseño de pieza en software CAD",
+      descripcion: "Modelar una pieza sencilla para su posterior impresión 3D.",
+      fechaEntrega: "2026-07-08",
+      estado: "pendiente",
+    },
+    {
+      id: "t3",
+      grupo: "todos",
+      titulo: "Reglamento del taller firmado",
+      descripcion: "Entregar el reglamento de seguridad e higiene firmado por el tutor.",
+      fechaEntrega: "2026-07-04",
+      estado: "atrasada",
+    },
+    {
+      id: "t4",
+      grupo: "3C",
+      titulo: "Reporte de práctica: circuito serie-paralelo",
+      descripcion: "Reporte con diagrama, mediciones y conclusiones.",
+      fechaEntrega: "2026-06-29",
+      estado: "entregada",
+    },
+  ],
+};
+
+const DATOS_ACTIVIDADES = {
+  1: [
+    {
+      id: "a1",
+      grupo: "todos",
+      titulo: "Recorrido e identificación de herramientas",
+      descripcion: "Recorrido por el taller e identificación de herramientas y zonas de seguridad.",
+      fecha: "2025-08-25",
+    },
+    {
+      id: "a2",
+      grupo: "3C",
+      titulo: "Práctica: uso de calibrador y flexómetro",
+      descripcion: "Mediciones básicas sobre distintos materiales.",
+      fecha: "2025-09-05",
+    },
+    {
+      id: "a3",
+      grupo: "3E",
+      titulo: "Práctica: introducción a software CAD",
+      descripcion: "Exploración de la interfaz y herramientas básicas de dibujo.",
+      fecha: "2025-09-05",
+    },
+  ],
+  2: [
+    {
+      id: "a1",
+      grupo: "3C",
+      titulo: "Práctica guiada: circuitos con Arduino",
+      descripcion: "Armado de circuito con botón y salida digital.",
+      fecha: "2025-11-21",
+    },
+    {
+      id: "a2",
+      grupo: "3E",
+      titulo: "Práctica guiada: modelado intermedio en CAD",
+      descripcion: "Modelado de piezas con ensamble simple.",
+      fecha: "2025-11-21",
+    },
+    {
+      id: "a3",
+      grupo: "todos",
+      titulo: "Dinámica: lluvia de ideas del proyecto integrador",
+      descripcion: "Formación de equipos y propuesta inicial de proyecto.",
+      fecha: "2026-02-13",
+    },
+  ],
+  3: [
+    {
+      id: "a1",
+      grupo: "todos",
+      titulo: "Dinámica de introducción al taller",
+      descripcion: "Recorrido por el taller e identificación de herramientas y zonas de seguridad.",
+      fecha: "2026-07-03",
+    },
+    {
+      id: "a2",
+      grupo: "3C",
+      titulo: "Práctica guiada: sensores y actuadores",
+      descripcion: "Armado de circuito básico con sensor de luz y LED.",
+      fecha: "2026-07-06",
+    },
+    {
+      id: "a3",
+      grupo: "3E",
+      titulo: "Práctica guiada: primeros pasos en diseño 3D",
+      descripcion: "Exploración de herramientas básicas del software de modelado.",
+      fecha: "2026-07-06",
+    },
+  ],
+};
+
+const DATOS_PROYECTOS = {
+  1: [
+    {
+      id: "p1",
+      grupo: "3C",
+      titulo: "Linterna con circuito serie-paralelo",
+      descripcion: "Prototipo funcional armado con material reciclado.",
+      avance: 100,
+      fechaEntrega: "2025-11-07",
+    },
+    {
+      id: "p2",
+      grupo: "3E",
+      titulo: "Llavero impreso en 3D",
+      descripcion: "Diseño y fabricación de un llavero personalizado.",
+      avance: 100,
+      fechaEntrega: "2025-11-07",
+    },
+  ],
+  2: [
+    {
+      id: "p1",
+      grupo: "3C",
+      titulo: "Semáforo automatizado con Arduino",
+      descripcion: "Control de tiempos con LEDs y programación por software.",
+      avance: 100,
+      fechaEntrega: "2026-03-06",
+    },
+    {
+      id: "p2",
+      grupo: "3E",
+      titulo: "Pieza mecánica ensamblable",
+      descripcion: "Diseño e impresión de dos piezas que ensamblan entre sí.",
+      avance: 100,
+      fechaEntrega: "2026-03-06",
+    },
+  ],
+  3: [
+    {
+      id: "p1",
+      grupo: "3C",
+      titulo: "Brazo robótico simple",
+      descripcion: "Prototipo funcional de brazo robótico controlado con servomotores.",
+      avance: 45,
+      fechaEntrega: "2026-08-14",
+    },
+    {
+      id: "p2",
+      grupo: "3E",
+      titulo: "Maqueta impresa en 3D",
+      descripcion: "Diseño y fabricación de una maqueta funcional para la feria escolar.",
+      avance: 30,
+      fechaEntrega: "2026-08-14",
+    },
+  ],
+};
+
+const DATOS_VIDEOS = {
+  1: [
+    {
+      id: "v1",
+      grupo: "todos",
+      titulo: "Historia y evolución de la tecnología",
+      descripcion: "Panorama general de los avances tecnológicos más relevantes.",
+      // TODO: reemplazar por el ID real del video de YouTube.
+      idYoutube: "REEMPLAZAR_ID_VIDEO_T1_1",
+    },
+    {
+      id: "v2",
+      grupo: "3C",
+      titulo: "Uso seguro de herramientas de mano",
+      descripcion: "Recomendaciones antes de manipular herramientas del taller.",
+      idYoutube: "REEMPLAZAR_ID_VIDEO_T1_2",
+    },
+    {
+      id: "v3",
+      grupo: "3E",
+      titulo: "Introducción al diseño asistido por computadora",
+      descripcion: "Primeros pasos para modelar en un software CAD.",
+      idYoutube: "REEMPLAZAR_ID_VIDEO_T1_3",
+    },
+  ],
+  2: [
+    {
+      id: "v1",
+      grupo: "3C",
+      titulo: "Introducción a Arduino",
+      descripcion: "Qué es un microcontrolador y para qué se usa.",
+      idYoutube: "REEMPLAZAR_ID_VIDEO_T2_1",
+    },
+    {
+      id: "v2",
+      grupo: "todos",
+      titulo: "Sensores y actuadores comunes",
+      descripcion: "Ejemplos de sensores y actuadores usados en proyectos escolares.",
+      idYoutube: "REEMPLAZAR_ID_VIDEO_T2_2",
+    },
+    {
+      id: "v3",
+      grupo: "3E",
+      titulo: "Modelado 3D intermedio",
+      descripcion: "Ensambles simples y preparación de piezas para imprimir.",
+      idYoutube: "REEMPLAZAR_ID_VIDEO_T2_3",
+    },
+  ],
+  3: [
+    {
+      id: "v1",
+      grupo: "todos",
+      titulo: "Seguridad e higiene en el taller",
+      descripcion: "Normas básicas antes de manipular herramientas y equipo.",
+      idYoutube: "REEMPLAZAR_ID_VIDEO_1",
+    },
+    {
+      id: "v2",
+      grupo: "3C",
+      titulo: "Introducción a la robótica educativa",
+      descripcion: "Conceptos básicos de sensores, actuadores y controladores.",
+      idYoutube: "REEMPLAZAR_ID_VIDEO_2",
+    },
+    {
+      id: "v3",
+      grupo: "3E",
+      titulo: "Fundamentos de impresión 3D",
+      descripcion: "Cómo funciona una impresora 3D y tipos de filamento.",
+      idYoutube: "REEMPLAZAR_ID_VIDEO_3",
+    },
+  ],
+};
+
 /* =========================================================
    2. "CONECTORES" DE DATOS (aquí se integrará Google Sheets)
    ========================================================= */
@@ -197,34 +476,39 @@ const DATOS_EVENTOS = [
 // Cada función es async para que, cuando exista la integración,
 // baste con sustituir el cuerpo por un fetch a la API de Google
 // Sheets, por ejemplo:
-//   const resp = await fetch(URL_API_SHEETS + "Rubricas");
+//   const resp = await fetch(URL_API_SHEETS + "Avisos");
 //   return await resp.json();
 async function obtenerAvisos() {
   return DATOS_AVISOS;
 }
 
-async function obtenerRubricas() {
-  return DATOS_RUBRICAS;
-}
-
-async function obtenerTareas() {
-  return DATOS_TAREAS;
-}
-
-async function obtenerActividades() {
-  return DATOS_ACTIVIDADES;
-}
-
-async function obtenerProyectos() {
-  return DATOS_PROYECTOS;
-}
-
-async function obtenerVideos() {
-  return DATOS_VIDEOS;
-}
-
 async function obtenerEventos() {
   return DATOS_EVENTOS;
+}
+
+// Estas funciones sí reciben el trimestre (1, 2 o 3). Cuando se conecte
+// Google Sheets, lo natural es que cada trimestre lea de su propia hoja,
+// por ejemplo:
+//   const resp = await fetch(URL_API_SHEETS + "Rubricas_T" + trimestre);
+//   return await resp.json();
+async function obtenerRubricas(trimestre) {
+  return DATOS_RUBRICAS[trimestre] || [];
+}
+
+async function obtenerTareas(trimestre) {
+  return DATOS_TAREAS[trimestre] || [];
+}
+
+async function obtenerActividades(trimestre) {
+  return DATOS_ACTIVIDADES[trimestre] || [];
+}
+
+async function obtenerProyectos(trimestre) {
+  return DATOS_PROYECTOS[trimestre] || [];
+}
+
+async function obtenerVideos(trimestre) {
+  return DATOS_VIDEOS[trimestre] || [];
 }
 
 /* =========================================================
@@ -238,6 +522,11 @@ let grupoActual = "todos";
 // (dura mientras exista la pestaña abierta); no se usa localStorage
 // a propósito, tal como lo pide el diseño.
 let temaActual = "oscuro";
+
+// Trimestre de la página actual ('1', '2' o '3'), tomado de
+// <body data-trimestre="…">. En la portada (index.html) no existe
+// ese atributo, por lo que queda en null.
+const TRIMESTRE_ACTUAL = document.body.dataset.trimestre || null;
 
 /* =========================================================
    4. UTILIDADES
@@ -282,8 +571,16 @@ function mostrarSinResultados(contenedor, mensaje) {
    5. RENDERIZADO DE SECCIONES
    ========================================================= */
 
+// NOTA: cada función revisa si su contenedor existe en la página
+// actual antes de hacer nada. Así, un mismo main.js sirve tanto
+// para la portada (avisos y calendario) como para las páginas de
+// trimestre (rúbricas, tareas, actividades, proyectos y videos)
+// sin necesidad de duplicar el script.
+
 async function renderizarAvisos() {
   const contenedor = document.getElementById("contenedor-avisos");
+  if (!contenedor) return;
+
   const datos = (await obtenerAvisos())
     .filter(elementoCoincideConGrupo)
     .sort((a, b) => b.fecha.localeCompare(a.fecha)); // más reciente primero
@@ -339,7 +636,9 @@ async function renderizarAvisos() {
 
 async function renderizarRubricas() {
   const contenedor = document.getElementById("contenedor-rubricas");
-  const datos = (await obtenerRubricas()).filter(elementoCoincideConGrupo);
+  if (!contenedor) return;
+
+  const datos = (await obtenerRubricas(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
     mostrarSinResultados(contenedor, "No hay rúbricas registradas para este grupo.");
@@ -375,7 +674,9 @@ async function renderizarRubricas() {
 
 async function renderizarTareas() {
   const contenedor = document.getElementById("contenedor-tareas");
-  const datos = (await obtenerTareas()).filter(elementoCoincideConGrupo);
+  if (!contenedor) return;
+
+  const datos = (await obtenerTareas(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
     mostrarSinResultados(contenedor, "No hay tareas registradas para este grupo.");
@@ -416,7 +717,9 @@ async function renderizarTareas() {
 
 async function renderizarActividades() {
   const contenedor = document.getElementById("contenedor-actividades");
-  const datos = (await obtenerActividades()).filter(elementoCoincideConGrupo);
+  if (!contenedor) return;
+
+  const datos = (await obtenerActividades(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
     mostrarSinResultados(contenedor, "No hay actividades registradas para este grupo.");
@@ -449,7 +752,9 @@ async function renderizarActividades() {
 
 async function renderizarProyectos() {
   const contenedor = document.getElementById("contenedor-proyectos");
-  const datos = (await obtenerProyectos()).filter(elementoCoincideConGrupo);
+  if (!contenedor) return;
+
+  const datos = (await obtenerProyectos(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
     mostrarSinResultados(contenedor, "No hay proyectos registrados para este grupo.");
@@ -498,7 +803,9 @@ async function renderizarProyectos() {
 
 async function renderizarVideos() {
   const contenedor = document.getElementById("contenedor-videos");
-  const datos = (await obtenerVideos()).filter(elementoCoincideConGrupo);
+  if (!contenedor) return;
+
+  const datos = (await obtenerVideos(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
     mostrarSinResultados(contenedor, "No hay videos registrados para este grupo.");
@@ -548,13 +855,15 @@ function formatearClaveFecha(fecha) {
 }
 
 async function renderizarCalendario() {
+  const cabecera = document.getElementById("calendario-cabecera");
+  if (!cabecera) return;
+
   const eventos = (await obtenerEventos()).filter(elementoCoincideConGrupo);
   const hoy = new Date();
   const anio = hoy.getFullYear();
   const mes = hoy.getMonth();
 
   // --- Cabecera con mes y año ---
-  const cabecera = document.getElementById("calendario-cabecera");
   const nombreMes = hoy.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
   cabecera.textContent = nombreMes;
 
@@ -672,12 +981,12 @@ function alternarMenuMovil() {
 async function renderizarTodo() {
   await Promise.all([
     renderizarAvisos(),
+    renderizarCalendario(),
     renderizarRubricas(),
     renderizarTareas(),
     renderizarActividades(),
     renderizarProyectos(),
     renderizarVideos(),
-    renderizarCalendario(),
   ]);
 }
 

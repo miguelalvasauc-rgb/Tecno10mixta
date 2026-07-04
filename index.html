@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
-  <meta name="description" content="Sitio de Educación Tecnológica para los grupos 3°C y 3°E de la Escuela Secundaria No. 10 Mixta 'Fernando Hernández Alcalá': rúbricas, tareas, actividades, proyectos, videos y calendario.">
+  <meta name="description" content="Portada del sitio de Educación Tecnológica para los grupos 3°C y 3°E de la Escuela Secundaria No. 10 Mixta 'Fernando Hernández Alcalá': avisos, calendario y acceso a cada trimestre.">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -49,13 +49,8 @@
   <nav id="nav-principal" class="nav-principal">
     <a href="#inicio">Inicio</a>
     <a href="#avisos">Avisos</a>
-    <a href="#rubricas">Rúbricas</a>
-    <a href="#tareas">Tareas</a>
-    <a href="#actividades">Actividades</a>
-    <a href="#proyectos">Proyectos</a>
-    <a href="#videos">Videos</a>
     <a href="#calendario">Calendario</a>
-    <a href="#entrega">Entrega de trabajos</a>
+    <a href="#trimestres">Trimestres</a>
   </nav>
 
   <main>
@@ -65,9 +60,9 @@
         <span class="etiqueta-badge">3°C · 3°E</span>
         <h2>Bienvenidos a Educación Tecnológica</h2>
         <p>
-          Aquí encontrarás las rúbricas de evaluación, tareas, actividades, proyectos
-          y material de apoyo del curso. Revisa esta página con frecuencia para
-          mantenerte al día con las fechas de entrega y los avisos del grupo.
+          Aquí encontrarás los avisos generales y el calendario del curso.
+          Elige tu trimestre para consultar las rúbricas, tareas, actividades,
+          proyectos y videos correspondientes a ese periodo.
         </p>
       </div>
     </section>
@@ -79,51 +74,6 @@
         <p>Mantente al tanto de la información más reciente del grupo.</p>
       </div>
       <ul id="contenedor-avisos" class="lista-avisos" aria-live="polite"></ul>
-    </section>
-
-    <!-- ===================== RÚBRICAS ===================== -->
-    <section id="rubricas" class="seccion seccion--alterna">
-      <div class="seccion__encabezado">
-        <h2>Rúbricas de evaluación</h2>
-        <p>Criterios con los que se evalúa cada entregable del curso.</p>
-      </div>
-      <div id="contenedor-rubricas" class="cuadricula" aria-live="polite"></div>
-    </section>
-
-    <!-- ===================== TAREAS ===================== -->
-    <section id="tareas" class="seccion">
-      <div class="seccion__encabezado">
-        <h2>Tareas</h2>
-        <p>Trabajos individuales o en equipo con fecha de entrega.</p>
-      </div>
-      <div id="contenedor-tareas" class="cuadricula" aria-live="polite"></div>
-    </section>
-
-    <!-- ===================== ACTIVIDADES ===================== -->
-    <section id="actividades" class="seccion">
-      <div class="seccion__encabezado">
-        <h2>Actividades de clase</h2>
-        <p>Ejercicios y dinámicas que se realizan durante la sesión.</p>
-      </div>
-      <div id="contenedor-actividades" class="cuadricula" aria-live="polite"></div>
-    </section>
-
-    <!-- ===================== PROYECTOS ===================== -->
-    <section id="proyectos" class="seccion seccion--alterna">
-      <div class="seccion__encabezado">
-        <h2>Proyectos</h2>
-        <p>Proyectos en curso durante el bimestre.</p>
-      </div>
-      <div id="contenedor-proyectos" class="cuadricula" aria-live="polite"></div>
-    </section>
-
-    <!-- ===================== VIDEOS ===================== -->
-    <section id="videos" class="seccion">
-      <div class="seccion__encabezado">
-        <h2>Videos educativos</h2>
-        <p>Material audiovisual de apoyo para reforzar los temas vistos en clase.</p>
-      </div>
-      <div id="contenedor-videos" class="cuadricula-videos" aria-live="polite"></div>
     </section>
 
     <!-- ===================== CALENDARIO ===================== -->
@@ -144,29 +94,28 @@
       </div>
     </section>
 
-    <!-- ===================== ENTREGA DE TRABAJOS ===================== -->
-    <section id="entrega" class="seccion">
+    <!-- ===================== TRIMESTRES ===================== -->
+    <section id="trimestres" class="seccion">
       <div class="seccion__encabezado">
-        <h2>Entrega de trabajos</h2>
-        <p>Sube tu trabajo usando el siguiente formulario.</p>
+        <h2>Elige tu trimestre</h2>
+        <p>Cada trimestre tiene sus propias rúbricas, tareas, actividades, proyectos y videos.</p>
       </div>
-      <div class="entrega__formulario">
-        <!--
-          IMPORTANTE: este iframe es un PLACEHOLDER.
-          Para conectarlo al formulario real:
-          1. Abre el formulario en Google Forms.
-          2. Ve a "Enviar" > pestaña "Insertar" (ícono <>).
-          3. Copia la URL que aparece dentro del atributo src del iframe.
-          4. Reemplaza el valor de "src" de abajo por esa URL
-             (debe terminar en "?embedded=true").
-        -->
-        <iframe
-          id="iframe-formulario"
-          title="Formulario de entrega de trabajos"
-          src="https://docs.google.com/forms/d/e/PLACEHOLDER_ID_DEL_FORMULARIO/viewform?embedded=true"
-          loading="lazy">
-          Cargando formulario…
-        </iframe>
+      <div class="cuadricula-trimestres">
+        <a href="trimestre-1.html" class="tarjeta-trimestre">
+          <span class="tarjeta-trimestre__numero" aria-hidden="true">1</span>
+          <h3>Trimestre 1</h3>
+          <p>Rúbricas, tareas, actividades, proyectos y videos del primer trimestre.</p>
+        </a>
+        <a href="trimestre-2.html" class="tarjeta-trimestre">
+          <span class="tarjeta-trimestre__numero" aria-hidden="true">2</span>
+          <h3>Trimestre 2</h3>
+          <p>Rúbricas, tareas, actividades, proyectos y videos del segundo trimestre.</p>
+        </a>
+        <a href="trimestre-3.html" class="tarjeta-trimestre">
+          <span class="tarjeta-trimestre__numero" aria-hidden="true">3</span>
+          <h3>Trimestre 3</h3>
+          <p>Rúbricas, tareas, actividades, proyectos y videos del tercer trimestre.</p>
+        </a>
       </div>
     </section>
   </main>

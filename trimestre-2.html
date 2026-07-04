@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trimestre 2 · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
+  <meta name="description" content="Trimestre 2 de Educación Tecnológica para los grupos 3°C y 3°E: rúbricas, tareas, actividades, proyectos, videos y entrega de trabajos.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-trimestre="2">
+
+  <!-- ===================== ENCABEZADO ===================== -->
+  <header class="encabezado">
+    <div class="encabezado__marca">
+      <img
+        src="assets/logo-10mixta.jpg"
+        alt="Logo institucional de la Escuela Secundaria No. 10 Mixta Fernando Hernández Alcalá"
+        class="encabezado__logo">
+      <div class="encabezado__texto">
+        <p class="encabezado__eyebrow">Educación Tecnológica</p>
+        <h1 class="encabezado__titulo">Escuela Secundaria No. 10 Mixta</h1>
+        <p class="encabezado__subtitulo">&ldquo;Fernando Hernández Alcalá&rdquo;</p>
+      </div>
+    </div>
+
+    <div class="encabezado__controles">
+      <div class="campo-grupo">
+        <label for="selector-grupo">Grupo</label>
+        <select id="selector-grupo" aria-label="Filtrar contenido por grupo">
+          <option value="todos">Todos los grupos</option>
+          <option value="3C">3°C</option>
+          <option value="3E">3°E</option>
+        </select>
+      </div>
+
+      <!-- Selector de trimestre: permite saltar entre las 3 páginas sin volver a la portada. -->
+      <div class="selector-trimestre" role="tablist" aria-label="Selector de trimestre">
+        <a href="trimestre-1.html" class="selector-trimestre__tab" role="tab" aria-selected="false">Trimestre 1</a>
+        <a href="trimestre-2.html" class="selector-trimestre__tab selector-trimestre__tab--activo" role="tab" aria-selected="true" aria-current="page">Trimestre 2</a>
+        <a href="trimestre-3.html" class="selector-trimestre__tab" role="tab" aria-selected="false">Trimestre 3</a>
+      </div>
+
+      <!-- Botón de cambio de tema claro/oscuro. El estado se guarda solo en JS (variable de sesión), no en localStorage. -->
+      <button id="boton-tema" class="boton-tema" type="button" aria-pressed="true" aria-label="Cambiar a modo claro">
+        <span class="boton-tema__icono" aria-hidden="true">☀️</span>
+        <span class="boton-tema__texto">Modo claro</span>
+      </button>
+
+      <button id="boton-menu" class="boton-menu" type="button" aria-label="Abrir menú de navegación" aria-expanded="false" aria-controls="nav-principal">
+        <span aria-hidden="true">☰</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== NAVEGACIÓN ===================== -->
+  <nav id="nav-principal" class="nav-principal">
+    <a href="index.html">Inicio</a>
+    <a href="#rubricas">Rúbricas</a>
+    <a href="#tareas">Tareas</a>
+    <a href="#actividades">Actividades</a>
+    <a href="#proyectos">Proyectos</a>
+    <a href="#videos">Videos</a>
+    <a href="#entrega">Entrega de trabajos</a>
+  </nav>
+
+  <!-- Recordatorio para evitar confundir el contenido de este trimestre con el de otro. -->
+  <div class="banner-trimestre">
+    <p>Estás viendo el <strong>Trimestre 2</strong>. Todo el contenido de esta página corresponde únicamente a este periodo.</p>
+  </div>
+
+  <main>
+    <!-- ===================== RÚBRICAS ===================== -->
+    <section id="rubricas" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>Rúbricas de evaluación</h2>
+        <p>Criterios con los que se evalúa cada entregable del curso.</p>
+      </div>
+      <div id="contenedor-rubricas" class="cuadricula" aria-live="polite"></div>
+    </section>
+
+    <!-- ===================== TAREAS ===================== -->
+    <section id="tareas" class="seccion seccion--alterna">
+      <div class="seccion__encabezado">
+        <h2>Tareas</h2>
+        <p>Trabajos individuales o en equipo con fecha de entrega.</p>
+      </div>
+      <div id="contenedor-tareas" class="cuadricula" aria-live="polite"></div>
+    </section>
+
+    <!-- ===================== ACTIVIDADES ===================== -->
+    <section id="actividades" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>Actividades de clase</h2>
+        <p>Ejercicios y dinámicas que se realizan durante la sesión.</p>
+      </div>
+      <div id="contenedor-actividades" class="cuadricula" aria-live="polite"></div>
+    </section>
+
+    <!-- ===================== PROYECTOS ===================== -->
+    <section id="proyectos" class="seccion seccion--alterna">
+      <div class="seccion__encabezado">
+        <h2>Proyectos</h2>
+        <p>Proyectos en curso durante el trimestre.</p>
+      </div>
+      <div id="contenedor-proyectos" class="cuadricula" aria-live="polite"></div>
+    </section>
+
+    <!-- ===================== VIDEOS ===================== -->
+    <section id="videos" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>Videos educativos</h2>
+        <p>Material audiovisual de apoyo para reforzar los temas vistos en clase.</p>
+      </div>
+      <div id="contenedor-videos" class="cuadricula-videos" aria-live="polite"></div>
+    </section>
+
+    <!-- ===================== ENTREGA DE TRABAJOS ===================== -->
+    <section id="entrega" class="seccion seccion--alterna">
+      <div class="seccion__encabezado">
+        <h2>Entrega de trabajos</h2>
+        <p>Sube tu trabajo del Trimestre 2 usando el siguiente formulario.</p>
+      </div>
+      <div class="entrega__formulario">
+        <!--
+          IMPORTANTE: este iframe es un PLACEHOLDER.
+          Para conectarlo al formulario real del Trimestre 2:
+          1. Abre el formulario en Google Forms.
+          2. Ve a "Enviar" > pestaña "Insertar" (ícono <>).
+          3. Copia la URL que aparece dentro del atributo src del iframe.
+          4. Reemplaza el valor de "src" de abajo por esa URL
+             (debe terminar en "?embedded=true").
+        -->
+        <iframe
+          id="iframe-formulario"
+          title="Formulario de entrega de trabajos - Trimestre 2"
+          src="https://docs.google.com/forms/d/e/PLACEHOLDER_ID_DEL_FORMULARIO_T2/viewform?embedded=true"
+          loading="lazy">
+          Cargando formulario…
+        </iframe>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== PIE DE PÁGINA ===================== -->
+  <footer class="pie">
+    <p>Escuela Secundaria No. 10 Mixta &ldquo;Fernando Hernández Alcalá&rdquo; · Educación Tecnológica</p>
+    <p class="pie__grupos">Grupos 3°C y 3°E</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

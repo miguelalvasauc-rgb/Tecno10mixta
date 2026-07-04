@@ -187,6 +187,55 @@ a {
   filter: brightness(1.1);
 }
 
+/* Selector de trimestre (pestañas fijas en el header de trimestre-N.html) */
+.selector-trimestre {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  padding: 0.2rem;
+  gap: 0.2rem;
+}
+
+.selector-trimestre__tab {
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #E8EEF4;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.selector-trimestre__tab:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+.selector-trimestre__tab--activo,
+.selector-trimestre__tab--activo:hover {
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+}
+
+/* Aviso fijo que recuerda en qué trimestre está el usuario */
+.banner-trimestre {
+  background-color: var(--color-superficie-alterna);
+  border-bottom: 1px solid var(--color-borde);
+  padding: 0.55rem 1.5rem;
+  text-align: center;
+}
+
+.banner-trimestre p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.banner-trimestre strong {
+  color: var(--color-turquesa);
+}
+
 .boton-menu {
   display: none;
   background: none;
@@ -400,6 +449,59 @@ input:focus-visible {
 .badge-prioridad[data-prioridad="general"] {
   background-color: #5C6F84;
   color: #F2F5F8;
+}
+
+/* ---------- Tarjetas de trimestre (portada) ---------- */
+.cuadricula-trimestres {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.tarjeta-trimestre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  text-decoration: none;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 14px;
+  padding: 2rem 1.5rem;
+  box-shadow: var(--sombra);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.tarjeta-trimestre:hover,
+.tarjeta-trimestre:focus-visible {
+  transform: translateY(-4px);
+  border-color: var(--color-turquesa);
+}
+
+.tarjeta-trimestre__numero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: var(--color-primario);
+  color: #E8EEF4;
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.tarjeta-trimestre h3 {
+  margin: 0.3rem 0 0;
+  font-size: 1.15rem;
+  color: var(--color-texto);
+}
+
+.tarjeta-trimestre p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
 }
 
 /* ---------- Cuadrícula de tarjetas ---------- */
@@ -764,5 +866,16 @@ input:focus-visible {
 
   .hero {
     padding: 2.25rem 1rem;
+  }
+
+  .selector-trimestre {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .selector-trimestre__tab {
+    flex: 1;
+    text-align: center;
+    padding: 0.35rem 0.4rem;
   }
 }
