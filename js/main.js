@@ -469,6 +469,82 @@ const DATOS_VIDEOS = {
   ],
 };
 
+// Temario general de cada trimestre (no depende del grupo). El campo
+// "imagen" es la ruta sugerida para cuando existan las fotografías
+// reales de cada tema; mientras tanto se muestra un color de la
+// paleta institucional a modo de placeholder (ver renderizarTemario).
+const DATOS_TEMARIO = {
+  1: [
+    {
+      id: "tm1-1",
+      unidad: "Unidad 1",
+      titulo: "¿Qué es la tecnología?",
+      descripcion: "Concepto, evolución histórica e impacto de la tecnología en la vida diaria.",
+      imagen: "assets/temario/trimestre1-tema1.jpg",
+    },
+    {
+      id: "tm1-2",
+      unidad: "Unidad 2",
+      titulo: "Herramientas y seguridad en el taller",
+      descripcion: "Identificación y uso seguro de herramientas de mano y equipo básico.",
+      imagen: "assets/temario/trimestre1-tema2.jpg",
+    },
+    {
+      id: "tm1-3",
+      unidad: "Unidad 3",
+      titulo: "Fundamentos de programación",
+      descripcion: "Lógica básica, secuencias y primeros pasos con bloques de programación.",
+      imagen: "assets/temario/trimestre1-tema3.jpg",
+    },
+  ],
+  2: [
+    {
+      id: "tm2-1",
+      unidad: "Unidad 1",
+      titulo: "Introducción a Arduino",
+      descripcion: "Componentes de un microcontrolador y su papel en proyectos tecnológicos.",
+      imagen: "assets/temario/trimestre2-tema1.jpg",
+    },
+    {
+      id: "tm2-2",
+      unidad: "Unidad 2",
+      titulo: "Sensores y actuadores",
+      descripcion: "Tipos comunes de sensores y actuadores usados en circuitos escolares.",
+      imagen: "assets/temario/trimestre2-tema2.jpg",
+    },
+    {
+      id: "tm2-3",
+      unidad: "Unidad 3",
+      titulo: "Diseño asistido por computadora (CAD)",
+      descripcion: "Modelado de piezas simples y preparación para su fabricación.",
+      imagen: "assets/temario/trimestre2-tema3.jpg",
+    },
+  ],
+  3: [
+    {
+      id: "tm3-1",
+      unidad: "Unidad 1",
+      titulo: "Robótica básica",
+      descripcion: "Estructura general de un robot y principios de movimiento.",
+      imagen: "assets/temario/trimestre3-tema1.jpg",
+    },
+    {
+      id: "tm3-2",
+      unidad: "Unidad 2",
+      titulo: "Impresión 3D",
+      descripcion: "Funcionamiento de una impresora 3D y tipos de filamento.",
+      imagen: "assets/temario/trimestre3-tema2.jpg",
+    },
+    {
+      id: "tm3-3",
+      unidad: "Unidad 3",
+      titulo: "Proyecto integrador",
+      descripcion: "Planeación y desarrollo del prototipo final del curso.",
+      imagen: "assets/temario/trimestre3-tema3.jpg",
+    },
+  ],
+};
+
 /* =========================================================
    2. "CONECTORES" DE DATOS (aquí se integrará Google Sheets)
    ========================================================= */
@@ -491,6 +567,10 @@ async function obtenerEventos() {
 // por ejemplo:
 //   const resp = await fetch(URL_API_SHEETS + "Rubricas_T" + trimestre);
 //   return await resp.json();
+async function obtenerTemario(trimestre) {
+  return DATOS_TEMARIO[trimestre] || [];
+}
+
 async function obtenerRubricas(trimestre) {
   return DATOS_RUBRICAS[trimestre] || [];
 }
@@ -637,6 +717,49 @@ async function renderizarAvisos() {
     cuerpo.append(cabecera, descripcion);
     li.append(fechaBox, cuerpo);
     contenedor.appendChild(li);
+  });
+}
+
+async function renderizarTemario() {
+  const contenedor = document.getElementById("contenedor-temario");
+  if (!contenedor) return;
+
+  const datos = await obtenerTemario(TRIMESTRE_ACTUAL);
+
+  if (datos.length === 0) {
+    mostrarSinResultados(contenedor, "El temario de este trimestre aún no está disponible.");
+    return;
+  }
+
+  contenedor.innerHTML = "";
+  datos.forEach((item, indice) => {
+    const tarjeta = document.createElement("article");
+    tarjeta.className = "tarjeta-temario";
+
+    // PLACEHOLDER DE IMAGEN: cuando existan las fotografías reales, sustituir
+    // este <div> por <img src="[ruta de item.imagen]" alt="[item.titulo]" loading="lazy">.
+    // La ruta sugerida para cada tema ya está en DATOS_TEMARIO (item.imagen),
+    // y también queda guardada en el atributo data-ruta-imagen de abajo.
+    const imagen = document.createElement("div");
+    imagen.className = "tarjeta-temario__imagen tarjeta-temario__imagen--" + ((indice % 3) + 1);
+    imagen.dataset.rutaImagen = item.imagen;
+    const textoImagen = document.createElement("span");
+    textoImagen.textContent = "🖼️ Imagen del tema";
+    imagen.appendChild(textoImagen);
+
+    const info = document.createElement("div");
+    info.className = "tarjeta-temario__info";
+    const badge = document.createElement("span");
+    badge.className = "badge-unidad";
+    badge.textContent = item.unidad;
+    const titulo = document.createElement("h3");
+    titulo.textContent = item.titulo;
+    const descripcion = document.createElement("p");
+    descripcion.textContent = item.descripcion;
+    info.append(badge, titulo, descripcion);
+
+    tarjeta.append(imagen, info);
+    contenedor.appendChild(tarjeta);
   });
 }
 
@@ -989,6 +1112,7 @@ async function renderizarTodo() {
   await Promise.all([
     renderizarAvisos(),
     renderizarCalendario(),
+    renderizarTemario(),
     renderizarRubricas(),
     renderizarTareas(),
     renderizarActividades(),

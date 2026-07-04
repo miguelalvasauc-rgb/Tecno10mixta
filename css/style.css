@@ -504,6 +504,102 @@ input:focus-visible {
   color: var(--color-texto-suave);
 }
 
+/* ---------- Temario (páginas de trimestre) ---------- */
+.cuadricula-temario {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.2rem;
+}
+
+@media (min-width: 640px) {
+  .cuadricula-temario {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .cuadricula-temario {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.tarjeta-temario {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--sombra);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.tarjeta-temario:hover,
+.tarjeta-temario:focus-within {
+  transform: translateY(-4px);
+  border-color: var(--color-turquesa);
+}
+
+.tarjeta-temario__imagen {
+  position: relative;
+  padding-top: 56.25%; /* aspect ratio 16:9 */
+}
+
+.tarjeta-temario__imagen span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.tarjeta-temario__imagen--1 {
+  background-color: var(--color-primario);
+  color: #E8EEF4;
+}
+
+.tarjeta-temario__imagen--2 {
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+}
+
+.tarjeta-temario__imagen--3 {
+  background-color: var(--color-primario-suave);
+  color: #E8EEF4;
+}
+
+.tarjeta-temario__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 0.9rem 1.1rem;
+}
+
+.tarjeta-temario__info h3 {
+  margin: 0;
+  font-size: 1.02rem;
+  color: var(--color-texto);
+}
+
+.tarjeta-temario__info p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.badge-unidad {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background-color: var(--color-primario);
+  color: #E8EEF4;
+}
+
 /* ---------- Cuadrícula de tarjetas ---------- */
 .cuadricula {
   display: grid;
