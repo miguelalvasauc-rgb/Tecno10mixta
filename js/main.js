@@ -515,13 +515,19 @@ async function obtenerVideos(trimestre) {
    3. ESTADO DE LA APLICACIÓN
    ========================================================= */
 
-// Grupo seleccionado actualmente ('todos', '3C' o '3E').
-let grupoActual = "todos";
+// Claves usadas en localStorage para que el grupo y el tema se
+// mantengan al navegar entre la portada y las páginas de trimestre.
+const CLAVE_GRUPO = "grupoSeleccionado";
+const CLAVE_TEMA = "temaSeleccionado";
 
-// Tema visual actual. Se guarda solo en esta variable de JS
-// (dura mientras exista la pestaña abierta); no se usa localStorage
-// a propósito, tal como lo pide el diseño.
-let temaActual = "oscuro";
+// Grupo seleccionado actualmente ('todos', '3C' o '3E'). Se recupera
+// de localStorage para que la elección sobreviva a la navegación
+// entre páginas; si no hay nada guardado, se usa "todos".
+let grupoActual = localStorage.getItem(CLAVE_GRUPO) || "todos";
+
+// Tema visual actual ('oscuro' o 'claro'). También se recupera de
+// localStorage por la misma razón que el grupo.
+let temaActual = localStorage.getItem(CLAVE_TEMA) || "oscuro";
 
 // Trimestre de la página actual ('1', '2' o '3'), tomado de
 // <body data-trimestre="…">. En la portada (index.html) no existe
@@ -961,9 +967,10 @@ function aplicarTema(tema) {
 }
 
 function alternarTema() {
-  // Solo se actualiza la variable en memoria: al recargar la página
-  // el sitio vuelve al tema por defecto (no se usa localStorage).
+  // Se guarda en localStorage para que el tema no se reinicie al
+  // navegar entre la portada y las páginas de trimestre.
   temaActual = temaActual === "oscuro" ? "claro" : "oscuro";
+  localStorage.setItem(CLAVE_TEMA, temaActual);
   aplicarTema(temaActual);
 }
 
@@ -991,7 +998,10 @@ async function renderizarTodo() {
 }
 
 async function alCambiarGrupo(evento) {
+  // Se guarda en localStorage para que el grupo elegido no se pierda
+  // al navegar entre la portada y las páginas de trimestre.
   grupoActual = evento.target.value;
+  localStorage.setItem(CLAVE_GRUPO, grupoActual);
   await renderizarTodo();
 }
 
@@ -1001,6 +1011,11 @@ async function alCambiarGrupo(evento) {
 
 document.addEventListener("DOMContentLoaded", () => {
   aplicarTema(temaActual);
+
+  // Sincroniza el <select> con el grupo recuperado de localStorage
+  // (por defecto el HTML trae seleccionado "todos").
+  document.getElementById("selector-grupo").value = grupoActual;
+
   renderizarTodo();
 
   document.getElementById("boton-tema").addEventListener("click", alternarTema);
