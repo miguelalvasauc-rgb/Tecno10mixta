@@ -629,6 +629,37 @@ summary:focus-visible {
 }
 
 /* ---------- Temario (páginas de trimestre) ---------- */
+.temario-grupo {
+  margin-bottom: 2rem;
+}
+
+.temario-grupo:last-child {
+  margin-bottom: 0;
+}
+
+.temario-grupo__titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primario);
+  border-left: 4px solid var(--color-acento);
+  padding-left: 0.7rem;
+  margin: 0 0 1rem 0;
+}
+
+:root[data-theme="oscuro"] .temario-grupo__titulo {
+  color: var(--color-texto);
+}
+
+.tarjeta-temario__info h4 {
+  margin: 0 0 0.3rem 0;
+  font-size: 1rem;
+  color: var(--color-texto);
+}
+
+#contenedor-temario.cuadricula-temario {
+  display: block;
+}
+
 .cuadricula-temario {
   display: grid;
   grid-template-columns: 1fr;

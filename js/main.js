@@ -788,26 +788,94 @@ const DATOS_VIDEOS = {
 // paleta institucional a modo de placeholder (ver renderizarTemario).
 const DATOS_TEMARIO = {
   1: [
+    // ===== SECUENCIA 1 — INTELIGENCIA ARTIFICIAL (p. 14) =====
     {
       id: "tm1-1",
-      unidad: "Unidad 1",
-      titulo: "Inteligencia Artificial",
-      descripcion: "Asistentes virtuales, chatbots conversacionales y creatividad con IA generativa.",
-      imagen: "assets/temario/trimestre1-tema1.jpg",
+      unidad: "🧠 Secuencia 1 — Inteligencia Artificial",
+      titulo: "¿Qué relación existe entre la IA, el Machine Learning y los asistentes virtuales?",
+      descripcion: "Relación entre inteligencia artificial, machine learning y asistentes virtuales.",
+      imagen: "assets/temario/t1-seq1-tema1.jpg",
     },
     {
       id: "tm1-2",
-      unidad: "Unidad 2",
-      titulo: "Realidad Virtual y Aumentada",
-      descripcion: "Diseño de mundos virtuales, diferencias entre RA y RV, e introducción al metaverso.",
-      imagen: "assets/temario/trimestre1-tema2.jpg",
+      unidad: "🧠 Secuencia 1 — Inteligencia Artificial",
+      titulo: "¿Qué tan inteligente es tu asistente virtual?",
+      descripcion: "Uso cotidiano de asistentes virtuales como Siri, Alexa y Google Assistant.",
+      imagen: "assets/temario/t1-seq1-tema2.jpg",
     },
     {
       id: "tm1-3",
-      unidad: "Unidad 3",
-      titulo: "Robótica",
-      descripcion: "Relación entre robótica, IA y automatización con programación básica de robots.",
-      imagen: "assets/temario/trimestre1-tema3.jpg",
+      unidad: "🧠 Secuencia 1 — Inteligencia Artificial",
+      titulo: "Explorando la IA conversacional",
+      descripcion: "Chatbots y procesamiento de lenguaje natural (NLP).",
+      imagen: "assets/temario/t1-seq1-tema3.jpg",
+    },
+    {
+      id: "tm1-4",
+      unidad: "🧠 Secuencia 1 — Inteligencia Artificial",
+      titulo: "Creando tu propio chatbot",
+      descripcion: "Diseño de chatbots simples y el papel de la IA en la creatividad y el diseño.",
+      imagen: "assets/temario/t1-seq1-tema4.jpg",
+    },
+
+    // ===== SECUENCIA 2 — REALIDAD VIRTUAL (p. 31) =====
+    {
+      id: "tm1-5",
+      unidad: "🥽 Secuencia 2 — Realidad Virtual",
+      titulo: "Del papel a la inmersión: cómo se crean los mundos virtuales",
+      descripcion: "Diseño de entornos 3D y motores de renderizado.",
+      imagen: "assets/temario/t1-seq2-tema1.jpg",
+    },
+    {
+      id: "tm1-6",
+      unidad: "🥽 Secuencia 2 — Realidad Virtual",
+      titulo: "Realidad aumentada vs. realidad virtual",
+      descripcion: "Diferencias entre AR y VR, con aplicaciones educativas y lúdicas.",
+      imagen: "assets/temario/t1-seq2-tema2.jpg",
+    },
+    {
+      id: "tm1-7",
+      unidad: "🥽 Secuencia 2 — Realidad Virtual",
+      titulo: "Explorando el metaverso",
+      descripcion: "Construcción de experiencias interactivas en mundos virtuales colaborativos.",
+      imagen: "assets/temario/t1-seq2-tema3.jpg",
+    },
+
+    // ===== SECUENCIA 3 — ROBÓTICA (p. 51) =====
+    {
+      id: "tm1-8",
+      unidad: "🤖 Secuencia 3 — Robótica",
+      titulo: "Evaluación de sistemas tecnológicos a través de la robótica",
+      descripcion: "Análisis crítico de sistemas robóticos.",
+      imagen: "assets/temario/t1-seq3-tema1.jpg",
+    },
+    {
+      id: "tm1-9",
+      unidad: "🤖 Secuencia 3 — Robótica",
+      titulo: "¿Qué relación existe entre robótica, IA y automatización?",
+      descripcion: "Relación entre robótica, inteligencia artificial y automatización.",
+      imagen: "assets/temario/t1-seq3-tema2.jpg",
+    },
+    {
+      id: "tm1-10",
+      unidad: "🤖 Secuencia 3 — Robótica",
+      titulo: "De la idea al movimiento: programando un robot desde cero",
+      descripcion: "Programación básica de robots con bloques o código.",
+      imagen: "assets/temario/t1-seq3-tema3.jpg",
+    },
+    {
+      id: "tm1-11",
+      unidad: "🤖 Secuencia 3 — Robótica",
+      titulo: "Robots en acción: automatización y toma de decisiones",
+      descripcion: "Sensores, actuadores y lógica de decisiones.",
+      imagen: "assets/temario/t1-seq3-tema4.jpg",
+    },
+    {
+      id: "tm1-12",
+      unidad: "🤖 Secuencia 3 — Robótica",
+      titulo: "Diseña tu robot ideal",
+      descripcion: "Desafíos de creatividad y tecnología en el diseño de un robot.",
+      imagen: "assets/temario/t1-seq3-tema5.jpg",
     },
   ],
   2: [
@@ -1111,35 +1179,54 @@ async function renderizarTemario() {
     return;
   }
 
+  const grupos = new Map();
+  datos.forEach((item) => {
+    const clave = item.unidad || "Temario";
+    if (!grupos.has(clave)) grupos.set(clave, []);
+    grupos.get(clave).push(item);
+  });
+
   contenedor.innerHTML = "";
-  datos.forEach((item, indice) => {
-    const tarjeta = document.createElement("article");
-    tarjeta.className = "tarjeta-temario";
+  let indiceGlobal = 0;
 
-    // PLACEHOLDER DE IMAGEN: cuando existan las fotografías reales, sustituir
-    // este <div> por <img src="[ruta de item.imagen]" alt="[item.titulo]" loading="lazy">.
-    // La ruta sugerida para cada tema ya está en DATOS_TEMARIO (item.imagen),
-    // y también queda guardada en el atributo data-ruta-imagen de abajo.
-    const imagen = document.createElement("div");
-    imagen.className = "tarjeta-temario__imagen tarjeta-temario__imagen--" + ((indice % 3) + 1);
-    imagen.dataset.rutaImagen = item.imagen;
-    const textoImagen = document.createElement("span");
-    textoImagen.textContent = "🖼️ Imagen del tema";
-    imagen.appendChild(textoImagen);
+  grupos.forEach((itemsDelGrupo, nombreGrupo) => {
+    const bloqueGrupo = document.createElement("div");
+    bloqueGrupo.className = "temario-grupo";
 
-    const info = document.createElement("div");
-    info.className = "tarjeta-temario__info";
-    const badge = document.createElement("span");
-    badge.className = "badge-unidad";
-    badge.textContent = item.unidad;
-    const titulo = document.createElement("h3");
-    titulo.textContent = item.titulo;
-    const descripcion = document.createElement("p");
-    descripcion.textContent = item.descripcion;
-    info.append(badge, titulo, descripcion);
+    const tituloGrupo = document.createElement("h3");
+    tituloGrupo.className = "temario-grupo__titulo";
+    tituloGrupo.textContent = nombreGrupo;
+    bloqueGrupo.appendChild(tituloGrupo);
 
-    tarjeta.append(imagen, info);
-    contenedor.appendChild(tarjeta);
+    const cuadriculaGrupo = document.createElement("div");
+    cuadriculaGrupo.className = "cuadricula-temario";
+
+    itemsDelGrupo.forEach((item) => {
+      const tarjeta = document.createElement("article");
+      tarjeta.className = "tarjeta-temario";
+
+      const imagen = document.createElement("div");
+      imagen.className = "tarjeta-temario__imagen tarjeta-temario__imagen--" + ((indiceGlobal % 3) + 1);
+      imagen.dataset.rutaImagen = item.imagen;
+      const textoImagen = document.createElement("span");
+      textoImagen.textContent = "🖼️ Imagen del tema";
+      imagen.appendChild(textoImagen);
+
+      const info = document.createElement("div");
+      info.className = "tarjeta-temario__info";
+      const titulo = document.createElement("h4");
+      titulo.textContent = item.titulo;
+      const descripcion = document.createElement("p");
+      descripcion.textContent = item.descripcion;
+      info.append(titulo, descripcion);
+
+      tarjeta.append(imagen, info);
+      cuadriculaGrupo.appendChild(tarjeta);
+      indiceGlobal++;
+    });
+
+    bloqueGrupo.appendChild(cuadriculaGrupo);
+    contenedor.appendChild(bloqueGrupo);
   });
 }
 
