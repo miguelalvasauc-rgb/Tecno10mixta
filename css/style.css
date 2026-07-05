@@ -262,6 +262,14 @@ a {
   color: var(--color-acento-texto);
 }
 
+/* Mismo bug de contraste documentado en el resto del sitio: turquesa +
+   texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
+:root[data-theme="claro"] .selector-trimestre__tab--activo,
+:root[data-theme="claro"] .selector-trimestre__tab--activo:hover {
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
 /* Migas de pan (páginas de trimestre) */
 .migas-de-pan {
   background-color: var(--color-superficie-alterna);
@@ -743,6 +751,13 @@ summary:focus-visible {
   color: var(--color-acento-texto);
 }
 
+/* Mismo bug de contraste documentado en el resto del sitio: turquesa +
+   texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
+:root[data-theme="claro"] .tarjeta-temario__imagen--2 {
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
 .tarjeta-temario__imagen--3 {
   background-color: var(--color-primario-suave);
   color: var(--color-claro-sobre-navy);
@@ -877,6 +892,16 @@ summary:focus-visible {
   border-radius: 999px;
   background-color: var(--color-turquesa);
   color: var(--color-acento-texto);
+}
+
+/* Mismo bug de contraste documentado en el resto del sitio: turquesa +
+   texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro.
+   Hoy ningún dato usa este estado sin sobreescribir (entregada/pendiente/
+   atrasada ya tienen su propio color), pero queda corregido por si se
+   agrega un nuevo valor de estado en el futuro. */
+:root[data-theme="claro"] .badge-estado {
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
 }
 
 .badge-estado[data-estado="entregada"],
