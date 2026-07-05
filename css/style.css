@@ -218,6 +218,14 @@ a {
   filter: brightness(1.1);
 }
 
+/* Mismo bug de contraste que en el resto del sitio: turquesa + texto
+   blanco da ~2.5:1 en modo claro (falla AA). Se usa navy + texto claro,
+   igual que en .enlace-instrucciones y .enlace-descarga. */
+:root[data-theme="claro"] .boton-tema {
+  background-color: #1B3A6B;
+  color: #E8EEF4;
+}
+
 /* Selector de trimestre (pestañas fijas en el header de trimestre-N.html) */
 .selector-trimestre {
   display: flex;
@@ -568,6 +576,13 @@ summary:focus-visible {
 .badge-prioridad[data-prioridad="recordatorio"] {
   background-color: var(--color-turquesa);
   color: var(--color-acento-texto);
+}
+
+/* Mismo bug de contraste documentado en el resto del sitio: turquesa +
+   texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
+:root[data-theme="claro"] .badge-prioridad[data-prioridad="recordatorio"] {
+  background-color: #1B3A6B;
+  color: #E8EEF4;
 }
 
 .badge-prioridad[data-prioridad="general"] {
@@ -1393,6 +1408,13 @@ summary:focus-visible {
 .boton-enviar:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Mismo bug de contraste documentado en el resto del sitio: turquesa +
+   texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
+:root[data-theme="claro"] .boton-enviar {
+  background-color: #1B3A6B;
+  color: #E8EEF4;
 }
 
 .formulario__estado {
