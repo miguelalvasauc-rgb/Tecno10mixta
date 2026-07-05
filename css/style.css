@@ -561,7 +561,7 @@ summary:focus-visible {
 
 .aviso-tarjeta__cabecera h3 {
   margin: 0;
-  font-size: 1.02rem;
+  font-size: 1.05rem;
   color: var(--color-texto);
 }
 
@@ -781,7 +781,7 @@ summary:focus-visible {
 
 .tarjeta-temario__info h3 {
   margin: 0;
-  font-size: 1.02rem;
+  font-size: 1.05rem;
   color: var(--color-texto);
 }
 
@@ -1144,7 +1144,7 @@ summary:focus-visible {
 
 .faq-item__pregunta {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--color-texto);
 }
