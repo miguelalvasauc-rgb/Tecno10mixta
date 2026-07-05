@@ -573,9 +573,12 @@ summary:focus-visible {
   border-radius: 999px;
 }
 
+/* Mismo rojo que el resto de indicadores de urgencia del sitio
+   (badge-estado "atrasada", nivel-item "deficiente"), en vez de un
+   naranja distinto sin relación para el mismo rol semántico. */
 .badge-prioridad[data-prioridad="importante"] {
-  background-color: #E2542B;
-  color: #2A0D02;
+  background-color: #D64545;
+  color: #2A0808;
 }
 
 .badge-prioridad[data-prioridad="recordatorio"] {
