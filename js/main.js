@@ -879,26 +879,73 @@ const DATOS_TEMARIO = {
     },
   ],
   2: [
+    // ===== SECUENCIA 4 — CIENCIA DE DATOS =====
     {
       id: "tm2-1",
-      unidad: "Unidad 1",
-      titulo: "Ciencia de Datos",
-      descripcion: "Algoritmos de recomendación, sesgos algorítmicos y el concepto de big data.",
+      unidad: "📊 Secuencia 4 — Ciencia de Datos",
+      titulo: "¿Qué es la ciencia de datos?",
+      descripcion: "Qué son los datos, tipos de datos (numéricos, categóricos, temporales, geoespaciales) y cómo se convierten en información útil.",
       imagen: "assets/temario/trimestre2-tema1.jpg",
     },
     {
       id: "tm2-2",
-      unidad: "Unidad 2",
-      titulo: "Hojas de Cálculo",
-      descripcion: "Fórmulas, funciones básicas y gráficos para crear infografías de datos.",
+      unidad: "📊 Secuencia 4 — Ciencia de Datos",
+      titulo: "Algoritmos y decisiones",
+      descripcion: "Cómo los algoritmos de recomendación (redes sociales, streaming) influyen en lo que vemos y compramos, y qué son los sesgos algorítmicos.",
       imagen: "assets/temario/trimestre2-tema2.jpg",
     },
     {
       id: "tm2-3",
-      unidad: "Unidad 3",
-      titulo: "Ciberseguridad",
-      descripcion: "Phishing, identidad digital, contraseñas, cifrado y casos históricos de ciberataques.",
+      unidad: "📊 Secuencia 4 — Ciencia de Datos",
+      titulo: "Visualizando datos",
+      descripcion: "Cómo convertir datos en gráficas e infografías que cuenten una historia clara.",
       imagen: "assets/temario/trimestre2-tema3.jpg",
+    },
+
+    // ===== SECUENCIA 5 — HOJAS DE CÁLCULO =====
+    {
+      id: "tm2-4",
+      unidad: "🧮 Secuencia 5 — Hojas de Cálculo",
+      titulo: "Primeros pasos en Excel",
+      descripcion: "Celdas, filas, columnas, tipos de datos y formato básico.",
+      imagen: "assets/temario/trimestre2-tema4.jpg",
+    },
+    {
+      id: "tm2-5",
+      unidad: "🧮 Secuencia 5 — Hojas de Cálculo",
+      titulo: "Fórmulas y funciones",
+      descripcion: "SUMA, PROMEDIO, CONTAR y otras funciones para analizar datos.",
+      imagen: "assets/temario/trimestre2-tema5.jpg",
+    },
+    {
+      id: "tm2-6",
+      unidad: "🧮 Secuencia 5 — Hojas de Cálculo",
+      titulo: "Gráficos e infografías",
+      descripcion: "Cómo representar datos visualmente para tomar mejores decisiones.",
+      imagen: "assets/temario/trimestre2-tema6.jpg",
+    },
+
+    // ===== SECUENCIA 6 — SEGURIDAD DIGITAL =====
+    {
+      id: "tm2-7",
+      unidad: "🔒 Secuencia 6 — Seguridad Digital",
+      titulo: "Identidad digital y ciberataques",
+      descripcion: "Phishing, robo de identidad y huella digital.",
+      imagen: "assets/temario/trimestre2-tema7.jpg",
+    },
+    {
+      id: "tm2-8",
+      unidad: "🔒 Secuencia 6 — Seguridad Digital",
+      titulo: "Contraseñas y cifrado",
+      descripcion: "Cómo crear contraseñas seguras y proteger información personal.",
+      imagen: "assets/temario/trimestre2-tema8.jpg",
+    },
+    {
+      id: "tm2-9",
+      unidad: "🔒 Secuencia 6 — Seguridad Digital",
+      titulo: "Casos históricos de ciberataques",
+      descripcion: "Ejemplos reales (como WannaCry) para aprender a prevenir ataques.",
+      imagen: "assets/temario/trimestre2-tema9.jpg",
     },
   ],
   3: [
