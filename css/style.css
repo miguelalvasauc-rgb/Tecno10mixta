@@ -13,7 +13,6 @@
   --color-texto-suave: #A9BBD1;
   --color-primario: #1B3A6B;
   --color-primario-suave: #24467F;
-  --color-acento: #14B8A6;
   --color-acento-texto: #04211D;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
@@ -27,7 +26,6 @@
   --color-texto-suave: #4A5A6C;
   --color-primario: #1B3A6B;
   --color-primario-suave: #163058;
-  --color-acento: var(--color-primario);
   --color-acento-texto: #FFFFFF;
   --sombra: 0 8px 20px rgba(27, 58, 107, 0.12);
 }
@@ -35,6 +33,12 @@
 /* Turquesa siempre disponible como color secundario de marca (badges, tags) */
 :root {
   --color-turquesa: #14B8A6;
+  /* Antes --color-acento cambiaba de turquesa (oscuro) a navy (claro)
+     según el tema, lo que hacía confuso su significado. Ahora siempre
+     es turquesa; el navy de modo claro se aplica como override explícito
+     en los dos consumidores reales (.temario-grupo__titulo,
+     .rubricas-grupo__titulo). */
+  --color-acento: var(--color-turquesa);
   /* Texto/marcas claras fijas sobre superficies siempre-navy (header, hero,
      footer y los overrides de modo claro que usan fondo navy): no dependen
      del tema porque esas superficies no cambian de color entre temas. */
@@ -681,6 +685,10 @@ summary:focus-visible {
   color: var(--color-texto);
 }
 
+:root[data-theme="claro"] .temario-grupo__titulo {
+  border-left-color: var(--color-primario);
+}
+
 .tarjeta-temario__info h4 {
   margin: 0 0 0.3rem 0;
   font-size: 1rem;
@@ -828,6 +836,10 @@ summary:focus-visible {
 
 :root[data-theme="oscuro"] .rubricas-grupo__titulo {
   color: var(--color-texto);
+}
+
+:root[data-theme="claro"] .rubricas-grupo__titulo {
+  border-left-color: var(--color-primario);
 }
 
 .tarjeta-rubrica h4 {
