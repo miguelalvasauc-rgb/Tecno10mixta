@@ -35,6 +35,11 @@
 /* Turquesa siempre disponible como color secundario de marca (badges, tags) */
 :root {
   --color-turquesa: #14B8A6;
+  /* Texto/marcas claras fijas sobre superficies siempre-navy (header, hero,
+     footer y los overrides de modo claro que usan fondo navy): no dependen
+     del tema porque esas superficies no cambian de color entre temas. */
+  --color-claro-sobre-navy: #E8EEF4;
+  --color-claro-sobre-navy-suave: #C7D4E4;
   --fuente-base: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -85,7 +90,7 @@ a {
   left: 1rem;
   z-index: 1000;
   background-color: var(--color-primario);
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
   padding: 0.75rem 1.25rem;
   border-radius: 0 0 8px 8px;
   font-weight: 700;
@@ -104,7 +109,7 @@ a {
    hacia ADENTRO (offset negativo) contra el propio fondo navy del
    enlace, que es igual en los dos temas, para que siempre se vea. */
 .enlace-saltar:focus-visible {
-  outline: 3px solid #E8EEF4;
+  outline: 3px solid var(--color-claro-sobre-navy);
   outline-offset: -4px;
 }
 
@@ -117,7 +122,7 @@ a {
   flex-wrap: wrap;
   padding: 0.9rem 1.5rem;
   background-color: var(--color-primario);
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -163,7 +168,7 @@ a {
 .encabezado__subtitulo {
   margin: 0;
   font-size: 0.8rem;
-  color: #C7D4E4;
+  color: var(--color-claro-sobre-navy-suave);
 }
 
 .encabezado__controles {
@@ -181,12 +186,12 @@ a {
 }
 
 .campo-grupo label {
-  color: #C7D4E4;
+  color: var(--color-claro-sobre-navy-suave);
 }
 
 #selector-grupo {
   background-color: rgba(255, 255, 255, 0.08);
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 6px;
   padding: 0.4rem 0.6rem;
@@ -223,7 +228,7 @@ a {
    igual que en .enlace-instrucciones y .enlace-descarga. */
 :root[data-theme="claro"] .boton-tema {
   background-color: #1B3A6B;
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
 }
 
 /* Selector de trimestre (pestañas fijas en el header de trimestre-N.html) */
@@ -241,7 +246,7 @@ a {
   text-decoration: none;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
   padding: 0.35rem 0.7rem;
   border-radius: 999px;
   white-space: nowrap;
@@ -322,7 +327,7 @@ a {
   display: none;
   background: none;
   border: 1px solid rgba(255, 255, 255, 0.35);
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
   border-radius: 6px;
   font-size: 1.1rem;
   padding: 0.35rem 0.6rem;
@@ -420,7 +425,7 @@ summary:focus-visible {
 /* ---------- Hero ---------- */
 .hero {
   background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-suave) 100%);
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
   padding: 3rem 1.5rem;
   text-align: center;
 }
@@ -436,7 +441,7 @@ summary:focus-visible {
 }
 
 .hero p {
-  color: #D6E1EE;
+  color: var(--color-claro-sobre-navy-suave);
   font-size: 1rem;
 }
 
@@ -582,7 +587,7 @@ summary:focus-visible {
    texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
 :root[data-theme="claro"] .badge-prioridad[data-prioridad="recordatorio"] {
   background-color: #1B3A6B;
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
 }
 
 .badge-prioridad[data-prioridad="general"] {
@@ -626,7 +631,7 @@ summary:focus-visible {
   height: 64px;
   border-radius: 50%;
   background-color: var(--color-primario);
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
   font-size: 1.75rem;
   font-weight: 800;
 }
@@ -727,7 +732,7 @@ summary:focus-visible {
 
 .tarjeta-temario__imagen--1 {
   background-color: var(--color-primario);
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
 }
 
 .tarjeta-temario__imagen--2 {
@@ -737,7 +742,7 @@ summary:focus-visible {
 
 .tarjeta-temario__imagen--3 {
   background-color: var(--color-primario-suave);
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
 }
 
 .tarjeta-temario__info {
@@ -767,7 +772,7 @@ summary:focus-visible {
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
   background-color: var(--color-primario);
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
 }
 
 /* ---------- Cuadrícula de tarjetas ---------- */
@@ -858,7 +863,7 @@ summary:focus-visible {
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
   background-color: var(--color-primario);
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
 }
 
 .badge-estado {
@@ -989,7 +994,7 @@ summary:focus-visible {
 }
 
 :root[data-theme="claro"] .checklist-tarea__input:checked::after {
-  border-color: #E8EEF4;
+  border-color: var(--color-claro-sobre-navy);
 }
 
 /* ---------- Rúbricas expandibles (acordeón con <details>/<summary>) ---------- */
@@ -1209,7 +1214,7 @@ summary:focus-visible {
 
 .calendario__dia--hoy {
   background-color: var(--color-primario);
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
   font-weight: 700;
 }
 
@@ -1226,7 +1231,7 @@ summary:focus-visible {
 }
 
 .calendario__dia--hoy.calendario__dia--evento::after {
-  background-color: #E8EEF4;
+  background-color: var(--color-claro-sobre-navy);
 }
 
 .calendario__eventos h3 {
@@ -1311,7 +1316,7 @@ summary:focus-visible {
 :root[data-theme="claro"] .enlace-descarga:hover,
 :root[data-theme="claro"] .enlace-descarga:focus-visible {
   background-color: #1B3A6B;
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
 }
 
 /* Botón principal de una tarea (instrucciones formales): más prominente
@@ -1342,7 +1347,7 @@ summary:focus-visible {
    navy + texto claro (~9.6:1) porque turquesa + blanco falla (~2.5:1). */
 :root[data-theme="claro"] .enlace-instrucciones {
   background-color: #1B3A6B;
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
 }
 
 /* ---------- Formulario de contacto ---------- */
@@ -1414,7 +1419,7 @@ summary:focus-visible {
    texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
 :root[data-theme="claro"] .boton-enviar {
   background-color: #1B3A6B;
-  color: #E8EEF4;
+  color: var(--color-claro-sobre-navy);
 }
 
 .formulario__estado {
@@ -1455,7 +1460,7 @@ summary:focus-visible {
   text-align: center;
   padding: 1.75rem 1rem;
   background-color: var(--color-primario);
-  color: #C7D4E4;
+  color: var(--color-claro-sobre-navy-suave);
   font-size: 0.85rem;
 }
 
@@ -1505,8 +1510,8 @@ summary:focus-visible {
    pero eso falla contra el fondo normal de la página (~2.3:1). */
 :root[data-theme="claro"] .boton-volver-arriba {
   background-color: #1B3A6B;
-  color: #E8EEF4;
-  border: 3px solid #E8EEF4;
+  color: var(--color-claro-sobre-navy);
+  border: 3px solid var(--color-claro-sobre-navy);
 }
 
 .boton-volver-arriba--visible {
