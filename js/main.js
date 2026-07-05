@@ -524,38 +524,31 @@ const DATOS_TAREAS = {
     },
   ],
   2: [
+    // Fechas TENTATIVAS/PLACEHOLDER: aún no existe calendario escolar
+    // oficial para este periodo; ajustar cuando el docente lo confirme.
     {
       id: "t1",
-      grupo: "3C",
-      titulo: "Programa básico en Arduino: parpadeo de LED",
-      descripcion: "Código comentado y evidencia en video del circuito funcionando.",
-      fechaEntrega: "2026-01-16",
+      grupo: "todos",
+      titulo: "Detective de Algoritmos",
+      descripcion: "Durante 2 días, registra en una tabla cada vez que una app (YouTube, TikTok, Spotify, etc.) te recomiende algo: qué te recomendó, si te gustó y por qué crees que te lo recomendó. Cierra con una reflexión de 3 renglones sobre si el algoritmo te conoce bien.",
+      fechaEntrega: "2025-11-07",
       estado: "entregada",
     },
     {
       id: "t2",
-      grupo: "3E",
-      titulo: "Diseño de pieza en CAD paramétrico",
-      descripcion: "Modelar una pieza con al menos dos medidas ajustables.",
-      fechaEntrega: "2026-01-16",
+      grupo: "todos",
+      titulo: "Mi presupuesto semanal",
+      descripcion: "Registra tus gastos de una semana (o inventa datos realistas) en una tabla con día, concepto, categoría y monto (mínimo 10 registros). Si tienes Excel, usa fórmulas SUMA/PROMEDIO/MAX/MIN y una gráfica de barras; si no, hazlo a mano en tu cuaderno.",
+      fechaEntrega: "2025-11-14",
       estado: "entregada",
-      instruccionesUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
     },
     {
       id: "t3",
       grupo: "todos",
-      titulo: "Bitácora de avance de sensores",
-      descripcion: "Registro semanal de pruebas con sensores en clase.",
-      fechaEntrega: "2026-02-06",
+      titulo: "Auditoría de Seguridad Personal",
+      descripcion: "Responde de forma confidencial (no se comparte en clase) un cuestionario sobre tus hábitos digitales y contraseñas. Después, crea 3 contraseñas nuevas y fuertes, y escribe las reglas que usaste para crearlas.",
+      fechaEntrega: "2025-11-21",
       estado: "entregada",
-    },
-    {
-      id: "t4",
-      grupo: "3C",
-      titulo: "Reporte de práctica: sensores de temperatura",
-      descripcion: "Reporte con diagrama, mediciones y conclusiones.",
-      fechaEntrega: "2025-12-12",
-      estado: "atrasada",
     },
   ],
   3: [
@@ -638,26 +631,28 @@ const DATOS_ACTIVIDADES = {
     },
   ],
   2: [
+    // Fechas TENTATIVAS/PLACEHOLDER: aún no existe calendario escolar
+    // oficial para este periodo; ajustar cuando el docente lo confirme.
     {
       id: "a1",
-      grupo: "3C",
-      titulo: "Práctica guiada: circuitos con Arduino",
-      descripcion: "Armado de circuito con botón y salida digital.",
-      fecha: "2025-11-21",
+      grupo: "todos",
+      titulo: "Juego de Roles: El Algoritmo en Acción",
+      descripcion: "En equipos, cada uno recibe el perfil de un 'usuario' ficticio y debe crear una lista de 10 recomendaciones que un algoritmo le haría. Otro equipo juega a ser ese usuario y califica qué tan acertadas fueron. Cierra con debate sobre filtros burbuja.",
+      fecha: "2025-11-05",
     },
     {
       id: "a2",
-      grupo: "3E",
-      titulo: "Práctica guiada: modelado intermedio en CAD",
-      descripcion: "Modelado de piezas con ensamble simple.",
-      fecha: "2025-11-21",
+      grupo: "todos",
+      titulo: "Hackatón de Excel: La Cafetería Escolar",
+      descripcion: "En equipos de 4, organizan datos reales de ventas de la cafetería en Excel (o papel), calculan totales con fórmulas, identifican el producto más y menos vendido, crean una gráfica de barras y proponen 2 mejoras basadas en los datos.",
+      fecha: "2025-11-12",
     },
     {
       id: "a3",
       grupo: "todos",
-      titulo: "Dinámica: lluvia de ideas del proyecto integrador",
-      descripcion: "Formación de equipos y propuesta inicial de proyecto.",
-      fecha: "2026-02-13",
+      titulo: "Simulación de Ataque Cibernético",
+      descripcion: "La escuela sufre un ataque de ransomware ficticio. En equipos de 6, cada integrante toma un rol (director, técnico, policía cibernética, comunicación, abogado, experto en prevención) y presenta su plan de acción ante la clase, que vota cuál manejó mejor la crisis.",
+      fecha: "2025-11-19",
     },
   ],
   3: [
@@ -705,21 +700,15 @@ const DATOS_PROYECTOS = {
     },
   ],
   2: [
+    // Fecha TENTATIVA/PLACEHOLDER: aún no existe calendario escolar
+    // oficial para este periodo; ajustar cuando el docente lo confirme.
     {
       id: "p1",
-      grupo: "3C",
-      titulo: "Semáforo automatizado con Arduino",
-      descripcion: "Control de tiempos con LEDs y programación por software.",
-      avance: 100,
-      fechaEntrega: "2026-03-06",
-    },
-    {
-      id: "p2",
-      grupo: "3E",
-      titulo: "Pieza mecánica ensamblable",
-      descripcion: "Diseño e impresión de dos piezas que ensamblan entre sí.",
-      avance: 100,
-      fechaEntrega: "2026-03-06",
+      grupo: "todos",
+      titulo: "Mi Escuela en Datos: Análisis, Visualización y Protección",
+      descripcion: "Proyecto integrador en equipos de 5 que une las 3 secuencias del bloque: recolectan datos reales de la escuela (biblioteca, cafetería, deportes, eventos o infraestructura), los analizan y grafican en Excel, comunican los hallazgos en una infografía, y diseñan un plan de ciberseguridad para proteger esa información. Cierra con una presentación oral de 5 minutos ante el grupo.",
+      avance: 0,
+      fechaEntrega: "2025-12-05",
     },
   ],
   3: [
