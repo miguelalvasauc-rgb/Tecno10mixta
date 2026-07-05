@@ -27,7 +27,7 @@
   --color-texto-suave: #4A5A6C;
   --color-primario: #1B3A6B;
   --color-primario-suave: #163058;
-  --color-acento: #1B3A6B;
+  --color-acento: var(--color-primario);
   --color-acento-texto: #FFFFFF;
   --sombra: 0 8px 20px rgba(27, 58, 107, 0.12);
 }
@@ -227,7 +227,7 @@ a {
    blanco da ~2.5:1 en modo claro (falla AA). Se usa navy + texto claro,
    igual que en .enlace-instrucciones y .enlace-descarga. */
 :root[data-theme="claro"] .boton-tema {
-  background-color: #1B3A6B;
+  background-color: var(--color-primario);
   color: var(--color-claro-sobre-navy);
 }
 
@@ -293,7 +293,7 @@ a {
 
 :root[data-theme="claro"] .migas-de-pan a:hover,
 :root[data-theme="claro"] .migas-de-pan a:focus-visible {
-  color: #1B3A6B;
+  color: var(--color-primario);
 }
 
 .migas-de-pan__actual {
@@ -374,7 +374,7 @@ a {
 
 :root[data-theme="claro"] .nav-principal a:hover,
 :root[data-theme="claro"] .nav-principal a:focus-visible {
-  color: #1B3A6B;
+  color: var(--color-primario);
 }
 
 /* Indicador de sección activa: JS (activarResaltadoDeNavegacion) agrega
@@ -385,7 +385,7 @@ a {
 }
 
 :root[data-theme="claro"] .nav-principal a.nav-link--activo {
-  color: #1B3A6B;
+  color: var(--color-primario);
 }
 
 /* ---------- Enfoque accesible ---------- */
@@ -409,7 +409,7 @@ summary:focus-visible {
 :root[data-theme="claro"] input:focus-visible,
 :root[data-theme="claro"] textarea:focus-visible,
 :root[data-theme="claro"] summary:focus-visible {
-  outline-color: #1B3A6B;
+  outline-color: var(--color-primario);
 }
 
 /* Excepción: el header (.encabezado) es navy en AMBOS temas, así que un
@@ -589,7 +589,7 @@ summary:focus-visible {
 /* Mismo bug de contraste documentado en el resto del sitio: turquesa +
    texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
 :root[data-theme="claro"] .badge-prioridad[data-prioridad="recordatorio"] {
-  background-color: #1B3A6B;
+  background-color: var(--color-primario);
   color: var(--color-claro-sobre-navy);
 }
 
@@ -989,11 +989,11 @@ summary:focus-visible {
    a 3:1 (mismo problema ya corregido en nav, foco y botón flotante),
    así que el checkbox usa navy en su lugar en los dos estados. */
 :root[data-theme="claro"] .checklist-tarea__input {
-  border-color: #1B3A6B;
+  border-color: var(--color-primario);
 }
 
 :root[data-theme="claro"] .checklist-tarea__input:checked {
-  background-color: #1B3A6B;
+  background-color: var(--color-primario);
 }
 
 :root[data-theme="claro"] .checklist-tarea__input:checked::after {
@@ -1318,7 +1318,7 @@ summary:focus-visible {
    navy + texto claro, igual que en el resto del sitio. */
 :root[data-theme="claro"] .enlace-descarga:hover,
 :root[data-theme="claro"] .enlace-descarga:focus-visible {
-  background-color: #1B3A6B;
+  background-color: var(--color-primario);
   color: var(--color-claro-sobre-navy);
 }
 
@@ -1349,7 +1349,7 @@ summary:focus-visible {
    oscuro funciona en modo oscuro (~6.8:1), pero en modo claro se necesita
    navy + texto claro (~9.6:1) porque turquesa + blanco falla (~2.5:1). */
 :root[data-theme="claro"] .enlace-instrucciones {
-  background-color: #1B3A6B;
+  background-color: var(--color-primario);
   color: var(--color-claro-sobre-navy);
 }
 
@@ -1421,7 +1421,7 @@ summary:focus-visible {
 /* Mismo bug de contraste documentado en el resto del sitio: turquesa +
    texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
 :root[data-theme="claro"] .boton-enviar {
-  background-color: #1B3A6B;
+  background-color: var(--color-primario);
   color: var(--color-claro-sobre-navy);
 }
 
@@ -1512,7 +1512,7 @@ summary:focus-visible {
    rompe el camuflaje. Se probó reemplazar el relleno por turquesa,
    pero eso falla contra el fondo normal de la página (~2.3:1). */
 :root[data-theme="claro"] .boton-volver-arriba {
-  background-color: #1B3A6B;
+  background-color: var(--color-primario);
   color: var(--color-claro-sobre-navy);
   border: 3px solid var(--color-claro-sobre-navy);
 }
