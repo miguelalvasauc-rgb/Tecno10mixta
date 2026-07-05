@@ -45,6 +45,11 @@
   --color-claro-sobre-navy: #E8EEF4;
   --color-claro-sobre-navy-suave: #C7D4E4;
   --fuente-base: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Fuente de títulos: solo fuentes de sistema (sin @font-face ni Google
+     Fonts) para no depender de red — el sitio debe verse igual sin
+     conexión. Trebuchet MS viene instalada en Windows y macOS; donde no
+     esté disponible, cae de vuelta a --fuente-base sin romper nada. */
+  --fuente-titulos: "Trebuchet MS", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 /* ---------- Reset básico ---------- */
@@ -54,6 +59,14 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+h1,
+h2,
+h3,
+h4,
+.faq-item__pregunta {
+  font-family: var(--fuente-titulos);
 }
 
 body {
