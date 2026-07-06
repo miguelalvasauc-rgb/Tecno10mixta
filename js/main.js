@@ -487,6 +487,12 @@ const DATOS_RUBRICAS = {
 // Para agregar cualquiera de los dos a una tarea nueva, basta con
 // añadir la propiedad correspondiente (con el link real de Google
 // Drive u otro servicio) al objeto de esa tarea.
+
+// "detalleCompleto": OPCIONAL, texto largo (puede usar "\n" para saltos
+// de línea) que se muestra en un modal emergente al pulsar "📖 Ver
+// detalles". Pensado para instrucciones extensas que no caben cómodas
+// en la descripción corta de la tarjeta. Si el campo no existe, el
+// botón simplemente no se muestra.
 const DATOS_TAREAS = {
   1: [
     {
@@ -496,6 +502,8 @@ const DATOS_TAREAS = {
       descripcion: "Línea del tiempo con al menos tres fuentes confiables.",
       fechaEntrega: "2025-09-12",
       estado: "entregada",
+      detalleCompleto:
+        "Elabora una línea del tiempo con al menos tres fuentes confiables.\nDebe incluir mínimo cinco hitos tecnológicos con año y descripción breve.\nEntrega en formato PDF o cartulina digitalizada.",
     },
     {
       id: "t2",
@@ -605,6 +613,9 @@ const DATOS_TAREAS = {
 // "materialApoyoUrl" en Tareas). Las actividades no distinguen entre
 // instrucciones formales y material de apoyo; para esa distinción ver
 // "instruccionesUrl"/"materialApoyoUrl" en DATOS_TAREAS.
+
+// "detalleCompleto": mismo campo OPCIONAL que en DATOS_TAREAS (ver
+// comentario ahí); abre el modal "📖 Ver detalles" con texto largo.
 const DATOS_ACTIVIDADES = {
   1: [
     {
@@ -614,6 +625,8 @@ const DATOS_ACTIVIDADES = {
       descripcion: "Recorrido por el taller e identificación de herramientas y zonas de seguridad.",
       fecha: "2025-08-25",
       archivoUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
+      detalleCompleto:
+        "Recorrido guiado por las distintas zonas del taller.\nSe identifican herramientas manuales, eléctricas y zonas de seguridad marcadas.\nAl finalizar, cada alumno entrega una lista con lo observado.",
     },
     {
       id: "a2",
@@ -680,6 +693,8 @@ const DATOS_ACTIVIDADES = {
   ],
 };
 
+// "detalleCompleto": mismo campo OPCIONAL que en DATOS_TAREAS (ver
+// comentario ahí); abre el modal "📖 Ver detalles" con texto largo.
 const DATOS_PROYECTOS = {
   1: [
     {
@@ -689,6 +704,8 @@ const DATOS_PROYECTOS = {
       descripcion: "Prototipo funcional armado con material reciclado.",
       avance: 100,
       fechaEntrega: "2025-11-07",
+      detalleCompleto:
+        "Circuito serie-paralelo armado sobre base reciclada.\nIncluye al menos dos focos en paralelo y un interruptor en serie.\nSe evaluó el funcionamiento y la calidad del acabado final.",
     },
     {
       id: "p2",
