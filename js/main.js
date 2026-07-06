@@ -1187,6 +1187,83 @@ function mostrarSinResultados(contenedor, mensaje) {
   contenedor.appendChild(parrafo);
 }
 
+// Items (tareas/actividades/proyectos) que tienen "detalleCompleto",
+// indexados por id. Se llena durante el renderizado de cada sección y
+// permite que el listener delegado de ".boton-ver-detalle" (que solo
+// recibe el id vía data-item-id) recupere el objeto completo.
+const mapaDetallesPorId = new Map();
+
+function crearBotonVerDetalle(item) {
+  mapaDetallesPorId.set(item.id, item);
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "boton-ver-detalle";
+  boton.dataset.itemId = item.id;
+  boton.textContent = "📖 Ver detalles";
+  return boton;
+}
+
+// Llena el <dialog id="modal-detalle"> de la página actual con el
+// título y el texto largo del item, y lo muestra. Usa textContent (no
+// innerHTML) para que el contenido de "detalleCompleto" nunca se
+// interprete como HTML; los "\n" se convierten en <br> agregando
+// manualmente un elemento <br> real entre nodos de texto.
+function abrirModalDetalle(item) {
+  const modal = document.getElementById("modal-detalle");
+  if (!modal) return;
+
+  const titulo = document.getElementById("modal-detalle-titulo");
+  const contenido = document.getElementById("modal-detalle-contenido");
+  titulo.textContent = item.titulo;
+
+  contenido.innerHTML = "";
+  const lineas = (item.detalleCompleto || "").split("\n");
+  lineas.forEach((linea, indice) => {
+    contenido.appendChild(document.createTextNode(linea));
+    if (indice < lineas.length - 1) {
+      contenido.appendChild(document.createElement("br"));
+    }
+  });
+
+  modal.showModal();
+}
+
+// Delegación de eventos: un único listener por contenedor de sección
+// (no uno por tarjeta) que detecta clicks en cualquier
+// ".boton-ver-detalle", incluso en tarjetas agregadas después de
+// llamar a esta función (el contenedor se vacía y se vuelve a llenar
+// en cada renderizado, pero el listener queda en el contenedor mismo).
+function activarDelegacionVerDetalle(idContenedor) {
+  const contenedor = document.getElementById(idContenedor);
+  if (!contenedor) return;
+
+  contenedor.addEventListener("click", (evento) => {
+    const boton = evento.target.closest(".boton-ver-detalle");
+    if (!boton) return;
+    const item = mapaDetallesPorId.get(boton.dataset.itemId);
+    if (item) abrirModalDetalle(item);
+  });
+}
+
+// Cierre del modal: botón "✕" dentro del <dialog> y click en el
+// ::backdrop. El <dialog> nativo ya cierra con ESC automáticamente.
+// Un click en el ::backdrop llega como click sobre el propio elemento
+// <dialog> (no sobre su contenido), por eso se compara evento.target
+// contra el modal mismo.
+function activarCierreModalDetalle() {
+  const modal = document.getElementById("modal-detalle");
+  if (!modal) return;
+
+  const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) {
+    botonCerrar.addEventListener("click", () => modal.close());
+  }
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.close();
+  });
+}
+
 /* =========================================================
    5. RENDERIZADO DE SECCIONES
    ========================================================= */
@@ -1463,6 +1540,9 @@ async function renderizarTareas() {
     if (item.materialApoyoUrl) {
       tarjeta.appendChild(crearEnlaceDescarga(item.materialApoyoUrl, "📎 Material de apoyo"));
     }
+    if (item.detalleCompleto) {
+      tarjeta.appendChild(crearBotonVerDetalle(item));
+    }
 
     // Checklist de progreso personal: guardado en localStorage, aparte
     // por completo del filtro de grupo (ver claveProgresoTarea).
@@ -1529,6 +1609,9 @@ async function renderizarActividades() {
     if (item.archivoUrl) {
       tarjeta.appendChild(crearEnlaceDescarga(item.archivoUrl));
     }
+    if (item.detalleCompleto) {
+      tarjeta.appendChild(crearBotonVerDetalle(item));
+    }
     contenedor.appendChild(tarjeta);
   });
 }
@@ -1580,6 +1663,9 @@ async function renderizarProyectos() {
     textoAvance.textContent = "Avance: " + item.avance + "%";
 
     tarjeta.append(cabecera, descripcion, fecha, barra, textoAvance);
+    if (item.detalleCompleto) {
+      tarjeta.appendChild(crearBotonVerDetalle(item));
+    }
     contenedor.appendChild(tarjeta);
   });
 }
@@ -1993,6 +2079,13 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("boton-menu").addEventListener("click", alternarMenuMovil);
   activarResaltadoDeNavegacion();
   activarBotonVolverArriba();
+
+  // Modal de detalle: un listener delegado por sección más el cierre
+  // (botón "✕" y click en el ::backdrop) del <dialog> compartido.
+  activarDelegacionVerDetalle("contenedor-tareas");
+  activarDelegacionVerDetalle("contenedor-actividades");
+  activarDelegacionVerDetalle("contenedor-proyectos");
+  activarCierreModalDetalle();
 
   // El formulario de contacto solo existe en la portada (index.html).
   const formularioContacto = document.getElementById("formulario-contacto");
