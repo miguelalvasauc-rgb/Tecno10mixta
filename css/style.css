@@ -1403,6 +1403,109 @@ summary:focus-visible {
   color: var(--color-claro-sobre-navy);
 }
 
+/* ---------- Botón "Ver detalles" (tareas/actividades/proyectos) ----------
+   Mismo estilo de contorno que .enlace-descarga: turquesa + contorno en
+   reposo, relleno turquesa al pasar el mouse. */
+.boton-ver-detalle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: flex-start;
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--color-turquesa);
+  background-color: transparent;
+  border: 1px solid var(--color-turquesa);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.boton-ver-detalle:hover,
+.boton-ver-detalle:focus-visible {
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+}
+
+/* Mismo ajuste de contraste que en .enlace-descarga: turquesa + blanco
+   falla AA en modo claro (~2.5:1); se usa navy + texto claro (~9.6:1). */
+:root[data-theme="claro"] .boton-ver-detalle:hover,
+:root[data-theme="claro"] .boton-ver-detalle:focus-visible {
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+/* ---------- Modal de detalle (tareas/actividades/proyectos) ----------
+   <dialog> nativo llenado desde abrirModalDetalle() en js/main.js.
+   Mobile-first: casi todo el ancho en pantallas chicas, con scroll
+   interno si el texto es largo; se limita el ancho en pantallas
+   grandes con la media query de abajo. */
+#modal-detalle {
+  position: relative;
+  width: 92%;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-detalle::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-detalle-titulo {
+  margin: 0 1.8rem 0.75rem 0;
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+#modal-detalle-contenido {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-texto-suave);
+}
+
+.modal-detalle__cerrar {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--color-texto-suave);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.modal-detalle__cerrar:hover,
+.modal-detalle__cerrar:focus-visible {
+  background-color: var(--color-superficie-alterna);
+  color: var(--color-texto);
+}
+
+@media (min-width: 640px) {
+  #modal-detalle {
+    width: 100%;
+    padding: 1.6rem 1.8rem;
+  }
+}
+
 /* ---------- Formulario de contacto ---------- */
 .formulario-contacto {
   display: flex;
