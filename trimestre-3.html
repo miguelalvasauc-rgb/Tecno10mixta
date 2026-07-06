@@ -181,6 +181,15 @@
     <span aria-hidden="true">↑</span>
   </button>
 
+  <!-- Modal de detalle reutilizable: tareas, actividades y proyectos
+       con "detalleCompleto" abren aquí su texto completo (ver
+       abrirModalDetalle() en js/main.js). -->
+  <dialog id="modal-detalle" aria-labelledby="modal-detalle-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-detalle-titulo"></h3>
+    <div id="modal-detalle-contenido"></div>
+  </dialog>
+
   <script src="js/main.js"></script>
 </body>
 </html>
