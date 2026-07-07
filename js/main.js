@@ -488,47 +488,212 @@ const DATOS_RUBRICAS = {
 // añadir la propiedad correspondiente (con el link real de Google
 // Drive u otro servicio) al objeto de esa tarea.
 
-// "detalleCompleto": OPCIONAL, texto largo (puede usar "\n" para saltos
-// de línea) que se muestra en un modal emergente al pulsar "📖 Ver
-// detalles". Pensado para instrucciones extensas que no caben cómodas
-// en la descripción corta de la tarjeta. Si el campo no existe, el
-// botón simplemente no se muestra.
+// "detalleCompleto": OPCIONAL, HTML de confianza (<p>, <ul>/<li>) que
+// se muestra en un modal emergente al pulsar "📖 Ver detalles" (ver
+// abrirModalDetalle() más abajo, que lo inserta con innerHTML). Pensado
+// para instrucciones extensas que no caben cómodas en la descripción
+// corta de la tarjeta. Si el campo no existe, el botón no se muestra.
 const DATOS_TAREAS = {
+  // FECHAS TENTATIVAS/PLACEHOLDER (t5-t13): aún no existe calendario
+  // escolar oficial para el Bloque 1; ajustar cuando se confirme.
   1: [
     {
-      id: "t1",
+      id: "t5",
       grupo: "todos",
-      titulo: "Investigación: evolución de la tecnología",
-      descripcion: "Línea del tiempo con al menos tres fuentes confiables.",
-      fechaEntrega: "2025-09-12",
-      estado: "entregada",
-      detalleCompleto:
-        "Elabora una línea del tiempo con al menos tres fuentes confiables.\nDebe incluir mínimo cinco hitos tecnológicos con año y descripción breve.\nEntrega en formato PDF o cartulina digitalizada.",
+      titulo: "Detective de IA en mi casa",
+      descripcion: "Identifica 5 ejemplos de Inteligencia Artificial presentes en la vida diaria.",
+      fechaEntrega: "2025-09-01",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 minutos | 👥 Modalidad: Individual (en casa)</p>
+        <ul>
+          <li>Cuaderno de la materia o una hoja blanca</li>
+          <li>Lápiz o pluma</li>
+          <li>(Opcional) Ayuda de un familiar para identificar aparatos/servicios</li>
+        </ul>
+        <ul>
+          <li>En casa, observa con atención los aparatos y servicios que usas todos los días (celular, tele, refrigerador, apps).</li>
+          <li>Dibuja en tu cuaderno una tabla con 4 columnas: Objeto/Servicio, ¿Qué hace la IA?, ¿Lo sabías? (Sí/No).</li>
+          <li>Encuentra 5 ejemplos de objetos o servicios que usan Inteligencia Artificial sin que normalmente te des cuenta.</li>
+          <li>Para cada uno, escribe brevemente qué hace la IA en ese objeto (ejemplo: "Netflix me recomienda series según lo que ya vi").</li>
+          <li>Marca si ya sabías que ese objeto usaba IA o si fue una sorpresa para ti.</li>
+        </ul>
+        <p>💬 Tip: no se necesita internet. Puedes preguntar a tus papás, hermanos o vecinos qué aparatos usan y anotar sus respuestas en tu libreta.</p>
+      `,
     },
     {
-      id: "t2",
+      id: "t6",
       grupo: "todos",
-      titulo: "Reglamento del taller firmado",
-      descripcion: "Entregar el reglamento de seguridad e higiene firmado por el tutor.",
-      fechaEntrega: "2025-08-29",
-      estado: "entregada",
-      instruccionesUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
+      titulo: "Mi diálogo con un asistente virtual",
+      descripcion: "Escribe un diálogo de al menos 8 líneas con un asistente virtual y reflexiona sobre su \"inteligencia\".",
+      fechaEntrega: "2025-09-03",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 15 minutos | 👥 Modalidad: Individual</p>
+        <ul>
+          <li>Hoja blanca o cuaderno</li>
+          <li>Lápiz o pluma</li>
+          <li>(Opcional) Un celular con asistente de voz para probar una conversación real</li>
+        </ul>
+        <ul>
+          <li>Si tienes acceso a un asistente de voz (Siri, Alexa, Google Assistant), platica con él/ella y observa cómo responde. Si no tienes acceso, puedes imaginar la conversación.</li>
+          <li>Escribe un diálogo de mínimo 8 líneas (8 intercambios entre tú y el asistente), usando el formato "Tú: ..." / "Asistente: ...".</li>
+          <li>Incluye al menos un momento donde el asistente no entienda bien lo que le pediste, o responda algo diferente a lo esperado.</li>
+          <li>Al final, responde por escrito: ¿Crees que el asistente es "inteligente" o solo sigue reglas programadas? Explica tu respuesta en 2-3 líneas.</li>
+        </ul>
+        <p>💬 Tip: si no tienes ningún asistente de voz disponible, puedes inventar el diálogo pensando en cómo actúan en comerciales, películas o lo que hayas visto usar a otras personas.</p>
+      `,
     },
     {
-      id: "t3",
-      grupo: "3C",
-      titulo: "Reporte de práctica: uso seguro de herramientas",
-      descripcion: "Reporte con fotografías y conclusiones de la práctica.",
-      fechaEntrega: "2025-10-03",
-      estado: "entregada",
+      id: "t7",
+      grupo: "todos",
+      titulo: "La IA y mi creatividad",
+      descripcion: "Representa con un dibujo o collage cómo la IA podría apoyar a un artista sin reemplazarlo.",
+      fechaEntrega: "2025-09-05",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 25 minutos | 👥 Modalidad: Individual</p>
+        <ul>
+          <li>Media cartulina o una hoja tamaño A3 (o carta doble)</li>
+          <li>Lápices de colores, crayones o marcadores</li>
+          <li>Revistas viejas, periódicos o folletos (opcional, para recortar y hacer collage)</li>
+          <li>Tijeras y pegamento (si se hace en formato collage)</li>
+        </ul>
+        <ul>
+          <li>Piensa en un tipo de artista: pintor, músico, escritor, diseñador, fotógrafo, etc.</li>
+          <li>Reflexiona: ¿cómo podría la Inteligencia Artificial ayudar a ese artista a crear mejor o más rápido, sin reemplazarlo?</li>
+          <li>Representa esa idea con un dibujo hecho a mano, o con un collage usando recortes de revista.</li>
+          <li>Debajo de tu dibujo, escribe una frase explicativa de máximo 2 renglones que describa la idea que representaste.</li>
+        </ul>
+        <p>💬 Importante: el mensaje central de esta tarea es que la IA es una herramienta de apoyo, no un reemplazo del talento humano.</p>
+      `,
     },
     {
-      id: "t4",
-      grupo: "3E",
-      titulo: "Reporte de práctica: uso del multímetro",
-      descripcion: "Reporte con mediciones y conclusiones de la práctica.",
-      fechaEntrega: "2025-10-03",
-      estado: "entregada",
+      id: "t8",
+      grupo: "todos",
+      titulo: "Cazador de AR/VR",
+      descripcion: "Clasifica 4 ejemplos cotidianos como Realidad Aumentada, Virtual o Mixta.",
+      fechaEntrega: "2025-09-22",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 minutos | 👥 Modalidad: Individual</p>
+        <ul>
+          <li>Hoja blanca o cuaderno</li>
+          <li>Lápiz o pluma</li>
+        </ul>
+        <ul>
+          <li>Piensa en tu vida diaria, en noticias o comentarios que hayas escuchado sobre tecnología.</li>
+          <li>Dibuja una tabla con 3 columnas: Ejemplo, ¿Es AR, VR o MR?, ¿Dónde lo viste?</li>
+          <li>Encuentra 4 ejemplos de Realidad Aumentada (AR), Realidad Virtual (VR) o Realidad Mixta (MR) y clasifícalos correctamente.</li>
+          <li>Llena la tabla completa con la información de cada ejemplo.</li>
+        </ul>
+        <p>💬 Ejemplos que puedes usar de guía: filtros de Snapchat o Instagram (AR), juegos de PlayStation VR (VR), Google Maps con navegación en vivo (AR), simuladores de vuelo (VR).</p>
+      `,
+    },
+    {
+      id: "t9",
+      grupo: "todos",
+      titulo: "Mi casa en Realidad Aumentada",
+      descripcion: "Dibuja una habitación de tu casa con anotaciones tipo Realidad Aumentada.",
+      fechaEntrega: "2025-09-24",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 25 minutos | 👥 Modalidad: Individual</p>
+        <ul>
+          <li>Hoja tamaño carta</li>
+          <li>Lápices de colores o marcadores</li>
+        </ul>
+        <ul>
+          <li>Elige una habitación de tu casa (sala, cocina o recámara) y dibújala en una hoja completa.</li>
+          <li>Imagina que estás usando lentes o una app de Realidad Aumentada.</li>
+          <li>Sobre cada objeto de tu dibujo, agrega "burbujas" de información como si fueran hologramas flotando (ejemplo: sobre el refrigerador, una burbuja que diga "quedan 2 días de leche").</li>
+          <li>Al final, escribe una conclusión completando la frase: "La AR me ayudaría a...".</li>
+        </ul>
+      `,
+    },
+    {
+      id: "t10",
+      grupo: "todos",
+      titulo: "Noticia del futuro",
+      descripcion: "Redacta una noticia de periódico ambientada en 2035 sobre el metaverso educativo.",
+      fechaEntrega: "2025-09-26",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 minutos | 👥 Modalidad: Individual</p>
+        <ul>
+          <li>Hoja blanca o cuaderno</li>
+          <li>Lápiz o pluma</li>
+        </ul>
+        <ul>
+          <li>Imagina que eres periodista en el año 2035.</li>
+          <li>Escribe una noticia de periódico (formato con encabezado y cuerpo) titulada algo como "Metaverso educativo: ¿beneficio o riesgo?".</li>
+          <li>Redacta entre 8 y 10 líneas describiendo cómo el metaverso cambió la escuela secundaria, usando datos inventados pero realistas.</li>
+          <li>Al final, responde: ¿Te gustaría estudiar así? Sí / No — explica tu respuesta.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "t11",
+      grupo: "todos",
+      titulo: "Detective de Robots",
+      descripcion: "Investiga 4 robots reales o ficticios y clasifica si usan IA.",
+      fechaEntrega: "2025-10-13",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 minutos | 👥 Modalidad: Individual</p>
+        <ul>
+          <li>Cuaderno o hoja blanca</li>
+          <li>Lápiz o pluma</li>
+          <li>(Opcional) Revistas o apoyo de familiares para investigar</li>
+        </ul>
+        <ul>
+          <li>Investiga (preguntando en casa, buscando en revistas o recordando películas) 4 robots diferentes.</li>
+          <li>Dibuja una tabla con las columnas: Nombre del robot, ¿Qué hace?, ¿Tiene IA? (Sí/No), ¿Es real o ficticio?</li>
+          <li>Llena la tabla con la información de los 4 robots que elegiste.</li>
+        </ul>
+        <p>💬 Ejemplos que puedes usar de guía: Roomba (aspiradora), robots de fábrica (industria automotriz), Wall-E (película), robots quirúrgicos (Da Vinci), drones.</p>
+      `,
+    },
+    {
+      id: "t12",
+      grupo: "todos",
+      titulo: "Mi rutina como algoritmo",
+      descripcion: "Describe tu rutina matutina como un algoritmo con condicionales SI/ENTONCES/SINO.",
+      fechaEntrega: "2025-10-15",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 minutos | 👥 Modalidad: Individual</p>
+        <ul>
+          <li>Hoja blanca o cuaderno</li>
+          <li>Lápiz o pluma</li>
+        </ul>
+        <ul>
+          <li>Piensa en tu rutina de la mañana antes de ir a la escuela.</li>
+          <li>Escribe esa rutina como si fuera un programa de robot, en una lista numerada, usando la estructura SI...ENTONCES...SINO... para representar decisiones.</li>
+          <li>Tu lista debe tener mínimo 10 pasos y mínimo 3 condicionales (SI/ENTONCES/SINO).</li>
+        </ul>
+        <p>💬 Ejemplo de formato: "1. Despertar. 2. SI la alarma sonó ENTONCES levantarse, SINO dormir 5 min más y volver al paso 1."</p>
+      `,
+    },
+    {
+      id: "t13",
+      grupo: "todos",
+      titulo: "Mi robot ideal — Boceto inicial",
+      descripcion: "Diseña el boceto de un robot que resuelva un problema de tu familia o comunidad.",
+      fechaEntrega: "2025-10-17",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 25 minutos | 👥 Modalidad: Individual</p>
+        <ul>
+          <li>Hoja tamaño carta</li>
+          <li>Lápices de colores o marcadores</li>
+        </ul>
+        <ul>
+          <li>Piensa en un problema de tu familia o comunidad que un robot podría ayudar a resolver.</li>
+          <li>Dibuja el robot en tu hoja y etiqueta cada parte: sensor (¿qué detecta?), actuador (¿qué hace o mueve?), cerebro/procesador (¿qué decide?).</li>
+          <li>Debajo del dibujo, escribe: nombre del robot, el problema que resuelve, y si necesita Inteligencia Artificial o solo reglas fijas para funcionar (explica por qué).</li>
+        </ul>
+      `,
     },
   ],
   2: [
