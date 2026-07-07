@@ -1479,6 +1479,24 @@ summary:focus-visible {
   color: var(--color-texto-suave);
 }
 
+#modal-detalle-contenido p {
+  margin: 0 0 0.75rem;
+}
+
+#modal-detalle-contenido ul {
+  margin: 0 0 0.75rem;
+  padding-left: 1.25rem;
+}
+
+#modal-detalle-contenido li {
+  margin-bottom: 0.25rem;
+}
+
+#modal-detalle-contenido p:last-child,
+#modal-detalle-contenido ul:last-child {
+  margin-bottom: 0;
+}
+
 .modal-detalle__cerrar {
   position: absolute;
   top: 0.75rem;

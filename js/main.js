@@ -1204,10 +1204,11 @@ function crearBotonVerDetalle(item) {
 }
 
 // Llena el <dialog id="modal-detalle"> de la página actual con el
-// título y el texto largo del item, y lo muestra. Usa textContent (no
-// innerHTML) para que el contenido de "detalleCompleto" nunca se
-// interprete como HTML; los "\n" se convierten en <br> agregando
-// manualmente un elemento <br> real entre nodos de texto.
+// título y el texto largo del item, y lo muestra.
+// "detalleCompleto" es HTML de confianza (escrito a mano en DATOS_*,
+// no entrada de usuarios finales) con <p>/<ul>/<li> para tiempo,
+// modalidad, materiales e instrucciones; por eso se inserta con
+// innerHTML en vez de textContent.
 function abrirModalDetalle(item) {
   const modal = document.getElementById("modal-detalle");
   if (!modal) return;
@@ -1215,15 +1216,7 @@ function abrirModalDetalle(item) {
   const titulo = document.getElementById("modal-detalle-titulo");
   const contenido = document.getElementById("modal-detalle-contenido");
   titulo.textContent = item.titulo;
-
-  contenido.innerHTML = "";
-  const lineas = (item.detalleCompleto || "").split("\n");
-  lineas.forEach((linea, indice) => {
-    contenido.appendChild(document.createTextNode(linea));
-    if (indice < lineas.length - 1) {
-      contenido.appendChild(document.createElement("br"));
-    }
-  });
+  contenido.innerHTML = item.detalleCompleto || "";
 
   modal.showModal();
 }
