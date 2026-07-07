@@ -1442,9 +1442,14 @@ summary:focus-visible {
    <dialog> nativo llenado desde abrirModalDetalle() en js/main.js.
    Mobile-first: casi todo el ancho en pantallas chicas, con scroll
    interno si el texto es largo; se limita el ancho en pantallas
-   grandes con la media query de abajo. */
+   grandes con la media query de abajo.
+   NO fijar "position" aquí: el navegador ya pone dialog:modal en
+   position:fixed + inset:0 + margin:auto para centrarlo como overlay.
+   Sobrescribirlo (p. ej. con position:relative) saca al modal de ese
+   overlay fijo y lo deja en el flujo normal del documento; al abrir,
+   showModal() enfoca el botón de cerrar y el navegador hace scroll
+   para mostrarlo, lo que se siente como un salto de scroll inesperado. */
 #modal-detalle {
-  position: relative;
   width: 92%;
   max-width: 640px;
   max-height: 85vh;

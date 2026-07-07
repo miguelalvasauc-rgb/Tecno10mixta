@@ -1240,6 +1240,10 @@ function activarDelegacionVerDetalle(idContenedor) {
   contenedor.addEventListener("click", (evento) => {
     const boton = evento.target.closest(".boton-ver-detalle");
     if (!boton) return;
+    // Defensivo: aunque el botón ya es <button type="button">, esto
+    // evita cualquier acción por defecto si en el futuro quedara
+    // dentro de un <a> o <form>.
+    evento.preventDefault();
     const item = mapaDetallesPorId.get(boton.dataset.itemId);
     if (item) abrirModalDetalle(item);
   });
