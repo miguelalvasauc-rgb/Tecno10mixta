@@ -780,32 +780,212 @@ const DATOS_TAREAS = {
 // "instruccionesUrl"/"materialApoyoUrl" en DATOS_TAREAS.
 
 // "detalleCompleto": mismo campo OPCIONAL que en DATOS_TAREAS (ver
-// comentario ahí); abre el modal "📖 Ver detalles" con texto largo.
+// comentario ahí); abre el modal "📖 Ver detalles" con HTML de confianza.
 const DATOS_ACTIVIDADES = {
+  // FECHAS TENTATIVAS/PLACEHOLDER (a4-a12): aún no existe calendario
+  // escolar oficial para el Bloque 1; ajustar cuando se confirme.
   1: [
     {
-      id: "a1",
+      id: "a4",
       grupo: "todos",
-      titulo: "Recorrido e identificación de herramientas",
-      descripcion: "Recorrido por el taller e identificación de herramientas y zonas de seguridad.",
-      fecha: "2025-08-25",
-      archivoUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
-      detalleCompleto:
-        "Recorrido guiado por las distintas zonas del taller.\nSe identifican herramientas manuales, eléctricas y zonas de seguridad marcadas.\nAl finalizar, cada alumno entrega una lista con lo observado.",
+      titulo: "Rompecabezas de Conceptos",
+      descripcion: "Dinámica grupal de emparejar términos de IA con sus definiciones.",
+      fecha: "2025-09-02",
+      detalleCompleto: `
+        <p>👥 Modalidad: Grupal (todo el salón), en parejas | ⏱️ Duración: 20 min</p>
+        <ul>
+          <li>20 fichas de papel o cartulina cortada (tamaño tarjeta), preparadas previamente por el docente</li>
+          <li>10 fichas con términos: IA, Machine Learning, NLP, Chatbot, Algoritmo, Asistente Virtual, Red Neuronal, Dato, Predicción, Automatización</li>
+          <li>10 fichas con las definiciones correspondientes a cada término</li>
+          <li>Espacio abierto en el salón para que los alumnos puedan caminar</li>
+        </ul>
+        <ul>
+          <li>Antes de la clase, el docente imprime, recorta y prepara las 20 fichas (10 términos + 10 definiciones).</li>
+          <li>Si el grupo tiene 40 alumnos, se hacen 2 rondas o se reparten fichas en parejas para que todos participen.</li>
+          <li>El docente reparte una ficha (término o definición) a cada alumno o pareja, sin decir cuál corresponde a cuál.</li>
+          <li>Los alumnos caminan por el salón buscando a la persona que tenga la ficha que combina con la suya.</li>
+          <li>Cuando una pareja se encuentra, se sientan juntos.</li>
+          <li>Al finalizar, cada pareja lee en voz alta su término y definición frente al grupo; el docente confirma o corrige.</li>
+        </ul>
+      `,
     },
     {
-      id: "a2",
-      grupo: "3C",
-      titulo: "Práctica: uso de calibrador y flexómetro",
-      descripcion: "Mediciones básicas sobre distintos materiales.",
-      fecha: "2025-09-05",
+      id: "a5",
+      grupo: "todos",
+      titulo: "Teatro de Chatbots",
+      descripcion: "En equipos, diseñan el árbol de decisión de un chatbot y lo representan en una obra corta.",
+      fecha: "2025-09-04",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 4 personas | ⏱️ Duración: 30 min</p>
+        <ul>
+          <li>Hojas de papel blanco o cartulina (una por equipo)</li>
+          <li>Lápices y marcadores de colores</li>
+          <li>Espacio para que 2 alumnos por equipo puedan "actuar" frente al resto</li>
+        </ul>
+        <ul>
+          <li>Organiza al grupo en equipos de 4 personas.</li>
+          <li>Cada equipo elige un propósito para su chatbot: pizzería, biblioteca, tareas de matemáticas o emergencias médicas.</li>
+          <li>En una cartulina, el equipo dibuja el árbol de decisión del chatbot con las posibles rutas de conversación.</li>
+          <li>Dos integrantes representan la conversación como una obra de teatro corta: uno de "usuario" y otro de "chatbot".</li>
+          <li>Los otros dos integrantes observan y anotan si funcionó bien la conversación y en qué momento el chatbot se "trabó".</li>
+          <li>(Opcional) Cada equipo presenta su teatro brevemente al resto del salón.</li>
+        </ul>
+      `,
     },
     {
-      id: "a3",
-      grupo: "3E",
-      titulo: "Práctica: introducción a software CAD",
-      descripcion: "Exploración de la interfaz y herramientas básicas de dibujo.",
-      fecha: "2025-09-05",
+      id: "a6",
+      grupo: "todos",
+      titulo: "Círculo de Debate: ¿La IA nos quitará el trabajo?",
+      descripcion: "Debate grupal sobre si la IA reemplazará los trabajos humanos.",
+      fecha: "2025-09-08",
+      detalleCompleto: `
+        <p>👥 Modalidad: Grupal, dividido en 3 equipos | ⏱️ Duración: 25 min</p>
+        <ul>
+          <li>Sillas acomodadas en círculo (si el espacio lo permite)</li>
+          <li>Papelógrafo, pizarrón o cartulina para anotar argumentos</li>
+          <li>Marcadores o plumones</li>
+          <li>Hojas para que cada equipo prepare sus argumentos</li>
+        </ul>
+        <ul>
+          <li>El docente plantea la pregunta central: "¿La Inteligencia Artificial reemplazará a los humanos en los trabajos?".</li>
+          <li>Se divide al grupo en 3 equipos: a favor (la IA reemplazará muchos trabajos), en contra (la IA creará nuevos trabajos) y observadores (anotan argumentos y preparan preguntas).</li>
+          <li>Cada equipo tiene 5 minutos para preparar por escrito 3 argumentos que apoyen su postura.</li>
+          <li>Se realiza el debate: cada equipo tiene 2 minutos para exponer sus argumentos (aprox. 10 minutos en total).</li>
+          <li>Al final, los observadores votan qué equipo convenció más y explican por qué.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a7",
+      grupo: "todos",
+      titulo: "Juego de Cartas AR/VR/MR",
+      descripcion: "Juego de cartas para clasificar escenarios de AR, VR y MR en equipo.",
+      fecha: "2025-09-23",
+      detalleCompleto: `
+        <p>👥 Modalidad: Grupal (todo el salón) | ⏱️ Duración: 20 min</p>
+        <ul>
+          <li>40 tarjetas impresas por el docente con escenarios (15 de AR, 15 de VR, 10 de MR)</li>
+          <li>Etiquetas o letreros para marcar 3 rincones del salón: "AR", "VR", "MR"</li>
+          <li>Espacio abierto para que los alumnos se muevan</li>
+        </ul>
+        <ul>
+          <li>Antes de la clase, el docente prepara 40 tarjetas con escenarios distintos de tecnología.</li>
+          <li>Reparte una tarjeta a cada alumno.</li>
+          <li>El docente dice "¡Levántense los que tienen AR!" y los alumnos con tarjetas de AR se ponen de pie.</li>
+          <li>Se elige a 2-3 alumnos para que expliquen por qué su escenario es AR, generando un breve debate si hay dudas.</li>
+          <li>Se repite el mismo proceso con VR y con MR.</li>
+          <li>Ronda final: el docente menciona escenarios nuevos en voz alta y los alumnos corren al rincón correspondiente (AR, VR o MR).</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a8",
+      grupo: "todos",
+      titulo: "Construcción de Mundos Virtuales",
+      descripcion: "Equipos diseñan un mundo virtual educativo sobre un tema escolar.",
+      fecha: "2025-09-29",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 5 personas | ⏱️ Duración: 40 min</p>
+        <ul>
+          <li>Cartulinas de colores (una por equipo)</li>
+          <li>Lápices de colores, marcadores</li>
+          <li>Tijeras, pegamento</li>
+          <li>Revistas viejas para recortar (opcional)</li>
+        </ul>
+        <ul>
+          <li>Se forman equipos de 5 personas.</li>
+          <li>El docente asigna un tema por equipo (ejemplo: Imperio Azteca, Sistema Solar, Célula humana, Matemáticas divertidas).</li>
+          <li>Cada equipo diseña, en una cartulina, un mundo virtual educativo sobre su tema, con: un mapa (vista aérea), 2 personajes con nombre y función, 3 actividades que un usuario podría hacer, y una paleta de colores justificada.</li>
+          <li>Cada equipo expone su mundo virtual al resto del salón en máximo 2 minutos.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a9",
+      grupo: "todos",
+      titulo: "Tribunal del Metaverso",
+      descripcion: "Juicio simulado sobre dilemas éticos del metaverso.",
+      fecha: "2025-10-02",
+      detalleCompleto: `
+        <p>👥 Modalidad: Grupal, con roles asignados | ⏱️ Duración: 30 min</p>
+        <ul>
+          <li>Papelógrafo o pizarrón</li>
+          <li>Marcadores</li>
+          <li>Tarjetas de rol: "Juez", "Defensor", "Acusador", "Jurado"</li>
+        </ul>
+        <ul>
+          <li>El docente presenta 3 casos relacionados con el metaverso (gasto excesivo en ropa virtual, un avatar usado para burlarse de un compañero, una empresa que cobra por entrar a una escuela virtual).</li>
+          <li>Para cada caso se eligen los roles: 1 Juez, 2 Defensores (a favor del metaverso), 2 Acusadores (en contra) y 3 Jurado (votan al final).</li>
+          <li>Cada parte tiene 2 minutos para presentar sus argumentos.</li>
+          <li>El juez, con apoyo del jurado, dicta un "veredicto" y explica el porqué de su decisión.</li>
+          <li>Se repite el proceso con los otros 2 casos, cambiando los roles entre distintos alumnos.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a10",
+      grupo: "todos",
+      titulo: "Simulación de Fábrica Robotizada",
+      descripcion: "Simulación de una línea de producción, comparando trabajo manual vs. instrucciones tipo robot.",
+      fecha: "2025-10-14",
+      detalleCompleto: `
+        <p>👥 Modalidad: Grupal, en 4 estaciones rotativas | ⏱️ Duración: 30 min</p>
+        <ul>
+          <li>Hojas de papel de colores</li>
+          <li>Tijeras</li>
+          <li>Cajas de cartón (si hay disponibles)</li>
+          <li>Cinta masking tape</li>
+        </ul>
+        <ul>
+          <li>El docente divide el salón en 4 "estaciones de fábrica": clasificación, ensamblaje, empaque y control de calidad.</li>
+          <li>Primera ronda (3 min): los alumnos realizan las tareas de forma manual y libre, usando su criterio. El docente cuenta productos completados y errores.</li>
+          <li>Segunda ronda: los alumnos se convierten en "robots" que solo ejecutan instrucciones exactas dadas por un compañero "programador" (ejemplo: "Levantar papel rojo. Mover a caja A. Soltar."). No pueden decidir nada por sí mismos.</li>
+          <li>Al finalizar, se comparan resultados: ¿fue más rápido el robot o el humano? ¿cuántos errores hubo? ¿qué tipo de trabajo es mejor para cada uno?</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a11",
+      grupo: "todos",
+      titulo: "Programación en Papel: El Laberinto",
+      descripcion: "En parejas, un alumno programa con instrucciones exactas para resolver un laberinto.",
+      fecha: "2025-10-21",
+      detalleCompleto: `
+        <p>👥 Modalidad: Parejas | ⏱️ Duración: 35 min</p>
+        <ul>
+          <li>Hojas con laberintos impresos (preparadas previamente por el docente)</li>
+          <li>Lápices de colores</li>
+        </ul>
+        <ul>
+          <li>Antes de la clase, el docente prepara e imprime laberintos sencillos, uno por alumno.</li>
+          <li>Cada alumno recibe un laberinto y debe escribir un algoritmo (lista de instrucciones) para que un "robot" (su compañero) logre resolverlo, ejemplo: AVANZAR 2, GIRAR DERECHA, AVANZAR 1.</li>
+          <li>El alumno entrega su algoritmo escrito a un compañero sin dejarlo ver el laberinto.</li>
+          <li>El compañero debe seguir las instrucciones exactamente como están escritas, marcando la ruta sobre el laberinto.</li>
+          <li>Si el "robot" se choca contra una pared o se sale del camino, el "programador" debe corregir su algoritmo.</li>
+          <li>Ronda 2: el algoritmo debe incluir condicionales, por ejemplo: "SI hay pared ENTONCES girar, SINO avanzar".</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a12",
+      grupo: "todos",
+      titulo: "Estación de Sensores",
+      descripcion: "Equipos identifican qué sensores necesitaría un robot para interactuar con objetos cotidianos.",
+      fecha: "2025-10-24",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 4 personas | ⏱️ Duración: 25 min</p>
+        <ul>
+          <li>6 objetos cotidianos colocados sobre una mesa (libro, pelota, vaso, etc.)</li>
+          <li>Hojas de papel</li>
+          <li>Marcadores</li>
+        </ul>
+        <ul>
+          <li>El docente coloca 6 objetos distintos sobre una mesa al frente del salón.</li>
+          <li>En equipos de 4, los alumnos imaginan qué sensor necesitaría un robot para interactuar correctamente con cada objeto, y llenan una tabla con: Objeto, Sensor necesario, ¿Qué detecta?</li>
+          <li>Cada equipo presenta su tabla ante el grupo y explica por qué eligió esos sensores.</li>
+          <li>El docente cierra preguntando: "¿Qué pasa si el sensor falla? ¿Qué debería hacer el robot en ese caso?", introduciendo la toma de decisiones y seguridad en robótica.</li>
+        </ul>
+      `,
     },
   ],
   2: [
