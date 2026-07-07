@@ -1,11 +1,29 @@
 {
   "version": 1,
   "skills": {
+    "design-taste-frontend": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/taste-skill/SKILL.md",
+      "computedHash": "899b84384f74f540ea5284d9b2e9234e050998b42eacc805410b518d4226c0b3"
+    },
+    "forms": {
+      "source": "mgifford/accessibility-skills",
+      "sourceType": "github",
+      "skillPath": "skills/forms/SKILL.md",
+      "computedHash": "1c8b5a0c156cd4c9ad386b3ca6c29d572fd166b027f8fc9fa4257dc0b5f2a68b"
+    },
     "frontend-design": {
       "source": "anthropics/claude-code",
       "sourceType": "github",
       "skillPath": "plugins/frontend-design/skills/frontend-design/SKILL.md",
       "computedHash": "3e0be122a3db8206b6d0d6b07cca898b5c75fb9b7b2101abe143fb2851734d2e"
+    },
+    "vanilla-web": {
+      "source": "janjaszczak/cursor",
+      "sourceType": "github",
+      "skillPath": "skills/vanilla-web/SKILL.md",
+      "computedHash": "57b8fdfc7a2fe95f89346b3b1bb1bee23d7725e63cb340ed62866b5221d5bfac"
     }
   }
 }
