@@ -1039,26 +1039,84 @@ const DATOS_ACTIVIDADES = {
 };
 
 // "detalleCompleto": mismo campo OPCIONAL que en DATOS_TAREAS (ver
-// comentario ahí); abre el modal "📖 Ver detalles" con texto largo.
+// comentario ahí); abre el modal "📖 Ver detalles" con HTML de confianza.
 const DATOS_PROYECTOS = {
+  // FECHAS TENTATIVAS/PLACEHOLDER (p3-p5): aún no existe calendario
+  // escolar oficial para el Bloque 1; ajustar cuando se confirme.
   1: [
     {
-      id: "p1",
-      grupo: "3C",
-      titulo: "Linterna con circuito serie-paralelo",
-      descripcion: "Prototipo funcional armado con material reciclado.",
-      avance: 100,
-      fechaEntrega: "2025-11-07",
-      detalleCompleto:
-        "Circuito serie-paralelo armado sobre base reciclada.\nIncluye al menos dos focos en paralelo y un interruptor en serie.\nSe evaluó el funcionamiento y la calidad del acabado final.",
+      id: "p3",
+      grupo: "todos",
+      titulo: "Mi Chatbot en Papel",
+      descripcion: "Diseño individual de un chatbot en papel que resuelve un problema real de la escuela.",
+      avance: 0,
+      fechaEntrega: "2025-09-19",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 3 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual</p>
+        <p>Cada alumno diseñará un chatbot completo en formato físico (papel/cartulina) que resuelva un problema real de su comunidad escolar. El alumno elige uno de estos propósitos: chatbot de la cafetería escolar, de la biblioteca, de orientación médica básica o de orientación escolar.</p>
+        <ul>
+          <li>2-3 cartulinas de colores por alumno</li>
+          <li>Lápices de colores, marcadores gruesos (negro, rojo, azul, verde)</li>
+          <li>Regla, tijeras, pegamento en barra</li>
+          <li>Hojas blancas tamaño carta para borradores</li>
+        </ul>
+        <ul>
+          <li>Sesión 1 — Planeación y portada: el alumno elige el propósito de su chatbot y le pone un nombre; diseña en cartulina la portada con nombre, logo dibujado a mano y una breve descripción del propósito.</li>
+          <li>Sesión 2 — Árbol de decisión: en otra cartulina, dibuja el árbol de decisión completo, con mínimo 8 interacciones (preguntas y respuestas posibles).</li>
+          <li>Sesión 3 — Simulación y reflexión (entrega): en hojas blancas escribe la simulación de 3 conversaciones distintas entre un "usuario" y su chatbot, y una reflexión de 5 renglones sobre qué tan inteligente es su chatbot (¿IA real o solo reglas fijas?).</li>
+          <li>Entrega final: portada + árbol de decisión + hojas de conversaciones simuladas y reflexión, juntos.</li>
+        </ul>
+      `,
     },
     {
-      id: "p2",
-      grupo: "3E",
-      titulo: "Llavero impreso en 3D",
-      descripcion: "Diseño y fabricación de un llavero personalizado.",
-      avance: 100,
+      id: "p4",
+      grupo: "todos",
+      titulo: "Mi Metaverso Educativo",
+      descripcion: "Equipos diseñan un prototipo de espacio educativo en el metaverso.",
+      avance: 0,
+      fechaEntrega: "2025-10-10",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 4 sesiones de clase (50 min c/u) | 👥 Modalidad: Equipos de 5 personas</p>
+        <p>En equipos, diseñarán un prototipo en papel de un espacio en el metaverso para resolver un problema real de la escuela: falta de laboratorios de ciencias, dificultad para entender historia, falta de conciencia ecológica, poco espacio para arte, o falta de actividad física.</p>
+        <ul>
+          <li>Cartulina tamaño A3 (para el mapa)</li>
+          <li>Hojas blancas (para la guía del usuario, tipo folleto de 4 páginas)</li>
+          <li>Lápices de colores, marcadores</li>
+          <li>Tijeras, pegamento, regla</li>
+        </ul>
+        <ul>
+          <li>Sesión 1 — Elección del problema y mapa: el equipo elige el problema y define el concepto general de su mundo virtual; dibujan el mapa en cartulina A3, a color, con una leyenda que explique los elementos.</li>
+          <li>Sesión 2 — Guía del usuario y avatares: elaboran una guía del usuario en formato folleto de 4 páginas, y diseñan 2 avatares con dibujo, nombre, características y habilidades.</li>
+          <li>Sesión 3 — Storyboard: crean un storyboard de 6 viñetas mostrando paso a paso una "visita" al mundo virtual.</li>
+          <li>Sesión 4 — Advertencias éticas y entrega: elaboran un cartel con 3 advertencias éticas sobre riesgos del metaverso (adicción, gasto excesivo, acoso virtual) y cómo evitarlos.</li>
+          <li>Entrega final: mapa + guía del usuario + avatares + storyboard + cartel de advertencias, juntos.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "p5",
+      grupo: "todos",
+      titulo: "Diseña tu Robot Ideal",
+      descripcion: "Diseño individual de un robot que resuelve un problema social de la comunidad.",
+      avance: 0,
       fechaEntrega: "2025-11-07",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 5 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre compañeros)</p>
+        <p>Cada alumno diseñará un robot completo en papel/cartulina que resuelva un problema social real de su comunidad: asistente para personas con discapacidad visual, recolector de basura en ríos y playas, enfermero para comunidades rurales, agrícola para pequeños campesinos, de limpieza para la escuela, o de búsqueda y rescate en desastres naturales.</p>
+        <ul>
+          <li>1-2 cartulinas tamaño A3 por alumno</li>
+          <li>Lápices de colores, marcadores</li>
+          <li>Regla, tijeras, pegamento</li>
+          <li>Hojas blancas para la ficha técnica y el presupuesto</li>
+        </ul>
+        <ul>
+          <li>Sesión 1 — Elección del problema y boceto técnico: elige el problema social; dibuja en cartulina A3 el diseño técnico del robot con 3 vistas (frontal, lateral, superior), etiquetando cada parte.</li>
+          <li>Sesión 2 — Ficha técnica: nombre del robot, problema que resuelve, lista realista de materiales, mínimo 3 sensores con su función, mínimo 2 actuadores con su función, y si usa IA o solo reglas fijas (justificando).</li>
+          <li>Sesión 3 — Algoritmo de funcionamiento: diagrama de flujo con mínimo 10 pasos y al menos 3 condicionales (SI/ENTONCES).</li>
+          <li>Sesión 4 — Storyboard y presupuesto: storyboard de 4 viñetas "Un día con mi robot", y tabla de presupuesto estimado de materiales.</li>
+          <li>Sesión 5 — Presentación oral (entrega): exposición oral de 3 minutos explicando el problema, cómo funciona el robot, y respondiendo preguntas del grupo.</li>
+        </ul>
+      `,
     },
   ],
   2: [
