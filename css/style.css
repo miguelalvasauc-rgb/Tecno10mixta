@@ -2393,3 +2393,58 @@ summary:focus-visible {
 .boton-secundario:focus-visible {
   border-color: var(--color-texto-suave);
 }
+
+/* ---------- Panel de "Progreso" (portada) ---------- */
+.panel-progreso__invitacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  padding: 1.2rem 1.4rem;
+}
+
+.panel-progreso__invitacion p {
+  margin: 0;
+  color: var(--color-texto-suave);
+}
+
+.panel-progreso {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.panel-progreso__mensaje {
+  margin: 0;
+  font-family: var(--font-encabezados);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--color-estado-progreso);
+}
+
+.panel-progreso__bloques {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.panel-progreso__bloque {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  padding: 1rem 1.1rem;
+}
+
+.panel-progreso__bloque h3 {
+  margin: 0 0 0.3rem;
+  font-size: 0.95rem;
+}
+
+.panel-progreso__bloque p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}

@@ -157,6 +157,25 @@
       </div>
     </section>
 
+    <!-- ===================== PROGRESO ===================== -->
+    <section id="progreso" class="seccion seccion--alterna">
+      <div class="seccion__encabezado">
+        <h2>Tu progreso</h2>
+        <p>Identifícate para llevar tu propio conteo de tareas y actividades completadas.</p>
+      </div>
+
+      <div id="progreso-sin-perfil" class="panel-progreso__invitacion">
+        <p>Aún no te has identificado en este dispositivo.</p>
+        <button type="button" id="boton-identificarme-progreso" class="boton-secundario">Identificarme</button>
+      </div>
+
+      <div id="progreso-con-perfil" class="panel-progreso" hidden>
+        <p id="progreso-mensaje" class="panel-progreso__mensaje"></p>
+        <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
+        <div id="progreso-por-trimestre" class="panel-progreso__bloques" aria-live="polite"></div>
+      </div>
+    </section>
+
     <!-- ===================== AVISOS ===================== -->
     <section id="avisos" class="seccion">
       <div class="seccion__encabezado">
