@@ -15,6 +15,15 @@
   --color-primario-suave: #24467F;
   --color-acento-texto: #04211D;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  /* ---- Academic Log System: "Sala de Mando" (modo oscuro) ---- */
+  --color-fondo-calido: #111217;
+  --color-superficie-baja: #1A1C23;
+  --color-texto-tinta: #E0E0E0;
+  --md-surface: #1d1c16;
+  --md-on-surface: #f5f0e6;
+  --md-surface-container-low: #32302a;
+  --md-outline-variant: #434749;
 }
 
 :root[data-theme="claro"] {
@@ -50,6 +59,131 @@
      conexión. Trebuchet MS viene instalada en Windows y macOS; donde no
      esté disponible, cae de vuelta a --fuente-base sin romper nada. */
   --fuente-titulos: "Trebuchet MS", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* ---- Academic Log System: tokens del sistema de diseño ---- */
+
+  /* "Bitácora" (modo claro) — los overrides de modo oscuro viven en
+     :root[data-theme="oscuro"] arriba. */
+  --color-fondo-calido: #FDFBF7;
+  --color-superficie-baja: #F5F0E6;
+  --color-texto-tinta: #2D3436;
+
+  /* Tokens Material-like, para granularidad fina donde --color-* no baste.
+     Son los mismos en ambos temas salvo los 4 sobrescritos en modo oscuro. */
+  --md-surface: #fef9ef;
+  --md-surface-container-low: #f8f3e9;
+  --md-surface-container: #f2ede3;
+  --md-surface-container-high: #ede8de;
+  --md-surface-container-highest: #e7e2d8;
+  --md-on-surface: #1d1c16;
+  --md-on-surface-variant: #434749;
+  --md-outline: #747879;
+  --md-outline-variant: #c3c7c8;
+  --md-primary: #181f21;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #2d3436;
+  --md-secondary: #006b5a;
+  --md-secondary-container: #54f8d7;
+  --md-tertiary-container-on: #e98000;
+
+  /* Estados de progreso/gamificación — uso EXCLUSIVO para progreso,
+     insignias e indicadores de rúbrica, nunca como color decorativo general. */
+  --color-estado-completado: #54F8D7;
+  --color-estado-progreso: #E98000;
+  --color-estado-pendiente: #FFB77D;
+  --color-estado-vencido: #BA1A1A;
+
+  /* Foco de accesibilidad de alto contraste, obligatorio en todo elemento
+     interactivo nuevo del rediseño (sidebar, modal de perfil, panel de
+     progreso). Los focus-visible ya existentes (turquesa/navy) se
+     conservan tal cual para no romper contraste ya validado. */
+  --color-focus-outline: #FF8C00;
+
+  /* Tipografía del rediseño: Quicksand/Inter auto-hospedadas (ver
+     @font-face abajo), con el stack de sistema existente como fallback
+     para no perder el comportamiento offline-first si los archivos de
+     fuente no cargaran por algún motivo. */
+  --font-encabezados: "Quicksand", var(--fuente-titulos);
+  --font-cuerpo: "Inter", var(--fuente-base);
+
+  /* Radios de borde */
+  --radio-sm: 0.25rem;
+  --radio-default: 0.5rem;
+  --radio-md: 0.75rem;
+  --radio-lg: 1rem;
+  --radio-xl: 1.5rem;
+  --radio-full: 9999px;
+
+  /* Espaciado — ritmo base de 8px */
+  --espacio-base: 8px;
+  --espacio-gutter: 24px;
+  --margen-mobile: 16px;
+  --margen-desktop: 40px;
+  --ancho-max-contenedor: 1200px;
+}
+
+/* ---------- Fuentes auto-hospedadas (Quicksand + Inter) ----------
+   Archivos .woff2 en assets/fonts/, descargados de Google Fonts y servidos
+   localmente para no depender de una petición externa en cada carga
+   (mantiene el espíritu offline-first documentado arriba, con la tipografía
+   exacta que pide el sistema de diseño). font-display: swap evita texto
+   invisible mientras cargan; si el archivo no está disponible, el navegador
+   cae a --fuente-titulos/--fuente-base sin romper el layout. */
+@font-face {
+  font-family: "Quicksand";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/quicksand-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Quicksand";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../assets/fonts/quicksand-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Quicksand";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../assets/fonts/quicksand-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Quicksand";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../assets/fonts/quicksand-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/inter-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../assets/fonts/inter-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../assets/fonts/inter-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../assets/fonts/inter-700.woff2") format("woff2");
 }
 
 /* ---------- Reset básico ---------- */
@@ -66,16 +200,71 @@ h2,
 h3,
 h4,
 .faq-item__pregunta {
-  font-family: var(--fuente-titulos);
+  font-family: var(--font-encabezados);
+  font-weight: 700;
+  /* Encabezados en sentence case (no Title Case ni MAYÚSCULAS) para
+     mantener el tono conversacional-académico del sistema de diseño;
+     esto se respeta al escribir el texto, no se fuerza con text-transform
+     porque algunos títulos incluyen siglas/números que deben conservarse. */
 }
 
 body {
   margin: 0;
-  font-family: var(--fuente-base);
+  font-family: var(--font-cuerpo);
   background-color: var(--color-fondo);
   color: var(--color-texto);
   transition: background-color 0.25s ease, color 0.25s ease;
   line-height: 1.5;
+}
+
+/* ---------- Escala tipográfica utilitaria (Academic Log System) ---------- */
+.headline-lg {
+  font-family: var(--font-encabezados);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 30px;
+}
+.headline-md {
+  font-family: var(--font-encabezados);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 32px;
+}
+.headline-sm {
+  font-family: var(--font-encabezados);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 28px;
+}
+.body-lg {
+  font-family: var(--font-cuerpo);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 28px;
+}
+.body-md {
+  font-family: var(--font-cuerpo);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+}
+.label-md {
+  font-family: var(--font-cuerpo);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+}
+.label-sm {
+  font-family: var(--font-cuerpo);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+}
+@media (min-width: 1024px) {
+  .headline-lg {
+    font-size: 32px;
+    line-height: 40px;
+  }
 }
 
 img {
