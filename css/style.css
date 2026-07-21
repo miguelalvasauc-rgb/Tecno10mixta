@@ -191,6 +191,17 @@
   box-sizing: border-box;
 }
 
+/* Sin esto, cualquier regla propia que ponga "display" en un elemento
+   (p. ej. ".panel-progreso { display: flex }") gana sobre el "display:
+   none" del navegador para [hidden] — el origen "autor" siempre le gana
+   al "user agent" en la cascada, sin importar la especificidad. Varios
+   componentes nuevos del rediseño (modal de perfil, panel de progreso)
+   alternan bloques con el atributo hidden en vez de una clase, así que
+   esta regla debe ganar siempre. */
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
 }

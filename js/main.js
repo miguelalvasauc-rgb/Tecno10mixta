@@ -2924,6 +2924,9 @@ function alEnviarFormularioPerfil(evento) {
   actualizarVistaModalPerfil();
   actualizarIndicadorPerfil();
   renderizarProgreso();
+
+  const modal = document.getElementById("modal-perfil");
+  if (modal) modal.close();
 }
 
 function alCambiarAlumno() {
