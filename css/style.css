@@ -1745,6 +1745,7 @@ summary:focus-visible {
 }
 
 .campo-formulario input,
+.campo-formulario select,
 .campo-formulario textarea {
   background-color: var(--color-fondo);
   color: var(--color-texto);
@@ -2269,4 +2270,126 @@ summary:focus-visible {
 .modal-grupo__cerrar:focus-visible {
   background-color: var(--color-superficie-alterna);
   color: var(--color-texto);
+}
+
+/* ---------- Disparador de perfil en la barra lateral (desktop) ---------- */
+.barra-lateral__perfil {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 var(--espacio-base);
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: 0.55rem 0.75rem;
+  font-family: var(--font-cuerpo);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.barra-lateral__perfil:hover {
+  background-color: var(--color-superficie-baja);
+}
+
+/* ---------- Modal de identificación de alumno ----------
+   NOTA: esto es solo para separar el progreso de compañeros que
+   comparten equipo — no es un sistema de seguridad. Ver comentario
+   extenso en js/main.js junto a CLAVE_PERFIL. */
+#modal-perfil {
+  width: 92%;
+  max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-perfil::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-perfil-titulo {
+  margin: 0 1.8rem 0.6rem 0;
+  font-family: var(--font-encabezados);
+  font-size: 1.15rem;
+}
+
+.modal-perfil__ayuda {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--color-texto-suave);
+}
+
+.modal-perfil__cerrar {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--color-texto-suave);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.modal-perfil__cerrar:hover,
+.modal-perfil__cerrar:focus-visible {
+  background-color: var(--color-superficie-alterna);
+  color: var(--color-texto);
+}
+
+.formulario-perfil {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.campo-formulario__ayuda {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-texto-suave);
+}
+
+.perfil-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.perfil-resumen__texto {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.boton-secundario {
+  align-self: flex-start;
+  background-color: transparent;
+  color: var(--color-texto);
+  border: 2px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: 0.55rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.boton-secundario:hover,
+.boton-secundario:focus-visible {
+  border-color: var(--color-texto-suave);
 }

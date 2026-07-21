@@ -47,6 +47,13 @@
       <a href="index.html#contacto">Contacto</a>
     </nav>
 
+    <!-- Identificación ligera de alumno (ver #modal-perfil y CLAVE_PERFIL
+         en js/main.js): NO es un sistema de seguridad real. -->
+    <button type="button" id="boton-perfil-sidebar" class="barra-lateral__perfil">
+      <span aria-hidden="true">🧑‍🎓</span>
+      <span id="texto-perfil-sidebar">Identificarme</span>
+    </button>
+
     <!-- Botón de cambio de tema claro/oscuro. La preferencia se guarda en localStorage para que no se pierda al navegar entre páginas. -->
     <button id="boton-tema" class="boton-tema barra-lateral__tema" type="button" aria-pressed="true" aria-label="Cambiar a modo claro">
       <span class="boton-tema__icono" aria-hidden="true">☀️</span>
@@ -87,6 +94,52 @@
         <option value="3C">3°C</option>
         <option value="3E">3°E</option>
       </select>
+    </div>
+  </dialog>
+
+  <!-- Modal de identificación: solo separa el progreso de compañeros que
+       comparten equipo, NO es un sistema de seguridad real (ver
+       js/main.js, sección 11). -->
+  <dialog id="modal-perfil" aria-labelledby="modal-perfil-titulo">
+    <button type="button" class="modal-perfil__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-perfil-titulo">¿Quién eres?</h3>
+    <p class="modal-perfil__ayuda">
+      Esto es solo para que tu progreso no se mezcle con el de tus
+      compañeros si comparten equipo. No es una contraseña real: cualquiera
+      que sepa tu nombre y tu PIN puede entrar a tu perfil.
+    </p>
+
+    <form id="formulario-perfil" class="formulario-perfil">
+      <div class="campo-formulario">
+        <label for="perfil-grupo">Grupo</label>
+        <select id="perfil-grupo" required>
+          <option value="" disabled selected>Elige tu grupo</option>
+          <option value="3C">3°C</option>
+          <option value="3E">3°E</option>
+        </select>
+      </div>
+
+      <div class="campo-formulario">
+        <label for="perfil-nombre">Nombre</label>
+        <select id="perfil-nombre" required disabled>
+          <option value="" disabled selected>Primero elige tu grupo</option>
+        </select>
+      </div>
+
+      <div class="campo-formulario">
+        <label for="perfil-pin">PIN de 4 dígitos</label>
+        <input type="text" id="perfil-pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" autocomplete="off" required>
+        <p class="campo-formulario__ayuda">La primera vez que uses tu nombre, este PIN queda registrado como tuyo. Después vuelve a escribirlo para confirmar que eres tú.</p>
+      </div>
+
+      <p id="perfil-error" class="formulario__estado" data-estado="error" role="alert" hidden></p>
+
+      <button type="submit" class="boton-enviar">Entrar</button>
+    </form>
+
+    <div id="perfil-resumen" class="perfil-resumen" hidden>
+      <p class="perfil-resumen__texto">Perfil activo: <strong id="perfil-resumen-nombre"></strong> (<span id="perfil-resumen-grupo"></span>)</p>
+      <button type="button" id="boton-cambiar-alumno" class="boton-secundario">Cambiar de alumno</button>
     </div>
   </dialog>
 

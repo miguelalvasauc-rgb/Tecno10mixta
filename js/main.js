@@ -1415,6 +1415,22 @@ const DATOS_TEMARIO = {
   ],
 };
 
+// Nombres de alumnos por grupo, usados para llenar el selector de nombre
+// del modal de identificación (ver sección 11 más abajo). TODO(Hiram):
+// reemplazar estos arreglos con la lista real de cada grupo; mientras
+// estén vacíos, el modal avisa que aún no hay nombres cargados para ese
+// grupo. Los 2 nombres de ejemplo comentados sirven para probar el flujo
+// de identificación sin tener la lista final todavía.
+const ALUMNOS_3C = [
+  // "Nombre Apellido",
+  // "Otro Alumno",
+];
+
+const ALUMNOS_3E = [
+  // "Nombre Apellido",
+  // "Otro Alumno",
+];
+
 /* =========================================================
    2. "CONECTORES" DE DATOS (aquí se integrará Google Sheets)
    ========================================================= */
@@ -1496,6 +1512,13 @@ if (TRIMESTRE_ACTUAL) {
   ultimoTrimestreVisto = TRIMESTRE_ACTUAL;
   localStorage.setItem(CLAVE_ULTIMO_TRIMESTRE, TRIMESTRE_ACTUAL);
 }
+
+// Identificación ligera de alumno (ver sección 11 para el resto de la
+// lógica). CLAVE_PERFIL guarda quién está "identificado" ahora mismo;
+// CLAVE_PINES guarda, por separado, el PIN que cada alumno registró la
+// primera vez que se identificó (para poder "confirmar que es él" luego).
+const CLAVE_PERFIL = "perfilActivo";
+const CLAVE_PINES = "pinesAlumnos";
 
 /* =========================================================
    4. UTILIDADES
@@ -2533,6 +2556,232 @@ async function alEnviarContacto(evento) {
 }
 
 /* =========================================================
+   11. IDENTIFICACIÓN DE ALUMNO (PERFIL)
+
+   IMPORTANTE: esto NO es un sistema de autenticación real. No hay
+   backend ni contraseñas con hash: todo vive en localStorage del
+   navegador, legible y modificable por cualquiera con las herramientas
+   de desarrollador. Su único propósito es evitar que compañeros que
+   comparten equipo mezclen su checklist de progreso sin querer. No debe
+   usarse para nada sensible ni tratarse como una cuenta protegida.
+   ========================================================= */
+
+function obtenerPerfilActivo() {
+  try {
+    return JSON.parse(localStorage.getItem(CLAVE_PERFIL));
+  } catch (error) {
+    return null;
+  }
+}
+
+function guardarPerfilActivo(perfil) {
+  localStorage.setItem(CLAVE_PERFIL, JSON.stringify(perfil));
+}
+
+function limpiarPerfilActivo() {
+  localStorage.removeItem(CLAVE_PERFIL);
+}
+
+// Convierte un nombre en un fragmento seguro para usar como parte de una
+// llave de localStorage: sin acentos, espacios ni mayúsculas.
+function slugAlumno(nombre) {
+  return nombre
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "") // quita acentos ya separados por NFD
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+}
+
+function obtenerPines() {
+  try {
+    return JSON.parse(localStorage.getItem(CLAVE_PINES)) || {};
+  } catch (error) {
+    return {};
+  }
+}
+
+// La primera vez que alguien elige un nombre, el PIN que escribe queda
+// registrado como suyo. Las veces siguientes tiene que volver a
+// escribirlo para "confirmar que es él". No hay hash: se guarda tal cual,
+// así que esto no protege nada — solo evita que dos compañeros que
+// comparten equipo se confundan de perfil por accidente.
+function verificarOCrearPin(grupo, nombre, pin) {
+  const pines = obtenerPines();
+  const clave = grupo + "_" + nombre;
+  if (pines[clave]) return pines[clave] === pin;
+  pines[clave] = pin;
+  localStorage.setItem(CLAVE_PINES, JSON.stringify(pines));
+  return true;
+}
+
+function poblarSelectorNombreAlumno(grupo) {
+  const select = document.getElementById("perfil-nombre");
+  if (!select) return;
+
+  const nombres = grupo === "3C" ? ALUMNOS_3C : grupo === "3E" ? ALUMNOS_3E : [];
+  select.innerHTML = "";
+
+  if (nombres.length === 0) {
+    const opcion = document.createElement("option");
+    opcion.value = "";
+    opcion.textContent = grupo
+      ? "Aún no hay nombres cargados para este grupo"
+      : "Primero elige tu grupo";
+    opcion.disabled = true;
+    opcion.selected = true;
+    select.appendChild(opcion);
+    select.disabled = true;
+    return;
+  }
+
+  const marcador = document.createElement("option");
+  marcador.value = "";
+  marcador.textContent = "Elige tu nombre";
+  marcador.disabled = true;
+  marcador.selected = true;
+  select.appendChild(marcador);
+
+  nombres.forEach((nombre) => {
+    const opcion = document.createElement("option");
+    opcion.value = nombre;
+    opcion.textContent = nombre;
+    select.appendChild(opcion);
+  });
+
+  select.disabled = false;
+}
+
+function mostrarErrorPerfil(mensaje) {
+  const error = document.getElementById("perfil-error");
+  if (!error) return;
+  error.textContent = mensaje;
+  error.hidden = false;
+}
+
+function ocultarErrorPerfil() {
+  const error = document.getElementById("perfil-error");
+  if (error) error.hidden = true;
+}
+
+// Alterna entre el formulario de identificación (sin perfil activo) y el
+// resumen con botón "Cambiar de alumno" (con perfil activo).
+function actualizarVistaModalPerfil() {
+  const perfil = obtenerPerfilActivo();
+  const formulario = document.getElementById("formulario-perfil");
+  const resumen = document.getElementById("perfil-resumen");
+  if (!formulario || !resumen) return;
+
+  formulario.hidden = Boolean(perfil);
+  resumen.hidden = !perfil;
+
+  if (perfil) {
+    const nombreEl = document.getElementById("perfil-resumen-nombre");
+    const grupoEl = document.getElementById("perfil-resumen-grupo");
+    if (nombreEl) nombreEl.textContent = perfil.nombre;
+    if (grupoEl) grupoEl.textContent = textoGrupo(perfil.grupo);
+  }
+}
+
+// Refleja si hay perfil activo en los botones "Perfil" de la barra
+// lateral (desktop) y de la barra inferior (móvil).
+function actualizarIndicadorPerfil() {
+  const perfil = obtenerPerfilActivo();
+  const etiquetaCorta = perfil ? perfil.nombre.split(" ")[0] : "Perfil";
+
+  const textoMovil = document.querySelector("#boton-perfil-movil .barra-inferior__texto");
+  if (textoMovil) textoMovil.textContent = etiquetaCorta;
+
+  const textoSidebar = document.getElementById("texto-perfil-sidebar");
+  if (textoSidebar) textoSidebar.textContent = perfil ? perfil.nombre : "Identificarme";
+}
+
+function abrirModalPerfil() {
+  const modal = document.getElementById("modal-perfil");
+  if (!modal) return;
+  ocultarErrorPerfil();
+  actualizarVistaModalPerfil();
+  modal.showModal();
+}
+
+function alEnviarFormularioPerfil(evento) {
+  evento.preventDefault();
+  ocultarErrorPerfil();
+
+  const grupo = document.getElementById("perfil-grupo").value;
+  const nombre = document.getElementById("perfil-nombre").value;
+  const pin = document.getElementById("perfil-pin").value;
+
+  if (!grupo || !nombre || !/^[0-9]{4}$/.test(pin)) {
+    mostrarErrorPerfil("Elige tu grupo, tu nombre y escribe un PIN de 4 dígitos.");
+    return;
+  }
+
+  if (!verificarOCrearPin(grupo, nombre, pin)) {
+    mostrarErrorPerfil("Ese PIN no coincide con el que registraste antes para este nombre.");
+    return;
+  }
+
+  guardarPerfilActivo({ grupo, nombre, pin });
+
+  // Identificarse también fija el grupo del sitio: no tendría sentido ver
+  // el contenido de otro grupo mientras se navega con este perfil activo.
+  grupoActual = grupo;
+  localStorage.setItem(CLAVE_GRUPO, grupo);
+  sincronizarSelectoresGrupo(grupo);
+  renderizarTodo();
+
+  document.getElementById("formulario-perfil").reset();
+  actualizarVistaModalPerfil();
+  actualizarIndicadorPerfil();
+  if (typeof renderizarProgreso === "function") renderizarProgreso();
+}
+
+function alCambiarAlumno() {
+  limpiarPerfilActivo();
+  actualizarVistaModalPerfil();
+  actualizarIndicadorPerfil();
+  renderizarTodo();
+  if (typeof renderizarProgreso === "function") renderizarProgreso();
+}
+
+// Mismo patrón que activarCierreModalDetalle: showModal()/close(), cierre
+// por botón "✕" o click en el ::backdrop, ESC vía el <dialog> nativo.
+// Tiene dos disparadores: el botón de la barra lateral (desktop) y el de
+// la barra inferior (móvil).
+function activarModalPerfil() {
+  const modal = document.getElementById("modal-perfil");
+  if (!modal) return;
+
+  ["boton-perfil-movil", "boton-perfil-sidebar"].forEach((id) => {
+    const boton = document.getElementById(id);
+    if (boton) boton.addEventListener("click", abrirModalPerfil);
+  });
+
+  const botonCerrar = modal.querySelector(".modal-perfil__cerrar");
+  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.close();
+  });
+
+  const selectorGrupoPerfil = document.getElementById("perfil-grupo");
+  if (selectorGrupoPerfil) {
+    selectorGrupoPerfil.addEventListener("change", () => {
+      poblarSelectorNombreAlumno(selectorGrupoPerfil.value);
+    });
+  }
+
+  const formulario = document.getElementById("formulario-perfil");
+  if (formulario) formulario.addEventListener("submit", alEnviarFormularioPerfil);
+
+  const botonCambiar = document.getElementById("boton-cambiar-alumno");
+  if (botonCambiar) botonCambiar.addEventListener("click", alCambiarAlumno);
+
+  actualizarIndicadorPerfil();
+}
+
+/* =========================================================
    10. INICIALIZACIÓN
    ========================================================= */
 
@@ -2553,6 +2802,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (selector) selector.addEventListener("change", alCambiarGrupo);
   });
   activarModalGrupo();
+  activarModalPerfil();
   activarResaltadoDeNavegacion();
   activarBotonVolverArriba();
 
