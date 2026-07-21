@@ -209,18 +209,24 @@
         <h2>Elige tu trimestre</h2>
         <p>Cada trimestre tiene sus propias rúbricas, tareas, actividades, proyectos y videos.</p>
       </div>
+      <!-- data-estado lo calcula actualizarEstadoTarjetasTrimestre() en
+           js/main.js a partir de ultimoTrimestreVisto (no hay un
+           calendario académico real en los datos de ejemplo). -->
       <div class="cuadricula-trimestres">
-        <a href="trimestre-1.html" class="tarjeta-trimestre">
+        <a href="trimestre-1.html" class="tarjeta-trimestre" data-trimestre="1">
+          <span class="tarjeta-trimestre__estado"></span>
           <span class="tarjeta-trimestre__numero" aria-hidden="true">1</span>
           <h3>Trimestre 1</h3>
           <p>Rúbricas, tareas, actividades, proyectos y videos del primer trimestre.</p>
         </a>
-        <a href="trimestre-2.html" class="tarjeta-trimestre">
+        <a href="trimestre-2.html" class="tarjeta-trimestre" data-trimestre="2">
+          <span class="tarjeta-trimestre__estado"></span>
           <span class="tarjeta-trimestre__numero" aria-hidden="true">2</span>
           <h3>Trimestre 2</h3>
           <p>Rúbricas, tareas, actividades, proyectos y videos del segundo trimestre.</p>
         </a>
-        <a href="trimestre-3.html" class="tarjeta-trimestre">
+        <a href="trimestre-3.html" class="tarjeta-trimestre" data-trimestre="3">
+          <span class="tarjeta-trimestre__estado"></span>
           <span class="tarjeta-trimestre__numero" aria-hidden="true">3</span>
           <h3>Trimestre 3</h3>
           <p>Rúbricas, tareas, actividades, proyectos y videos del tercer trimestre.</p>

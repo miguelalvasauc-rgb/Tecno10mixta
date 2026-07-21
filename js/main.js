@@ -1740,6 +1740,10 @@ async function renderizarAvisos() {
     const fecha = new Date(item.fecha + "T00:00:00");
     const li = document.createElement("li");
     li.className = "aviso-tarjeta";
+    // El bento grid de .lista-avisos usa este data-attribute (no solo el
+    // de la etiqueta interna) para que la tarjeta "importante" ocupe más
+    // espacio que una "general" o "recordatorio" (ver style.css).
+    li.dataset.prioridad = item.prioridad || "general";
 
     const fechaBox = document.createElement("div");
     fechaBox.className = "aviso-tarjeta__fecha";
@@ -2113,6 +2117,17 @@ async function renderizarProyectos() {
     const titulo = document.createElement("h3");
     titulo.textContent = item.titulo;
     cabecera.appendChild(titulo);
+    // Insignia de proyecto completado: solo decorativa, no cambia cómo se
+    // calcula ni se guarda "avance" (sigue siendo el campo estático de
+    // DATOS_PROYECTOS).
+    if (item.avance >= 100) {
+      const insignia = document.createElement("span");
+      insignia.className = "insignia-proyecto";
+      insignia.title = "Proyecto completado";
+      insignia.setAttribute("aria-label", "Proyecto completado");
+      insignia.textContent = "🏆";
+      cabecera.appendChild(insignia);
+    }
     cabecera.appendChild(crearBadgeGrupo(item.grupo));
 
     const descripcion = document.createElement("p");
@@ -2448,6 +2463,38 @@ function actualizarEnlacesTrimestreEnSidebar() {
   if (enlaceProgreso && !document.getElementById("progreso")) {
     enlaceProgreso.href = "index.html#progreso";
   }
+}
+
+// Marca cada .tarjeta-trimestre de la portada como "finalizado", "actual"
+// o "proximamente" comparando su número contra ultimoTrimestreVisto (la
+// mejor aproximación disponible a "en qué trimestre estamos", ya que los
+// datos de ejemplo no incluyen fechas de inicio/fin de cada trimestre).
+function actualizarEstadoTarjetasTrimestre() {
+  const tarjetas = document.querySelectorAll(".tarjeta-trimestre[data-trimestre]");
+  if (tarjetas.length === 0) return;
+
+  const actual = Number(ultimoTrimestreVisto);
+
+  tarjetas.forEach((tarjeta) => {
+    const numero = Number(tarjeta.dataset.trimestre);
+    const etiqueta = tarjeta.querySelector(".tarjeta-trimestre__estado");
+    let estado;
+    let texto;
+
+    if (numero < actual) {
+      estado = "finalizado";
+      texto = "Finalizado";
+    } else if (numero === actual) {
+      estado = "actual";
+      texto = "Actual";
+    } else {
+      estado = "proximamente";
+      texto = "🔒 Próximamente";
+    }
+
+    tarjeta.dataset.estado = estado;
+    if (etiqueta) etiqueta.textContent = texto;
+  });
 }
 
 // Actualiza el tercer nivel de las migas de pan ("Inicio > Trimestre X >
@@ -2935,6 +2982,7 @@ document.addEventListener("DOMContentLoaded", () => {
   sincronizarSelectoresGrupo(grupoActual);
 
   actualizarEnlacesTrimestreEnSidebar();
+  actualizarEstadoTarjetasTrimestre();
 
   renderizarTodo();
 
