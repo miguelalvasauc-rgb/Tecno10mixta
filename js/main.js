@@ -1573,35 +1573,43 @@ function crearEnlaceInstrucciones(url) {
   return enlace;
 }
 
-// Clave de localStorage para el progreso personal de una tarea: única
-// por trimestre y por tarea, para que no se mezcle el progreso de
-// "tarea t1 del Trimestre 1" con el de "tarea t1 del Trimestre 2".
-// Es independiente del grupo seleccionado a propósito: es progreso del
-// alumno en este navegador, no una propiedad del grupo.
-function claveProgresoTarea(idTarea) {
-  return "progreso_trimestre" + TRIMESTRE_ACTUAL + "_" + idTarea;
+// Clave de localStorage para el progreso personal de un ítem (tarea o
+// actividad, según "tipo"): incluye trimestre, tipo e id para que no se
+// mezcle "tarea t1 del Trimestre 1" con "actividad t1" ni con el mismo id
+// en otro trimestre. Si hay un alumno identificado (ver sección 11 y
+// CLAVE_PERFIL), la clave también incluye su grupo y nombre para que cada
+// quien vea su propio checklist aunque compartan equipo; si nadie se ha
+// identificado, cae a una clave "invitado" compartida por el dispositivo
+// (el comportamiento de antes de agregar identificación de alumno).
+function claveProgreso(tipo, id) {
+  const perfil = obtenerPerfilActivo();
+  const base = "progreso_" + (perfil ? perfil.grupo + "_" + slugAlumno(perfil.nombre) : "invitado");
+  return base + "_trimestre" + TRIMESTRE_ACTUAL + "_" + tipo + "_" + id;
 }
 
-function tareaEstaCompletada(idTarea) {
-  return localStorage.getItem(claveProgresoTarea(idTarea)) === "true";
+function itemEstaCompletado(tipo, id) {
+  return localStorage.getItem(claveProgreso(tipo, id)) === "true";
 }
 
-// Recalcula "X de Y tareas completadas" y la barra de progreso a partir
-// de la lista de tareas actualmente visible (ya filtrada por grupo).
-function actualizarResumenProgresoTareas(datos) {
-  const resumen = document.getElementById("resumen-progreso-tareas");
+// Recalcula "X de Y completadas" y la barra de progreso de una sección
+// (tareas o actividades) a partir de su lista actualmente visible (ya
+// filtrada por grupo). "tipo" es el mismo usado al construir la clave de
+// progreso; "etiqueta" es el sustantivo que se muestra ("tareas",
+// "actividades").
+function actualizarResumenProgreso(idResumen, datos, tipo, etiqueta) {
+  const resumen = document.getElementById(idResumen);
   if (!resumen) return;
 
   resumen.innerHTML = "";
   if (datos.length === 0) return;
 
   const total = datos.length;
-  const completadas = datos.filter((item) => tareaEstaCompletada(item.id)).length;
+  const completadas = datos.filter((item) => itemEstaCompletado(tipo, item.id)).length;
   const porcentaje = Math.round((completadas / total) * 100);
 
   const texto = document.createElement("p");
   texto.className = "resumen-progreso__texto";
-  texto.textContent = completadas + " de " + total + " tareas completadas";
+  texto.textContent = completadas + " de " + total + " " + etiqueta + " completadas";
 
   const barra = document.createElement("div");
   barra.className = "barra-progreso";
@@ -1609,7 +1617,7 @@ function actualizarResumenProgresoTareas(datos) {
   barra.setAttribute("aria-valuenow", String(completadas));
   barra.setAttribute("aria-valuemin", "0");
   barra.setAttribute("aria-valuemax", String(total));
-  barra.setAttribute("aria-label", "Progreso de tareas completadas");
+  barra.setAttribute("aria-label", "Progreso de " + etiqueta + " completadas");
   const relleno = document.createElement("div");
   relleno.className = "barra-progreso__relleno";
   relleno.style.width = porcentaje + "%";
@@ -1927,6 +1935,35 @@ async function renderizarRubricas() {
   });
 }
 
+// Construye el <label> con checkbox de "Marcar como completada" para una
+// tarjeta de tarea o actividad, y engancha su guardado en localStorage
+// (ver claveProgreso). Común a renderizarTareas y renderizarActividades.
+function crearChecklistProgreso(tipo, item, tarjeta, datos, idResumen, etiqueta) {
+  const completada = itemEstaCompletado(tipo, item.id);
+  tarjeta.classList.toggle("tarjeta--completada", completada);
+
+  const checklist = document.createElement("label");
+  checklist.className = "checklist-tarea";
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.className = "checklist-tarea__input";
+  checkbox.checked = completada;
+  const textoChecklist = document.createElement("span");
+  textoChecklist.className = "checklist-tarea__texto";
+  textoChecklist.textContent = completada ? "Completada" : "Marcar como completada";
+
+  checkbox.addEventListener("change", () => {
+    localStorage.setItem(claveProgreso(tipo, item.id), String(checkbox.checked));
+    tarjeta.classList.toggle("tarjeta--completada", checkbox.checked);
+    textoChecklist.textContent = checkbox.checked ? "Completada" : "Marcar como completada";
+    actualizarResumenProgreso(idResumen, datos, tipo, etiqueta);
+    if (typeof renderizarProgreso === "function") renderizarProgreso();
+  });
+
+  checklist.append(checkbox, textoChecklist);
+  return checklist;
+}
+
 async function renderizarTareas() {
   const contenedor = document.getElementById("contenedor-tareas");
   if (!contenedor) return;
@@ -1935,7 +1972,7 @@ async function renderizarTareas() {
 
   if (datos.length === 0) {
     mostrarSinResultados(contenedor, "No hay tareas registradas para este grupo.");
-    actualizarResumenProgresoTareas(datos);
+    actualizarResumenProgreso("resumen-progreso-tareas", datos, "tarea", "tareas");
     return;
   }
 
@@ -1981,34 +2018,15 @@ async function renderizarTareas() {
     }
 
     // Checklist de progreso personal: guardado en localStorage, aparte
-    // por completo del filtro de grupo (ver claveProgresoTarea).
-    const completada = tareaEstaCompletada(item.id);
-    tarjeta.classList.toggle("tarjeta--completada", completada);
-
-    const checklist = document.createElement("label");
-    checklist.className = "checklist-tarea";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.className = "checklist-tarea__input";
-    checkbox.checked = completada;
-    const textoChecklist = document.createElement("span");
-    textoChecklist.className = "checklist-tarea__texto";
-    textoChecklist.textContent = completada ? "Completada" : "Marcar como completada";
-
-    checkbox.addEventListener("change", () => {
-      localStorage.setItem(claveProgresoTarea(item.id), String(checkbox.checked));
-      tarjeta.classList.toggle("tarjeta--completada", checkbox.checked);
-      textoChecklist.textContent = checkbox.checked ? "Completada" : "Marcar como completada";
-      actualizarResumenProgresoTareas(datos);
-    });
-
-    checklist.append(checkbox, textoChecklist);
-    tarjeta.appendChild(checklist);
+    // por completo del filtro de grupo (ver claveProgreso).
+    tarjeta.appendChild(
+      crearChecklistProgreso("tarea", item, tarjeta, datos, "resumen-progreso-tareas", "tareas")
+    );
 
     contenedor.appendChild(tarjeta);
   });
 
-  actualizarResumenProgresoTareas(datos);
+  actualizarResumenProgreso("resumen-progreso-tareas", datos, "tarea", "tareas");
 }
 
 async function renderizarActividades() {
@@ -2019,6 +2037,7 @@ async function renderizarActividades() {
 
   if (datos.length === 0) {
     mostrarSinResultados(contenedor, "No hay actividades registradas para este grupo.");
+    actualizarResumenProgreso("resumen-progreso-actividades", datos, "actividad", "actividades");
     return;
   }
 
@@ -2048,8 +2067,25 @@ async function renderizarActividades() {
     if (item.detalleCompleto) {
       tarjeta.appendChild(crearBotonVerDetalle(item));
     }
+
+    // Checklist de progreso personal, mismo patrón que en Tareas (ver
+    // claveProgreso). Antes de este rediseño Actividades no tenía
+    // seguimiento de progreso.
+    tarjeta.appendChild(
+      crearChecklistProgreso(
+        "actividad",
+        item,
+        tarjeta,
+        datos,
+        "resumen-progreso-actividades",
+        "actividades"
+      )
+    );
+
     contenedor.appendChild(tarjeta);
   });
+
+  actualizarResumenProgreso("resumen-progreso-actividades", datos, "actividad", "actividades");
 }
 
 async function renderizarProyectos() {
