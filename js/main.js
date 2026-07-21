@@ -66,6 +66,28 @@ const DATOS_EVENTOS = [
   { id: "e5", grupo: "todos", titulo: "Entrega final de proyectos", fecha: "2026-08-14" },
 ];
 
+// Calendario oficial del ciclo escolar SEP 2026-2027 (agosto 2026 a julio
+// 2027): "tipo de día" del ciclo (vacaciones, CTE, suspensión, etc.), un
+// concepto DISTINTO de DATOS_EVENTOS/TAREAS/ACTIVIDADES/PROYECTOS (eso es
+// "hay algo entregable ese día"; esto es "qué tipo de día es"). No se
+// filtra por grupo: aplica igual a 3°C y 3°E.
+//
+// Fuente: calendario oficial SEP 2026-2027. Los registros con
+// verificado:false son fechas aproximadas tomadas de referencias no
+// oficiales (p. ej. ciclos anteriores) y DEBEN confirmarse contra el PDF
+// oficial de la SEP antes de publicar. No borrar el campo verificado al
+// completar las fechas reales; solo cambiarlo a true.
+//
+// Tipos válidos: "inicio", "fin", "vacaciones", "cte-intensiva",
+// "cte-ordinaria", "suspension", "evaluacion"
+//
+// Ejemplo de formato — Hiram reemplaza/completa con las fechas reales:
+// { fecha: "2026-08-31", tipo: "inicio", etiqueta: "Inicio de clases", verificado: true },
+// { fecha: "2026-09-16", tipo: "suspension", etiqueta: "Día festivo", verificado: true },
+// { fecha: "2026-10-09", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: false },
+// { fecha: "2026-12-21", tipo: "vacaciones", etiqueta: "Vacaciones de invierno (inicio)", verificado: true },
+const CALENDARIO_ESCOLAR_2026_2027 = [];
+
 // El resto del contenido SÍ depende del trimestre. Cada constante es un
 // objeto { 1: [...], 2: [...], 3: [...] } para que, más adelante, cada
 // clave se pueda mapear a su propia pestaña de Google Sheets.
@@ -2315,20 +2337,104 @@ function formatearClaveFecha(fecha) {
   return anio + "-" + mes + "-" + dia;
 }
 
+// Búsqueda O(1) de "qué tipo de día es" a partir de CALENDARIO_ESCOLAR_2026_2027.
+const TIPOS_DIA_POR_FECHA = new Map(
+  CALENDARIO_ESCOLAR_2026_2027.map((registro) => [registro.fecha, registro])
+);
+
+// Etiqueta genérica de respaldo por si un registro no trae "etiqueta"
+// propia (el campo es opcional en el formato de datos).
+const ETIQUETAS_TIPO_DIA = {
+  inicio: "Inicio de clases",
+  fin: "Fin de clases",
+  vacaciones: "Vacaciones",
+  "cte-intensiva": "CTE Fase Intensiva",
+  "cte-ordinaria": "CTE Sesión Ordinaria",
+  suspension: "Suspensión de labores",
+  evaluacion: "Evaluación",
+};
+
+// Ciclo escolar SEP 2026-2027: agosto 2026 a julio 2027. "mes" usa el
+// mismo índice 0-11 que Date#getMonth (7 = agosto, 6 = julio).
+const CICLO_ESCOLAR = {
+  inicio: { anio: 2026, mes: 7 },
+  fin: { anio: 2027, mes: 6 },
+};
+
+function claveMes(anio, mes) {
+  return anio * 12 + mes;
+}
+
+function estaDentroDelCicloEscolar(anio, mes) {
+  const clave = claveMes(anio, mes);
+  return (
+    clave >= claveMes(CICLO_ESCOLAR.inicio.anio, CICLO_ESCOLAR.inicio.mes) &&
+    clave <= claveMes(CICLO_ESCOLAR.fin.anio, CICLO_ESCOLAR.fin.mes)
+  );
+}
+
+// Mes/año que el widget de calendario muestra actualmente. Empieza en el
+// mes real de hoy si cae dentro del ciclo escolar; si no (por ejemplo,
+// viendo el sitio antes de que inicie el ciclo), empieza en agosto 2026.
+const hoyParaCalendario = new Date();
+let anioVisible = hoyParaCalendario.getFullYear();
+let mesVisible = hoyParaCalendario.getMonth();
+if (!estaDentroDelCicloEscolar(anioVisible, mesVisible)) {
+  anioVisible = CICLO_ESCOLAR.inicio.anio;
+  mesVisible = CICLO_ESCOLAR.inicio.mes;
+}
+
+// Habilita/deshabilita (de verdad, no solo visualmente) las flechas de
+// navegación cuando el mes visible ya está en un extremo del ciclo.
+function actualizarBotonesNavegacionCalendario() {
+  const anterior = document.getElementById("calendario-mes-anterior");
+  const siguiente = document.getElementById("calendario-mes-siguiente");
+  if (!anterior || !siguiente) return;
+
+  const mesAnteriorClave = claveMes(anioVisible, mesVisible) - 1;
+  const mesSiguienteClave = claveMes(anioVisible, mesVisible) + 1;
+  const inicioClave = claveMes(CICLO_ESCOLAR.inicio.anio, CICLO_ESCOLAR.inicio.mes);
+  const finClave = claveMes(CICLO_ESCOLAR.fin.anio, CICLO_ESCOLAR.fin.mes);
+
+  anterior.disabled = mesAnteriorClave < inicioClave;
+  siguiente.disabled = mesSiguienteClave > finClave;
+}
+
+// Mueve el mes visible +1/-1, sin salirse del ciclo escolar, y vuelve a
+// pintar la cuadrícula (reutiliza renderizarCalendario tal cual, solo
+// que ahora lee anioVisible/mesVisible en vez de la fecha de hoy).
+function avanzarMesCalendario(delta) {
+  let nuevoMes = mesVisible + delta;
+  let nuevoAnio = anioVisible;
+  if (nuevoMes < 0) {
+    nuevoMes = 11;
+    nuevoAnio -= 1;
+  } else if (nuevoMes > 11) {
+    nuevoMes = 0;
+    nuevoAnio += 1;
+  }
+
+  if (!estaDentroDelCicloEscolar(nuevoAnio, nuevoMes)) return;
+
+  mesVisible = nuevoMes;
+  anioVisible = nuevoAnio;
+  renderizarCalendario();
+}
+
 async function renderizarCalendario() {
   const cabecera = document.getElementById("calendario-cabecera");
   if (!cabecera) return;
 
   const eventos = (await obtenerEventos()).filter(elementoCoincideConGrupo);
   const hoy = new Date();
-  const anio = hoy.getFullYear();
-  const mes = hoy.getMonth();
 
-  // --- Cabecera con mes y año ---
-  const nombreMes = hoy.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
+  // --- Cabecera con mes y año visibles (no siempre son los de "hoy") ---
+  const primerDiaDelMes = new Date(anioVisible, mesVisible, 1);
+  const nombreMes = primerDiaDelMes.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
+  const nombreMesSolo = primerDiaDelMes.toLocaleDateString("es-MX", { month: "long" });
   cabecera.textContent = nombreMes;
 
-  // --- Cuadrícula del mes actual ---
+  // --- Cuadrícula del mes visible ---
   const grid = document.getElementById("calendario-grid");
   grid.innerHTML = "";
 
@@ -2339,8 +2445,8 @@ async function renderizarCalendario() {
     grid.appendChild(celda);
   });
 
-  const primerDiaSemana = new Date(anio, mes, 1).getDay();
-  const diasEnMes = new Date(anio, mes + 1, 0).getDate();
+  const primerDiaSemana = primerDiaDelMes.getDay();
+  const diasEnMes = new Date(anioVisible, mesVisible + 1, 0).getDate();
   const clavesConEvento = new Set(eventos.map((evento) => evento.fecha));
   const claveHoy = formatearClaveFecha(hoy);
 
@@ -2351,20 +2457,42 @@ async function renderizarCalendario() {
   }
 
   for (let dia = 1; dia <= diasEnMes; dia++) {
-    const claveDia = formatearClaveFecha(new Date(anio, mes, dia));
+    const claveDia = formatearClaveFecha(new Date(anioVisible, mesVisible, dia));
     const celda = document.createElement("div");
     celda.className = "calendario__dia";
     celda.setAttribute("role", "gridcell");
     celda.textContent = String(dia);
 
+    // Solo coincide con "hoy" cuando el mes visible es el mes real
+    // actual: claveDia se arma con anioVisible/mesVisible, claveHoy con
+    // la fecha real, así que esto ya queda resuelto por comparación.
     if (claveDia === claveHoy) {
       celda.classList.add("calendario__dia--hoy");
     }
-    if (clavesConEvento.has(claveDia)) {
+
+    const tieneEvento = clavesConEvento.has(claveDia);
+    if (tieneEvento) {
       celda.classList.add("calendario__dia--evento");
     }
+
+    // Tipo de día del ciclo escolar (vacaciones, CTE, etc.): coexiste
+    // con el punto de evento de arriba, no lo reemplaza.
+    const registroTipo = TIPOS_DIA_POR_FECHA.get(claveDia);
+    if (registroTipo) {
+      celda.classList.add("calendario__dia--" + registroTipo.tipo);
+      const etiquetaTipo =
+        registroTipo.etiqueta || ETIQUETAS_TIPO_DIA[registroTipo.tipo] || registroTipo.tipo;
+      celda.title = etiquetaTipo;
+      celda.setAttribute(
+        "aria-label",
+        dia + " de " + nombreMesSolo + ": " + etiquetaTipo + (tieneEvento ? " (con fecha entregable)" : "")
+      );
+    }
+
     grid.appendChild(celda);
   }
+
+  actualizarBotonesNavegacionCalendario();
 
   // --- Lista de próximas fechas (incluye meses futuros) ---
   const lista = document.getElementById("lista-eventos");
@@ -2998,6 +3126,11 @@ document.addEventListener("DOMContentLoaded", () => {
   activarModalPerfil();
   activarResaltadoDeNavegacion();
   activarBotonVolverArriba();
+
+  const botonMesAnterior = document.getElementById("calendario-mes-anterior");
+  if (botonMesAnterior) botonMesAnterior.addEventListener("click", () => avanzarMesCalendario(-1));
+  const botonMesSiguiente = document.getElementById("calendario-mes-siguiente");
+  if (botonMesSiguiente) botonMesSiguiente.addEventListener("click", () => avanzarMesCalendario(1));
 
   // Modal de detalle: un listener delegado por sección más el cierre
   // (botón "✕" y click en el ::backdrop) del <dialog> compartido.

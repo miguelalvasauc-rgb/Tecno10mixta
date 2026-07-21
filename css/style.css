@@ -99,6 +99,16 @@
      conservan tal cual para no romper contraste ya validado. */
   --color-focus-outline: #FF8C00;
 
+  /* Colores por tipo de día del calendario escolar (widget de
+     Calendario en la portada). Reutilizan los mismos tokens de estado/
+     marca del sistema de diseño en vez de una paleta nueva. */
+  --dia-inicio-fin: var(--md-secondary);
+  --dia-vacaciones: var(--color-estado-completado);
+  --dia-cte-intensiva: var(--md-primary-container);
+  --dia-cte-ordinaria: var(--color-estado-progreso);
+  --dia-suspension: var(--color-estado-pendiente);
+  --dia-evaluacion: var(--color-estado-vencido);
+
   /* Tipografía del rediseño: Quicksand/Inter auto-hospedadas (ver
      @font-face abajo), con el stack de sistema existente como fallback
      para no perder el comportamiento offline-first si los archivos de
@@ -1519,10 +1529,48 @@ summary:focus-visible {
   box-shadow: var(--sombra);
 }
 
+.calendario__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.calendario__flecha {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background-color: var(--color-superficie-baja);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-full);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.calendario__flecha:hover:not(:disabled) {
+  background-color: var(--color-superficie-alterna);
+}
+
+.calendario__flecha:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.calendario__flecha:focus-visible {
+  outline: 3px solid var(--color-focus-outline);
+  outline-offset: 2px;
+}
+
 .calendario__cabecera {
+  flex: 1;
   text-align: center;
   font-weight: 700;
-  margin-bottom: 0.7rem;
   color: var(--color-texto);
   text-transform: capitalize;
 }
@@ -1545,6 +1593,7 @@ summary:focus-visible {
   position: relative;
   padding: 0.5rem 0.2rem;
   border-radius: 6px;
+  border-bottom: 3px solid transparent;
   font-size: 0.82rem;
   color: var(--color-texto);
 }
@@ -1553,6 +1602,46 @@ summary:focus-visible {
   visibility: hidden;
 }
 
+/* Tipo de día del ciclo escolar (ver CALENDARIO_ESCOLAR_2026_2027 en
+   js/main.js): fondo suave (~18-20% del color sólido) + borde inferior
+   sólido, para que el número del día siga siendo legible. Coexiste con
+   el punto de evento (::after) de abajo, que no lo tapa. */
+.calendario__dia--inicio,
+.calendario__dia--fin {
+  background-color: color-mix(in srgb, var(--dia-inicio-fin) 18%, transparent);
+  border-bottom-color: var(--dia-inicio-fin);
+}
+
+.calendario__dia--vacaciones {
+  background-color: color-mix(in srgb, var(--dia-vacaciones) 20%, transparent);
+  border-bottom-color: var(--dia-vacaciones);
+}
+
+.calendario__dia--cte-intensiva {
+  background-color: color-mix(in srgb, var(--dia-cte-intensiva) 18%, transparent);
+  border-bottom-color: var(--dia-cte-intensiva);
+}
+
+.calendario__dia--cte-ordinaria {
+  background-color: color-mix(in srgb, var(--dia-cte-ordinaria) 18%, transparent);
+  border-bottom-color: var(--dia-cte-ordinaria);
+}
+
+.calendario__dia--suspension {
+  background-color: color-mix(in srgb, var(--dia-suspension) 20%, transparent);
+  border-bottom-color: var(--dia-suspension);
+}
+
+.calendario__dia--evaluacion {
+  background-color: color-mix(in srgb, var(--dia-evaluacion) 18%, transparent);
+  border-bottom-color: var(--dia-evaluacion);
+}
+
+/* .calendario__dia--hoy va después de los tipos de día a propósito: si
+   un día es "hoy" Y tiene un tipo, el marcador de "hoy" debe seguir
+   ganando en fondo/texto para no perder el indicador más importante;
+   el borde inferior del tipo se sigue viendo porque esta regla no lo
+   toca. */
 .calendario__dia--hoy {
   background-color: var(--color-primario);
   color: var(--color-claro-sobre-navy);
@@ -1562,7 +1651,7 @@ summary:focus-visible {
 .calendario__dia--evento::after {
   content: "";
   position: absolute;
-  bottom: 3px;
+  bottom: 6px;
   left: 50%;
   transform: translateX(-50%);
   width: 5px;
@@ -1578,6 +1667,33 @@ summary:focus-visible {
 .calendario__eventos h3 {
   margin-top: 0;
   font-size: 1.05rem;
+}
+
+/* ---------- Leyenda de tipos de día ---------- */
+.calendario__leyenda {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--color-borde);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.calendario__leyenda li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--color-texto-suave);
+}
+
+.calendario__leyenda-color {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radio-sm);
+  flex-shrink: 0;
 }
 
 .lista-eventos {

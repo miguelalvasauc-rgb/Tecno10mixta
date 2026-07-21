@@ -193,8 +193,24 @@
       </div>
       <div class="calendario">
         <div class="calendario__panel">
-          <div id="calendario-cabecera" class="calendario__cabecera"></div>
+          <div class="calendario__nav">
+            <button type="button" id="calendario-mes-anterior" class="calendario__flecha" aria-label="Mes anterior">◀</button>
+            <div id="calendario-cabecera" class="calendario__cabecera"></div>
+            <button type="button" id="calendario-mes-siguiente" class="calendario__flecha" aria-label="Mes siguiente">▶</button>
+          </div>
           <div id="calendario-grid" class="calendario__grid" role="grid" aria-label="Calendario mensual de fechas importantes"></div>
+
+          <!-- Leyenda de tipos de día del ciclo escolar (ver
+               CALENDARIO_ESCOLAR_2026_2027 en js/main.js); es independiente
+               del punto de "hay algo entregable" que ya existía. -->
+          <ul class="calendario__leyenda" aria-label="Leyenda de tipos de día del ciclo escolar">
+            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-inicio-fin)" aria-hidden="true"></span>Inicio/Fin de clases</li>
+            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-vacaciones)" aria-hidden="true"></span>Vacaciones</li>
+            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-cte-intensiva)" aria-hidden="true"></span>CTE Fase Intensiva</li>
+            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-cte-ordinaria)" aria-hidden="true"></span>CTE Sesión Ordinaria</li>
+            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-suspension)" aria-hidden="true"></span>Suspensión de labores</li>
+            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-evaluacion)" aria-hidden="true"></span>Evaluación</li>
+          </ul>
         </div>
         <div class="calendario__eventos">
           <h3>Próximas fechas</h3>
