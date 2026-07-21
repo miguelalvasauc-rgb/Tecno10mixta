@@ -1484,6 +1484,19 @@ let temaActual = localStorage.getItem(CLAVE_TEMA) || "oscuro";
 // ese atributo, por lo que queda en null.
 const TRIMESTRE_ACTUAL = document.body.dataset.trimestre || null;
 
+// Último trimestre que el alumno visitó ('1' por defecto). La barra
+// lateral es idéntica en las 5 páginas del sitio, pero los enlaces a
+// Temario/Rúbricas/Tareas/Actividades/Proyectos/Videos/Entrega son
+// anclas que solo existen dentro de una página de trimestre: en la
+// portada y en FAQ, esos enlaces deben apuntar a la página de este
+// último trimestre visto (ver actualizarEnlacesTrimestreEnSidebar).
+const CLAVE_ULTIMO_TRIMESTRE = "ultimoTrimestreVisto";
+let ultimoTrimestreVisto = localStorage.getItem(CLAVE_ULTIMO_TRIMESTRE) || "1";
+if (TRIMESTRE_ACTUAL) {
+  ultimoTrimestreVisto = TRIMESTRE_ACTUAL;
+  localStorage.setItem(CLAVE_ULTIMO_TRIMESTRE, TRIMESTRE_ACTUAL);
+}
+
 /* =========================================================
    4. UTILIDADES
    ========================================================= */
@@ -2238,14 +2251,39 @@ function alternarTema() {
 }
 
 /* =========================================================
-   8. MENÚ MÓVIL Y FILTRO DE GRUPO
+   8. BARRA LATERAL / BARRA INFERIOR Y FILTRO DE GRUPO
    ========================================================= */
 
-function alternarMenuMovil() {
+// Los 7 enlaces de la barra lateral que apuntan a secciones dentro de una
+// página de trimestre (identificados por data-enlace en el HTML). En una
+// página de trimestre ya son anclas locales ("#temario") y no se tocan;
+// en la portada y en FAQ se reescriben para apuntar a
+// "trimestre-N.html#ancla" usando ultimoTrimestreVisto.
+const ANCLAS_DE_TRIMESTRE = [
+  "temario",
+  "rubricas",
+  "tareas",
+  "actividades",
+  "proyectos",
+  "videos",
+  "entrega",
+];
+
+function actualizarEnlacesTrimestreEnSidebar() {
+  if (TRIMESTRE_ACTUAL) return;
+
   const nav = document.getElementById("nav-principal");
-  const boton = document.getElementById("boton-menu");
-  const abierto = nav.classList.toggle("abierto");
-  boton.setAttribute("aria-expanded", String(abierto));
+  if (!nav) return;
+
+  ANCLAS_DE_TRIMESTRE.forEach((id) => {
+    const enlace = nav.querySelector('[data-enlace="' + id + '"]');
+    if (enlace) enlace.href = "trimestre-" + ultimoTrimestreVisto + ".html#" + id;
+  });
+
+  const enlaceProgreso = document.querySelector('[data-enlace-movil="progreso"]');
+  if (enlaceProgreso && !document.getElementById("progreso")) {
+    enlaceProgreso.href = "index.html#progreso";
+  }
 }
 
 // Actualiza el tercer nivel de las migas de pan ("Inicio > Trimestre X >
@@ -2342,11 +2380,13 @@ function activarResaltadoDeNavegacion() {
     actualizarMigaDeSeccion(enlaceActivo);
   }
 
-  // El header y el propio menú son "sticky", así que se descuenta su
-  // altura del observador para que una sección cuente como "vista" justo
-  // al aparecer debajo de esas barras fijas (y no detrás de ellas).
-  const encabezado = document.querySelector(".encabezado");
-  const altoFijo = (encabezado ? encabezado.offsetHeight : 0) + nav.offsetHeight;
+  // A diferencia del header superior que existía antes, la barra lateral
+  // y la barra inferior no ocupan espacio vertical en la parte de arriba
+  // del viewport (una es una columna fija a la izquierda, la otra vive
+  // abajo del todo), así que ya no hace falta descontar la altura de
+  // ningún elemento "sticky" superior: el margen es solo un pequeño
+  // colchón fijo.
+  const altoFijo = 0;
 
   // IntersectionObserver solo manda, en cada llamada, las secciones cuyo
   // estado CAMBIÓ (entró o salió), no todas las que siguen visibles. Por
@@ -2403,12 +2443,43 @@ async function renderizarTodo() {
   ]);
 }
 
+// La barra lateral (desktop) y el modal de grupo (barra inferior móvil)
+// tienen cada uno su propio <select> ("selector-grupo" y
+// "selector-grupo-movil" respectivamente, un <select> no puede repetir
+// id). Cambiar cualquiera de los dos debe reflejarse en el otro para que
+// no queden desincronizados al cambiar de tamaño de ventana.
+function sincronizarSelectoresGrupo(valor) {
+  const desktop = document.getElementById("selector-grupo");
+  const movil = document.getElementById("selector-grupo-movil");
+  if (desktop) desktop.value = valor;
+  if (movil) movil.value = valor;
+}
+
 async function alCambiarGrupo(evento) {
   // Se guarda en localStorage para que el grupo elegido no se pierda
   // al navegar entre la portada y las páginas de trimestre.
   grupoActual = evento.target.value;
   localStorage.setItem(CLAVE_GRUPO, grupoActual);
+  sincronizarSelectoresGrupo(grupoActual);
   await renderizarTodo();
+}
+
+// Modal de grupo: mismo patrón que activarCierreModalDetalle (showModal/
+// close, cierre por botón "✕" o click en el ::backdrop; ESC lo maneja el
+// <dialog> nativo). Solo tiene disparador en la barra inferior móvil.
+function activarModalGrupo() {
+  const boton = document.getElementById("boton-grupo-movil");
+  const modal = document.getElementById("modal-grupo");
+  if (!boton || !modal) return;
+
+  boton.addEventListener("click", () => modal.showModal());
+
+  const botonCerrar = modal.querySelector(".modal-grupo__cerrar");
+  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.close();
+  });
 }
 
 /* =========================================================
@@ -2468,15 +2539,20 @@ async function alEnviarContacto(evento) {
 document.addEventListener("DOMContentLoaded", () => {
   aplicarTema(temaActual);
 
-  // Sincroniza el <select> con el grupo recuperado de localStorage
-  // (por defecto el HTML trae seleccionado "todos").
-  document.getElementById("selector-grupo").value = grupoActual;
+  // Sincroniza los <select> de grupo (barra lateral y modal móvil) con
+  // el grupo recuperado de localStorage (por defecto "todos").
+  sincronizarSelectoresGrupo(grupoActual);
+
+  actualizarEnlacesTrimestreEnSidebar();
 
   renderizarTodo();
 
   document.getElementById("boton-tema").addEventListener("click", alternarTema);
-  document.getElementById("selector-grupo").addEventListener("change", alCambiarGrupo);
-  document.getElementById("boton-menu").addEventListener("click", alternarMenuMovil);
+  ["selector-grupo", "selector-grupo-movil"].forEach((id) => {
+    const selector = document.getElementById(id);
+    if (selector) selector.addEventListener("change", alCambiarGrupo);
+  });
+  activarModalGrupo();
   activarResaltadoDeNavegacion();
   activarBotonVolverArriba();
 

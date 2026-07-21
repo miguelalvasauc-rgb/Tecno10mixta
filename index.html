@@ -10,51 +10,85 @@
 <body>
   <a href="#main-content" class="enlace-saltar">Saltar al contenido principal</a>
 
-  <!-- ===================== ENCABEZADO ===================== -->
-  <header class="encabezado">
-    <div class="encabezado__marca">
+  <!-- ===================== BARRA LATERAL (desktop ≥1024px) ===================== -->
+  <aside class="barra-lateral" aria-label="Navegación principal">
+    <a href="#inicio" class="barra-lateral__logo" aria-label="Ir al inicio">
       <img
         src="assets/logo-10mixta.jpg"
         alt="Logo institucional de la Escuela Secundaria No. 10 Mixta Fernando Hernández Alcalá"
-        class="encabezado__logo">
-      <div class="encabezado__texto">
-        <p class="encabezado__eyebrow">Educación Tecnológica</p>
-        <h1 class="encabezado__titulo">Escuela Secundaria No. 10 Mixta</h1>
-        <p class="encabezado__subtitulo">&ldquo;Fernando Hernández Alcalá&rdquo;</p>
-      </div>
+        class="barra-lateral__logo-img">
+    </a>
+    <h1 class="sr-only">Escuela Secundaria No. 10 Mixta &ldquo;Fernando Hernández Alcalá&rdquo; — Educación Tecnológica</h1>
+    <p class="barra-lateral__eyebrow">Educación Tecnológica</p>
+
+    <div class="campo-grupo barra-lateral__grupo">
+      <label for="selector-grupo">Grupo</label>
+      <select id="selector-grupo" aria-label="Filtrar contenido por grupo">
+        <option value="todos">Todos los grupos</option>
+        <option value="3C">3°C</option>
+        <option value="3E">3°E</option>
+      </select>
     </div>
 
-    <div class="encabezado__controles">
-      <div class="campo-grupo">
-        <label for="selector-grupo">Grupo</label>
-        <select id="selector-grupo" aria-label="Filtrar contenido por grupo">
-          <option value="todos">Todos los grupos</option>
-          <option value="3C">3°C</option>
-          <option value="3E">3°E</option>
-        </select>
-      </div>
+    <!-- Los enlaces a Temario/Rúbricas/Tareas/Actividades/Proyectos/Videos/
+         Entrega apuntan por defecto al Trimestre 1; JS los reescribe al
+         último trimestre visto (ver actualizarEnlacesTrimestreEnSidebar
+         en js/main.js), porque esas secciones no existen en la portada. -->
+    <nav id="nav-principal" class="barra-lateral__nav" aria-label="Secciones">
+      <a href="#inicio">Inicio</a>
+      <a href="trimestre-1.html#temario" data-enlace="temario">Temario</a>
+      <a href="trimestre-1.html#rubricas" data-enlace="rubricas">Rúbricas</a>
+      <a href="trimestre-1.html#tareas" data-enlace="tareas">Tareas</a>
+      <a href="trimestre-1.html#actividades" data-enlace="actividades">Actividades</a>
+      <a href="trimestre-1.html#proyectos" data-enlace="proyectos">Proyectos</a>
+      <a href="trimestre-1.html#videos" data-enlace="videos">Videos</a>
+      <a href="trimestre-1.html#entrega" data-enlace="entrega">Entrega de trabajos</a>
+      <a href="faq.html">FAQ</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
 
-      <!-- Botón de cambio de tema claro/oscuro. La preferencia se guarda en localStorage para que no se pierda al navegar entre páginas. -->
-      <button id="boton-tema" class="boton-tema" type="button" aria-pressed="true" aria-label="Cambiar a modo claro">
-        <span class="boton-tema__icono" aria-hidden="true">☀️</span>
-        <span class="boton-tema__texto">Modo claro</span>
-      </button>
+    <!-- Botón de cambio de tema claro/oscuro. La preferencia se guarda en localStorage para que no se pierda al navegar entre páginas. -->
+    <button id="boton-tema" class="boton-tema barra-lateral__tema" type="button" aria-pressed="true" aria-label="Cambiar a modo claro">
+      <span class="boton-tema__icono" aria-hidden="true">☀️</span>
+      <span class="boton-tema__texto">Modo claro</span>
+    </button>
+  </aside>
 
-      <button id="boton-menu" class="boton-menu" type="button" aria-label="Abrir menú de navegación" aria-expanded="false" aria-controls="nav-principal">
-        <span aria-hidden="true">☰</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- ===================== NAVEGACIÓN ===================== -->
-  <nav id="nav-principal" class="nav-principal">
-    <a href="#inicio">Inicio</a>
-    <a href="#avisos">Avisos</a>
-    <a href="#calendario">Calendario</a>
-    <a href="#trimestres">Trimestres</a>
-    <a href="#contacto">Contacto</a>
-    <a href="faq.html">FAQ</a>
+  <!-- ===================== BARRA INFERIOR (móvil <1024px) ===================== -->
+  <nav class="barra-inferior" aria-label="Navegación móvil">
+    <a href="#inicio" class="barra-inferior__item">
+      <span class="barra-inferior__icono" aria-hidden="true">🏠</span>
+      <span class="barra-inferior__texto">Inicio</span>
+    </a>
+    <button type="button" class="barra-inferior__item" id="boton-grupo-movil">
+      <span class="barra-inferior__icono" aria-hidden="true">👥</span>
+      <span class="barra-inferior__texto">Grupo</span>
+    </button>
+    <a href="#progreso" class="barra-inferior__item" data-enlace-movil="progreso">
+      <span class="barra-inferior__icono" aria-hidden="true">📊</span>
+      <span class="barra-inferior__texto">Progreso</span>
+    </a>
+    <button type="button" class="barra-inferior__item" id="boton-perfil-movil">
+      <span class="barra-inferior__icono" aria-hidden="true">🧑‍🎓</span>
+      <span class="barra-inferior__texto">Perfil</span>
+    </button>
   </nav>
+
+  <!-- Modal de grupo: duplica el selector de la barra lateral para que
+       también se pueda cambiar de grupo desde la barra inferior móvil
+       (ver activarModalGrupo en js/main.js). -->
+  <dialog id="modal-grupo" aria-labelledby="modal-grupo-titulo">
+    <button type="button" class="modal-grupo__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-grupo-titulo">Elige tu grupo</h3>
+    <div class="campo-grupo">
+      <label for="selector-grupo-movil">Grupo</label>
+      <select id="selector-grupo-movil" aria-label="Filtrar contenido por grupo">
+        <option value="todos">Todos los grupos</option>
+        <option value="3C">3°C</option>
+        <option value="3E">3°E</option>
+      </select>
+    </div>
+  </dialog>
 
   <main id="main-content">
     <!-- ===================== HERO / BIENVENIDA ===================== -->

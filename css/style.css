@@ -1980,3 +1980,293 @@ summary:focus-visible {
     padding: 0.35rem 0.4rem;
   }
 }
+
+/* =========================================================
+   BARRA LATERAL (desktop ≥1024px) / BARRA INFERIOR (móvil <1024px)
+   Reemplaza el header + nav superior. .encabezado/.nav-principal/
+   .boton-menu de arriba quedan sin uso en el HTML nuevo (se conservan en
+   este archivo por si alguna página aún no se migra), y se reutilizan
+   tal cual .boton-tema, .campo-grupo, #selector-grupo, .selector-trimestre,
+   .migas-de-pan y .banner-trimestre, que no dependían del header navy.
+   ========================================================= */
+
+.barra-lateral {
+  display: none; /* visible solo ≥1024px, ver media query abajo */
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 256px;
+  flex-direction: column;
+  gap: var(--espacio-gutter);
+  background-color: var(--color-superficie-baja);
+  border-right: 1px solid var(--md-outline-variant);
+  padding: var(--espacio-gutter) var(--espacio-base);
+  overflow-y: auto;
+  z-index: 80;
+}
+
+.barra-lateral__logo {
+  display: flex;
+  justify-content: center;
+  padding: var(--espacio-base) 0;
+}
+
+.barra-lateral__logo-img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: var(--radio-full);
+  /* Sello monocromático: la foto del logo se desatura para que se lea
+     como un sello institucional de la "Bitácora", no como una foto a
+     color dentro de la navegación. */
+  filter: grayscale(1) contrast(1.05);
+}
+
+:root[data-theme="oscuro"] .barra-lateral__logo-img {
+  filter: grayscale(1) contrast(1.05) brightness(0.85);
+}
+
+.barra-lateral__eyebrow {
+  margin: -0.5rem 0 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-texto-suave);
+}
+
+.barra-lateral__grupo {
+  padding: 0 var(--espacio-base);
+}
+
+.barra-lateral .campo-grupo {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
+}
+
+.barra-lateral .campo-grupo label {
+  color: var(--color-texto-suave);
+  font-weight: 600;
+}
+
+.barra-lateral #selector-grupo {
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: 0.5rem 0.6rem;
+}
+
+.barra-lateral .selector-trimestre {
+  flex-direction: column;
+  background-color: var(--color-superficie);
+  border-color: var(--color-borde);
+  border-radius: var(--radio-md);
+  margin: 0 var(--espacio-base);
+}
+
+.barra-lateral .selector-trimestre__tab {
+  color: var(--color-texto-suave);
+  text-align: center;
+  border-radius: var(--radio-sm);
+}
+
+.barra-lateral .selector-trimestre__tab:hover {
+  background-color: var(--color-superficie-baja);
+}
+
+.barra-lateral__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0 var(--espacio-base);
+}
+
+.barra-lateral__nav a {
+  display: block;
+  text-decoration: none;
+  font-family: var(--font-cuerpo);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radio-md);
+  border-left: 3px solid transparent;
+}
+
+.barra-lateral__nav a:hover {
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+}
+
+.barra-lateral__nav a.nav-link--activo {
+  background-color: var(--color-superficie);
+  color: var(--md-secondary);
+  border-left-color: var(--md-secondary);
+}
+
+.barra-lateral__tema {
+  margin: auto var(--espacio-base) 0;
+  justify-content: center;
+}
+
+/* ---------- Barra inferior (móvil) ---------- */
+.barra-inferior {
+  display: flex; /* oculta ≥1024px, ver media query abajo */
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 80;
+  background-color: var(--color-superficie-baja);
+  border-top: 1px solid var(--md-outline-variant);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.barra-inferior__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-height: 56px;
+  background: none;
+  border: none;
+  text-decoration: none;
+  font-family: var(--font-cuerpo);
+  color: var(--color-texto-suave);
+  cursor: pointer;
+}
+
+.barra-inferior__icono {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.barra-inferior__texto {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.barra-inferior__item:hover,
+.barra-inferior__item--activo {
+  color: var(--md-secondary);
+}
+
+/* ---------- Foco accesible en los componentes nuevos ---------- */
+.barra-lateral a:focus-visible,
+.barra-lateral button:focus-visible,
+.barra-lateral select:focus-visible,
+.barra-inferior a:focus-visible,
+.barra-inferior button:focus-visible {
+  outline: 3px solid var(--color-focus-outline);
+  outline-offset: 2px;
+}
+
+/* ---------- Distribución general según ancho de pantalla ---------- */
+@media (min-width: 1024px) {
+  .barra-lateral {
+    display: flex;
+  }
+
+  .barra-inferior {
+    display: none;
+  }
+
+  body {
+    padding-left: 256px;
+  }
+
+  .migas-de-pan,
+  .banner-trimestre {
+    padding-left: var(--margen-desktop);
+    padding-right: var(--margen-desktop);
+  }
+}
+
+@media (max-width: 1023.98px) {
+  body {
+    padding-bottom: 64px;
+  }
+
+  /* Deja aire para que el botón "volver arriba" no quede tapado por la
+     barra inferior fija; gana sobre la regla de la media query de 480px
+     de arriba porque aparece después en el archivo. */
+  .boton-volver-arriba {
+    bottom: calc(64px + 1rem);
+  }
+}
+
+/* ---------- Modal de grupo (disparado desde la barra inferior móvil) ----------
+   Mismo patrón visual que #modal-detalle: <dialog> nativo, sin fijar
+   "position" (ver nota en esa sección). Solo tiene disparador visible en
+   <1024px, pero el <dialog> funciona igual a cualquier ancho. */
+#modal-grupo {
+  width: 92%;
+  max-width: 360px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-grupo::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-grupo-titulo {
+  margin: 0 1.8rem 0.9rem 0;
+  font-family: var(--font-encabezados);
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+#modal-grupo .campo-grupo {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+#modal-grupo label {
+  color: var(--color-texto-suave);
+  font-weight: 600;
+}
+
+#modal-grupo #selector-grupo-movil {
+  border-radius: var(--radio-md);
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-superficie-baja);
+  color: var(--color-texto);
+}
+
+.modal-grupo__cerrar {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--color-texto-suave);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.modal-grupo__cerrar:hover,
+.modal-grupo__cerrar:focus-visible {
+  background-color: var(--color-superficie-alterna);
+  color: var(--color-texto);
+}
