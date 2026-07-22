@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-22T00:00:00Z",
+  "title": "Design System: Academic Log System",
+  "extensions": {
+    "colorMeta": {
+      "navy": { "role": "primary", "displayName": "Institutional Navy", "canonical": "#1B3A6B", "tonalRamp": ["#08111F", "#0E1D36", "#142C50", "#1B3A6B", "#496189", "#7689A6", "#A4B0C4", "#DDE1E9"] },
+      "turquesa": { "role": "secondary", "displayName": "Vivid Turquoise", "canonical": "#14B8A6", "tonalRamp": ["#063732", "#0A5C53", "#0F8A7D", "#14B8A6", "#43C6B8", "#72D4CA", "#A1E3DB", "#DCF4F2"] },
+      "estado-completado": { "role": "status", "displayName": "Completion Mint", "canonical": "#54F8D7", "tonalRamp": ["#194A41", "#2A7C6C", "#3FBAA1", "#54F8D7", "#76F9DF", "#98FBE7", "#BBFCEF", "#E5FEF9"] },
+      "estado-progreso": { "role": "status", "displayName": "In-Progress Orange", "canonical": "#E98000", "tonalRamp": ["#462600", "#754000", "#AF6000", "#E98000", "#ED9933", "#F2B366", "#F6CC99", "#FBEDD9"] },
+      "estado-pendiente": { "role": "status", "displayName": "Pending Peach", "canonical": "#FFB77D", "tonalRamp": ["#4C3726", "#805C3F", "#BF895E", "#FFB77D", "#FFC597", "#FFD3B1", "#FFE2CB", "#FFF4EC"] },
+      "estado-vencido": { "role": "status", "displayName": "Overdue Red", "canonical": "#BA1A1A", "tonalRamp": ["#380808", "#5D0D0D", "#8C1414", "#BA1A1A", "#C84848", "#D57676", "#E2A3A3", "#F3DCDC"] },
+      "fondo-oscuro": { "role": "neutral", "displayName": "Sala de Mando Ink", "canonical": "#0D1B2A" },
+      "fondo-claro": { "role": "neutral", "displayName": "Bitácora Paper", "canonical": "#F5F7FA" },
+      "urgencia": { "role": "status", "displayName": "Urgency Red", "canonical": "#D64545" },
+      "exito": { "role": "status", "displayName": "Success Green", "canonical": "#3FA34D" },
+      "advertencia": { "role": "status", "displayName": "Caution Amber", "canonical": "#E0A526" }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "Section titles (h2), page-level headings. Quicksand 700." },
+      "title": { "displayName": "Title", "purpose": "Card and sub-section titles (h3), FAQ questions. Quicksand 600." },
+      "body": { "displayName": "Body", "purpose": "Default running text, rubric descriptions, task copy. Inter 400." },
+      "label": { "displayName": "Label", "purpose": "Nav links, form labels, small UI text. Inter 600." }
+    },
+    "shadows": [
+      { "name": "ambient", "value": "0 8px 24px rgba(0, 0, 0, 0.35) (dark) / 0 8px 20px rgba(27, 58, 107, 0.12) (light)", "purpose": "The single elevation tier: cards, sticky header, modals, calendar panel. Navy-tinted in light mode instead of pure black." },
+      { "name": "completion-glow", "value": "0 0 10px var(--color-estado-completado)", "purpose": "Dark-mode-only celebratory glow on the completed-project badge. The one sanctioned exception to flat-by-default." }
+    ],
+    "motion": [
+      { "name": "duration-fast", "value": "0.15s", "purpose": "Checklist checkbox fill/border transition." },
+      { "name": "duration-standard", "value": "0.2s", "purpose": "Default hover/focus transitions: card lift, border-color shifts, button fills." },
+      { "name": "duration-slow", "value": "0.25s", "purpose": "Theme toggle background/color crossfade; back-to-top button opacity/transform." },
+      { "name": "ease-standard", "value": "ease", "purpose": "Default easing for all transitions in the system; no custom cubic-bezier in use." }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "480px" },
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "720px" },
+      { "name": "lg", "value": "900px" },
+      { "name": "xl", "value": "960px" },
+      { "name": "sidebar", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Solid-fill call to action (send message, formal instructions link). Turquoise fill in dark mode; swaps to navy fill in light mode per the Light-Mode Turquoise Rule.",
+      "html": "<button class=\"ds-btn-primary\">Enviar mensaje</button>",
+      "css": ".ds-btn-primary { background-color: var(--color-turquesa); color: var(--color-acento-texto); border: none; border-radius: var(--radio-full); padding: 0.65rem 1.4rem; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: filter 0.2s ease; } .ds-btn-primary:hover, .ds-btn-primary:focus-visible { filter: brightness(1.1); } :root[data-theme=\"claro\"] .ds-btn-primary { background-color: var(--color-primario); color: var(--color-claro-sobre-navy); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Outline pill for lower-emphasis actions (ver detalle, descargar). Fills solid on hover/focus.",
+      "html": "<button class=\"ds-btn-ghost\">Ver detalle</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 700; color: var(--color-turquesa); background-color: transparent; border: 1px solid var(--color-turquesa); border-radius: var(--radio-full); padding: 0.3rem 0.75rem; cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease; } .ds-btn-ghost:hover, .ds-btn-ghost:focus-visible { background-color: var(--color-turquesa); color: var(--color-acento-texto); } :root[data-theme=\"claro\"] .ds-btn-ghost:hover, :root[data-theme=\"claro\"] .ds-btn-ghost:focus-visible { background-color: var(--color-primario); color: var(--color-claro-sobre-navy); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Bordered, no-fill button for the lowest-emphasis actions (cambiar de alumno).",
+      "html": "<button class=\"ds-btn-secondary\">Cambiar de alumno</button>",
+      "css": ".ds-btn-secondary { align-self: flex-start; background-color: transparent; color: var(--color-texto); border: 2px solid var(--color-borde); border-radius: var(--radio-md); padding: 0.55rem 1.1rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; } .ds-btn-secondary:hover, .ds-btn-secondary:focus-visible { border-color: var(--color-texto-suave); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Generic content card (trimester, temario, tarjeta). Ambient shadow, 4-step lift on hover, border turns turquoise.",
+      "html": "<div class=\"ds-card\" tabindex=\"0\"><h3>Trimestre 1</h3><p>Rúbricas, tareas, actividades, proyectos y videos del primer trimestre.</p></div>",
+      "css": ".ds-card { background-color: var(--color-superficie); border: 1px solid var(--color-borde); border-radius: var(--radio-lg); padding: 1.1rem 1.2rem; box-shadow: var(--sombra); display: flex; flex-direction: column; gap: 0.5rem; transition: transform 0.2s ease, border-color 0.2s ease; } .ds-card:hover, .ds-card:focus-visible { transform: translateY(-4px); border-color: var(--color-turquesa); } .ds-card h3 { margin: 0; font-size: 1.05rem; color: var(--color-texto); } .ds-card p { margin: 0; font-size: 0.88rem; color: var(--color-texto-suave); }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-status-completado",
+      "description": "Pill status indicator for task/rubric state. Colors are exclusive to progress semantics (see the Status-Color Exclusivity Rule) — entregada/finalizado (mint), pendiente (peach), atrasada (red).",
+      "html": "<span class=\"ds-badge-status\" data-estado=\"entregada\">Entregada</span>",
+      "css": ".ds-badge-status { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: var(--radio-full); } .ds-badge-status[data-estado=\"entregada\"] { background-color: var(--color-estado-completado); color: #04211D; } .ds-badge-status[data-estado=\"pendiente\"] { background-color: var(--color-estado-pendiente); color: #2A1D02; } .ds-badge-status[data-estado=\"atrasada\"] { background-color: var(--color-estado-vencido); color: var(--color-claro-sobre-navy); }"
+    },
+    {
+      "name": "Custom Checkbox",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Signature progress-checklist checkbox: rounded square, hand-drawn checkmark from rotated border segments (no icon font/SVG).",
+      "html": "<label class=\"ds-checkbox\"><input type=\"checkbox\" class=\"ds-checkbox__input\"> Tarea completada</label>",
+      "css": ".ds-checkbox { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 600; color: var(--color-texto-suave); cursor: pointer; } .ds-checkbox__input { appearance: none; -webkit-appearance: none; margin: 0; width: 20px; height: 20px; flex-shrink: 0; position: relative; border: 2px solid var(--color-turquesa); border-radius: 5px; background-color: var(--color-superficie); cursor: pointer; transition: background-color 0.15s ease, border-color 0.15s ease; } .ds-checkbox__input:checked { background-color: var(--color-turquesa); } .ds-checkbox__input:checked::after { content: \"\"; position: absolute; left: 5px; top: 1px; width: 6px; height: 11px; border: solid #04211D; border-width: 0 2px 2px 0; transform: rotate(45deg); } :root[data-theme=\"claro\"] .ds-checkbox__input { border-color: var(--color-primario); } :root[data-theme=\"claro\"] .ds-checkbox__input:checked { background-color: var(--color-primario); } :root[data-theme=\"claro\"] .ds-checkbox__input:checked::after { border-color: var(--color-claro-sobre-navy); }"
+    },
+    {
+      "name": "Sidebar Nav Link",
+      "kind": "nav",
+      "refersTo": "button-secondary",
+      "description": "Desktop sidebar navigation link, active state marked by a 3px left border + secondary color rather than a background fill.",
+      "html": "<a href=\"#\" class=\"ds-nav-link ds-nav-link--activo\">Tareas</a>",
+      "css": ".ds-nav-link { display: block; text-decoration: none; font-family: var(--font-cuerpo); font-size: 14px; font-weight: 600; color: var(--color-texto-suave); padding: 0.55rem 0.75rem; border-radius: var(--radio-md); border-left: 3px solid transparent; } .ds-nav-link:hover { background-color: var(--color-superficie); color: var(--color-texto); } .ds-nav-link--activo { background-color: var(--color-superficie); color: var(--md-secondary); border-left-color: var(--md-secondary); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Academic Log System",
+    "overview": "The site already names its own two moods in code comments, and DESIGN.md keeps that framing rather than inventing a new one: Bitácora (logbook) for light mode, Sala de Mando (command room) for dark mode. Both are the same institutional identity — navy (#1B3A6B) and turquoise (#14B8A6), Quicksand headlines over Inter body text, everything rounded and pill-shaped — just lit differently. Bitácora reads as a paper logbook open on a desk: warm off-white surfaces, ink-dark text. Sala de Mando reads as the same logbook under a console lamp at night: deep navy surfaces, glowing turquoise accents.\n\nThe mood is warm and encouraging, not corporate-institutional: this is a 3°C/3°E classroom portal for teenagers, so the navy/turquoise institutional palette is softened by fully-rounded corners, pill buttons and badges everywhere, and a status-color vocabulary (mint/orange/red) that makes progress feel like a game log rather than a spreadsheet. Components are tactile — generous padding, soft single-tier shadows, a consistent hover lift — built for comfortable tapping on a phone in a school hallway as much as a desktop at home.",
+    "keyCharacteristics": [
+      "Two-persona theming (Bitácora/light, Sala de Mando/dark) over one fixed institutional palette — hue never changes between themes, only which surface/text roles are dark vs. light.",
+      "Flat-by-default surfaces with exactly one soft ambient shadow tier, no elevation ramp.",
+      "Pill shape (full radius) as the default form for anything actionable: buttons, tabs, badges.",
+      "A dedicated 4-color status vocabulary (completado/progreso/pendiente/vencido) reserved strictly for progress and rubric state, never decoration.",
+      "Left-border accent stripes (4px) used repeatedly as a lightweight categorization device instead of full-color card fills."
+    ],
+    "rules": [
+      { "name": "The Light-Mode Turquoise Rule", "body": "Turquoise as a solid fill behind white/light text fails WCAG AA in light mode (~2.5:1 measured, repeatedly, across the codebase). Wherever a component would use turquoise as a solid background with light text, light mode swaps to navy fill + light text instead (~9.6:1+). Turquoise itself is never removed from light mode; it stays as text color, border, and accent-on-dark-surface, since those pairings already pass.", "section": "colors" },
+      { "name": "The Status-Color Exclusivity Rule", "body": "The four status colors (estado-completado mint, estado-progreso orange, estado-pendiente light orange, estado-vencido red) exist for exactly one job: progress bars, completion badges, rubric-level indicators, and calendar day-types that reuse those same semantics. Never repurpose one as a decorative accent.", "section": "colors" },
+      { "name": "The One-Shadow Rule", "body": "Every resting surface uses the same ambient shadow token. Don't invent a second elevation tier for a 'more important' card — reach for color, border, or the confirmed hover lift instead.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep navy (#1B3A6B) and turquoise (#14B8A6) as the only two brand hues — every other color in the system is a semantic status color with one specific job, not general decoration.",
+      "Do apply the Light-Mode Turquoise Rule: anywhere turquoise would sit as a solid fill behind white/light text, swap to navy fill + light text in light mode.",
+      "Do reserve the four status colors exclusively for progress, completion badges, and rubric-level indicators.",
+      "Do default to the pill shape (border-radius: 9999px) for buttons, tabs, and badges; reach for 8-16px radii only for larger containers.",
+      "Do give every hover-capable card the same signature: translateY(-4px) + border-color to turquoise, 0.2s ease transition.",
+      "Do reference the existing CSS custom properties instead of hardcoding a new hex or px value the token system already covers."
+    ],
+    "donts": [
+      "Don't introduce a second accent hue. Turquoise is the only accent.",
+      "Don't add a new elevation tier. This system is flat-by-default with one ambient shadow; the only sanctioned exception is the dark-mode completion glow.",
+      "Don't override position on native <dialog> modals — the browser's built-in centering already works.",
+      "Don't force headings into Title Case or uppercase with text-transform. Sentence case is the house style; uppercase is reserved for small tag-like labels."
+    ]
+  }
+}
