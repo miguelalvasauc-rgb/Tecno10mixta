@@ -72,21 +72,80 @@ const DATOS_EVENTOS = [
 // "hay algo entregable ese día"; esto es "qué tipo de día es"). No se
 // filtra por grupo: aplica igual a 3°C y 3°E.
 //
-// Fuente: calendario oficial SEP 2026-2027. Los registros con
-// verificado:false son fechas aproximadas tomadas de referencias no
-// oficiales (p. ej. ciclos anteriores) y DEBEN confirmarse contra el PDF
-// oficial de la SEP antes de publicar. No borrar el campo verificado al
-// completar las fechas reales; solo cambiarlo a true.
+// Fuente: calendario oficial SEP 2026-2027, confirmado. Todos los
+// registros están verificado:true. Los periodos de varios días
+// (vacaciones, CTE Fase Intensiva) se expanden a un registro por cada
+// fecha del rango porque TIPOS_DIA_POR_FECHA busca por día exacto.
+//
+// Nota sobre el 4 y 5 de enero de 2027: son talleres docentes, pero para
+// los alumnos son continuación del receso de invierno (sin clases), así
+// que se marcan como "vacaciones". El 6 de enero (Día de Reyes) es
+// suspensión aparte y el regreso real a clases es el 7 de enero.
 //
 // Tipos válidos: "inicio", "fin", "vacaciones", "cte-intensiva",
 // "cte-ordinaria", "suspension", "evaluacion"
-//
-// Ejemplo de formato — Hiram reemplaza/completa con las fechas reales:
-// { fecha: "2026-08-31", tipo: "inicio", etiqueta: "Inicio de clases", verificado: true },
-// { fecha: "2026-09-16", tipo: "suspension", etiqueta: "Día festivo", verificado: true },
-// { fecha: "2026-10-09", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: false },
-// { fecha: "2026-12-21", tipo: "vacaciones", etiqueta: "Vacaciones de invierno (inicio)", verificado: true },
-const CALENDARIO_ESCOLAR_2026_2027 = [];
+const CALENDARIO_ESCOLAR_2026_2027 = [
+  // --- CTE Fase Intensiva (regreso de docentes) ---
+  { fecha: "2026-08-24", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva", verificado: true },
+  { fecha: "2026-08-25", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva", verificado: true },
+  { fecha: "2026-08-26", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva", verificado: true },
+  { fecha: "2026-08-27", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva", verificado: true },
+  { fecha: "2026-08-28", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva", verificado: true },
+
+  // --- Inicio / fin de clases ---
+  { fecha: "2026-08-31", tipo: "inicio", etiqueta: "Inicio de clases", verificado: true },
+  { fecha: "2027-07-09", tipo: "fin", etiqueta: "Fin de clases", verificado: true },
+
+  // --- Suspensión de labores (asuetos oficiales, día único) ---
+  { fecha: "2026-09-16", tipo: "suspension", etiqueta: "Independencia de México", verificado: true },
+  { fecha: "2026-11-02", tipo: "suspension", etiqueta: "Día de Muertos", verificado: true },
+  { fecha: "2026-11-16", tipo: "suspension", etiqueta: "Revolución Mexicana", verificado: true },
+  { fecha: "2027-01-06", tipo: "suspension", etiqueta: "Día de Reyes", verificado: true },
+  { fecha: "2027-02-01", tipo: "suspension", etiqueta: "Día de la Constitución", verificado: true },
+  { fecha: "2027-03-15", tipo: "suspension", etiqueta: "Natalicio de Benito Juárez", verificado: true },
+  { fecha: "2027-05-05", tipo: "suspension", etiqueta: "Batalla de Puebla", verificado: true },
+
+  // --- CTE Sesión Ordinaria (un viernes al mes, sin clases para alumnos) ---
+  { fecha: "2026-09-25", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
+  { fecha: "2026-10-30", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
+  { fecha: "2026-11-27", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
+  { fecha: "2027-01-29", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
+  { fecha: "2027-02-26", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
+  { fecha: "2027-04-30", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
+  { fecha: "2027-05-28", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
+  { fecha: "2027-06-25", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
+
+  // --- Vacaciones de Invierno (21 dic 2026 al 1 ene 2027, + 4-5 ene
+  // como continuación de receso para alumnos) ---
+  { fecha: "2026-12-21", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
+  { fecha: "2026-12-22", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
+  { fecha: "2026-12-23", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
+  { fecha: "2026-12-24", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
+  { fecha: "2026-12-25", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
+  { fecha: "2026-12-26", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
+  { fecha: "2026-12-27", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
+  { fecha: "2026-12-28", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
+  { fecha: "2026-12-29", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
+  { fecha: "2026-12-30", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
+  { fecha: "2026-12-31", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
+  { fecha: "2027-01-01", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno (incluye Año Nuevo)", verificado: true },
+  { fecha: "2027-01-04", tipo: "vacaciones", etiqueta: "Continuación de receso (talleres docentes, sin clases)", verificado: true },
+  { fecha: "2027-01-05", tipo: "vacaciones", etiqueta: "Continuación de receso (talleres docentes, sin clases)", verificado: true },
+
+  // --- Vacaciones de Semana Santa (22 mar al 2 abr 2027) ---
+  { fecha: "2027-03-22", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+  { fecha: "2027-03-23", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+  { fecha: "2027-03-24", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+  { fecha: "2027-03-25", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+  { fecha: "2027-03-26", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+  { fecha: "2027-03-27", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+  { fecha: "2027-03-28", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+  { fecha: "2027-03-29", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+  { fecha: "2027-03-30", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+  { fecha: "2027-03-31", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+  { fecha: "2027-04-01", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+  { fecha: "2027-04-02", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+];
 
 // El resto del contenido SÍ depende del trimestre. Cada constante es un
 // objeto { 1: [...], 2: [...], 3: [...] } para que, más adelante, cada
