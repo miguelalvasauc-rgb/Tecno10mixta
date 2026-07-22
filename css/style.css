@@ -100,14 +100,23 @@
   --color-focus-outline: #FF8C00;
 
   /* Colores por tipo de día del calendario escolar (widget de
-     Calendario en la portada). Reutilizan los mismos tokens de estado/
-     marca del sistema de diseño en vez de una paleta nueva. */
-  --dia-inicio-fin: var(--md-secondary);
-  --dia-vacaciones: var(--color-estado-completado);
-  --dia-cte-intensiva: var(--md-primary-container);
-  --dia-cte-ordinaria: var(--color-estado-progreso);
-  --dia-suspension: var(--color-estado-pendiente);
-  --dia-evaluacion: var(--color-estado-vencido);
+     Calendario en la portada). Tokens dedicados (no alias de
+     --color-estado-*/--md-*, que son de uso exclusivo para progreso/
+     insignias) para poder separar los 6 matices lo suficiente entre sí.
+     Cada valor se validó con contraste WCAG AA (≥3:1, no-texto) contra
+     --color-superficie y --color-fondo en modo claro Y oscuro, ya que
+     estos tokens no cambian de valor entre temas; el texto sobre el
+     fondo mezclado de cada celda siempre queda muy por encima de 4.5:1
+     porque la mezcla solo usa 18-20% del color. "cte-ordinaria" y
+     "suspension" antes compartían el mismo matiz naranja (~30°, solo
+     distinto en luminosidad); ahora quedan a 35° de distancia real de
+     matiz (ámbar vs. rojo). */
+  --dia-inicio-fin: #0F9C8C;
+  --dia-vacaciones: #2F9E44;
+  --dia-cte-intensiva: #825AC4;
+  --dia-cte-ordinaria: #A66A00;
+  --dia-suspension: #DA2E25;
+  --dia-evaluacion: #B847A7;
 
   /* Tipografía del rediseño: Quicksand/Inter auto-hospedadas (ver
      @font-face abajo), con el stack de sistema existente como fallback
