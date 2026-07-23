@@ -2141,6 +2141,10 @@ function crearChecklistProgreso(tipo, item, tarjeta, datos, idResumen, etiqueta)
     localStorage.setItem(claveProgreso(tipo, item.id), String(checkbox.checked));
     tarjeta.classList.toggle("tarjeta--completada", checkbox.checked);
     textoChecklist.textContent = checkbox.checked ? "Completada" : "Marcar como completada";
+    // Colapsa la tarjeta al completarla (deja de estorbar en pendientes);
+    // la reabre si el alumno la desmarca por error. Sin efecto en tarjetas
+    // que no son <details> (Actividades/Proyectos usan <article>).
+    tarjeta.open = !checkbox.checked;
     actualizarResumenProgreso(idResumen, datos, tipo, etiqueta);
     const detailsGrupo = tarjeta.closest(".tareas-grupo");
     if (detailsGrupo) {
@@ -2231,6 +2235,9 @@ async function renderizarTareas() {
       const tarjeta = document.createElement("details");
       tarjeta.className = "tarjeta tarjeta-tarea";
       tarjeta.id = "tarea-" + item.id;
+      // Pendientes abiertas por defecto (llaman la atención); completadas
+      // cerradas, para que no estorben en la vista de lo que falta hacer.
+      tarjeta.open = !itemEstaCompletado("tarea", item.id);
 
       const resumenTarjeta = document.createElement("summary");
       resumenTarjeta.className = "tarjeta-tarea__resumen";
