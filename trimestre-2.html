@@ -37,9 +37,18 @@
 
     <!-- Selector de trimestre: permite saltar entre las 3 páginas sin volver a la portada. -->
     <div class="selector-trimestre" role="tablist" aria-label="Selector de trimestre">
-      <a href="trimestre-1.html" class="selector-trimestre__tab" role="tab" aria-selected="false">Trimestre 1</a>
-      <a href="trimestre-2.html" class="selector-trimestre__tab selector-trimestre__tab--activo" role="tab" aria-selected="true" aria-current="page">Trimestre 2</a>
-      <a href="trimestre-3.html" class="selector-trimestre__tab" role="tab" aria-selected="false">Trimestre 3</a>
+      <a href="trimestre-1.html" class="selector-trimestre__tab" role="tab" aria-selected="false">
+        <span class="selector-trimestre__numero" aria-hidden="true">1°</span>
+        <span class="selector-trimestre__texto">Trimestre 1</span>
+      </a>
+      <a href="trimestre-2.html" class="selector-trimestre__tab selector-trimestre__tab--activo" role="tab" aria-selected="true" aria-current="page">
+        <span class="selector-trimestre__numero" aria-hidden="true">2°</span>
+        <span class="selector-trimestre__texto">Trimestre 2</span>
+      </a>
+      <a href="trimestre-3.html" class="selector-trimestre__tab" role="tab" aria-selected="false">
+        <span class="selector-trimestre__numero" aria-hidden="true">3°</span>
+        <span class="selector-trimestre__texto">Trimestre 3</span>
+      </a>
     </div>
 
     <nav id="nav-principal" class="barra-lateral__nav" aria-label="Secciones">
