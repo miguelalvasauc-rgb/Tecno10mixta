@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trimestre 1 · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
-  <meta name="description" content="Trimestre 1 de Educación Tecnológica para los grupos 3°C y 3°E: rúbricas, tareas, actividades, proyectos, videos y entrega de trabajos.">
+  <title>Tu progreso · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
+  <meta name="description" content="Progreso personal detallado por trimestre — Educación Tecnológica 3°C y 3°E, Esc. Sec. No. 10 Mixta 'Fernando Hernández Alcalá'.">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body data-trimestre="1">
+<body>
   <a href="#main-content" class="enlace-saltar">Saltar al contenido principal</a>
 
   <!-- ===================== BARRA LATERAL (desktop ≥1024px) ===================== -->
@@ -35,52 +35,40 @@
       </select>
     </div>
 
-    <!-- Selector de trimestre: permite saltar entre las 3 páginas sin volver a la portada. -->
-    <div class="selector-trimestre" role="tablist" aria-label="Selector de trimestre">
-      <a href="trimestre-1.html" class="selector-trimestre__tab selector-trimestre__tab--activo" role="tab" aria-selected="true" aria-current="page">
-        <span class="selector-trimestre__numero" aria-hidden="true">1°</span>
-        <span class="selector-trimestre__texto">Trimestre 1</span>
-      </a>
-      <a href="trimestre-2.html" class="selector-trimestre__tab" role="tab" aria-selected="false">
-        <span class="selector-trimestre__numero" aria-hidden="true">2°</span>
-        <span class="selector-trimestre__texto">Trimestre 2</span>
-      </a>
-      <a href="trimestre-3.html" class="selector-trimestre__tab" role="tab" aria-selected="false">
-        <span class="selector-trimestre__numero" aria-hidden="true">3°</span>
-        <span class="selector-trimestre__texto">Trimestre 3</span>
-      </a>
-    </div>
-
+    <!-- Los enlaces a Temario/Rúbricas/Tareas/Actividades/Proyectos/Videos/
+         Entrega apuntan por defecto al Trimestre 1; JS los reescribe al
+         último trimestre visto (ver actualizarEnlacesTrimestreEnSidebar
+         en js/main.js), porque esas secciones no existen en esta página. -->
     <nav id="nav-principal" class="barra-lateral__nav" aria-label="Secciones">
       <a href="index.html">
         <span class="barra-lateral__nav-icono" aria-hidden="true">🏠</span>
         <span class="barra-lateral__nav-texto">Inicio</span>
       </a>
-      <a href="#temario" data-enlace="temario">
+      <a href="trimestre-1.html#temario" data-enlace="temario">
         <span class="barra-lateral__nav-icono" aria-hidden="true">📘</span>
         <span class="barra-lateral__nav-texto">Temario</span>
       </a>
-      <a href="#rubricas" data-enlace="rubricas">
+      <a href="trimestre-1.html#rubricas" data-enlace="rubricas">
         <span class="barra-lateral__nav-icono" aria-hidden="true">📋</span>
         <span class="barra-lateral__nav-texto">Rúbricas</span>
       </a>
-      <a href="#tareas" data-enlace="tareas">
+      <a href="trimestre-1.html#tareas" data-enlace="tareas">
         <span class="barra-lateral__nav-icono" aria-hidden="true">📝</span>
         <span class="barra-lateral__nav-texto">Tareas</span>
       </a>
-      <a href="#actividades" data-enlace="actividades">
+      <a href="trimestre-1.html#actividades" data-enlace="actividades">
         <span class="barra-lateral__nav-icono" aria-hidden="true">🎯</span>
         <span class="barra-lateral__nav-texto">Actividades</span>
       </a>
-      <a href="#proyectos" data-enlace="proyectos">
+      <a href="trimestre-1.html#proyectos" data-enlace="proyectos">
         <span class="barra-lateral__nav-icono" aria-hidden="true">🚀</span>
         <span class="barra-lateral__nav-texto">Proyectos</span>
       </a>
-      <a href="#videos" data-enlace="videos">
+      <a href="trimestre-1.html#videos" data-enlace="videos">
         <span class="barra-lateral__nav-icono" aria-hidden="true">🎬</span>
         <span class="barra-lateral__nav-texto">Videos</span>
       </a>
-      <a href="#entrega" data-enlace="entrega">
+      <a href="trimestre-1.html#entrega" data-enlace="entrega">
         <span class="barra-lateral__nav-icono" aria-hidden="true">📤</span>
         <span class="barra-lateral__nav-texto">Entrega de trabajos</span>
       </a>
@@ -191,112 +179,40 @@
   </dialog>
 
   <!-- ===================== MIGAS DE PAN ===================== -->
-  <!-- El tercer nivel (sección) se completa por JS conforme se hace scroll,
-       reutilizando la misma detección de sección visible del menú (ver
-       activarResaltadoDeNavegacion en js/main.js). Empieza oculto. -->
   <nav aria-label="breadcrumb" class="migas-de-pan">
     <ol>
       <li><a href="index.html">Inicio</a></li>
       <li class="migas-de-pan__separador" aria-hidden="true">/</li>
-      <li><span id="miga-trimestre" class="migas-de-pan__actual" aria-current="page">Trimestre 1</span></li>
-      <li id="miga-separador-seccion" class="migas-de-pan__separador" aria-hidden="true" hidden>/</li>
-      <li id="miga-item-seccion" hidden><span id="miga-seccion" class="migas-de-pan__actual"></span></li>
+      <li><span class="migas-de-pan__actual" aria-current="page">Progreso</span></li>
     </ol>
   </nav>
 
-  <!-- Recordatorio para evitar confundir el contenido de este trimestre con el de otro. -->
-  <div class="banner-trimestre">
-    <p>Estás viendo el <strong>Trimestre 1</strong>. Todo el contenido de esta página corresponde únicamente a este periodo.</p>
-  </div>
-
   <main id="main-content">
-    <!-- ===================== TEMARIO ===================== -->
-    <section id="temario" class="seccion">
+    <!-- ===================== INTRODUCCIÓN ===================== -->
+    <section id="progreso-intro" class="seccion">
       <div class="seccion__encabezado">
-        <h2>Temario del Trimestre 1</h2>
-        <p>Estos son los temas que veremos durante este periodo.</p>
+        <h2>Tu progreso</h2>
+        <p>Consulta el detalle de qué tareas, actividades y proyectos ya marcaste como completados en cada trimestre.</p>
       </div>
-      <div id="contenedor-temario" class="cuadricula-temario" aria-live="polite"></div>
     </section>
 
-    <!-- ===================== RÚBRICAS ===================== -->
-    <section id="rubricas" class="seccion seccion--alterna">
-      <div class="seccion__encabezado">
-        <h2>Rúbricas de evaluación</h2>
-        <p>Criterios con los que se evalúa cada entregable del curso.</p>
+    <!-- ===================== PROGRESO DETALLADO ===================== -->
+    <section id="progreso-detalle" class="seccion seccion--alterna">
+      <div id="progreso-sin-perfil" class="panel-progreso__invitacion">
+        <p>Aún no te has identificado en este dispositivo.</p>
+        <button type="button" id="boton-identificarme-progreso" class="boton-secundario">Identificarme</button>
       </div>
-      <div id="contenedor-rubricas" class="cuadricula" aria-live="polite"></div>
-    </section>
 
-    <!-- ===================== TAREAS ===================== -->
-    <section id="tareas" class="seccion">
-      <div class="seccion__encabezado">
-        <h2>Tareas</h2>
-        <p>Trabajos individuales o en equipo con fecha de entrega.</p>
-      </div>
-      <!-- Progreso personal: se calcula a partir de las marcas de "completada"
-           guardadas en localStorage en este navegador (ver checklist-tarea). -->
-      <div id="resumen-progreso-tareas" class="resumen-progreso" aria-live="polite"></div>
-      <div id="contenedor-tareas" class="cuadricula" aria-live="polite"></div>
-    </section>
+      <div id="progreso-con-perfil" class="panel-progreso" hidden>
+        <p id="progreso-alumno-info" class="panel-progreso__alumno">
+          Viendo el progreso de: <strong id="progreso-alumno-nombre"></strong> (<span id="progreso-alumno-grupo"></span>)
+          <button type="button" id="boton-cambiar-alumno-progreso" class="boton-secundario">Cambiar de alumno</button>
+        </p>
 
-    <!-- ===================== ACTIVIDADES ===================== -->
-    <section id="actividades" class="seccion seccion--alterna">
-      <div class="seccion__encabezado">
-        <h2>Actividades de clase</h2>
-        <p>Ejercicios y dinámicas que se realizan durante la sesión.</p>
-      </div>
-      <!-- Progreso personal: mismo patrón que en Tareas (ver claveProgreso
-           en js/main.js). -->
-      <div id="resumen-progreso-actividades" class="resumen-progreso" aria-live="polite"></div>
-      <div id="contenedor-actividades" class="cuadricula" aria-live="polite"></div>
-    </section>
+        <p id="progreso-mensaje" class="panel-progreso__mensaje"></p>
+        <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
 
-    <!-- ===================== PROYECTOS ===================== -->
-    <section id="proyectos" class="seccion">
-      <div class="seccion__encabezado">
-        <h2>Proyectos</h2>
-        <p>Proyectos en curso durante el trimestre.</p>
-      </div>
-      <!-- Progreso personal: mismo patrón que en Tareas/Actividades (ver
-           claveProgreso en js/main.js). Es independiente del "avance"
-           estático de cada proyecto, que sigue viniendo de DATOS_PROYECTOS. -->
-      <div id="resumen-progreso-proyectos" class="resumen-progreso" aria-live="polite"></div>
-      <div id="contenedor-proyectos" class="cuadricula" aria-live="polite"></div>
-    </section>
-
-    <!-- ===================== VIDEOS ===================== -->
-    <section id="videos" class="seccion seccion--alterna">
-      <div class="seccion__encabezado">
-        <h2>Videos educativos</h2>
-        <p>Material audiovisual de apoyo para reforzar los temas vistos en clase.</p>
-      </div>
-      <div id="contenedor-videos" class="cuadricula-videos" aria-live="polite"></div>
-    </section>
-
-    <!-- ===================== ENTREGA DE TRABAJOS ===================== -->
-    <section id="entrega" class="seccion">
-      <div class="seccion__encabezado">
-        <h2>Entrega de trabajos</h2>
-        <p>Sube tu trabajo del Trimestre 1 usando el siguiente formulario.</p>
-      </div>
-      <div class="entrega__formulario">
-        <!--
-          IMPORTANTE: este iframe es un PLACEHOLDER.
-          Para conectarlo al formulario real del Trimestre 1:
-          1. Abre el formulario en Google Forms.
-          2. Ve a "Enviar" > pestaña "Insertar" (ícono <>).
-          3. Copia la URL que aparece dentro del atributo src del iframe.
-          4. Reemplaza el valor de "src" de abajo por esa URL
-             (debe terminar en "?embedded=true").
-        -->
-        <iframe
-          id="iframe-formulario"
-          title="Formulario de entrega de trabajos - Trimestre 1"
-          src="https://docs.google.com/forms/d/e/PLACEHOLDER_ID_DEL_FORMULARIO_T1/viewform?embedded=true"
-          loading="lazy">
-          Cargando formulario…
-        </iframe>
+        <div id="progreso-detalle-trimestres" class="panel-progreso__detalle" aria-live="polite"></div>
       </div>
     </section>
   </main>
@@ -311,15 +227,6 @@
   <button id="boton-volver-arriba" class="boton-volver-arriba" type="button" aria-label="Volver arriba">
     <span aria-hidden="true">↑</span>
   </button>
-
-  <!-- Modal de detalle reutilizable: tareas, actividades y proyectos
-       con "detalleCompleto" abren aquí su texto completo (ver
-       abrirModalDetalle() en js/main.js). -->
-  <dialog id="modal-detalle" aria-labelledby="modal-detalle-titulo">
-    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
-    <h3 id="modal-detalle-titulo"></h3>
-    <div id="modal-detalle-contenido"></div>
-  </dialog>
 
   <script src="js/main.js"></script>
 </body>

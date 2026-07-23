@@ -1239,7 +1239,8 @@ summary:focus-visible {
    en ambos temas, así que el texto se elige directo por el contraste de
    cada color, sin necesitar overrides por tema. */
 .badge-estado[data-estado="entregada"],
-.badge-estado[data-estado="finalizado"] {
+.badge-estado[data-estado="finalizado"],
+.badge-estado[data-estado="completada"] {
   background-color: var(--color-estado-completado);
   color: #04211D;
 }
@@ -1486,6 +1487,127 @@ summary:focus-visible {
 
 .nivel-item[data-nivel="deficiente"] {
   border-left-color: #D64545;
+}
+
+/* ---------- Detalle de progreso por trimestre (progreso.html) ----------
+   Mismo acordeón <details>/<summary> y mismo ícono ▾ giratorio que
+   .tarjeta-rubrica (la clase "tarjeta" ya puesta en el HTML da el
+   fondo/borde/padding de tarjeta normal). */
+.panel-progreso__trimestre {
+  position: relative;
+}
+
+.panel-progreso__trimestre-resumen {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-right: 1.8rem;
+}
+
+.panel-progreso__trimestre-resumen::-webkit-details-marker {
+  display: none;
+}
+
+.panel-progreso__trimestre-resumen h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-texto);
+}
+
+.panel-progreso__trimestre-resumen p {
+  margin: 0;
+}
+
+.panel-progreso__trimestre-icono {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.2rem;
+  color: var(--color-turquesa);
+  font-weight: 700;
+  transition: transform 0.2s ease;
+}
+
+.panel-progreso__trimestre[open] .panel-progreso__trimestre-icono {
+  transform: rotate(180deg);
+}
+
+.panel-progreso__trimestre h4 {
+  margin: 0.9rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.panel-progreso__lista {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Grid de 3 columnas fijas (título / badge / enlace) en vez de flex-wrap:
+   con flex, el punto donde caían el badge y el enlace dependía del largo
+   del título de cada renglón, así que saltaban de posición entre uno y
+   otro. Las columnas de badge y enlace usan px fijos (no "auto" ni "1fr")
+   para que midan lo mismo en los 3 <ul> separados (Tareas/Actividades/
+   Proyectos) del mismo panel, no solo dentro de cada uno. */
+.panel-progreso__item {
+  display: grid;
+  grid-template-columns: 1fr 130px 150px;
+  grid-template-areas: "titulo badge enlace";
+  align-items: center;
+  column-gap: 0.6rem;
+  row-gap: 0.3rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie-alterna);
+  font-size: 0.85rem;
+}
+
+.panel-progreso__item-titulo {
+  grid-area: titulo;
+  min-width: 0;
+  color: var(--color-texto);
+  font-weight: 600;
+}
+
+.panel-progreso__item .badge-estado {
+  grid-area: badge;
+  justify-self: start;
+}
+
+.panel-progreso__item-enlace {
+  grid-area: enlace;
+  justify-self: end;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-turquesa);
+  text-decoration: none;
+}
+
+/* Pantallas angostas: 2 filas por renglón (título arriba; badge + enlace
+   abajo) en vez de 3 columnas apretadas. */
+@media (max-width: 480px) {
+  .panel-progreso__item {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "titulo titulo"
+      "badge enlace";
+  }
+}
+
+.panel-progreso__item-enlace:hover,
+.panel-progreso__item-enlace:focus-visible {
+  text-decoration: underline;
+}
+
+/* Mismo bug de contraste documentado en el resto del sitio: turquesa +
+   fondo claro falla AA en modo claro. Se usa navy. */
+:root[data-theme="claro"] .panel-progreso__item-enlace {
+  color: var(--color-primario);
 }
 
 /* ---------- Preguntas frecuentes (faq.html) ---------- */
@@ -2845,4 +2967,41 @@ summary:focus-visible {
   margin: 0;
   font-size: 0.85rem;
   color: var(--color-texto-suave);
+}
+
+.panel-progreso__enlace {
+  align-self: flex-start;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-turquesa);
+  text-decoration: none;
+}
+
+.panel-progreso__enlace:hover,
+.panel-progreso__enlace:focus-visible {
+  text-decoration: underline;
+}
+
+:root[data-theme="claro"] .panel-progreso__enlace {
+  color: var(--color-primario);
+}
+
+/* ---------- Progreso detallado (progreso.html) ---------- */
+.panel-progreso__alumno {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0;
+  color: var(--color-texto-suave);
+}
+
+.panel-progreso__alumno strong {
+  color: var(--color-texto);
+}
+
+.panel-progreso__detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }

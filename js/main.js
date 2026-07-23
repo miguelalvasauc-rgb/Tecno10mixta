@@ -2442,6 +2442,193 @@ async function renderizarProgreso() {
   }
 }
 
+// Texto del enlace "Ir a la tarea/actividad/proyecto →" según el tipo de
+// ítem (distinto artículo/género gramatical por tipo).
+const ETIQUETAS_ENLACE_ITEM = {
+  tarea: "Ir a la tarea →",
+  actividad: "Ir a la actividad →",
+  proyecto: "Ir al proyecto →",
+};
+
+// Página independiente (progreso.html): detalle itemizado del progreso
+// personal, trimestre por trimestre, con un <details> colapsable por
+// trimestre y el desglose de tareas/actividades/proyectos dentro. El
+// resumen general (mensaje + "X de Y" + barra) usa los mismos ids que
+// renderizarProgreso() en la portada (progreso-mensaje,
+// progreso-resumen-general): como esta función corre en TODAS las
+// páginas vía renderizarTodo(), renderizarProgreso() ya los llena solo
+// con encontrarlos en el DOM; aquí se recalculan con la misma lógica
+// porque de todos modos hace falta la misma data (tareas/actividades/
+// proyectos por trimestre) para armar el detalle de abajo.
+async function renderizarProgresoDetallado() {
+  const sinPerfil = document.getElementById("progreso-sin-perfil");
+  const conPerfil = document.getElementById("progreso-con-perfil");
+  if (!sinPerfil || !conPerfil) return;
+
+  const perfil = obtenerPerfilActivo();
+  sinPerfil.hidden = Boolean(perfil);
+  conPerfil.hidden = !perfil;
+  if (!perfil) return;
+
+  const nombreEl = document.getElementById("progreso-alumno-nombre");
+  const grupoEl = document.getElementById("progreso-alumno-grupo");
+  if (nombreEl) nombreEl.textContent = perfil.nombre;
+  if (grupoEl) grupoEl.textContent = textoGrupo(perfil.grupo);
+
+  const coincideConGrupoDelAlumno = (item) => item.grupo === "todos" || item.grupo === perfil.grupo;
+
+  let totalGeneral = 0;
+  let completadasGeneral = 0;
+  const porTrimestre = [];
+
+  for (const trimestre of ["1", "2", "3"]) {
+    const tareas = (await obtenerTareas(trimestre)).filter(coincideConGrupoDelAlumno);
+    const actividades = (await obtenerActividades(trimestre)).filter(coincideConGrupoDelAlumno);
+    const proyectos = (await obtenerProyectos(trimestre)).filter(coincideConGrupoDelAlumno);
+
+    const completadasTareas = tareas.filter((item) =>
+      itemEstaCompletado("tarea", item.id, trimestre)
+    ).length;
+    const completadasActividades = actividades.filter((item) =>
+      itemEstaCompletado("actividad", item.id, trimestre)
+    ).length;
+    const completadasProyectos = proyectos.filter((item) =>
+      itemEstaCompletado("proyecto", item.id, trimestre)
+    ).length;
+
+    const total = tareas.length + actividades.length + proyectos.length;
+    const completadas = completadasTareas + completadasActividades + completadasProyectos;
+
+    totalGeneral += total;
+    completadasGeneral += completadas;
+    porTrimestre.push({ trimestre, tareas, actividades, proyectos, total, completadas });
+  }
+
+  const porcentaje = totalGeneral === 0 ? 0 : Math.round((completadasGeneral / totalGeneral) * 100);
+
+  const mensaje = document.getElementById("progreso-mensaje");
+  if (mensaje) {
+    mensaje.textContent = MENSAJES_MOTIVACIONALES[completadasGeneral % MENSAJES_MOTIVACIONALES.length];
+  }
+
+  const resumen = document.getElementById("progreso-resumen-general");
+  if (resumen) {
+    resumen.innerHTML = "";
+    const texto = document.createElement("p");
+    texto.className = "resumen-progreso__texto";
+    texto.textContent =
+      completadasGeneral + " de " + totalGeneral + " tareas, actividades y proyectos completados";
+
+    const barra = document.createElement("div");
+    barra.className = "barra-progreso";
+    barra.setAttribute("role", "progressbar");
+    barra.setAttribute("aria-valuenow", String(completadasGeneral));
+    barra.setAttribute("aria-valuemin", "0");
+    barra.setAttribute("aria-valuemax", String(totalGeneral));
+    barra.setAttribute("aria-label", "Progreso general del alumno identificado");
+    const relleno = document.createElement("div");
+    relleno.className = "barra-progreso__relleno";
+    relleno.style.width = porcentaje + "%";
+    barra.appendChild(relleno);
+
+    resumen.append(texto, barra);
+  }
+
+  // --- Detalle itemizado por trimestre (solo existe en progreso.html) ---
+  const detalle = document.getElementById("progreso-detalle-trimestres");
+  if (!detalle) return;
+
+  detalle.innerHTML = "";
+  // TRIMESTRE_ACTUAL es null aquí (esta página no tiene <body
+  // data-trimestre>), así que se abre por defecto el último trimestre
+  // visto en vez del "actual" de la página.
+  const trimestreParaAbrir = TRIMESTRE_ACTUAL || ultimoTrimestreVisto;
+
+  porTrimestre.forEach(({ trimestre, tareas, actividades, proyectos, total, completadas }) => {
+    const panel = document.createElement("details");
+    panel.className = "panel-progreso__trimestre tarjeta";
+    if (trimestre === trimestreParaAbrir) panel.open = true;
+
+    const resumenTab = document.createElement("summary");
+    resumenTab.className = "panel-progreso__trimestre-resumen";
+
+    const tituloTab = document.createElement("h3");
+    tituloTab.textContent = "Trimestre " + trimestre;
+
+    const conteoTab = document.createElement("p");
+    conteoTab.textContent =
+      total === 0
+        ? "Sin tareas, actividades ni proyectos registrados todavía."
+        : completadas + " de " + total + " completadas";
+
+    const barraTab = document.createElement("div");
+    barraTab.className = "barra-progreso";
+    barraTab.setAttribute("role", "progressbar");
+    barraTab.setAttribute("aria-valuenow", String(completadas));
+    barraTab.setAttribute("aria-valuemin", "0");
+    barraTab.setAttribute("aria-valuemax", String(total));
+    barraTab.setAttribute("aria-label", "Progreso del Trimestre " + trimestre);
+    const rellenoTab = document.createElement("div");
+    rellenoTab.className = "barra-progreso__relleno";
+    rellenoTab.style.width = (total === 0 ? 0 : Math.round((completadas / total) * 100)) + "%";
+    barraTab.appendChild(rellenoTab);
+
+    const iconoTab = document.createElement("span");
+    iconoTab.className = "panel-progreso__trimestre-icono";
+    iconoTab.setAttribute("aria-hidden", "true");
+    iconoTab.textContent = "▾";
+
+    resumenTab.append(tituloTab, conteoTab, barraTab, iconoTab);
+    panel.appendChild(resumenTab);
+
+    [
+      { tipo: "tarea", etiqueta: "Tareas", items: tareas },
+      { tipo: "actividad", etiqueta: "Actividades", items: actividades },
+      { tipo: "proyecto", etiqueta: "Proyectos", items: proyectos },
+    ].forEach(({ tipo, etiqueta, items }) => {
+      if (items.length === 0) return;
+
+      const subtitulo = document.createElement("h4");
+      subtitulo.textContent = etiqueta;
+      panel.appendChild(subtitulo);
+
+      const lista = document.createElement("ul");
+      lista.className = "panel-progreso__lista";
+
+      items.forEach((item) => {
+        const completado = itemEstaCompletado(tipo, item.id, trimestre);
+        const fila = document.createElement("li");
+        fila.className = "panel-progreso__item";
+
+        const tituloItem = document.createElement("span");
+        tituloItem.className = "panel-progreso__item-titulo";
+        tituloItem.textContent = item.titulo;
+        fila.appendChild(tituloItem);
+
+        const badge = document.createElement("span");
+        badge.className = "badge-estado";
+        badge.dataset.estado = completado ? "completada" : "pendiente";
+        badge.textContent = completado ? "✅ Completada" : "⏳ Pendiente";
+        fila.appendChild(badge);
+
+        if (!completado) {
+          const enlace = document.createElement("a");
+          enlace.href = "trimestre-" + trimestre + ".html#" + tipo + "-" + item.id;
+          enlace.className = "panel-progreso__item-enlace";
+          enlace.textContent = ETIQUETAS_ENLACE_ITEM[tipo];
+          fila.appendChild(enlace);
+        }
+
+        lista.appendChild(fila);
+      });
+
+      panel.appendChild(lista);
+    });
+
+    detalle.appendChild(panel);
+  });
+}
+
 /* =========================================================
    6. CALENDARIO
    ========================================================= */
@@ -2732,11 +2919,6 @@ function actualizarEnlacesTrimestreEnSidebar() {
     const enlace = nav.querySelector('[data-enlace="' + id + '"]');
     if (enlace) enlace.href = "trimestre-" + ultimoTrimestreVisto + ".html#" + id;
   });
-
-  const enlaceProgreso = document.querySelector('[data-enlace-movil="progreso"]');
-  if (enlaceProgreso && !document.getElementById("progreso")) {
-    enlaceProgreso.href = "index.html#progreso";
-  }
 }
 
 // Marca cada .tarjeta-trimestre de la portada como "finalizado", "actual"
@@ -2944,6 +3126,7 @@ async function renderizarTodo() {
     renderizarProyectos(),
     renderizarVideos(),
     renderizarProgreso(),
+    renderizarProgresoDetallado(),
   ]);
 }
 
@@ -3216,6 +3399,7 @@ function alEnviarFormularioPerfil(evento) {
   actualizarVistaModalPerfil();
   actualizarIndicadorPerfil();
   renderizarProgreso();
+  renderizarProgresoDetallado();
 
   const modal = document.getElementById("modal-perfil");
   if (modal) modal.close();
@@ -3227,6 +3411,7 @@ function alCambiarAlumno() {
   actualizarIndicadorPerfil();
   renderizarTodo();
   renderizarProgreso();
+  renderizarProgresoDetallado();
 }
 
 // Mismo patrón que activarCierreModalDetalle: showModal()/close(), cierre
@@ -3237,7 +3422,12 @@ function activarModalPerfil() {
   const modal = document.getElementById("modal-perfil");
   if (!modal) return;
 
-  ["boton-perfil-movil", "boton-perfil-sidebar", "boton-identificarme-progreso"].forEach((id) => {
+  [
+    "boton-perfil-movil",
+    "boton-perfil-sidebar",
+    "boton-identificarme-progreso",
+    "boton-cambiar-alumno-progreso",
+  ].forEach((id) => {
     const boton = document.getElementById(id);
     if (boton) boton.addEventListener("click", abrirModalPerfil);
   });
