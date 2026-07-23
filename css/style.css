@@ -243,7 +243,7 @@ body {
   font-family: var(--font-cuerpo);
   background-color: var(--color-fondo);
   color: var(--color-texto);
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.25s ease, color 0.25s ease, padding-left 0.3s ease;
   line-height: 1.5;
 }
 
@@ -2137,6 +2137,14 @@ summary:focus-visible {
     transition: opacity 0.01ms linear, visibility 0.01ms linear;
     transform: none;
   }
+
+  .barra-lateral {
+    transition: none;
+  }
+
+  body {
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
 }
 
 @media (max-width: 480px) {
@@ -2242,6 +2250,7 @@ summary:focus-visible {
   padding: var(--espacio-gutter) var(--espacio-base);
   overflow-y: auto;
   z-index: 80;
+  transition: width 0.3s ease;
 }
 
 .barra-lateral__logo {
@@ -2323,7 +2332,10 @@ summary:focus-visible {
 }
 
 .barra-lateral__nav a {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
   text-decoration: none;
   font-family: var(--font-cuerpo);
   font-size: 14px;
@@ -2332,6 +2344,20 @@ summary:focus-visible {
   padding: 0.55rem 0.75rem;
   border-radius: var(--radio-md);
   border-left: 3px solid transparent;
+}
+
+.barra-lateral__nav-icono {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 1.3rem;
+  text-align: center;
+}
+
+.barra-lateral__nav-texto {
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .barra-lateral__nav a:hover {
@@ -2347,6 +2373,101 @@ summary:focus-visible {
 
 .barra-lateral__tema {
   margin: auto var(--espacio-base) 0;
+  justify-content: center;
+}
+
+.barra-lateral__toggle {
+  align-self: flex-end;
+  width: 32px;
+  height: 32px;
+  margin: -0.5rem 0 -0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: var(--radio-md);
+  color: var(--color-texto-suave);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.barra-lateral__toggle:hover {
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+}
+
+/* ---------- Barra lateral colapsada (ver #boton-colapsar-sidebar en
+   js/main.js) ----------
+   El ancho anima porque .barra-lateral ya trae "transition: width".
+   Los enlaces del nav sí tienen ícono propio (.barra-lateral__nav-icono,
+   ver HTML), así que en colapsado se oculta por completo el span de
+   texto (.barra-lateral__nav-texto) y queda centrado solo el ícono. El
+   botón de perfil y el de tema también tienen su ícono (emoji), así
+   que solo se encoge su span de texto a 0 de ancho. El eyebrow y el
+   selector de grupo no tienen ningún ícono que conservar, así que esos
+   sí se ocultan por completo con "visibility" (no display:none, para
+   no romper la animación de ancho del aside) — visibility además saca
+   el <select> del orden de tabulación mientras está invisible, para no
+   dejar un control fantasma alcanzable con Tab. */
+.barra-lateral--colapsada {
+  width: 64px;
+  overflow-x: hidden;
+}
+
+.barra-lateral--colapsada .barra-lateral__toggle {
+  align-self: center;
+}
+
+/* NOTA: min-width:0/overflow/white-space aquí eran, antes de que el
+   nav tuviera ícono propio, la manera de recortar el texto en vez de
+   ocultarlo (para que el ancho se viera fluido). Ahora que el texto se
+   oculta con display:none más abajo (.barra-lateral__nav-texto), es
+   posible que ya no hagan falta — se dejan tal cual hasta confirmar
+   que se pueden quitar sin romper nada. */
+.barra-lateral--colapsada .barra-lateral__nav {
+  min-width: 0;
+}
+
+.barra-lateral--colapsada .barra-lateral__nav a {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.barra-lateral--colapsada .barra-lateral__nav-texto {
+  display: none;
+}
+
+.barra-lateral--colapsada .barra-lateral__nav-icono {
+  width: auto;
+}
+
+.barra-lateral--colapsada .barra-lateral__eyebrow,
+.barra-lateral--colapsada .barra-lateral__grupo {
+  visibility: hidden;
+  overflow: hidden;
+  max-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.barra-lateral--colapsada #texto-perfil-sidebar,
+.barra-lateral--colapsada .boton-tema__texto {
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.barra-lateral--colapsada .barra-lateral__perfil,
+.barra-lateral--colapsada .barra-lateral__tema {
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
   justify-content: center;
 }
 
@@ -2416,6 +2537,10 @@ summary:focus-visible {
 
   body {
     padding-left: 256px;
+  }
+
+  body.body--sidebar-colapsada {
+    padding-left: 64px;
   }
 
   .migas-de-pan,

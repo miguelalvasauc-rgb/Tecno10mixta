@@ -18,6 +18,11 @@
         alt="Logo institucional de la Escuela Secundaria No. 10 Mixta Fernando Hernández Alcalá"
         class="barra-lateral__logo-img">
     </a>
+    <button type="button" id="boton-colapsar-sidebar" class="barra-lateral__toggle"
+            aria-expanded="true" aria-controls="nav-principal"
+            aria-label="Colapsar menú lateral">
+      <span aria-hidden="true">◀</span>
+    </button>
     <h1 class="sr-only">Escuela Secundaria No. 10 Mixta &ldquo;Fernando Hernández Alcalá&rdquo; — Educación Tecnológica</h1>
     <p class="barra-lateral__eyebrow">Educación Tecnológica</p>
 
@@ -35,16 +40,46 @@
          último trimestre visto (ver actualizarEnlacesTrimestreEnSidebar
          en js/main.js), porque esas secciones no existen en esta página. -->
     <nav id="nav-principal" class="barra-lateral__nav" aria-label="Secciones">
-      <a href="index.html">Inicio</a>
-      <a href="trimestre-1.html#temario" data-enlace="temario">Temario</a>
-      <a href="trimestre-1.html#rubricas" data-enlace="rubricas">Rúbricas</a>
-      <a href="trimestre-1.html#tareas" data-enlace="tareas">Tareas</a>
-      <a href="trimestre-1.html#actividades" data-enlace="actividades">Actividades</a>
-      <a href="trimestre-1.html#proyectos" data-enlace="proyectos">Proyectos</a>
-      <a href="trimestre-1.html#videos" data-enlace="videos">Videos</a>
-      <a href="trimestre-1.html#entrega" data-enlace="entrega">Entrega de trabajos</a>
-      <a href="faq.html">FAQ</a>
-      <a href="index.html#contacto">Contacto</a>
+      <a href="index.html">
+        <span class="barra-lateral__nav-icono" aria-hidden="true">🏠</span>
+        <span class="barra-lateral__nav-texto">Inicio</span>
+      </a>
+      <a href="trimestre-1.html#temario" data-enlace="temario">
+        <span class="barra-lateral__nav-icono" aria-hidden="true">📘</span>
+        <span class="barra-lateral__nav-texto">Temario</span>
+      </a>
+      <a href="trimestre-1.html#rubricas" data-enlace="rubricas">
+        <span class="barra-lateral__nav-icono" aria-hidden="true">📋</span>
+        <span class="barra-lateral__nav-texto">Rúbricas</span>
+      </a>
+      <a href="trimestre-1.html#tareas" data-enlace="tareas">
+        <span class="barra-lateral__nav-icono" aria-hidden="true">📝</span>
+        <span class="barra-lateral__nav-texto">Tareas</span>
+      </a>
+      <a href="trimestre-1.html#actividades" data-enlace="actividades">
+        <span class="barra-lateral__nav-icono" aria-hidden="true">🎯</span>
+        <span class="barra-lateral__nav-texto">Actividades</span>
+      </a>
+      <a href="trimestre-1.html#proyectos" data-enlace="proyectos">
+        <span class="barra-lateral__nav-icono" aria-hidden="true">🚀</span>
+        <span class="barra-lateral__nav-texto">Proyectos</span>
+      </a>
+      <a href="trimestre-1.html#videos" data-enlace="videos">
+        <span class="barra-lateral__nav-icono" aria-hidden="true">🎬</span>
+        <span class="barra-lateral__nav-texto">Videos</span>
+      </a>
+      <a href="trimestre-1.html#entrega" data-enlace="entrega">
+        <span class="barra-lateral__nav-icono" aria-hidden="true">📤</span>
+        <span class="barra-lateral__nav-texto">Entrega de trabajos</span>
+      </a>
+      <a href="faq.html">
+        <span class="barra-lateral__nav-icono" aria-hidden="true">❓</span>
+        <span class="barra-lateral__nav-texto">FAQ</span>
+      </a>
+      <a href="index.html#contacto">
+        <span class="barra-lateral__nav-icono" aria-hidden="true">📧</span>
+        <span class="barra-lateral__nav-texto">Contacto</span>
+      </a>
     </nav>
 
     <!-- Identificación ligera de alumno (ver #modal-perfil y CLAVE_PERFIL
