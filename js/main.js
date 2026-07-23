@@ -1580,6 +1580,18 @@ let grupoActual = localStorage.getItem(CLAVE_GRUPO) || "todos";
 // localStorage por la misma razón que el grupo.
 let temaActual = localStorage.getItem(CLAVE_TEMA) || "oscuro";
 
+const CLAVE_SIDEBAR_COLAPSADA = "sidebarColapsada";
+
+// Preferencia de sidebar colapsada/expandida (desktop ≥1024px). Se lee
+// y se aplica aquí mismo, en código de nivel superior que corre antes
+// de DOMContentLoaded: el <aside> y el botón ya existen en el DOM en
+// este punto porque el <script> va al final del <body>, así que no hay
+// que esperar al evento para evitar un "flash" de sidebar expandida
+// que luego se colapsa. aplicarEstadoSidebarColapsada está definida
+// más abajo (sección 8) pero se puede llamar aquí por hoisting.
+let sidebarColapsada = localStorage.getItem(CLAVE_SIDEBAR_COLAPSADA) === "true";
+aplicarEstadoSidebarColapsada(sidebarColapsada);
+
 // Trimestre desbloqueado de verdad. El sitio no tiene un calendario
 // académico real que decida solo cuándo abrir cada trimestre, así que
 // esto se sube a mano (a 2 o a 3) cuando toca abrirlo.
@@ -2637,6 +2649,34 @@ function alternarTema() {
    8. BARRA LATERAL / BARRA INFERIOR Y FILTRO DE GRUPO
    ========================================================= */
 
+// Colapsa/expande la barra lateral de escritorio a un riel de solo
+// íconos (ver .barra-lateral--colapsada en css/style.css). El estado
+// se refleja en dos clases porque son dos elementos distintos que
+// necesitan animarse juntos: una en el <aside> (para su ancho) y otra
+// en <body> (para el padding-left que le hace espacio al contenido).
+function aplicarEstadoSidebarColapsada(colapsada) {
+  document.body.classList.toggle("body--sidebar-colapsada", colapsada);
+
+  const barraLateral = document.querySelector(".barra-lateral");
+  if (barraLateral) barraLateral.classList.toggle("barra-lateral--colapsada", colapsada);
+
+  const boton = document.getElementById("boton-colapsar-sidebar");
+  if (boton) {
+    boton.setAttribute("aria-expanded", String(!colapsada));
+    boton.setAttribute("aria-label", colapsada ? "Expandir menú lateral" : "Colapsar menú lateral");
+    const icono = boton.querySelector("span");
+    if (icono) icono.textContent = colapsada ? "▶" : "◀";
+  }
+}
+
+function alternarSidebarColapsada() {
+  // Se guarda en localStorage para que el estado no se reinicie al
+  // navegar entre la portada y las páginas de trimestre.
+  sidebarColapsada = !sidebarColapsada;
+  localStorage.setItem(CLAVE_SIDEBAR_COLAPSADA, String(sidebarColapsada));
+  aplicarEstadoSidebarColapsada(sidebarColapsada);
+}
+
 // Los 7 enlaces de la barra lateral que apuntan a secciones dentro de una
 // página de trimestre (identificados por data-enlace en el HTML). En una
 // página de trimestre ya son anclas locales ("#temario") y no se tocan;
@@ -3212,6 +3252,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderizarTodo();
 
   document.getElementById("boton-tema").addEventListener("click", alternarTema);
+  document.getElementById("boton-colapsar-sidebar").addEventListener("click", alternarSidebarColapsada);
   ["selector-grupo", "selector-grupo-movil"].forEach((id) => {
     const selector = document.getElementById(id);
     if (selector) selector.addEventListener("change", alCambiarGrupo);
