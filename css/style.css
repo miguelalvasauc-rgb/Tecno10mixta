@@ -1169,6 +1169,12 @@ summary:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  /* Respiro al saltar con ancla (#tarea-t5, por ejemplo): hoy no hay
+     ningún header ni selector de trimestre sticky sobre el contenido
+     (.encabezado/.nav-principal son CSS sin uso de antes de la barra
+     lateral), así que solo hace falta un margen pequeño para que la
+     tarjeta no quede pegada al borde superior de la ventana. */
+  scroll-margin-top: 1rem;
 }
 
 .tarjeta__cabecera {

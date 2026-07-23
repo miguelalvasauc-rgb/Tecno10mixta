@@ -1501,19 +1501,23 @@ const DATOS_TEMARIO = {
 };
 
 // Nombres de alumnos por grupo, usados para llenar el selector de nombre
-// del modal de identificación (ver sección 11 más abajo). TODO(Hiram):
-// reemplazar estos arreglos con la lista real de cada grupo; mientras
-// estén vacíos, el modal avisa que aún no hay nombres cargados para ese
-// grupo. Los 2 nombres de ejemplo comentados sirven para probar el flujo
-// de identificación sin tener la lista final todavía.
+// del modal de identificación (ver sección 11 más abajo).
+// ⚠️ DATOS TEMPORALES DE PRUEBA — sustituir por la lista real de
+// asistencia de cada grupo antes de publicar en producción. Ver
+// pendiente en project knowledge: "reemplazar con lista oficial
+// cuando Hiram la tenga (cerca del inicio de clases)".
 const ALUMNOS_3C = [
-  // "Nombre Apellido",
-  // "Otro Alumno",
+  "Alumno Prueba Uno",
+  "Alumno Prueba Dos",
+  "Alumno Prueba Tres",
+  "Alumno Prueba Cuatro",
 ];
 
 const ALUMNOS_3E = [
-  // "Nombre Apellido",
-  // "Otro Alumno",
+  "Alumna Prueba Cinco",
+  "Alumna Prueba Seis",
+  "Alumna Prueba Siete",
+  "Alumna Prueba Ocho",
 ];
 
 /* =========================================================
@@ -2098,6 +2102,7 @@ async function renderizarTareas() {
   datos.forEach((item) => {
     const tarjeta = document.createElement("article");
     tarjeta.className = "tarjeta";
+    tarjeta.id = "tarea-" + item.id;
 
     const cabecera = document.createElement("div");
     cabecera.className = "tarjeta__cabecera";
@@ -2163,6 +2168,7 @@ async function renderizarActividades() {
   datos.forEach((item) => {
     const tarjeta = document.createElement("article");
     tarjeta.className = "tarjeta";
+    tarjeta.id = "actividad-" + item.id;
 
     const cabecera = document.createElement("div");
     cabecera.className = "tarjeta__cabecera";
@@ -2214,6 +2220,7 @@ async function renderizarProyectos() {
 
   if (datos.length === 0) {
     mostrarSinResultados(contenedor, "No hay proyectos registrados para este grupo.");
+    actualizarResumenProgreso("resumen-progreso-proyectos", datos, "proyecto", "proyectos");
     return;
   }
 
@@ -2221,6 +2228,7 @@ async function renderizarProyectos() {
   datos.forEach((item) => {
     const tarjeta = document.createElement("article");
     tarjeta.className = "tarjeta";
+    tarjeta.id = "proyecto-" + item.id;
 
     const cabecera = document.createElement("div");
     cabecera.className = "tarjeta__cabecera";
@@ -2267,8 +2275,26 @@ async function renderizarProyectos() {
     if (item.detalleCompleto) {
       tarjeta.appendChild(crearBotonVerDetalle(item));
     }
+
+    // Checklist de progreso personal (ver claveProgreso): independiente
+    // por completo del "avance" estático de arriba, que es del proyecto
+    // en general y no del alumno. El border-top de .checklist-tarea ya
+    // lo separa visualmente de ese bloque.
+    tarjeta.appendChild(
+      crearChecklistProgreso(
+        "proyecto",
+        item,
+        tarjeta,
+        datos,
+        "resumen-progreso-proyectos",
+        "proyectos"
+      )
+    );
+
     contenedor.appendChild(tarjeta);
   });
+
+  actualizarResumenProgreso("resumen-progreso-proyectos", datos, "proyecto", "proyectos");
 }
 
 async function renderizarVideos() {
@@ -2322,7 +2348,7 @@ const MENSAJES_MOTIVACIONALES = [
 // Panel de "Progreso" de la portada: solo existe en index.html (los
 // contenedores se buscan por id y, si no están, la función no hace
 // nada), y solo muestra datos si hay un alumno identificado (ver sección
-// 11). Suma tareas + actividades completadas de los 3 trimestres,
+// 11). Suma tareas + actividades + proyectos completados de los 3 trimestres,
 // filtradas por el grupo del alumno (no por el selector de grupo del
 // sitio, que es independiente y puede estar en "todos" mientras navega).
 async function renderizarProgreso() {
@@ -2344,6 +2370,7 @@ async function renderizarProgreso() {
   for (const trimestre of ["1", "2", "3"]) {
     const tareas = (await obtenerTareas(trimestre)).filter(coincideConGrupoDelAlumno);
     const actividades = (await obtenerActividades(trimestre)).filter(coincideConGrupoDelAlumno);
+    const proyectos = (await obtenerProyectos(trimestre)).filter(coincideConGrupoDelAlumno);
 
     const completadasTareas = tareas.filter((item) =>
       itemEstaCompletado("tarea", item.id, trimestre)
@@ -2351,9 +2378,12 @@ async function renderizarProgreso() {
     const completadasActividades = actividades.filter((item) =>
       itemEstaCompletado("actividad", item.id, trimestre)
     ).length;
+    const completadasProyectos = proyectos.filter((item) =>
+      itemEstaCompletado("proyecto", item.id, trimestre)
+    ).length;
 
-    const total = tareas.length + actividades.length;
-    const completadas = completadasTareas + completadasActividades;
+    const total = tareas.length + actividades.length + proyectos.length;
+    const completadas = completadasTareas + completadasActividades + completadasProyectos;
 
     totalGeneral += total;
     completadasGeneral += completadas;
@@ -2373,7 +2403,7 @@ async function renderizarProgreso() {
     const texto = document.createElement("p");
     texto.className = "resumen-progreso__texto";
     texto.textContent =
-      completadasGeneral + " de " + totalGeneral + " tareas y actividades completadas";
+      completadasGeneral + " de " + totalGeneral + " tareas, actividades y proyectos completados";
 
     const barra = document.createElement("div");
     barra.className = "barra-progreso";
@@ -2403,7 +2433,7 @@ async function renderizarProgreso() {
       const texto = document.createElement("p");
       texto.textContent =
         total === 0
-          ? "Sin tareas ni actividades registradas todavía."
+          ? "Sin tareas, actividades ni proyectos registrados todavía."
           : completadas + " de " + total + " completadas";
 
       bloque.append(titulo, texto);
