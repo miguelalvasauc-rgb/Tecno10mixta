@@ -881,6 +881,7 @@ const DATOS_ACTIVIDADES = {
   1: [
     {
       id: "a4",
+      secuencia: "🧠 Secuencia 1 — Inteligencia Artificial · Proyecto: Mi Chatbot en Papel",
       grupo: "todos",
       titulo: "Rompecabezas de Conceptos",
       descripcion: "Dinámica grupal de emparejar términos de IA con sus definiciones.",
@@ -905,6 +906,7 @@ const DATOS_ACTIVIDADES = {
     },
     {
       id: "a5",
+      secuencia: "🧠 Secuencia 1 — Inteligencia Artificial · Proyecto: Mi Chatbot en Papel",
       grupo: "todos",
       titulo: "Teatro de Chatbots",
       descripcion: "En equipos, diseñan el árbol de decisión de un chatbot y lo representan en una obra corta.",
@@ -928,6 +930,7 @@ const DATOS_ACTIVIDADES = {
     },
     {
       id: "a6",
+      secuencia: "🧠 Secuencia 1 — Inteligencia Artificial · Proyecto: Mi Chatbot en Papel",
       grupo: "todos",
       titulo: "Círculo de Debate: ¿La IA nos quitará el trabajo?",
       descripcion: "Debate grupal sobre si la IA reemplazará los trabajos humanos.",
@@ -951,6 +954,7 @@ const DATOS_ACTIVIDADES = {
     },
     {
       id: "a7",
+      secuencia: "🥽 Secuencia 2 — Realidad Virtual · Proyecto: Mi Metaverso Educativo",
       grupo: "todos",
       titulo: "Juego de Cartas AR/VR/MR",
       descripcion: "Juego de cartas para clasificar escenarios de AR, VR y MR en equipo.",
@@ -974,6 +978,7 @@ const DATOS_ACTIVIDADES = {
     },
     {
       id: "a8",
+      secuencia: "🥽 Secuencia 2 — Realidad Virtual · Proyecto: Mi Metaverso Educativo",
       grupo: "todos",
       titulo: "Construcción de Mundos Virtuales",
       descripcion: "Equipos diseñan un mundo virtual educativo sobre un tema escolar.",
@@ -996,6 +1001,7 @@ const DATOS_ACTIVIDADES = {
     },
     {
       id: "a9",
+      secuencia: "🥽 Secuencia 2 — Realidad Virtual · Proyecto: Mi Metaverso Educativo",
       grupo: "todos",
       titulo: "Tribunal del Metaverso",
       descripcion: "Juicio simulado sobre dilemas éticos del metaverso.",
@@ -1018,6 +1024,7 @@ const DATOS_ACTIVIDADES = {
     },
     {
       id: "a10",
+      secuencia: "🤖 Secuencia 3 — Robótica · Proyecto: Diseña tu Robot Ideal",
       grupo: "todos",
       titulo: "Simulación de Fábrica Robotizada",
       descripcion: "Simulación de una línea de producción, comparando trabajo manual vs. instrucciones tipo robot.",
@@ -1040,6 +1047,7 @@ const DATOS_ACTIVIDADES = {
     },
     {
       id: "a11",
+      secuencia: "🤖 Secuencia 3 — Robótica · Proyecto: Diseña tu Robot Ideal",
       grupo: "todos",
       titulo: "Programación en Papel: El Laberinto",
       descripcion: "En parejas, un alumno programa con instrucciones exactas para resolver un laberinto.",
@@ -1062,6 +1070,7 @@ const DATOS_ACTIVIDADES = {
     },
     {
       id: "a12",
+      secuencia: "🤖 Secuencia 3 — Robótica · Proyecto: Diseña tu Robot Ideal",
       grupo: "todos",
       titulo: "Estación de Sensores",
       descripcion: "Equipos identifican qué sensores necesitaría un robot para interactuar con objetos cotidianos.",
@@ -2146,10 +2155,15 @@ function crearChecklistProgreso(tipo, item, tarjeta, datos, idResumen, etiqueta)
     // que no son <details> (Actividades/Proyectos usan <article>).
     tarjeta.open = !checkbox.checked;
     actualizarResumenProgreso(idResumen, datos, tipo, etiqueta);
-    const detailsGrupo = tarjeta.closest(".tareas-grupo");
+    // Acordeón por secuencia: tanto Tareas (.tareas-grupo) como Actividades
+    // (.actividades-grupo) usan el mismo fallback "Otras <etiqueta>" que
+    // renderizarTareas()/renderizarActividades() para agrupar los items sin
+    // campo "secuencia" (trimestres 2 y 3, por ahora).
+    const detailsGrupo = tarjeta.closest(".tareas-grupo, .actividades-grupo");
     if (detailsGrupo) {
-      const claveGrupo = item.secuencia || "Otras tareas";
-      const itemsDelGrupo = datos.filter((d) => (d.secuencia || "Otras tareas") === claveGrupo);
+      const claveGrupoFallback = "Otras " + etiqueta;
+      const claveGrupo = item.secuencia || claveGrupoFallback;
+      const itemsDelGrupo = datos.filter((d) => (d.secuencia || claveGrupoFallback) === claveGrupo);
       actualizarResumenGrupo(detailsGrupo, itemsDelGrupo, tipo);
     }
     renderizarProgreso();
@@ -2313,49 +2327,125 @@ async function renderizarActividades() {
     return;
   }
 
-  contenedor.innerHTML = "";
+  // Agrupar conservando el orden de aparición en el array de datos. Los
+  // trimestres sin campo "secuencia" (2 y 3, por ahora) caen todos en un
+  // único grupo "Otras actividades", igual que hoy se ven en una sola lista.
+  const grupos = new Map();
   datos.forEach((item) => {
-    const tarjeta = document.createElement("article");
-    tarjeta.className = "tarjeta";
-    tarjeta.id = "actividad-" + item.id;
+    const clave = item.secuencia || "Otras actividades";
+    if (!grupos.has(clave)) grupos.set(clave, []);
+    grupos.get(clave).push(item);
+  });
 
-    const cabecera = document.createElement("div");
-    cabecera.className = "tarjeta__cabecera";
-    const titulo = document.createElement("h3");
-    titulo.textContent = item.titulo;
-    cabecera.appendChild(titulo);
-    cabecera.appendChild(crearBadgeGrupo(item.grupo));
+  contenedor.innerHTML = "";
+  let indiceGrupo = 0;
 
-    const descripcion = document.createElement("p");
-    descripcion.textContent = item.descripcion;
+  grupos.forEach((itemsDelGrupo, nombreGrupo) => {
+    const bloqueGrupo = document.createElement("details");
+    bloqueGrupo.className = "actividades-grupo";
+    if (indiceGrupo === 0) bloqueGrupo.open = true;
+    indiceGrupo++;
 
-    const fecha = document.createElement("p");
-    fecha.className = "tarjeta__fecha";
-    fecha.textContent = "Fecha: " + formatearFecha(item.fecha);
+    const resumenGrupo = document.createElement("summary");
+    resumenGrupo.className = "actividades-grupo__resumen";
 
-    tarjeta.append(cabecera, descripcion, fecha);
-    if (item.archivoUrl) {
-      tarjeta.appendChild(crearEnlaceDescarga(item.archivoUrl));
-    }
-    if (item.detalleCompleto) {
-      tarjeta.appendChild(crearBotonVerDetalle(item));
-    }
+    const tituloGrupo = document.createElement("h3");
+    tituloGrupo.className = "actividades-grupo__titulo";
+    tituloGrupo.textContent = nombreGrupo;
 
-    // Checklist de progreso personal, mismo patrón que en Tareas (ver
-    // claveProgreso). Antes de este rediseño Actividades no tenía
-    // seguimiento de progreso.
-    tarjeta.appendChild(
-      crearChecklistProgreso(
-        "actividad",
-        item,
-        tarjeta,
-        datos,
-        "resumen-progreso-actividades",
-        "actividades"
-      )
-    );
+    const totalGrupo = itemsDelGrupo.length;
+    const completadasGrupo = itemsDelGrupo.filter((item) =>
+      itemEstaCompletado("actividad", item.id)
+    ).length;
+    const porcentajeGrupo = totalGrupo === 0 ? 0 : Math.round((completadasGrupo / totalGrupo) * 100);
 
-    contenedor.appendChild(tarjeta);
+    const conteoGrupo = document.createElement("p");
+    conteoGrupo.className = "actividades-grupo__conteo";
+    conteoGrupo.dataset.rol = "conteo-grupo";
+    conteoGrupo.textContent = completadasGrupo + " de " + totalGrupo + " completadas";
+
+    const barraGrupo = document.createElement("div");
+    barraGrupo.className = "barra-progreso";
+    barraGrupo.setAttribute("role", "progressbar");
+    barraGrupo.setAttribute("aria-valuenow", String(completadasGrupo));
+    barraGrupo.setAttribute("aria-valuemin", "0");
+    barraGrupo.setAttribute("aria-valuemax", String(totalGrupo));
+    barraGrupo.setAttribute("aria-label", "Progreso de actividades de " + nombreGrupo);
+    const rellenoGrupo = document.createElement("div");
+    rellenoGrupo.className = "barra-progreso__relleno";
+    rellenoGrupo.style.width = porcentajeGrupo + "%";
+    barraGrupo.appendChild(rellenoGrupo);
+
+    const iconoGrupo = document.createElement("span");
+    iconoGrupo.className = "actividades-grupo__icono";
+    iconoGrupo.setAttribute("aria-hidden", "true");
+    iconoGrupo.textContent = "▾";
+
+    resumenGrupo.append(tituloGrupo, conteoGrupo, barraGrupo, iconoGrupo);
+    bloqueGrupo.appendChild(resumenGrupo);
+
+    const cuadriculaGrupo = document.createElement("div");
+    cuadriculaGrupo.className = "cuadricula";
+
+    itemsDelGrupo.forEach((item) => {
+      const tarjeta = document.createElement("details");
+      tarjeta.className = "tarjeta tarjeta-actividad";
+      tarjeta.id = "actividad-" + item.id;
+      // Pendientes abiertas por defecto; completadas cerradas (mismo
+      // criterio que Tareas).
+      tarjeta.open = !itemEstaCompletado("actividad", item.id);
+
+      const resumenTarjeta = document.createElement("summary");
+      resumenTarjeta.className = "tarjeta-actividad__resumen";
+
+      const cabecera = document.createElement("div");
+      cabecera.className = "tarjeta__cabecera";
+      const titulo = document.createElement("h3");
+      titulo.textContent = item.titulo;
+      cabecera.appendChild(titulo);
+      cabecera.appendChild(crearBadgeGrupo(item.grupo));
+
+      const fecha = document.createElement("p");
+      fecha.className = "tarjeta__fecha";
+      fecha.textContent = "Fecha: " + formatearFecha(item.fecha);
+
+      const iconoTarjeta = document.createElement("span");
+      iconoTarjeta.className = "tarjeta-actividad__icono";
+      iconoTarjeta.setAttribute("aria-hidden", "true");
+      iconoTarjeta.textContent = "▾";
+
+      resumenTarjeta.append(cabecera, fecha, iconoTarjeta);
+      tarjeta.appendChild(resumenTarjeta);
+
+      const descripcion = document.createElement("p");
+      descripcion.textContent = item.descripcion;
+      tarjeta.appendChild(descripcion);
+
+      if (item.archivoUrl) {
+        tarjeta.appendChild(crearEnlaceDescarga(item.archivoUrl));
+      }
+      if (item.detalleCompleto) {
+        tarjeta.appendChild(crearBotonVerDetalle(item));
+      }
+
+      // Checklist de progreso personal, mismo patrón que en Tareas (ver
+      // claveProgreso).
+      tarjeta.appendChild(
+        crearChecklistProgreso(
+          "actividad",
+          item,
+          tarjeta,
+          datos,
+          "resumen-progreso-actividades",
+          "actividades"
+        )
+      );
+
+      cuadriculaGrupo.appendChild(tarjeta);
+    });
+
+    bloqueGrupo.appendChild(cuadriculaGrupo);
+    contenedor.appendChild(bloqueGrupo);
   });
 
   actualizarResumenProgreso("resumen-progreso-actividades", datos, "actividad", "actividades");
