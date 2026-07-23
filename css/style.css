@@ -1853,6 +1853,14 @@ summary:focus-visible {
   line-height: 1;
 }
 
+/* Sin esto, [hidden] pierde contra "display: inline-flex" de arriba (misma
+   especificidad, la regla de clase gana por orden de cascada): la insignia
+   se mostraría siempre aunque se le ponga el atributo "hidden" en vivo
+   (ver crearChecklistProgreso en js/main.js). */
+.insignia-proyecto[hidden] {
+  display: none;
+}
+
 :root[data-theme="oscuro"] .insignia-proyecto {
   box-shadow: 0 0 10px var(--color-estado-completado);
 }

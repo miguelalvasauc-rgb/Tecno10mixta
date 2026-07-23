@@ -2172,6 +2172,24 @@ function crearChecklistProgreso(tipo, item, tarjeta, datos, idResumen, etiqueta)
       const itemsDelGrupo = datos.filter((d) => (d.secuencia || claveGrupoFallback) === claveGrupo);
       actualizarResumenGrupo(detailsGrupo, itemsDelGrupo, tipo);
     }
+    // Proyectos: la barra/texto de avance individual y la insignia 🏆
+    // reflejan "avanceMostrado" (100% si el checklist está marcado, si no
+    // el "avance" estático de DATOS_PROYECTOS — ver renderizarProyectos()).
+    // Se actualizan aquí en vivo para no desincronizarse del checkbox.
+    if (tipo === "proyecto") {
+      const avanceMostrado = checkbox.checked ? 100 : item.avance;
+      const relleno = tarjeta.querySelector(".barra-progreso__relleno");
+      if (relleno) relleno.style.width = avanceMostrado + "%";
+      const barra = tarjeta.querySelector(".barra-progreso");
+      if (barra) {
+        barra.setAttribute("aria-valuenow", String(avanceMostrado));
+        barra.setAttribute("aria-label", "Avance del proyecto: " + avanceMostrado + "%");
+      }
+      const textoAvance = tarjeta.querySelector('[data-rol="texto-avance-individual"]');
+      if (textoAvance) textoAvance.textContent = "Avance: " + avanceMostrado + "%";
+      const insignia = tarjeta.querySelector(".insignia-proyecto");
+      if (insignia) insignia.hidden = avanceMostrado < 100;
+    }
     renderizarProgreso();
   });
 
@@ -2543,6 +2561,13 @@ async function renderizarProyectos() {
       const resumenTarjeta = document.createElement("summary");
       resumenTarjeta.className = "tarjeta-proyecto__resumen";
 
+      // "avanceMostrado" refleja el checklist personal del alumno además
+      // del avance estático del proyecto: si ya marcó la tarjeta como
+      // completada, se muestra 100% aunque el dato de DATOS_PROYECTOS diga
+      // otra cosa (ver también el listener del checkbox en
+      // crearChecklistProgreso, que mantiene esto sincronizado en vivo).
+      const avanceMostrado = itemEstaCompletado("proyecto", item.id) ? 100 : item.avance;
+
       const cabecera = document.createElement("div");
       cabecera.className = "tarjeta__cabecera";
       const titulo = document.createElement("h3");
@@ -2550,15 +2575,16 @@ async function renderizarProyectos() {
       cabecera.appendChild(titulo);
       // Insignia de proyecto completado: solo decorativa, no cambia cómo se
       // calcula ni se guarda "avance" (sigue siendo el campo estático de
-      // DATOS_PROYECTOS).
-      if (item.avance >= 100) {
-        const insignia = document.createElement("span");
-        insignia.className = "insignia-proyecto";
-        insignia.title = "Proyecto completado";
-        insignia.setAttribute("aria-label", "Proyecto completado");
-        insignia.textContent = "🏆";
-        cabecera.appendChild(insignia);
-      }
+      // DATOS_PROYECTOS). Se crea siempre y se oculta con "hidden" (en vez
+      // de no agregarla al DOM) para poder mostrarla/ocultarla en vivo
+      // desde crearChecklistProgreso sin re-renderizar la tarjeta.
+      const insignia = document.createElement("span");
+      insignia.className = "insignia-proyecto";
+      insignia.title = "Proyecto completado";
+      insignia.setAttribute("aria-label", "Proyecto completado");
+      insignia.textContent = "🏆";
+      insignia.hidden = avanceMostrado < 100;
+      cabecera.appendChild(insignia);
       cabecera.appendChild(crearBadgeGrupo(item.grupo));
 
       const fecha = document.createElement("p");
@@ -2579,18 +2605,19 @@ async function renderizarProyectos() {
       const barra = document.createElement("div");
       barra.className = "barra-progreso";
       barra.setAttribute("role", "progressbar");
-      barra.setAttribute("aria-valuenow", String(item.avance));
+      barra.setAttribute("aria-valuenow", String(avanceMostrado));
       barra.setAttribute("aria-valuemin", "0");
       barra.setAttribute("aria-valuemax", "100");
-      barra.setAttribute("aria-label", "Avance del proyecto: " + item.avance + "%");
+      barra.setAttribute("aria-label", "Avance del proyecto: " + avanceMostrado + "%");
       const relleno = document.createElement("div");
       relleno.className = "barra-progreso__relleno";
-      relleno.style.width = item.avance + "%";
+      relleno.style.width = avanceMostrado + "%";
       barra.appendChild(relleno);
 
       const textoAvance = document.createElement("p");
       textoAvance.className = "tarjeta__fecha";
-      textoAvance.textContent = "Avance: " + item.avance + "%";
+      textoAvance.dataset.rol = "texto-avance-individual";
+      textoAvance.textContent = "Avance: " + avanceMostrado + "%";
 
       tarjeta.append(descripcion, barra, textoAvance);
       if (item.detalleCompleto) {
