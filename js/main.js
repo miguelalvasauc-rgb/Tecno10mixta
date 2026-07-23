@@ -79,8 +79,9 @@ const DATOS_EVENTOS = [
 //
 // Nota sobre el 4 y 5 de enero de 2027: son talleres docentes, pero para
 // los alumnos son continuación del receso de invierno (sin clases), así
-// que se marcan como "vacaciones". El 6 de enero (Día de Reyes) es
-// suspensión aparte y el regreso real a clases es el 7 de enero.
+// que se marcan como "vacaciones". El 6 de enero (Día de Reyes) también
+// se marca como "vacaciones" (continuación del receso para alumnos) en
+// vez de "suspension" aparte. El regreso real a clases es el 7 de enero.
 //
 // Tipos válidos: "inicio", "fin", "vacaciones", "cte-intensiva",
 // "cte-ordinaria", "suspension", "evaluacion"
@@ -100,7 +101,6 @@ const CALENDARIO_ESCOLAR_2026_2027 = [
   { fecha: "2026-09-16", tipo: "suspension", etiqueta: "Independencia de México", verificado: true },
   { fecha: "2026-11-02", tipo: "suspension", etiqueta: "Día de Muertos", verificado: true },
   { fecha: "2026-11-16", tipo: "suspension", etiqueta: "Revolución Mexicana", verificado: true },
-  { fecha: "2027-01-06", tipo: "suspension", etiqueta: "Día de Reyes", verificado: true },
   { fecha: "2027-02-01", tipo: "suspension", etiqueta: "Día de la Constitución", verificado: true },
   { fecha: "2027-03-15", tipo: "suspension", etiqueta: "Natalicio de Benito Juárez", verificado: true },
   { fecha: "2027-05-05", tipo: "suspension", etiqueta: "Batalla de Puebla", verificado: true },
@@ -115,8 +115,9 @@ const CALENDARIO_ESCOLAR_2026_2027 = [
   { fecha: "2027-05-28", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
   { fecha: "2027-06-25", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
 
-  // --- Vacaciones de Invierno (21 dic 2026 al 1 ene 2027, + 4-5 ene
-  // como continuación de receso para alumnos) ---
+  // --- Vacaciones de Invierno (21 dic 2026 al 6 ene 2027, + 4-5 ene
+  // como continuación de receso para alumnos; el regreso a clases es el
+  // 7 de enero) ---
   { fecha: "2026-12-21", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
   { fecha: "2026-12-22", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
   { fecha: "2026-12-23", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
@@ -129,8 +130,11 @@ const CALENDARIO_ESCOLAR_2026_2027 = [
   { fecha: "2026-12-30", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
   { fecha: "2026-12-31", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
   { fecha: "2027-01-01", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno (incluye Año Nuevo)", verificado: true },
+  { fecha: "2027-01-02", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
+  { fecha: "2027-01-03", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno", verificado: true },
   { fecha: "2027-01-04", tipo: "vacaciones", etiqueta: "Continuación de receso (talleres docentes, sin clases)", verificado: true },
   { fecha: "2027-01-05", tipo: "vacaciones", etiqueta: "Continuación de receso (talleres docentes, sin clases)", verificado: true },
+  { fecha: "2027-01-06", tipo: "vacaciones", etiqueta: "Vacaciones de Invierno (incluye Día de Reyes)", verificado: true },
 
   // --- Vacaciones de Semana Santa (22 mar al 2 abr 2027) ---
   { fecha: "2027-03-22", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
