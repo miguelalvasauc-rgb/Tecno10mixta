@@ -1917,15 +1917,33 @@ async function renderizarTemario() {
 
   contenedor.innerHTML = "";
   let indiceGlobal = 0;
+  let indiceGrupo = 0;
 
   grupos.forEach((itemsDelGrupo, nombreGrupo) => {
-    const bloqueGrupo = document.createElement("div");
+    const bloqueGrupo = document.createElement("details");
     bloqueGrupo.className = "temario-grupo";
+    if (indiceGrupo === 0) bloqueGrupo.open = true;
+    indiceGrupo++;
+
+    const resumenGrupo = document.createElement("summary");
+    resumenGrupo.className = "temario-grupo__resumen";
 
     const tituloGrupo = document.createElement("h3");
     tituloGrupo.className = "temario-grupo__titulo";
     tituloGrupo.textContent = nombreGrupo;
-    bloqueGrupo.appendChild(tituloGrupo);
+
+    const conteoGrupo = document.createElement("p");
+    conteoGrupo.className = "temario-grupo__conteo";
+    conteoGrupo.textContent =
+      itemsDelGrupo.length + " tema" + (itemsDelGrupo.length === 1 ? "" : "s");
+
+    const iconoGrupo = document.createElement("span");
+    iconoGrupo.className = "temario-grupo__icono";
+    iconoGrupo.setAttribute("aria-hidden", "true");
+    iconoGrupo.textContent = "▾";
+
+    resumenGrupo.append(tituloGrupo, conteoGrupo, iconoGrupo);
+    bloqueGrupo.appendChild(resumenGrupo);
 
     const cuadriculaGrupo = document.createElement("div");
     cuadriculaGrupo.className = "cuadricula-temario";
