@@ -1580,10 +1580,23 @@ let grupoActual = localStorage.getItem(CLAVE_GRUPO) || "todos";
 // localStorage por la misma razón que el grupo.
 let temaActual = localStorage.getItem(CLAVE_TEMA) || "oscuro";
 
+// Trimestre desbloqueado de verdad. El sitio no tiene un calendario
+// académico real que decida solo cuándo abrir cada trimestre, así que
+// esto se sube a mano (a 2 o a 3) cuando toca abrirlo.
+const TRIMESTRE_DESBLOQUEADO = 1; // Cambiar manualmente a 2 o 3 para abrir ese trimestre
+
 // Trimestre de la página actual ('1', '2' o '3'), tomado de
 // <body data-trimestre="…">. En la portada (index.html) no existe
 // ese atributo, por lo que queda en null.
 const TRIMESTRE_ACTUAL = document.body.dataset.trimestre || null;
+
+// Guarda de acceso real (no solo visual): si se entra por URL directa a
+// la página de un trimestre que TRIMESTRE_DESBLOQUEADO todavía no
+// libera, se redirige a la portada de inmediato, antes de renderizar
+// nada de esa página.
+if (TRIMESTRE_ACTUAL && Number(TRIMESTRE_ACTUAL) > TRIMESTRE_DESBLOQUEADO) {
+  window.location.replace("index.html");
+}
 
 // Último trimestre que el alumno visitó ('1' por defecto). La barra
 // lateral es idéntica en las 5 páginas del sitio, pero los enlaces a
@@ -2657,14 +2670,17 @@ function actualizarEnlacesTrimestreEnSidebar() {
 }
 
 // Marca cada .tarjeta-trimestre de la portada como "finalizado", "actual"
-// o "proximamente" comparando su número contra ultimoTrimestreVisto (la
-// mejor aproximación disponible a "en qué trimestre estamos", ya que los
-// datos de ejemplo no incluyen fechas de inicio/fin de cada trimestre).
+// o "proximamente" comparando su número contra TRIMESTRE_DESBLOQUEADO (el
+// control real de acceso; ultimoTrimestreVisto solo sirve para los
+// enlaces del sidebar, no para esto). Las tarjetas "proximamente" son
+// <a href> funcionales en el HTML (por si se quita el bloqueo más
+// adelante), así que aquí también se intercepta su clic para que no
+// naveguen mientras sigan bloqueadas.
 function actualizarEstadoTarjetasTrimestre() {
   const tarjetas = document.querySelectorAll(".tarjeta-trimestre[data-trimestre]");
   if (tarjetas.length === 0) return;
 
-  const actual = Number(ultimoTrimestreVisto);
+  const actual = TRIMESTRE_DESBLOQUEADO;
 
   tarjetas.forEach((tarjeta) => {
     const numero = Number(tarjeta.dataset.trimestre);
@@ -2685,7 +2701,22 @@ function actualizarEstadoTarjetasTrimestre() {
 
     tarjeta.dataset.estado = estado;
     if (etiqueta) etiqueta.textContent = texto;
+
+    tarjeta.addEventListener("click", (evento) => {
+      if (tarjeta.dataset.estado === "proximamente") {
+        evento.preventDefault();
+        mostrarMensajeTrimestreBloqueado();
+      }
+    });
   });
+}
+
+// Mensaje accesible (aria-live, ver #mensaje-trimestre-bloqueado en
+// index.html) que se muestra al intentar entrar a un trimestre bloqueado
+// desde su tarjeta en la portada.
+function mostrarMensajeTrimestreBloqueado() {
+  const mensaje = document.getElementById("mensaje-trimestre-bloqueado");
+  if (mensaje) mensaje.textContent = "Este trimestre aún no está disponible.";
 }
 
 // Actualiza el tercer nivel de las migas de pan ("Inicio > Trimestre X >
