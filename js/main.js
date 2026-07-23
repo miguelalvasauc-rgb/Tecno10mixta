@@ -1149,6 +1149,7 @@ const DATOS_PROYECTOS = {
   1: [
     {
       id: "p3",
+      secuencia: "🧠 Secuencia 1 — Inteligencia Artificial · Proyecto: Mi Chatbot en Papel",
       grupo: "todos",
       titulo: "Mi Chatbot en Papel",
       descripcion: "Diseño individual de un chatbot en papel que resuelve un problema real de la escuela.",
@@ -1173,6 +1174,7 @@ const DATOS_PROYECTOS = {
     },
     {
       id: "p4",
+      secuencia: "🥽 Secuencia 2 — Realidad Virtual · Proyecto: Mi Metaverso Educativo",
       grupo: "todos",
       titulo: "Mi Metaverso Educativo",
       descripcion: "Equipos diseñan un prototipo de espacio educativo en el metaverso.",
@@ -1198,6 +1200,7 @@ const DATOS_PROYECTOS = {
     },
     {
       id: "p5",
+      secuencia: "🤖 Secuencia 3 — Robótica · Proyecto: Diseña tu Robot Ideal",
       grupo: "todos",
       titulo: "Diseña tu Robot Ideal",
       descripcion: "Diseño individual de un robot que resuelve un problema social de la comunidad.",
@@ -2151,14 +2154,17 @@ function crearChecklistProgreso(tipo, item, tarjeta, datos, idResumen, etiqueta)
     tarjeta.classList.toggle("tarjeta--completada", checkbox.checked);
     textoChecklist.textContent = checkbox.checked ? "Completada" : "Marcar como completada";
     // Colapsa la tarjeta al completarla (deja de estorbar en pendientes);
-    // la reabre si el alumno la desmarca por error. Sin efecto en tarjetas
-    // que no son <details> (Actividades/Proyectos usan <article>).
+    // la reabre si el alumno la desmarca por error.
     tarjeta.open = !checkbox.checked;
     actualizarResumenProgreso(idResumen, datos, tipo, etiqueta);
     // Acordeón por secuencia: tanto Tareas (.tareas-grupo) como Actividades
     // (.actividades-grupo) usan el mismo fallback "Otras <etiqueta>" que
     // renderizarTareas()/renderizarActividades() para agrupar los items sin
     // campo "secuencia" (trimestres 2 y 3, por ahora).
+    // .proyectos-grupo queda fuera a propósito: su resumen muestra el
+    // "avance" estático del proyecto (promedio de item.avance), no un
+    // conteo de completados, así que no debe recalcularse al marcar/
+    // desmarcar el checklist personal.
     const detailsGrupo = tarjeta.closest(".tareas-grupo, .actividades-grupo");
     if (detailsGrupo) {
       const claveGrupoFallback = "Otras " + etiqueta;
@@ -2463,74 +2469,154 @@ async function renderizarProyectos() {
     return;
   }
 
-  contenedor.innerHTML = "";
+  // Agrupar conservando el orden de aparición en el array de datos. Los
+  // trimestres sin campo "secuencia" (2 y 3, por ahora) caen todos en un
+  // único grupo "Otros proyectos". Un grupo puede tener más de un proyecto
+  // (Bloques 2 y 3 podrían agregar varios por secuencia), por eso se agrupa
+  // igual que Tareas/Actividades en vez de asumir 1:1.
+  const grupos = new Map();
   datos.forEach((item) => {
-    const tarjeta = document.createElement("article");
-    tarjeta.className = "tarjeta";
-    tarjeta.id = "proyecto-" + item.id;
+    const clave = item.secuencia || "Otros proyectos";
+    if (!grupos.has(clave)) grupos.set(clave, []);
+    grupos.get(clave).push(item);
+  });
 
-    const cabecera = document.createElement("div");
-    cabecera.className = "tarjeta__cabecera";
-    const titulo = document.createElement("h3");
-    titulo.textContent = item.titulo;
-    cabecera.appendChild(titulo);
-    // Insignia de proyecto completado: solo decorativa, no cambia cómo se
-    // calcula ni se guarda "avance" (sigue siendo el campo estático de
-    // DATOS_PROYECTOS).
-    if (item.avance >= 100) {
-      const insignia = document.createElement("span");
-      insignia.className = "insignia-proyecto";
-      insignia.title = "Proyecto completado";
-      insignia.setAttribute("aria-label", "Proyecto completado");
-      insignia.textContent = "🏆";
-      cabecera.appendChild(insignia);
-    }
-    cabecera.appendChild(crearBadgeGrupo(item.grupo));
+  contenedor.innerHTML = "";
+  let indiceGrupo = 0;
 
-    const descripcion = document.createElement("p");
-    descripcion.textContent = item.descripcion;
+  grupos.forEach((itemsDelGrupo, nombreGrupo) => {
+    const bloqueGrupo = document.createElement("details");
+    bloqueGrupo.className = "proyectos-grupo";
+    if (indiceGrupo === 0) bloqueGrupo.open = true;
+    indiceGrupo++;
 
-    const fecha = document.createElement("p");
-    fecha.className = "tarjeta__fecha";
-    fecha.textContent = "Entrega final: " + formatearFecha(item.fechaEntrega);
+    const resumenGrupo = document.createElement("summary");
+    resumenGrupo.className = "proyectos-grupo__resumen";
 
-    const barra = document.createElement("div");
-    barra.className = "barra-progreso";
-    barra.setAttribute("role", "progressbar");
-    barra.setAttribute("aria-valuenow", String(item.avance));
-    barra.setAttribute("aria-valuemin", "0");
-    barra.setAttribute("aria-valuemax", "100");
-    barra.setAttribute("aria-label", "Avance del proyecto: " + item.avance + "%");
-    const relleno = document.createElement("div");
-    relleno.className = "barra-progreso__relleno";
-    relleno.style.width = item.avance + "%";
-    barra.appendChild(relleno);
+    const tituloGrupo = document.createElement("h3");
+    tituloGrupo.className = "proyectos-grupo__titulo";
+    tituloGrupo.textContent = nombreGrupo;
 
-    const textoAvance = document.createElement("p");
-    textoAvance.className = "tarjeta__fecha";
-    textoAvance.textContent = "Avance: " + item.avance + "%";
+    // El avance del grupo es el promedio del avance estático de sus
+    // proyectos (item.avance), no un conteo de completados: es una medida
+    // del proyecto en general, no del progreso personal del alumno.
+    const sumaAvance = itemsDelGrupo.reduce((total, item) => total + item.avance, 0);
+    const promedioAvance = Math.round(sumaAvance / itemsDelGrupo.length);
 
-    tarjeta.append(cabecera, descripcion, fecha, barra, textoAvance);
-    if (item.detalleCompleto) {
-      tarjeta.appendChild(crearBotonVerDetalle(item));
-    }
+    const conteoGrupo = document.createElement("p");
+    conteoGrupo.className = "proyectos-grupo__conteo";
+    conteoGrupo.dataset.rol = "conteo-grupo";
+    conteoGrupo.textContent = "Avance: " + promedioAvance + "%";
 
-    // Checklist de progreso personal (ver claveProgreso): independiente
-    // por completo del "avance" estático de arriba, que es del proyecto
-    // en general y no del alumno. El border-top de .checklist-tarea ya
-    // lo separa visualmente de ese bloque.
-    tarjeta.appendChild(
-      crearChecklistProgreso(
-        "proyecto",
-        item,
-        tarjeta,
-        datos,
-        "resumen-progreso-proyectos",
-        "proyectos"
-      )
-    );
+    const barraGrupo = document.createElement("div");
+    barraGrupo.className = "barra-progreso";
+    barraGrupo.setAttribute("role", "progressbar");
+    barraGrupo.setAttribute("aria-valuenow", String(promedioAvance));
+    barraGrupo.setAttribute("aria-valuemin", "0");
+    barraGrupo.setAttribute("aria-valuemax", "100");
+    barraGrupo.setAttribute("aria-label", "Avance de proyectos de " + nombreGrupo);
+    const rellenoGrupo = document.createElement("div");
+    rellenoGrupo.className = "barra-progreso__relleno";
+    rellenoGrupo.style.width = promedioAvance + "%";
+    barraGrupo.appendChild(rellenoGrupo);
 
-    contenedor.appendChild(tarjeta);
+    const iconoGrupo = document.createElement("span");
+    iconoGrupo.className = "proyectos-grupo__icono";
+    iconoGrupo.setAttribute("aria-hidden", "true");
+    iconoGrupo.textContent = "▾";
+
+    resumenGrupo.append(tituloGrupo, conteoGrupo, barraGrupo, iconoGrupo);
+    bloqueGrupo.appendChild(resumenGrupo);
+
+    const cuadriculaGrupo = document.createElement("div");
+    cuadriculaGrupo.className = "cuadricula";
+
+    itemsDelGrupo.forEach((item) => {
+      const tarjeta = document.createElement("details");
+      tarjeta.className = "tarjeta tarjeta-proyecto";
+      tarjeta.id = "proyecto-" + item.id;
+      // En curso (avance < 100) abierta; ya terminado al 100% cerrado. A
+      // diferencia de Tareas/Actividades, este estado no depende de un
+      // checkbox: se fija una sola vez con el "avance" estático al renderizar.
+      tarjeta.open = item.avance < 100;
+
+      const resumenTarjeta = document.createElement("summary");
+      resumenTarjeta.className = "tarjeta-proyecto__resumen";
+
+      const cabecera = document.createElement("div");
+      cabecera.className = "tarjeta__cabecera";
+      const titulo = document.createElement("h3");
+      titulo.textContent = item.titulo;
+      cabecera.appendChild(titulo);
+      // Insignia de proyecto completado: solo decorativa, no cambia cómo se
+      // calcula ni se guarda "avance" (sigue siendo el campo estático de
+      // DATOS_PROYECTOS).
+      if (item.avance >= 100) {
+        const insignia = document.createElement("span");
+        insignia.className = "insignia-proyecto";
+        insignia.title = "Proyecto completado";
+        insignia.setAttribute("aria-label", "Proyecto completado");
+        insignia.textContent = "🏆";
+        cabecera.appendChild(insignia);
+      }
+      cabecera.appendChild(crearBadgeGrupo(item.grupo));
+
+      const fecha = document.createElement("p");
+      fecha.className = "tarjeta__fecha";
+      fecha.textContent = "Entrega final: " + formatearFecha(item.fechaEntrega);
+
+      const iconoTarjeta = document.createElement("span");
+      iconoTarjeta.className = "tarjeta-proyecto__icono";
+      iconoTarjeta.setAttribute("aria-hidden", "true");
+      iconoTarjeta.textContent = "▾";
+
+      resumenTarjeta.append(cabecera, fecha, iconoTarjeta);
+      tarjeta.appendChild(resumenTarjeta);
+
+      const descripcion = document.createElement("p");
+      descripcion.textContent = item.descripcion;
+
+      const barra = document.createElement("div");
+      barra.className = "barra-progreso";
+      barra.setAttribute("role", "progressbar");
+      barra.setAttribute("aria-valuenow", String(item.avance));
+      barra.setAttribute("aria-valuemin", "0");
+      barra.setAttribute("aria-valuemax", "100");
+      barra.setAttribute("aria-label", "Avance del proyecto: " + item.avance + "%");
+      const relleno = document.createElement("div");
+      relleno.className = "barra-progreso__relleno";
+      relleno.style.width = item.avance + "%";
+      barra.appendChild(relleno);
+
+      const textoAvance = document.createElement("p");
+      textoAvance.className = "tarjeta__fecha";
+      textoAvance.textContent = "Avance: " + item.avance + "%";
+
+      tarjeta.append(descripcion, barra, textoAvance);
+      if (item.detalleCompleto) {
+        tarjeta.appendChild(crearBotonVerDetalle(item));
+      }
+
+      // Checklist de progreso personal (ver claveProgreso): independiente
+      // por completo del "avance" estático de arriba, que es del proyecto
+      // en general y no del alumno. El border-top de .checklist-tarea ya
+      // lo separa visualmente de ese bloque.
+      tarjeta.appendChild(
+        crearChecklistProgreso(
+          "proyecto",
+          item,
+          tarjeta,
+          datos,
+          "resumen-progreso-proyectos",
+          "proyectos"
+        )
+      );
+
+      cuadriculaGrupo.appendChild(tarjeta);
+    });
+
+    bloqueGrupo.appendChild(cuadriculaGrupo);
+    contenedor.appendChild(bloqueGrupo);
   });
 
   actualizarResumenProgreso("resumen-progreso-proyectos", datos, "proyecto", "proyectos");
