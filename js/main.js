@@ -3197,13 +3197,16 @@ async function renderizarCalendario() {
 function aplicarTema(tema) {
   document.documentElement.setAttribute("data-theme", tema);
 
-  const boton = document.getElementById("boton-tema");
   const esOscuro = tema === "oscuro";
 
-  boton.setAttribute("aria-pressed", String(esOscuro));
-  boton.setAttribute("aria-label", esOscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
-  boton.querySelector(".boton-tema__icono").textContent = esOscuro ? "☀️" : "🌙";
-  boton.querySelector(".boton-tema__texto").textContent = esOscuro ? "Modo claro" : "Modo oscuro";
+  document.querySelectorAll(".boton-tema").forEach((boton) => {
+    boton.setAttribute("aria-pressed", String(esOscuro));
+    boton.setAttribute("aria-label", esOscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+    const icono = boton.querySelector(".boton-tema__icono");
+    if (icono) icono.textContent = esOscuro ? "☀️" : "🌙";
+    const texto = boton.querySelector(".boton-tema__texto");
+    if (texto) texto.textContent = esOscuro ? "Modo claro" : "Modo oscuro";
+  });
 }
 
 function alternarTema() {
@@ -3823,7 +3826,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderizarTodo();
 
-  document.getElementById("boton-tema").addEventListener("click", alternarTema);
+  document.querySelectorAll(".boton-tema").forEach((boton) => boton.addEventListener("click", alternarTema));
   document.getElementById("boton-colapsar-sidebar").addEventListener("click", alternarSidebarColapsada);
   ["selector-grupo", "selector-grupo-movil"].forEach((id) => {
     const selector = document.getElementById(id);

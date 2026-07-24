@@ -307,6 +307,13 @@
     <p class="pie__grupos">Grupos 3°C y 3°E</p>
   </footer>
 
+  <!-- Botón flotante de tema: solo visible en móvil (<1024px), ya que el
+       botón de tema de la barra lateral queda oculto en ese ancho. -->
+  <button id="boton-tema-flotante" class="boton-tema boton-tema--flotante" type="button" aria-pressed="true" aria-label="Cambiar a modo claro">
+    <span class="boton-tema__icono" aria-hidden="true">☀️</span>
+    <span class="boton-tema__texto sr-only">Modo claro</span>
+  </button>
+
   <!-- Botón flotante "Volver arriba": oculto hasta que JS detecte scroll. -->
   <button id="boton-volver-arriba" class="boton-volver-arriba" type="button" aria-label="Volver arriba">
     <span aria-hidden="true">↑</span>
