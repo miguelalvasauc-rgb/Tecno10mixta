@@ -2702,6 +2702,12 @@ summary:focus-visible {
   background-color: #fff;
 }
 
+.entrega__nota {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+}
+
 /* ---------- Pie de página ---------- */
 .pie {
   text-align: center;
