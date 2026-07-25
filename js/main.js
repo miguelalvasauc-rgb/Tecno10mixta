@@ -2790,7 +2790,7 @@ aplicarEstadoSidebarColapsada(sidebarColapsada);
 // Trimestre desbloqueado de verdad. El sitio no tiene un calendario
 // académico real que decida solo cuándo abrir cada trimestre, así que
 // esto se sube a mano (a 2 o a 3) cuando toca abrirlo.
-const TRIMESTRE_DESBLOQUEADO = 1; // Cambiar manualmente a 2 o 3 para abrir ese trimestre
+const TRIMESTRE_DESBLOQUEADO = 3; // Cambiar manualmente a 2 o 3 para abrir ese trimestre
 
 // Trimestre de la página actual ('1', '2' o '3'), tomado de
 // <body data-trimestre="…">. En la portada (index.html) no existe
