@@ -3147,9 +3147,23 @@ async function renderizarTemario() {
       const imagen = document.createElement("div");
       imagen.className = "tarjeta-temario__imagen tarjeta-temario__imagen--" + ((indiceGlobal % 3) + 1);
       imagen.dataset.rutaImagen = item.imagen;
+
       const textoImagen = document.createElement("span");
       textoImagen.textContent = "🖼️ Imagen del tema";
-      imagen.appendChild(textoImagen);
+
+      if (item.imagen) {
+        const img = document.createElement("img");
+        img.src = item.imagen;
+        img.alt = item.titulo;
+        img.loading = "lazy";
+        img.addEventListener("error", () => {
+          img.hidden = true;
+          imagen.appendChild(textoImagen);
+        });
+        imagen.appendChild(img);
+      } else {
+        imagen.appendChild(textoImagen);
+      }
 
       const info = document.createElement("div");
       info.className = "tarjeta-temario__info";

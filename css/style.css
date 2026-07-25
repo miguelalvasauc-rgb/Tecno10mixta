@@ -1098,6 +1098,14 @@ summary:focus-visible {
   font-weight: 700;
 }
 
+.tarjeta-temario__imagen img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .tarjeta-temario__imagen--1 {
   background-color: var(--color-primario);
   color: var(--color-claro-sobre-navy);
