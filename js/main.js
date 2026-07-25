@@ -1695,15 +1695,74 @@ const DATOS_PROYECTOS = {
     },
   ],
   2: [
-    // Fecha TENTATIVA/PLACEHOLDER: aún no existe calendario escolar
-    // oficial para este periodo; ajustar cuando el docente lo confirme.
     {
-      id: "p1",
+      id: "p-s4",
+      secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
-      titulo: "Mi Escuela en Datos: Análisis, Visualización y Protección",
-      descripcion: "Proyecto integrador en equipos de 5 que une las 3 secuencias del bloque: recolectan datos reales de la escuela (biblioteca, cafetería, deportes, eventos o infraestructura), los analizan y grafican en Excel, comunican los hallazgos en una infografía, y diseñan un plan de ciberseguridad para proteger esa información. Cierra con una presentación oral de 5 minutos ante el grupo.",
+      titulo: "Mi Análisis de Datos Escolar",
+      descripcion: "Cada alumno analiza datos reales de su propio rendimiento, tiempo o hábitos y crea un informe visual en papel.",
       avance: 0,
-      fechaEntrega: "2025-12-05",
+      fechaEntrega: "2026-12-12",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 3 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual</p>
+        <p>El alumno elige uno de estos enfoques: análisis de sus calificaciones, análisis de su tiempo fuera de clase, o análisis de sus hábitos (sueño, alimentación, ejercicio).</p>
+        <ul>
+          <li>Hojas blancas y cartulina para portada, tabla, gráficas y conclusiones</li>
+          <li>Lápices de colores, regla</li>
+        </ul>
+        <ul>
+          <li>Sesión 1 — Recolección y limpieza: el alumno junta sus datos (calificaciones, horarios, hábitos) y los organiza en una tabla de mínimo 10 registros.</li>
+          <li>Sesión 2 — Análisis y visualización: calcula promedios, identifica patrones y dibuja 2 gráficas de barras o pastel a mano.</li>
+          <li>Sesión 3 — Conclusiones y presentación (entrega): escribe 3 hallazgos, una propuesta de mejora con 2 acciones concretas, y presenta a un compañero.</li>
+          <li>Entrega final: portada + tabla de datos + gráficas + conclusiones + propuesta de mejora, juntos.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "p-s5",
+      secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
+      grupo: "todos",
+      titulo: "Mi Hoja de Cálculo para Decidir",
+      descripcion: "Cada alumno crea una hoja de cálculo en Excel que resuelve un problema real de toma de decisiones en su vida escolar o familiar.",
+      avance: 0,
+      fechaEntrega: "2026-12-22",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 4 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
+        <p>El alumno elige uno de estos enfoques: planificador de estudio, control de gastos familiares, o comparador de calificaciones.</p>
+        <ul>
+          <li>Computadora con Excel o LibreOffice</li>
+          <li>Impresora para el entregable final</li>
+        </ul>
+        <ul>
+          <li>Sesión 1 — Planificación: elige el problema y diseña la estructura de la hoja en papel primero.</li>
+          <li>Sesión 2 — Ingreso de datos y fórmulas: crea la hoja en Excel con mínimo 15 registros y aplica fórmulas básicas (SUMA, PROMEDIO, SI).</li>
+          <li>Sesión 3 — Gráficas y formato: crea 2 gráficas (barras y pastel) con títulos y aplica formato profesional.</li>
+          <li>Sesión 4 — Conclusión y presentación (entrega): escribe una conclusión de 3 líneas, guarda e imprime, presenta a 2 compañeros.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "p-s6",
+      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      grupo: "todos",
+      titulo: "Mi Manual de Supervivencia Digital",
+      descripcion: "Cada alumno crea un manual físico (librito o tríptico) de ciberseguridad personal dirigido a estudiantes de secundaria.",
+      avance: 0,
+      fechaEntrega: "2027-01-23",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 4 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
+        <p>El alumno elige el enfoque: manual del novato, manual del experto, o manual familiar (para papás y hermanos pequeños).</p>
+        <ul>
+          <li>Hojas y cartulina para el librito/tríptico</li>
+          <li>Lápices de colores, marcadores, tijeras, pegamento</li>
+        </ul>
+        <ul>
+          <li>Sesión 1 — Investigación y estructura: elige el enfoque, investiga amenazas y diseña la estructura del manual en borrador.</li>
+          <li>Sesión 2 — Redacción e ilustración: escribe el capítulo "Conoce al enemigo" (3 amenazas) y "Tus armas" (5 consejos prácticos), con dibujos e iconos.</li>
+          <li>Sesión 3 — Casos y conclusiones: escribe el resumen de 2 casos históricos y el "juramento digital" con 5 reglas y su firma.</li>
+          <li>Sesión 4 — Ensamblado y presentación (entrega): arma el librito/tríptico con portada y contraportada, presenta a 2 compañeros y recibe retroalimentación.</li>
+        </ul>
+      `,
     },
   ],
   3: [
