@@ -1398,28 +1398,191 @@ const DATOS_ACTIVIDADES = {
     },
   ],
   2: [
-    // Fechas TENTATIVAS/PLACEHOLDER: aún no existe calendario escolar
-    // oficial para este periodo; ajustar cuando el docente lo confirme.
+    // ===== SECUENCIA 4: CIENCIA DE DATOS =====
     {
-      id: "a1",
+      id: "a-s4-1",
+      secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
-      titulo: "Juego de Roles: El Algoritmo en Acción",
-      descripcion: "En equipos, cada uno recibe el perfil de un 'usuario' ficticio y debe crear una lista de 10 recomendaciones que un algoritmo le haría. Otro equipo juega a ser ese usuario y califica qué tan acertadas fueron. Cierra con debate sobre filtros burbuja.",
-      fecha: "2025-11-05",
+      titulo: "🧩 Rompecabezas del Pipeline de Datos",
+      descripcion: "Dinámica grupal donde los alumnos forman la cadena completa del pipeline de datos con fichas.",
+      fecha: "2026-11-30",
+      detalleCompleto: `
+        <p>👥 Modalidad: Grupal, en parejas o individual | ⏱️ Duración: 25 min</p>
+        <ul>
+          <li>20 fichas impresas por el docente (5 etapas × 4 descripciones cada una).</li>
+          <li>Etapas: Recolección → Limpieza → Análisis → Visualización → Decisión.</li>
+        </ul>
+        <ul>
+          <li>Cada ficha tiene una etapa o una descripción de lo que pasa en esa etapa.</li>
+          <li>Se reparte una ficha a cada alumno (con 40 alumnos, se hacen 2 rondas o parejas).</li>
+          <li>Los alumnos deben encontrar a sus 4 compañeros de "pipeline" formando la cadena completa.</li>
+          <li>Una vez formados, leen en voz alta y el docente corrige.</li>
+        </ul>
+      `,
     },
     {
-      id: "a2",
+      id: "a-s4-2",
+      secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
-      titulo: "Hackatón de Excel: La Cafetería Escolar",
-      descripcion: "En equipos de 4, organizan datos reales de ventas de la cafetería en Excel (o papel), calculan totales con fórmulas, identifican el producto más y menos vendido, crean una gráfica de barras y proponen 2 mejoras basadas en los datos.",
-      fecha: "2025-11-12",
+      titulo: "🎭 Juego de Roles: El Algoritmo en Acción",
+      descripcion: "Los alumnos representan usuarios de redes sociales y descubren cómo actúa un algoritmo de recomendación.",
+      fecha: "2026-12-02",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 35 min</p>
+        <ul>
+          <li>Hojas con perfiles de usuario impresas, papelógrafo, marcadores.</li>
+          <li>4 perfiles de "usuarios de red social" con edad, gustos y ubicación distintos.</li>
+        </ul>
+        <ul>
+          <li>En equipos de 4, cada alumno recibe un perfil.</li>
+          <li>El docente ("el algoritmo") muestra 10 "posts"; los alumnos levantan la mano si creen que se lo mostraría a SU usuario.</li>
+          <li>Después de cada post, el equipo discute por qué sí o por qué no.</li>
+          <li>Al final, cada equipo dibuja en papelógrafo qué posts NO vio su usuario y si eso es bueno o malo.</li>
+          <li>Se introduce el concepto de filtro burbuja y sesgo algorítmico.</li>
+        </ul>
+      `,
     },
     {
-      id: "a3",
+      id: "a-s4-3",
+      secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
-      titulo: "Simulación de Ataque Cibernético",
-      descripcion: "La escuela sufre un ataque de ransomware ficticio. En equipos de 6, cada integrante toma un rol (director, técnico, policía cibernética, comunicación, abogado, experto en prevención) y presenta su plan de acción ante la clase, que vota cuál manejó mejor la crisis.",
-      fecha: "2025-11-19",
+      titulo: "📊 Taller de Infografías de Papel",
+      descripcion: "En equipos, los alumnos analizan un dataset impreso y crean una infografía en cartulina.",
+      fecha: "2026-12-04",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 40 min</p>
+        <ul>
+          <li>Hojas carta, lápices de colores, reglas, revistas viejas, pegamento.</li>
+          <li>Dataset impreso: "Calificaciones de 20 alumnos en 5 materias".</li>
+        </ul>
+        <ul>
+          <li>Calcular el promedio grupal por materia (a mano, sin calculadora).</li>
+          <li>Identificar qué materia tiene mejor y peor promedio.</li>
+          <li>Crear una infografía en cartulina con título, 3 gráficas de barras, 1 conclusión y 1 pregunta que los datos NO responden.</li>
+          <li>Exposición de 2 minutos por equipo.</li>
+        </ul>
+      `,
+    },
+
+    // ===== SECUENCIA 5: HOJAS DE CÁLCULO =====
+    {
+      id: "a-s5-1",
+      secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
+      grupo: "todos",
+      titulo: "🖥️ Explorando la Interfaz",
+      descripcion: "Primer acercamiento guiado a Excel/LibreOffice: celdas, filas, columnas y formato básico.",
+      fecha: "2026-12-14",
+      detalleCompleto: `
+        <p>👥 Modalidad: Individual, en taller de cómputo | ⏱️ Duración: 30 min</p>
+        <ul>
+          <li>Computadoras con Excel o LibreOffice, guía impresa de atajos.</li>
+        </ul>
+        <ul>
+          <li>El docente proyecta la pantalla y explica celdas, filas, columnas, hojas y barra de fórmulas.</li>
+          <li>Los alumnos completan un "mapa de calor" guiado: escriben nombre, edad y materia favorita en celdas, cambian color de fondo, tamaño de letra y bordes.</li>
+          <li>Guardan el archivo como "MiPrimeraHoja.xlsx".</li>
+          <li>Reto final: crear una segunda hoja con los nombres de 5 compañeros.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a-s5-2",
+      secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
+      grupo: "todos",
+      titulo: "🔢 Fórmulas en Acción: El Supermercado Escolar",
+      descripcion: "Los alumnos aplican fórmulas de Excel a un inventario ficticio de un supermercado escolar.",
+      fecha: "2026-12-16",
+      detalleCompleto: `
+        <p>👥 Modalidad: Individual, en taller de cómputo | ⏱️ Duración: 40 min</p>
+        <ul>
+          <li>Computadoras con Excel, lista de 15 productos impresa (nombre, precio unitario, cantidad en stock).</li>
+        </ul>
+        <ul>
+          <li>Crean columnas de nombre, precio, cantidad y total en inventario (fórmula =B2*C2).</li>
+          <li>Calculan SUMA de totales y PROMEDIO de precios unitarios.</li>
+          <li>Aplican fórmula SI para marcar "¿Reponer?" según el stock, con formato condicional en rojo/verde.</li>
+          <li>Crean una gráfica de barras con los 5 productos más caros.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a-s5-3",
+      secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
+      grupo: "todos",
+      titulo: "🎨 Diseñando mi Primera Infografía en Excel",
+      descripcion: "En equipos, los alumnos crean gráficas a partir de una encuesta y las maquetan como infografía en Excel.",
+      fecha: "2026-12-18",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 3, en taller de cómputo | ⏱️ Duración: 45 min</p>
+        <ul>
+          <li>Computadoras con Excel, dataset impreso: "Encuesta de 30 alumnos sobre uso de redes sociales".</li>
+        </ul>
+        <ul>
+          <li>Ingresan los datos en Excel y crean 2 gráficas (pastel de redes favoritas, barras de horas por edad).</li>
+          <li>Maquetan una infografía: título, gráficas con bordes y colores, 3 datos destacados y 1 conclusión.</li>
+          <li>Guardan o imprimen como PDF y exponen 2 minutos por equipo.</li>
+        </ul>
+      `,
+    },
+
+    // ===== SECUENCIA 6: SEGURIDAD DIGITAL AVANZADA =====
+    {
+      id: "a-s6-1",
+      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      grupo: "todos",
+      titulo: "🎭 Teatro de Phishing",
+      descripcion: "En equipos, los alumnos clasifican correos reales y de phishing e identifican señales de alarma.",
+      fecha: "2027-01-11",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 30 min</p>
+        <ul>
+          <li>Tarjetas impresas con 8 correos (4 reales, 4 de phishing), marcadores, papelógrafo.</li>
+        </ul>
+        <ul>
+          <li>Clasifican cada correo como phishing o real y subrayan las señales de alarma (faltas de ortografía, URLs raras, urgencia extrema, premios inesperados).</li>
+          <li>Escriben en papelógrafo las "5 señales de phishing" consensuadas y las presentan.</li>
+          <li>El docente comenta el caso real de WannaCry (2017) como ejemplo histórico.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a-s6-2",
+      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      grupo: "todos",
+      titulo: "🏰 Construyendo Murallas Digitales",
+      descripcion: "En equipos, los alumnos diseñan un 'castillo digital' con 3 niveles de defensa contra amenazas.",
+      fecha: "2027-01-13",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 3 | ⏱️ Duración: 35 min</p>
+        <ul>
+          <li>Hojas de papel, lápices de colores, cartulinas.</li>
+        </ul>
+        <ul>
+          <li>Diseñan un castillo con muralla exterior (contraseñas, 2FA), media (privacidad en redes) e interior (cifrado, respaldos).</li>
+          <li>Dibujan el castillo en cartulina con 3 murallas etiquetadas, 2 "soldados" por muralla y 1 "dragón" (amenaza) que cada muralla detiene.</li>
+          <li>Exponen qué harían si un "dragón" (hacker) intentara entrar a su castillo.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a-s6-3",
+      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      grupo: "todos",
+      titulo: "⚖️ Tribunal del Ciberespacio",
+      descripcion: "Los alumnos debaten 3 dilemas digitales en formato de juicio (juez, defensores, acusadores, jurado).",
+      fecha: "2027-01-15",
+      detalleCompleto: `
+        <p>👥 Modalidad: Grupal | ⏱️ Duración: 30 min</p>
+        <ul>
+          <li>Tarjetas de "juez", "acusado", "defensor", papelógrafo.</li>
+          <li>3 casos de dilemas digitales: publicar fotos sin permiso, venta de datos de menores, hacker "bueno" que reporta una falla.</li>
+        </ul>
+        <ul>
+          <li>Por caso: 1 juez, 2 defensores, 2 acusadores y 3 de jurado.</li>
+          <li>Cada parte argumenta 2 minutos; el juez dicta veredicto y explica.</li>
+          <li>Al final, el grupo escribe 3 "reglas de oro" para ser un ciudadano digital responsable.</li>
+        </ul>
+      `,
     },
   ],
   3: [
