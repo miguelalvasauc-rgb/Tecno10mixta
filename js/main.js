@@ -3394,6 +3394,7 @@ function alternarSidebarColapsada() {
 // "trimestre-N.html#ancla" usando ultimoTrimestreVisto.
 const ANCLAS_DE_TRIMESTRE = [
   "temario",
+  "presentaciones",
   "rubricas",
   "tareas",
   "actividades",
