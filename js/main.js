@@ -2088,26 +2088,73 @@ const DATOS_TEMARIO = {
     },
   ],
   3: [
+    // ===== SECUENCIA 7 — SOLUCIONES DIGITALES =====
     {
       id: "tm3-1",
-      unidad: "Unidad 1",
+      unidad: "🧠 Secuencia 7 — Soluciones Digitales",
       titulo: "Soluciones Digitales",
       descripcion: "Pensamiento computacional y descomposición de problemas cotidianos en algoritmos.",
       imagen: "assets/temario/trimestre3-tema1.jpg",
     },
     {
       id: "tm3-2",
-      unidad: "Unidad 2",
-      titulo: "Diseño Web",
-      descripcion: "Lógica de las páginas web con HTML y CSS básico para un portafolio digital propio.",
+      unidad: "🧠 Secuencia 7 — Soluciones Digitales",
+      titulo: "Abstracción y reconocimiento de patrones",
+      descripcion: "Cómo simplificar problemas complejos identificando solo lo esencial y detectar patrones para automatizar soluciones, con ejemplos cotidianos como rutas de camiones o el horario de clase.",
       imagen: "assets/temario/trimestre3-tema2.jpg",
     },
     {
       id: "tm3-3",
-      unidad: "Unidad 3",
+      unidad: "🧠 Secuencia 7 — Soluciones Digitales",
+      titulo: "Programación con propósito social",
+      descripcion: "La programación como herramienta para resolver problemas reales; el hackatón como metodología de innovación rápida y ejemplos de apps que mejoran la vida cotidiana.",
+      imagen: "assets/temario/trimestre3-tema3.jpg",
+    },
+
+    // ===== SECUENCIA 8 — DISEÑO WEB =====
+    {
+      id: "tm3-4",
+      unidad: "🌐 Secuencia 8 — Diseño Web",
+      titulo: "Diseño Web",
+      descripcion: "Lógica de las páginas web con HTML y CSS básico para un portafolio digital propio.",
+      imagen: "assets/temario/trimestre3-tema4.jpg",
+    },
+    {
+      id: "tm3-5",
+      unidad: "🌐 Secuencia 8 — Diseño Web",
+      titulo: "UX/UI y arquitectura de la información",
+      descripcion: "Cómo navegan los usuarios un sitio web: jerarquía visual, mapas de navegación y wireframes, con ejemplos de buena y mala usabilidad y el principio de 'usuario primero'.",
+      imagen: "assets/temario/trimestre3-tema5.jpg",
+    },
+    {
+      id: "tm3-6",
+      unidad: "🌐 Secuencia 8 — Diseño Web",
+      titulo: "Sitios estáticos vs. dinámicos",
+      descripcion: "Diferencia entre sitios que solo muestran información y sitios que responden al usuario, y el papel de JavaScript para dar interactividad a la web.",
+      imagen: "assets/temario/trimestre3-tema6.jpg",
+    },
+
+    // ===== SECUENCIA 9 — PROTOTIPOS IOT =====
+    {
+      id: "tm3-7",
+      unidad: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT",
       titulo: "Prototipos Tecnológicos e IoT",
       descripcion: "Design thinking, MVP e Internet de las Cosas para presentar un prototipo.",
-      imagen: "assets/temario/trimestre3-tema3.jpg",
+      imagen: "assets/temario/trimestre3-tema7.jpg",
+    },
+    {
+      id: "tm3-8",
+      unidad: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT",
+      titulo: "Sensores, actuadores y dispositivos conectados",
+      descripcion: "Cómo los dispositivos IoT 'sienten' el mundo con sensores y 'actúan' sobre él con actuadores, con ejemplos cotidianos como termostatos inteligentes o riego automático.",
+      imagen: "assets/temario/trimestre3-tema8.jpg",
+    },
+    {
+      id: "tm3-9",
+      unidad: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT",
+      titulo: "Pitch, iteración y mejora continua",
+      descripcion: "El ciclo de iteración (probar → recibir feedback → ajustar → volver a probar), cómo practicar un pitch de 3 minutos, y casos de éxito que empezaron como prototipos simples.",
+      imagen: "assets/temario/trimestre3-tema9.jpg",
     },
   ],
 };
