@@ -2770,28 +2770,58 @@ async function renderizarPresentaciones() {
   contenedor.innerHTML = "";
   datos.forEach((item) => {
     const tarjeta = document.createElement("article");
-    tarjeta.className = "tarjeta-video";
+    tarjeta.className = "tarjeta-presentacion";
 
     const marco = document.createElement("div");
-    marco.className = "tarjeta-video__marco";
-    const iframe = document.createElement("iframe");
-    // NOTA: a diferencia de los videos de YouTube (que arman la URL a
-    // partir de un ID), aquí "gammaEmbedUrl" ya es la URL completa de
-    // embed que se copia desde Gamma (Share > Embed).
-    iframe.src = item.gammaEmbedUrl;
-    iframe.title = item.titulo;
-    iframe.loading = "lazy";
-    iframe.allowFullscreen = true;
-    marco.appendChild(iframe);
+    marco.className = "tarjeta-presentacion__marco";
+
+    // Placeholder: no se carga el iframe hasta que el alumno hace
+    // clic, para no cargar 3 presentaciones de golpe al abrir la
+    // página (cada una pesa bastante más que un embed de YouTube).
+    const placeholder = document.createElement("div");
+    placeholder.className = "tarjeta-presentacion__placeholder";
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "tarjeta-presentacion__boton-ver";
+    boton.innerHTML = "▶ Ver presentación";
+    boton.addEventListener("click", () => {
+      const iframe = document.createElement("iframe");
+      iframe.src = item.gammaEmbedUrl;
+      iframe.title = item.titulo;
+      iframe.loading = "lazy";
+      iframe.allowFullscreen = true;
+      // Permissions Policy real que necesita el botón de pantalla
+      // completa DENTRO del reproductor de Gamma (allowFullscreen
+      // por sí solo no basta en todos los navegadores).
+      iframe.setAttribute("allow", "fullscreen");
+      marco.innerHTML = "";
+      marco.appendChild(iframe);
+    });
+    placeholder.appendChild(boton);
+    marco.appendChild(placeholder);
 
     const info = document.createElement("div");
-    info.className = "tarjeta-video__info";
+    info.className = "tarjeta-presentacion__info";
+
+    const textos = document.createElement("div");
     const titulo = document.createElement("h3");
     titulo.textContent = item.titulo;
     const descripcion = document.createElement("p");
     descripcion.textContent = item.descripcion;
-    info.append(titulo, descripcion);
+    textos.append(titulo, descripcion);
 
+    // Respaldo: abre el Gamma directo en pestaña nueva, a tamaño
+    // completo de navegador (fuera del iframe pequeño), por si el
+    // botón interno de pantalla completa no funciona en algún
+    // dispositivo.
+    const abrir = document.createElement("a");
+    abrir.className = "tarjeta-presentacion__abrir";
+    abrir.href = item.gammaEmbedUrl;
+    abrir.target = "_blank";
+    abrir.rel = "noopener";
+    abrir.textContent = "Abrir presentación completa ↗";
+
+    info.append(textos, abrir);
     tarjeta.append(marco, info);
     contenedor.appendChild(tarjeta);
   });

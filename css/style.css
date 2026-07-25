@@ -2068,6 +2068,106 @@ summary:focus-visible {
   color: var(--color-texto-suave);
 }
 
+/* ---------- Presentaciones (Gamma, 1 por fila, carga bajo demanda) ---------- */
+.lista-presentaciones {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tarjeta-presentacion {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--sombra);
+}
+
+.tarjeta-presentacion__marco {
+  position: relative;
+  width: 100%;
+  /* Proporción cercana a la nativa de Gamma (700x450 ≈ 1.556:1),
+     más alta que el 16:9 de Videos para que el contenido no se
+     vea recortado. Con un mínimo fijo para que en pantallas muy
+     anchas siga siendo legible en vez de aplanarse demasiado. */
+  aspect-ratio: 700 / 450;
+  min-height: 420px;
+  background-color: var(--color-superficie-baja);
+}
+
+.tarjeta-presentacion__marco iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Placeholder mostrado antes del clic ("carga bajo demanda") */
+.tarjeta-presentacion__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background-color: var(--color-superficie-baja);
+}
+
+.tarjeta-presentacion__boton-ver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-cuerpo);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-claro-sobre-navy);
+  background-color: var(--color-primario);
+  border: none;
+  border-radius: var(--radio-full);
+  padding: 0.7rem 1.4rem;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.tarjeta-presentacion__boton-ver:hover {
+  transform: translateY(-2px);
+}
+
+.tarjeta-presentacion__info {
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.tarjeta-presentacion__info h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1.05rem;
+  color: var(--color-texto);
+}
+
+.tarjeta-presentacion__info p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.tarjeta-presentacion__abrir {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-turquesa);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tarjeta-presentacion__abrir:hover {
+  text-decoration: underline;
+}
+
 /* ---------- Calendario ---------- */
 .calendario {
   display: grid;
