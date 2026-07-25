@@ -1329,51 +1329,164 @@ const DATOS_TAREAS = {
       `,
     },
   ],
+  // FECHAS TENTATIVAS/PLACEHOLDER: ajustar cuando se asignen fechas reales.
   3: [
+    // ===== SECUENCIA 7: SOLUCIONES DIGITALES =====
     {
-      id: "t1",
-      grupo: "3C",
-      titulo: "Investigación: historia de la robótica",
-      descripcion: "Resumen de una cuartilla con al menos tres fuentes confiables.",
-      fechaEntrega: "2026-07-10",
-      estado: "pendiente",
-    },
-    {
-      id: "t2",
-      grupo: "3E",
-      titulo: "Diseño de pieza en software CAD",
-      descripcion: "Modelar una pieza sencilla para su posterior impresión 3D.",
-      fechaEntrega: "2026-07-08",
-      estado: "pendiente",
-      instruccionesUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
-    },
-    {
-      id: "t3",
+      id: "t-s7-1",
+      secuencia: "🧠 Secuencia 7 — Soluciones Digitales · Proyecto: Mi Solución Digital Social",
       grupo: "todos",
-      titulo: "Reglamento del taller firmado",
-      descripcion: "Entregar el reglamento de seguridad e higiene firmado por el tutor.",
-      fechaEntrega: "2026-07-04",
-      estado: "atrasada",
-    },
-    {
-      id: "t4",
-      grupo: "3C",
-      titulo: "Reporte de práctica: circuito serie-paralelo",
-      descripcion: "Reporte con diagrama, mediciones y conclusiones.",
-      fechaEntrega: "2026-06-29",
-      estado: "entregada",
-    },
-    {
-      id: "t5",
-      grupo: "3C",
-      titulo: "Reporte de avance: brazo robótico",
-      descripcion: "Entrega parcial con diagrama y lista de materiales del prototipo.",
-      fechaEntrega: "2026-07-20",
+      titulo: "🔍 Detective de Soluciones Digitales",
+      descripcion: "Busca en tu comunidad o familia 5 problemas que podrían resolverse con una app o sistema digital.",
+      fechaEntrega: "2027-02-15",
       estado: "pendiente",
-      // Ejemplo con AMBOS campos: instrucciones formales + material de
-      // apoyo (en este caso, una plantilla de diagrama).
-      instruccionesUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
-      materialApoyoUrl: "https://drive.google.com/REEMPLAZAR-CON-LINK-REAL",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Cuadro en cuaderno</p>
+        <ul>
+          <li>Tabla: # | Problema | ¿Quién lo tiene? | ¿Qué solución digital propones?</li>
+          <li>Ejemplos guía: "Mi abuela no recuerda tomar sus medicinas" → app de recordatorios; "no hay transporte seguro por la noche" → app de rastreo de rutas; "la escuela no avisa cuando hay reunión" → sistema de mensajes masivos.</li>
+        </ul>
+        <p>💡 Tip: Puedes preguntar en casa. No necesitas internet.</p>
+      `,
+    },
+    {
+      id: "t-s7-2",
+      secuencia: "🧠 Secuencia 7 — Soluciones Digitales · Proyecto: Mi Solución Digital Social",
+      grupo: "todos",
+      titulo: "📝 Mi Rutina como Algoritmo Mejorado",
+      descripcion: "Toma tu rutina de la mañana y mejórala usando los 4 pilares del pensamiento computacional.",
+      fechaEntrega: "2027-02-17",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Diagrama de flujo en papel</p>
+        <ul>
+          <li>Descomposición: divide tu rutina en 4 partes (higiene, desayuno, transporte, preparación).</li>
+          <li>Abstracción: identifica qué pasos son necesarios y cuáles se pueden eliminar o combinar.</li>
+          <li>Patrones: ¿hay algo que repites todos los días y se puede automatizar?</li>
+          <li>Algoritmo: escribe la rutina optimizada con mínimo 10 pasos y 3 condicionales, y dibuja el diagrama de flujo.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "t-s7-3",
+      secuencia: "🧠 Secuencia 7 — Soluciones Digitales · Proyecto: Mi Solución Digital Social",
+      grupo: "todos",
+      titulo: "🎨 Mi App Ideal — Boceto en Papel",
+      descripcion: "Diseña en papel las 3 pantallas principales de una app que resuelva un problema de tu escuela.",
+      fechaEntrega: "2027-02-19",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: 3 pantallas dibujadas en hoja carta</p>
+        <ul>
+          <li>Elige un problema de tu escuela (filas en la cafetería, falta de información de eventos, etc.).</li>
+          <li>Dibuja pantalla de inicio, pantalla de función principal y pantalla de resultado, etiquetando cada botón.</li>
+          <li>Escribe: "Mi app se llama ___ y resuelve ___ porque ___."</li>
+        </ul>
+      `,
+    },
+
+    // ===== SECUENCIA 8: DISEÑO WEB =====
+    {
+      id: "t-s8-1",
+      secuencia: "🌐 Secuencia 8 — Diseño Web · Proyecto: Mi Portafolio Web en Papel",
+      grupo: "todos",
+      titulo: "🔍 Crítico de Sitios Web",
+      descripcion: "Analiza 3 sitios web que uses frecuentemente y evalúa su usabilidad.",
+      fechaEntrega: "2027-03-01",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Cuadro + dibujo en cuaderno</p>
+        <ul>
+          <li>Tabla: Sitio | ¿Qué hace? | ¿Es fácil encontrar lo que buscas? (Sí/No) | ¿Qué cambiarías?</li>
+          <li>Dibuja la pantalla principal de uno de los sitios marcando con flechas qué te confunde y qué te gusta.</li>
+        </ul>
+        <p>💡 Tip: Si no tienes internet, describe de memoria YouTube, Facebook, la página de la escuela o cualquier app que uses.</p>
+      `,
+    },
+    {
+      id: "t-s8-2",
+      secuencia: "🌐 Secuencia 8 — Diseño Web · Proyecto: Mi Portafolio Web en Papel",
+      grupo: "todos",
+      titulo: "📝 Mi Sitio Web en Papel — Wireframe",
+      descripcion: "Diseña en papel 3 versiones de tu portafolio digital: móvil, tablet y computadora.",
+      fechaEntrega: "2027-03-03",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: 3 wireframes en hoja carta</p>
+        <ul>
+          <li>Dibuja 3 rectángulos con proporciones de móvil (alto y angosto), tablet (cuadrado) y computadora (ancho y bajo).</li>
+          <li>En cada uno: barra de navegación, sección principal (foto, nombre, descripción) y pie de página con redes sociales.</li>
+          <li>Escribe qué es lo más importante en móvil y cómo aprovechas el espacio en computadora.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "t-s8-3",
+      secuencia: "🌐 Secuencia 8 — Diseño Web · Proyecto: Mi Portafolio Web en Papel",
+      grupo: "todos",
+      titulo: "🎨 Mi Marca Personal",
+      descripcion: "Crea la identidad visual de tu portafolio digital: colores, logo y tipografía.",
+      fechaEntrega: "2027-03-05",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Paleta de colores + logo + tipografía en cartulina</p>
+        <ul>
+          <li>Elige 3 colores principales (fondo, texto, acentos) y dibuja tu logo (iniciales, animal o símbolo).</li>
+          <li>Elige 2 tipografías (una para títulos, una para texto) y escribe una frase que te represente (máximo 10 palabras).</li>
+        </ul>
+      `,
+    },
+
+    // ===== SECUENCIA 9: PROTOTIPOS IOT =====
+    {
+      id: "t-s9-1",
+      secuencia: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT · Proyecto: Mi Prototipo Tecnológico Integrador",
+      grupo: "todos",
+      titulo: "🔍 Detective de IoT",
+      descripcion: "Busca en tu casa o comunidad 5 objetos que sean 'inteligentes' o 'conectados'.",
+      fechaEntrega: "2027-03-22",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Cuadro en cuaderno</p>
+        <ul>
+          <li>Tabla: Objeto | ¿Qué sensor tiene? | ¿Qué actuador tiene? | ¿Qué problema resuelve?</li>
+          <li>Ejemplos guía: termostato, foco inteligente, lavadora automática, reloj inteligente, timbre con cámara.</li>
+        </ul>
+        <p>💡 Tip: Si no tienes objetos "inteligentes", imagina cómo sería tu casa si TODO estuviera conectado.</p>
+      `,
+    },
+    {
+      id: "t-s9-2",
+      secuencia: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT · Proyecto: Mi Prototipo Tecnológico Integrador",
+      grupo: "todos",
+      titulo: "📝 Mi Primer MVP en Papel",
+      descripcion: "Diseña el Producto Mínimo Viable (MVP) de un dispositivo IoT que resuelva un problema de tu escuela.",
+      fechaEntrega: "2027-03-24",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: 1 cartulina con prototipo mínimo</p>
+        <ul>
+          <li>Elige un problema de la escuela y dibuja tu dispositivo: forma, ubicación, sensor, actuador y tipo de conexión.</li>
+          <li>Escribe: "Mi MVP se llama ___. Resuelve ___ usando un sensor de ___ y un actuador de ___. Cuesta aproximadamente $___ pesos."</li>
+          <li>Responde: "¿Qué es lo PRIMERO que necesitaría para probar si funciona?"</li>
+        </ul>
+      `,
+    },
+    {
+      id: "t-s9-3",
+      secuencia: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT · Proyecto: Mi Prototipo Tecnológico Integrador",
+      grupo: "todos",
+      titulo: "🎤 Mi Pitch de 3 Minutos — Escrito",
+      descripcion: "Escribe el guion de un pitch para vender tu MVP a un director de escuela.",
+      fechaEntrega: "2027-03-26",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Texto de 1 página + tarjetas de "feedback"</p>
+        <ul>
+          <li>Estructura: gancho (30 seg), problema (30 seg), solución (1 min), demo (30 seg) y cierre (30 seg).</li>
+          <li>En la parte de atrás, dibuja 3 caras (😊 😐 😠) y escribe cómo responderías a cada reacción.</li>
+        </ul>
+      `,
     },
   ],
 };
