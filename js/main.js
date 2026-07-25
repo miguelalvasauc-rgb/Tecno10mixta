@@ -962,32 +962,166 @@ const DATOS_TAREAS = {
       `,
     },
   ],
+  // FECHAS TENTATIVAS/PLACEHOLDER: ajustar cuando se asignen fechas reales
+  // (ver checklist pendiente de fechas de todo el sitio).
   2: [
-    // Fechas TENTATIVAS/PLACEHOLDER: aún no existe calendario escolar
-    // oficial para este periodo; ajustar cuando el docente lo confirme.
+    // ===== SECUENCIA 4: CIENCIA DE DATOS =====
     {
-      id: "t1",
+      id: "t-s4-1",
+      secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
-      titulo: "Detective de Algoritmos",
-      descripcion: "Durante 2 días, registra en una tabla cada vez que una app (YouTube, TikTok, Spotify, etc.) te recomiende algo: qué te recomendó, si te gustó y por qué crees que te lo recomendó. Cierra con una reflexión de 3 renglones sobre si el algoritmo te conoce bien.",
-      fechaEntrega: "2025-11-07",
-      estado: "entregada",
+      titulo: "🔍 Detective de Datos en mi Vida",
+      descripcion: "Busca 5 situaciones de tu día donde alguien (o algo) use datos para tomar decisiones sobre ti.",
+      fechaEntrega: "2026-12-01",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla en cuaderno</p>
+        <ul>
+          <li>Tabla: Situación | ¿Qué datos usan? | ¿Quién decide? | ¿Lo sabías?</li>
+          <li>Ejemplos guía: YouTube recomienda videos, mamá revisa tus calificaciones, el camión de la escuela tiene ruta fija, el refrigerador avisa que falta leche, el banco te envía promociones.</li>
+        </ul>
+        <p>💡 Tip: Puedes preguntar en casa. No necesitas internet.</p>
+      `,
     },
     {
-      id: "t2",
+      id: "t-s4-2",
+      secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
-      titulo: "Mi presupuesto semanal",
-      descripcion: "Registra tus gastos de una semana (o inventa datos realistas) en una tabla con día, concepto, categoría y monto (mínimo 10 registros). Si tienes Excel, usa fórmulas SUMA/PROMEDIO/MAX/MIN y una gráfica de barras; si no, hazlo a mano en tu cuaderno.",
-      fechaEntrega: "2025-11-14",
-      estado: "entregada",
+      titulo: "📊 Mi Semana en Números",
+      descripcion: "Registra durante 5 días cuántas horas dedicas a: escuela, redes sociales, deportes, familia y sueño.",
+      fechaEntrega: "2026-12-03",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla + gráfica de barras en cuaderno</p>
+        <ul>
+          <li>Crea una tabla en tu cuaderno con los 5 días y las 5 categorías.</li>
+          <li>Al final, dibuja una gráfica de barras a mano mostrando el total de horas por categoría.</li>
+          <li>Escribe 3 líneas: "La categoría donde más invierto tiempo es… Esto me sorprende porque… Podría mejorar si…".</li>
+        </ul>
+      `,
     },
     {
-      id: "t3",
+      id: "t-s4-3",
+      secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
-      titulo: "Auditoría de Seguridad Personal",
-      descripcion: "Responde de forma confidencial (no se comparte en clase) un cuestionario sobre tus hábitos digitales y contraseñas. Después, crea 3 contraseñas nuevas y fuertes, y escribe las reglas que usaste para crearlas.",
-      fechaEntrega: "2025-11-21",
-      estado: "entregada",
+      titulo: "🕵️‍♂️ El Algoritmo me Vigila",
+      descripcion: "Imagina que un algoritmo decide TODO por ti durante un día: qué comer, qué vestir, qué ver, con quién hablar.",
+      fechaEntrega: "2026-12-05",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Texto de 10 líneas + dibujo</p>
+        <ul>
+          <li>Escribe una historia de 10 líneas narrando un día completo controlado por un algoritmo.</li>
+          <li>Dibuja tu "asistente algorítmico" como si fuera un personaje.</li>
+          <li>Responde: "¿Te gustaría que un algoritmo decidiera por ti? ¿Por qué sí o por qué no?"</li>
+        </ul>
+      `,
+    },
+
+    // ===== SECUENCIA 5: HOJAS DE CÁLCULO =====
+    {
+      id: "t-s5-1",
+      secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
+      grupo: "todos",
+      titulo: "🏠 Mi Presupuesto Mensual en Papel",
+      descripcion: "Crea un 'presupuesto' de tu mes: ingresos (dinero de papás, trabajo, regalos) y gastos (transporte, comida, pasatiempos).",
+      fechaEntrega: "2026-12-15",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla en cuaderno</p>
+        <ul>
+          <li>Tabla: Concepto | Tipo (Ingreso/Gasto) | Cantidad ($)</li>
+          <li>Calcula a mano: total de ingresos, total de gastos, saldo final.</li>
+          <li>Responde: "¿Te alcanza? ¿Qué gasto podrías reducir?"</li>
+        </ul>
+      `,
+    },
+    {
+      id: "t-s5-2",
+      secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
+      grupo: "todos",
+      titulo: "📐 Mi Horario Escolar como Hoja de Cálculo",
+      descripcion: "Dibuja tu horario escolar como si fuera una hoja de cálculo de Excel.",
+      fechaEntrega: "2026-12-17",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Dibujo de tabla en cuaderno</p>
+        <ul>
+          <li>Dibuja la cuadrícula: columnas = días (Lunes a Viernes), filas = horas (7:00 a 14:00).</li>
+          <li>En cada celda, escribe la materia que tienes.</li>
+          <li>Colorea las celdas: verde = materias favoritas, rojo = materias difíciles, amarillo = recreos.</li>
+          <li>Cuenta cuántas horas a la semana tienes de cada materia y escribe cuál tiene más y cuál menos.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "t-s5-3",
+      secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
+      grupo: "todos",
+      titulo: "📊 Mi Tienda Imaginaria",
+      descripcion: "Imagina que tienes una tienda de dulces. Registra las ventas de una semana.",
+      fechaEntrega: "2026-12-19",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla + cálculos en cuaderno</p>
+        <ul>
+          <li>Tabla: Día | Producto | Cantidad vendida | Precio unitario | Total del día</li>
+          <li>Calcula a mano: total de la semana (SUMA), producto más vendido, promedio de ventas diarias (PROMEDIO).</li>
+          <li>Si vendiste más de $500, escribe "¡Buena semana!" (lógica SI…ENTONCES).</li>
+        </ul>
+      `,
+    },
+
+    // ===== SECUENCIA 6: SEGURIDAD DIGITAL AVANZADA =====
+    {
+      id: "t-s6-1",
+      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      grupo: "todos",
+      titulo: "🔍 Mi Huella Digital",
+      descripcion: "Haz una lista de TODAS las cuentas, apps, juegos y redes sociales donde tienes perfil.",
+      fechaEntrega: "2027-01-12",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Lista + dibujo en cuaderno</p>
+        <ul>
+          <li>Tabla: Plataforma | ¿Qué datos di? (nombre, foto, teléfono, escuela, dirección) | ¿Es privado o público?</li>
+          <li>Responde: "Si un desconocido viera toda esta información, ¿qué podría saber de ti? ¿Te preocupa?"</li>
+          <li>Dibuja tu "huella digital" como una huella de pie donde cada línea es una plataforma.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "t-s6-2",
+      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      grupo: "todos",
+      titulo: "🔐 La Contraseña Invencible",
+      descripcion: "Crea 3 contraseñas seguras para 3 situaciones diferentes y explica por qué son fuertes.",
+      fechaEntrega: "2027-01-14",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: 3 contraseñas + explicación</p>
+        <ul>
+          <li>Reglas: mínimo 12 caracteres, mayúsculas, minúsculas, números y símbolos. NO usar datos personales.</li>
+          <li>Crea una contraseña para: el banco, redes sociales y la escuela, explicando por qué cada una es fuerte.</li>
+          <li>Responde: "¿Usas la misma contraseña en varios lugares? ¿Por qué eso es peligroso?"</li>
+        </ul>
+      `,
+    },
+    {
+      id: "t-s6-3",
+      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      grupo: "todos",
+      titulo: "📰 Reportero de Ciberseguridad",
+      descripcion: "Investiga un caso de robo de datos o estafa por internet y cuéntalo como noticia.",
+      fechaEntrega: "2027-01-16",
+      estado: "pendiente",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Noticia de 10 líneas + cartel de prevención</p>
+        <ul>
+          <li>Formato: titular, fecha, redacción de 8-10 líneas, ¿qué información se robó?, ¿cómo se pudo evitar?</li>
+          <li>Dibuja un cartel de prevención con 3 consejos visuales (candado, ojo tachado, escudo).</li>
+        </ul>
+      `,
     },
   ],
   3: [
