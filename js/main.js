@@ -2240,20 +2240,75 @@ const DATOS_PROYECTOS = {
   ],
   3: [
     {
-      id: "p1",
-      grupo: "3C",
-      titulo: "Brazo robótico simple",
-      descripcion: "Prototipo funcional de brazo robótico controlado con servomotores.",
-      avance: 45,
-      fechaEntrega: "2026-08-14",
+      id: "p-s7",
+      secuencia: "🧠 Secuencia 7 — Soluciones Digitales · Proyecto: Mi Solución Digital Social",
+      grupo: "todos",
+      titulo: "Mi Solución Digital Social",
+      descripcion: "Cada alumno diseña en papel una solución digital completa que resuelve un problema social real de su comunidad.",
+      avance: 0,
+      fechaEntrega: "2027-02-26",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 4 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
+        <p>El alumno elige un propósito: app de accesibilidad, app ecológica, app educativa, app de salud, app de transporte, o app de emergencias.</p>
+        <ul>
+          <li>Cartulinas y hojas para portada, análisis, pantallas y storyboard</li>
+          <li>Lápices de colores, marcadores, regla</li>
+        </ul>
+        <ul>
+          <li>Sesión 1 — Investigación y análisis: elige el problema y aplica los 4 pilares del pensamiento computacional (descomposición, abstracción, patrones, algoritmo de 8 pasos).</li>
+          <li>Sesión 2 — Diseño de pantallas: dibuja 5 pantallas principales con botones y funciones etiquetadas.</li>
+          <li>Sesión 3 — Mapa de usuario y pitch: crea un storyboard de 4 viñetas y escribe el pitch de venta (10 líneas).</li>
+          <li>Sesión 4 — Ensamblado y presentación (entrega): arma la carpeta del proyecto, presenta a 2 compañeros y recibe retroalimentación.</li>
+        </ul>
+      `,
     },
     {
-      id: "p2",
-      grupo: "3E",
-      titulo: "Maqueta impresa en 3D",
-      descripcion: "Diseño y fabricación de una maqueta funcional para la feria escolar.",
-      avance: 30,
-      fechaEntrega: "2026-08-14",
+      id: "p-s8",
+      secuencia: "🌐 Secuencia 8 — Diseño Web · Proyecto: Mi Portafolio Web en Papel",
+      grupo: "todos",
+      titulo: "Mi Portafolio Web en Papel",
+      descripcion: "Cada alumno diseña un portafolio digital completo en papel, simulando la estructura de un sitio web real con HTML, CSS y navegación.",
+      avance: 0,
+      fechaEntrega: "2027-03-12",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 5 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
+        <p>El alumno elige el enfoque: portafolio académico, creativo, de logros, o profesional futuro.</p>
+        <ul>
+          <li>Cartulinas y hojas para las 4 páginas simuladas (inicio, sobre mí, proyectos, contacto)</li>
+          <li>Lápices de colores, marcadores, tijeras, pegamento</li>
+        </ul>
+        <ul>
+          <li>Sesión 1 — Planificación y estructura: elige el enfoque, diseña el mapa de navegación y el wireframe de las 4 páginas.</li>
+          <li>Sesión 2 — Contenido HTML: escribe el contenido de las 4 páginas (texto, listas, imágenes descritas).</li>
+          <li>Sesión 3 — Diseño CSS: define colores, tipografías, tamaños y bordes, y los aplica a cada página en borrador.</li>
+          <li>Sesión 4 — Ensamblado visual: pasa todo a limpio en cartulinas, recorta y pega elementos para crear el "sitio web físico".</li>
+          <li>Sesión 5 — Presentación y retroalimentación (entrega): explica su portafolio a 2 compañeros, recibe sugerencias y ajusta detalles.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "p-s9",
+      secuencia: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT · Proyecto: Mi Prototipo Tecnológico Integrador",
+      grupo: "todos",
+      titulo: "Mi Prototipo Tecnológico Integrador",
+      descripcion: "Cada alumno diseña un prototipo tecnológico completo en papel que integra pensamiento computacional, análisis de datos y tecnologías emergentes (IA, VR o robótica).",
+      avance: 0,
+      fechaEntrega: "2027-04-16",
+      detalleCompleto: `
+        <p>⏱️ Tiempo: 5 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
+        <p>El alumno elige un propósito: dispositivo de salud conectado, sistema ecológico inteligente, asistente educativo virtual, hogar conectado accesible, agricultura inteligente, o sistema de emergencias comunitarias.</p>
+        <ul>
+          <li>Cartulina A3 para el cartel principal, hojas para ficha técnica y análisis de datos</li>
+          <li>Lápices de colores, marcadores</li>
+        </ul>
+        <ul>
+          <li>Sesión 1 — Investigación y conceptualización: elige el propósito, investiga sensores/actuadores existentes y dibuja el concepto inicial.</li>
+          <li>Sesión 2 — Diseño técnico: crea el dibujo técnico del dispositivo, la ficha técnica y el diagrama de flujo (mínimo 10 pasos, 2 condicionales).</li>
+          <li>Sesión 3 — Análisis de datos: inventa datos realistas (10 registros), dibuja una gráfica y escribe una conclusión.</li>
+          <li>Sesión 4 — Pitch y ensamblado: escribe el pitch, arma el cartel principal y practica la presentación.</li>
+          <li>Sesión 5 — Presentación y feria (entrega): expone ante la clase (3 min), recibe feedback y completa la hoja de iteración.</li>
+        </ul>
+      `,
     },
   ],
 };
