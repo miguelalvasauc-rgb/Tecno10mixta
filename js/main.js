@@ -150,6 +150,11 @@ const CALENDARIO_ESCOLAR_2026_2027 = [
   { fecha: "2027-03-31", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
   { fecha: "2027-04-01", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
   { fecha: "2027-04-02", tipo: "vacaciones", etiqueta: "Vacaciones de Semana Santa", verificado: true },
+
+  // --- Evaluación trimestral ---
+  { fecha: "2026-11-13", tipo: "evaluacion", etiqueta: "Evaluación Trimestre 1", verificado: true },
+  { fecha: "2027-03-05", tipo: "evaluacion", etiqueta: "Evaluación Trimestre 2", verificado: true },
+  { fecha: "2027-07-02", tipo: "evaluacion", etiqueta: "Evaluación Trimestre 3", verificado: true },
 ];
 
 // El resto del contenido SÍ depende del trimestre. Cada constante es un
