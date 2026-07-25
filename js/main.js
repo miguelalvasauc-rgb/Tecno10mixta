@@ -1904,26 +1904,181 @@ const DATOS_ACTIVIDADES = {
     },
   ],
   3: [
+    // ===== SECUENCIA 7: SOLUCIONES DIGITALES =====
     {
-      id: "a1",
+      id: "a-s7-1",
+      secuencia: "🧠 Secuencia 7 — Soluciones Digitales · Proyecto: Mi Solución Digital Social",
       grupo: "todos",
-      titulo: "Dinámica de introducción al taller",
-      descripcion: "Recorrido por el taller e identificación de herramientas y zonas de seguridad.",
-      fecha: "2026-07-03",
+      titulo: "🧩 Rompecabezas de Pensamiento Computacional",
+      descripcion: "Dinámica grupal donde los alumnos forman grupos aplicando los 4 pilares a problemas cotidianos.",
+      fecha: "2027-02-14",
+      detalleCompleto: `
+        <p>👥 Modalidad: Grupal o en parejas | ⏱️ Duración: 25 min</p>
+        <ul>
+          <li>24 fichas impresas (6 problemas × 4 etapas: descomposición, abstracción, patrones, algoritmo).</li>
+        </ul>
+        <ul>
+          <li>Se reparte una ficha a cada alumno; deben encontrar a sus 3 compañeros de "problema" formando el grupo de 4 pilares.</li>
+          <li>Una vez formados, explican cómo aplicaron cada pilar a su problema.</li>
+          <li>El docente corrige y premia al grupo con la explicación más clara.</li>
+        </ul>
+      `,
     },
     {
-      id: "a2",
-      grupo: "3C",
-      titulo: "Práctica guiada: sensores y actuadores",
-      descripcion: "Armado de circuito básico con sensor de luz y LED.",
-      fecha: "2026-07-06",
+      id: "a-s7-2",
+      secuencia: "🧠 Secuencia 7 — Soluciones Digitales · Proyecto: Mi Solución Digital Social",
+      grupo: "todos",
+      titulo: "🏭 La Fábrica de Algoritmos",
+      descripcion: "En equipos, los alumnos aplican los 4 pilares para resolver un problema real de la escuela.",
+      fecha: "2027-02-16",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 35 min</p>
+        <ul>
+          <li>Hojas de papel, lápices de colores, cartulinas.</li>
+          <li>4 problemas de la escuela: fila de la cafetería, préstamo de útiles, limpieza del patio, alumnos que llegan tarde.</li>
+        </ul>
+        <ul>
+          <li>Descomponen el problema en 3 partes, abstraen lo esencial, buscan patrones similares y escriben el algoritmo paso a paso (mínimo 8 pasos).</li>
+          <li>Dibujan su algoritmo en cartulina como diagrama de flujo y presentan 2 min; los demás equipos votan si funcionaría en la escuela real.</li>
+        </ul>
+      `,
     },
     {
-      id: "a3",
-      grupo: "3E",
-      titulo: "Práctica guiada: primeros pasos en diseño 3D",
-      descripcion: "Exploración de herramientas básicas del software de modelado.",
-      fecha: "2026-07-06",
+      id: "a-s7-3",
+      secuencia: "🧠 Secuencia 7 — Soluciones Digitales · Proyecto: Mi Solución Digital Social",
+      grupo: "todos",
+      titulo: "🚀 Simulacro de Hackatón",
+      descripcion: "Los equipos viven las 4 fases de un hackatón (empatía, ideación, prototipado, pitch) sobre un desafío social.",
+      fecha: "2027-02-18",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 40 min</p>
+        <ul>
+          <li>Papelógrafo, marcadores, cronómetro, tarjetas de "desafío" (ej. soledad de adultos mayores, desperdicio de agua, mascotas perdidas).</li>
+        </ul>
+        <ul>
+          <li>Fase 1 — Empatía (5 min): ¿quién tiene el problema? Fase 2 — Ideación (10 min): 3 soluciones posibles.</li>
+          <li>Fase 3 — Prototipado (15 min): dibujan 3 pantallas de su solución en cartulina. Fase 4 — Pitch (5 min): "venden" su idea a la clase.</li>
+          <li>Los demás alumnos votan con fichas de colores (🟢🟡🔴); el equipo con más 🟢 gana el "Premio al Mejor Prototipo".</li>
+        </ul>
+      `,
+    },
+
+    // ===== SECUENCIA 8: DISEÑO WEB =====
+    {
+      id: "a-s8-1",
+      secuencia: "🌐 Secuencia 8 — Diseño Web · Proyecto: Mi Portafolio Web en Papel",
+      grupo: "todos",
+      titulo: "🏗️ Arquitectos de la Información",
+      descripcion: "En equipos, los alumnos rediseñan el mapa de navegación de sitios web mal organizados.",
+      fecha: "2027-02-28",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 3 | ⏱️ Duración: 25 min</p>
+        <ul>
+          <li>Hojas de papel, lápices de colores, cartulinas.</li>
+          <li>3 sitios web descritos verbalmente con mala organización (tienda sin categorías, biblioteca por color de portada, receta con pasos absurdos).</li>
+        </ul>
+        <ul>
+          <li>Dibujan en cartulina el mapa de navegación de cómo DEBERÍA ser cada sitio: página de inicio, categorías y acción principal en máximo 3 clics.</li>
+          <li>El docente introduce la "regla de los 3 clics".</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a-s8-2",
+      secuencia: "🌐 Secuencia 8 — Diseño Web · Proyecto: Mi Portafolio Web en Papel",
+      grupo: "todos",
+      titulo: "💻 Mi Primera Página en Bloc de Notas",
+      descripcion: "Los alumnos escriben su primera página HTML en el bloc de notas y la abren en el navegador.",
+      fecha: "2027-03-02",
+      detalleCompleto: `
+        <p>👥 Modalidad: Individual, en taller de cómputo | ⏱️ Duración: 40 min</p>
+        <ul>
+          <li>Computadoras con bloc de notas o editor de texto básico, guía impresa de etiquetas HTML.</li>
+        </ul>
+        <ul>
+          <li>El docente explica &lt;html&gt;, &lt;head&gt;, &lt;body&gt;, &lt;h1&gt;, &lt;p&gt;, &lt;img&gt;, &lt;a&gt;, &lt;ul&gt;, &lt;li&gt;.</li>
+          <li>Los alumnos escriben su primera página (título, encabezado, párrafo de presentación, lista de proyectos favoritos y contacto), la guardan como index.html y la abren en el navegador.</li>
+          <li>Reto: agregar un comentario de imagen y un enlace a un sitio que les guste.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a-s8-3",
+      secuencia: "🌐 Secuencia 8 — Diseño Web · Proyecto: Mi Portafolio Web en Papel",
+      grupo: "todos",
+      titulo: "🎨 CSS en Papel: Dando Estilo a mi Web",
+      descripcion: "Los alumnos 'colorean' su página HTML como si aplicaran reglas de CSS.",
+      fecha: "2027-03-04",
+      detalleCompleto: `
+        <p>👥 Modalidad: Individual | ⏱️ Duración: 35 min</p>
+        <ul>
+          <li>Hojas de papel, lápices de colores, las páginas HTML de la actividad anterior impresas.</li>
+        </ul>
+        <ul>
+          <li>Subrayan y anotan al margen cómo se vería su página con reglas de color, tamaño de fuente y fondo aplicadas.</li>
+          <li>El docente introduce el concepto de clases e IDs con un ejemplo simple.</li>
+          <li>Reto: diseñar en papel cómo se vería el portafolio con CSS aplicado, usando mínimo 5 reglas de estilo.</li>
+        </ul>
+      `,
+    },
+
+    // ===== SECUENCIA 9: PROTOTIPOS IOT =====
+    {
+      id: "a-s9-1",
+      secuencia: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT · Proyecto: Mi Prototipo Tecnológico Integrador",
+      grupo: "todos",
+      titulo: "🧠 Design Thinking Express",
+      descripcion: "Los alumnos aplican las 5 fases de design thinking a un usuario ficticio en tiempo cronometrado.",
+      fecha: "2027-03-21",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 30 min</p>
+        <ul>
+          <li>Papelógrafo, marcadores, post-its, cronómetro.</li>
+          <li>4 perfiles de "usuario" con necesidades distintas (adulto mayor, alumno rural, escuela con gasto de luz, mamá trabajadora).</li>
+        </ul>
+        <ul>
+          <li>Fases cronometradas: empatizar (3 min), definir (3 min), idear (5 min), prototipar (10 min), probar (5 min) con feedback de otro equipo.</li>
+          <li>Cada equipo ajusta su prototipo y presenta en 2 min.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a-s9-2",
+      secuencia: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT · Proyecto: Mi Prototipo Tecnológico Integrador",
+      grupo: "todos",
+      titulo: "🔌 Estación de Sensores y Actuadores",
+      descripcion: "En equipos, los alumnos identifican qué sensor y actuador necesitaría un dispositivo IoT para interactuar con objetos cotidianos.",
+      fecha: "2027-03-23",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 35 min</p>
+        <ul>
+          <li>Hojas de papel, marcadores, objetos del salón (libro, pelota, vaso, luz, ventilador, puerta).</li>
+        </ul>
+        <ul>
+          <li>Completan una tabla: Objeto | Sensor necesario | ¿Qué detecta? | Actuador necesario | ¿Qué hace?</li>
+          <li>Reto: "Si el sensor de temperatura del ventilador falla, ¿qué pasa?" — se introduce el concepto de redundancia y seguridad en IoT.</li>
+          <li>Cada equipo presenta 1 objeto con su sistema sensor-actuador completo.</li>
+        </ul>
+      `,
+    },
+    {
+      id: "a-s9-3",
+      secuencia: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT · Proyecto: Mi Prototipo Tecnológico Integrador",
+      grupo: "todos",
+      titulo: "🚀 Hackatón Final: Prototipo IoT",
+      descripcion: "Los equipos diseñan un dispositivo IoT completo para un desafío comunitario, con pitch final.",
+      fecha: "2027-03-25",
+      detalleCompleto: `
+        <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 45 min</p>
+        <ul>
+          <li>Cartulinas, tijeras, pegamento, marcadores, papelógrafo, cronómetro.</li>
+          <li>Desafíos comunitarios: alertas climáticas rurales, ahorro de agua escolar, seguridad para adultos mayores, riego inteligente, conteo de alumnos por salón, detección de mareas altas.</li>
+        </ul>
+        <ul>
+          <li>Fases: empatía (5 min), definición (5 min), ideación (10 min), prototipado (15 min: vista frontal/lateral, sensores, actuadores, conexión, precio) y pitch (5 min + preguntas).</li>
+          <li>Los demás alumnos votan (🟢🟡🔴); el equipo con más 🟢 gana el "Premio al Prototipo Más Innovador".</li>
+        </ul>
+      `,
     },
   ],
 };
