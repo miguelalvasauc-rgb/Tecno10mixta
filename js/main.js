@@ -1257,6 +1257,70 @@ const DATOS_PROYECTOS = {
   ],
 };
 
+const DATOS_PRESENTACIONES = {
+  1: [
+    {
+      id: "pres1",
+      titulo: "Secuencia 1: Inteligencia Artificial",
+      descripcion: "Qué es la IA, machine learning, chatbots e IA generativa.",
+      // TODO(Hiram): reemplazar por la URL real de embed de Gamma.
+      gammaEmbedUrl: "REEMPLAZAR_URL_EMBED_GAMMA_SECUENCIA_1",
+    },
+    {
+      id: "pres2",
+      titulo: "Secuencia 2: Realidad Virtual y Aumentada",
+      descripcion: "Diferencias entre VR y AR, cómo se construyen mundos virtuales y el metaverso.",
+      gammaEmbedUrl: "REEMPLAZAR_URL_EMBED_GAMMA_SECUENCIA_2",
+    },
+    {
+      id: "pres3",
+      titulo: "Secuencia 3: Robótica",
+      descripcion: "Anatomía de un robot, automatización, IA aplicada y ejemplos reales.",
+      gammaEmbedUrl: "REEMPLAZAR_URL_EMBED_GAMMA_SECUENCIA_3",
+    },
+  ],
+  2: [
+    {
+      id: "pres1",
+      titulo: "Secuencia 4: Introducción a la Ciencia de Datos",
+      descripcion: "Qué son los datos, algoritmos, Big Data y datos abiertos.",
+      gammaEmbedUrl: "REEMPLAZAR_URL_EMBED_GAMMA_SECUENCIA_4",
+    },
+    {
+      id: "pres2",
+      titulo: "Secuencia 5: Hojas de Cálculo para la Toma de Decisiones",
+      descripcion: "Fórmulas, gráficas y formato condicional para organizar información.",
+      gammaEmbedUrl: "REEMPLAZAR_URL_EMBED_GAMMA_SECUENCIA_5",
+    },
+    {
+      id: "pres3",
+      titulo: "Secuencia 6: Seguridad Digital Avanzada",
+      descripcion: "Phishing, contraseñas seguras, cifrado y huella digital.",
+      gammaEmbedUrl: "REEMPLAZAR_URL_EMBED_GAMMA_SECUENCIA_6",
+    },
+  ],
+  3: [
+    {
+      id: "pres1",
+      titulo: "Secuencia 7: Soluciones Digitales",
+      descripcion: "Pensamiento computacional y cómo pasar de un problema real a una solución.",
+      gammaEmbedUrl: "REEMPLAZAR_URL_EMBED_GAMMA_SECUENCIA_7",
+    },
+    {
+      id: "pres2",
+      titulo: "Secuencia 8: Diseño Web",
+      descripcion: "HTML, CSS, UX/UI y cómo crear tu propio portafolio en línea.",
+      gammaEmbedUrl: "REEMPLAZAR_URL_EMBED_GAMMA_SECUENCIA_8",
+    },
+    {
+      id: "pres3",
+      titulo: "Secuencia 9: Prototipos Tecnológicos e IoT",
+      descripcion: "Prototipado rápido, Design Thinking e Internet de las Cosas.",
+      gammaEmbedUrl: "REEMPLAZAR_URL_EMBED_GAMMA_SECUENCIA_9",
+    },
+  ],
+};
+
 const DATOS_VIDEOS = {
   1: [
     {
@@ -1585,6 +1649,10 @@ async function obtenerProyectos(trimestre) {
 
 async function obtenerVideos(trimestre) {
   return DATOS_VIDEOS[trimestre] || [];
+}
+
+async function obtenerPresentaciones(trimestre) {
+  return DATOS_PRESENTACIONES[trimestre] || [];
 }
 
 /* =========================================================
@@ -2689,6 +2757,47 @@ async function renderizarVideos() {
   });
 }
 
+async function renderizarPresentaciones() {
+  const contenedor = document.getElementById("contenedor-presentaciones");
+  if (!contenedor) return;
+
+  const datos = await obtenerPresentaciones(TRIMESTRE_ACTUAL);
+
+  if (datos.length === 0) {
+    mostrarSinResultados(contenedor, "No hay presentaciones registradas para este bloque.");
+    return;
+  }
+
+  contenedor.innerHTML = "";
+  datos.forEach((item) => {
+    const tarjeta = document.createElement("article");
+    tarjeta.className = "tarjeta-video";
+
+    const marco = document.createElement("div");
+    marco.className = "tarjeta-video__marco";
+    const iframe = document.createElement("iframe");
+    // NOTA: a diferencia de los videos de YouTube (que arman la URL a
+    // partir de un ID), aquí "gammaEmbedUrl" ya es la URL completa de
+    // embed que se copia desde Gamma (Share > Embed).
+    iframe.src = item.gammaEmbedUrl;
+    iframe.title = item.titulo;
+    iframe.loading = "lazy";
+    iframe.allowFullscreen = true;
+    marco.appendChild(iframe);
+
+    const info = document.createElement("div");
+    info.className = "tarjeta-video__info";
+    const titulo = document.createElement("h3");
+    titulo.textContent = item.titulo;
+    const descripcion = document.createElement("p");
+    descripcion.textContent = item.descripcion;
+    info.append(titulo, descripcion);
+
+    tarjeta.append(marco, info);
+    contenedor.appendChild(tarjeta);
+  });
+}
+
 const MENSAJES_MOTIVACIONALES = [
   "Vas muy bien, sigue así.",
   "Un paso a la vez: cada tarea marcada cuenta.",
@@ -3480,6 +3589,7 @@ async function renderizarTodo() {
     renderizarActividades(),
     renderizarProyectos(),
     renderizarVideos(),
+    renderizarPresentaciones(),
     renderizarProgreso(),
     renderizarProgresoDetallado(),
   ]);
