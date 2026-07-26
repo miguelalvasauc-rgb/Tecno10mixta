@@ -2177,6 +2177,77 @@ summary:focus-visible {
   text-decoration: underline;
 }
 
+/* ---------- Examen de diagnóstico ---------- */
+.tarjeta-examen-diagnostico {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem;
+  box-shadow: var(--sombra);
+}
+
+.tarjeta-examen-diagnostico__texto h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1.05rem;
+  color: var(--color-texto);
+}
+
+.tarjeta-examen-diagnostico__texto p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.tarjeta-examen-diagnostico__boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-cuerpo);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-claro-sobre-navy);
+  background-color: var(--color-primario);
+  border: none;
+  border-radius: var(--radio-full);
+  padding: 0.7rem 1.4rem;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.15s ease;
+}
+
+.tarjeta-examen-diagnostico__boton:hover {
+  transform: translateY(-2px);
+}
+
+.tarjeta-examen-diagnostico__descartar {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-cuerpo);
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+  text-decoration: underline;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tarjeta-examen-diagnostico__descartar:hover {
+  color: var(--color-texto);
+}
+
+@media (max-width: 640px) {
+  .tarjeta-examen-diagnostico {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+}
+
 /* ---------- Calendario ---------- */
 .calendario {
   display: grid;

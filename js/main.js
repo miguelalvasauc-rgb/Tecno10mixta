@@ -2981,6 +2981,12 @@ if (TRIMESTRE_ACTUAL) {
 const CLAVE_PERFIL = "perfilActivo";
 const CLAVE_PINES = "pinesAlumnos";
 
+// Bandera de localStorage para el banner de "Examen de Diagnóstico" en la
+// portada (#examen-diagnostico): una vez que el alumno confirma que ya lo
+// contestó, el banner se oculta en todas las visitas futuras desde este
+// dispositivo.
+const CLAVE_EXAMEN_DIAGNOSTICO = "examenDiagnosticoCompletado";
+
 /* =========================================================
    4. UTILIDADES
    ========================================================= */
@@ -4120,6 +4126,29 @@ function activarBotonEncuadreAnual() {
     marco.innerHTML = "";
     marco.appendChild(iframe);
   });
+}
+
+// Banner estático del Examen de Diagnóstico en la portada
+// (#examen-diagnostico). Se oculta por completo si el alumno ya marcó que
+// lo contestó (ver CLAVE_EXAMEN_DIAGNOSTICO); el botón "Ya lo contesté"
+// guarda esa bandera y oculta la sección de inmediato, sin esperar a un
+// recargado de página.
+function activarBannerExamenDiagnostico() {
+  const seccion = document.getElementById("examen-diagnostico");
+  if (!seccion) return;
+
+  if (localStorage.getItem(CLAVE_EXAMEN_DIAGNOSTICO) === "true") {
+    seccion.hidden = true;
+    return;
+  }
+
+  const botonDescartar = document.getElementById("boton-ya-lo-conteste");
+  if (botonDescartar) {
+    botonDescartar.addEventListener("click", () => {
+      localStorage.setItem(CLAVE_EXAMEN_DIAGNOSTICO, "true");
+      seccion.hidden = true;
+    });
+  }
 }
 
 const MENSAJES_MOTIVACIONALES = [
@@ -5272,6 +5301,7 @@ document.addEventListener("DOMContentLoaded", () => {
   activarModalPerfil();
   activarResaltadoDeNavegacion();
   activarBotonVolverArriba();
+  activarBannerExamenDiagnostico();
 
   const botonMesAnterior = document.getElementById("calendario-mes-anterior");
   if (botonMesAnterior) botonMesAnterior.addEventListener("click", () => avanzarMesCalendario(-1));
