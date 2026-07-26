@@ -2989,6 +2989,11 @@ const CLAVE_PINES = "pinesAlumnos";
 // reutiliza el mismo formato grupo+nombre que claveProgreso().
 const CLAVE_EXAMEN_DIAGNOSTICO_POR_ALUMNO = "examenDiagnosticoPorAlumno";
 
+// Mismo Google Form que #enlace-examen-diagnostico en el banner de la
+// portada (ver index.html); se reutiliza aquí para el enlace de la fila
+// de progreso cuando el examen sigue pendiente.
+const URL_EXAMEN_DIAGNOSTICO = "https://forms.gle/HhGcroSo3gAFbQBn6";
+
 /* =========================================================
    4. UTILIDADES
    ========================================================= */
@@ -4148,6 +4153,53 @@ function marcarExamenDiagnosticoCompletado(perfil) {
   localStorage.setItem(CLAVE_EXAMEN_DIAGNOSTICO_POR_ALUMNO, JSON.stringify(registro));
 }
 
+// Fila "Examen de diagnóstico" para el panel de Progreso: mismo componente
+// visual (panel-progreso__item + badge-estado) que las filas de tareas/
+// actividades/proyectos del detalle por trimestre, para que el examen se
+// lea como una entrada más de progreso en vez de un elemento aparte. El
+// enlace al Google Form solo se muestra si el alumno activo todavía no
+// está registrado como completado.
+function construirFilaExamenDiagnostico(perfil) {
+  const registro = obtenerRegistroExamenDiagnostico();
+  const completado = Boolean(registro[idAlumnoExamenDiagnostico(perfil)]);
+
+  const fila = document.createElement("li");
+  fila.className = "panel-progreso__item";
+
+  const titulo = document.createElement("span");
+  titulo.className = "panel-progreso__item-titulo";
+  titulo.textContent = "Examen de diagnóstico";
+  fila.appendChild(titulo);
+
+  const badge = document.createElement("span");
+  badge.className = "badge-estado";
+  badge.dataset.estado = completado ? "completada" : "pendiente";
+  badge.textContent = completado ? "✅ Completada" : "⏳ Pendiente";
+  fila.appendChild(badge);
+
+  if (!completado) {
+    const enlace = document.createElement("a");
+    enlace.href = URL_EXAMEN_DIAGNOSTICO;
+    enlace.target = "_blank";
+    enlace.rel = "noopener";
+    enlace.className = "panel-progreso__item-enlace";
+    enlace.textContent = "Ir al examen →";
+    fila.appendChild(enlace);
+  }
+
+  return fila;
+}
+
+// Envuelve construirFilaExamenDiagnostico() en la misma <ul class=
+// "panel-progreso__lista"> que agrupa las filas de tareas/actividades/
+// proyectos, para que comparta exactamente el mismo espaciado y grid.
+function construirListaExamenDiagnostico(perfil) {
+  const lista = document.createElement("ul");
+  lista.className = "panel-progreso__lista";
+  lista.appendChild(construirFilaExamenDiagnostico(perfil));
+  return lista;
+}
+
 // Se activa cuando el alumno hace clic en "Ya lo contesté" sin estar
 // identificado: abre el modal de identificación de #progreso y, si el
 // alumno completa ese flujo, alEnviarFormularioPerfil revisa esta bandera
@@ -4278,7 +4330,7 @@ async function renderizarProgreso() {
     relleno.style.width = porcentaje + "%";
     barra.appendChild(relleno);
 
-    resumen.append(texto, barra);
+    resumen.append(texto, barra, construirListaExamenDiagnostico(perfil));
   }
 
   const bloques = document.getElementById("progreso-por-trimestre");
@@ -4392,7 +4444,7 @@ async function renderizarProgresoDetallado() {
     relleno.style.width = porcentaje + "%";
     barra.appendChild(relleno);
 
-    resumen.append(texto, barra);
+    resumen.append(texto, barra, construirListaExamenDiagnostico(perfil));
   }
 
   // --- Detalle itemizado por trimestre (solo existe en progreso.html) ---
