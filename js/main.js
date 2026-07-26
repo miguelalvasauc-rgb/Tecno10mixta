@@ -3950,6 +3950,25 @@ async function renderizarPresentaciones() {
   });
 }
 
+// Tarjeta estática del Encuadre Anual en la portada (#encuadre-anual). No
+// es una lista dinámica como renderizarPresentaciones(), pero usa la misma
+// carga bajo demanda: el iframe de Gamma no se crea hasta el clic.
+function activarBotonEncuadreAnual() {
+  const boton = document.getElementById("boton-ver-encuadre-anual");
+  if (!boton) return;
+  boton.addEventListener("click", () => {
+    const marco = boton.closest(".tarjeta-presentacion__marco");
+    const iframe = document.createElement("iframe");
+    iframe.src = "https://gamma.app/embed/d2hobcvjqltc3q7";
+    iframe.title = "Mundo Digital 3 — Encuadre Anual 2026-2027";
+    iframe.loading = "lazy";
+    iframe.allowFullscreen = true;
+    iframe.setAttribute("allow", "fullscreen");
+    marco.innerHTML = "";
+    marco.appendChild(iframe);
+  });
+}
+
 const MENSAJES_MOTIVACIONALES = [
   "Vas muy bien, sigue así.",
   "Un paso a la vez: cada tarea marcada cuenta.",
@@ -4746,6 +4765,7 @@ async function renderizarTodo() {
     renderizarProgreso(),
     renderizarProgresoDetallado(),
   ]);
+  activarBotonEncuadreAnual();
 }
 
 // La barra lateral (desktop) y el modal de grupo (barra inferior móvil)
