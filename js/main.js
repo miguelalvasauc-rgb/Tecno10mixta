@@ -3039,7 +3039,7 @@ async function renderizarAvisos() {
 
   const datos = (await obtenerAvisos())
     .filter(elementoCoincideConGrupo)
-    .sort((a, b) => b.fecha.localeCompare(a.fecha)); // más reciente primero
+    .sort((a, b) => a.fecha.localeCompare(b.fecha)); // orden cronológico ascendente
 
   if (datos.length === 0) {
     mostrarSinResultados(contenedor, "No hay avisos por el momento.");
