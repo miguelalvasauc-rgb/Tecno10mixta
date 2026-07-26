@@ -3015,12 +3015,19 @@ function formatearFecha(fechaISO) {
 // Resuelve el valor de fechaEntrega/fecha de un ítem a texto ya formateado.
 // Soporta el formato legado (string, una sola fecha para ambos grupos) y el
 // formato por grupo ({ "3C": ..., "3E": ... }, para ítems grupo:"todos" con
-// horarios distintos por grupo). Con "todos" seleccionado se muestran las
-// dos fechas juntas porque no hay una sola fecha "correcta" que mostrar.
-function resolverFechaItem(valorFecha) {
+// horarios distintos por grupo). Por defecto resuelve contra grupoActual
+// (el selector de grupo de la portada), pero acepta un "grupoParaResolver"
+// explícito para los casos donde el grupo relevante es otro (ej. el panel
+// de Progreso, que debe usar el grupo del alumno identificado, no el
+// selector de grupo de la página — son conceptos independientes). Con
+// "todos" se muestran las dos fechas juntas porque no hay una sola fecha
+// "correcta" que mostrar.
+function resolverFechaItem(valorFecha, grupoParaResolver) {
   if (typeof valorFecha === "string") return formatearFecha(valorFecha);
 
-  if (grupoActual === "3C" || grupoActual === "3E") return formatearFecha(valorFecha[grupoActual]);
+  const grupo = grupoParaResolver || grupoActual;
+
+  if (grupo === "3C" || grupo === "3E") return formatearFecha(valorFecha[grupo]);
 
   return "3°C: " + formatearFecha(valorFecha["3C"]) + " · 3°E: " + formatearFecha(valorFecha["3E"]);
 }
@@ -4544,6 +4551,15 @@ async function renderizarProgresoDetallado() {
           enlace.textContent = ETIQUETAS_ENLACE_ITEM[tipo];
           fila.appendChild(enlace);
         }
+
+        // Fecha resuelta con el grupo del ALUMNO IDENTIFICADO (perfil.grupo),
+        // no grupoActual: son conceptos independientes (ver
+        // coincideConGrupoDelAlumno más arriba en esta misma función).
+        const valorFecha = tipo === "actividad" ? item.fecha : item.fechaEntrega;
+        const fechaItem = document.createElement("span");
+        fechaItem.className = "panel-progreso__item-fecha";
+        fechaItem.textContent = "Entrega: " + resolverFechaItem(valorFecha, perfil.grupo);
+        fila.appendChild(fechaItem);
 
         lista.appendChild(fila);
       });

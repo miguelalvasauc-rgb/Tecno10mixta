@@ -1954,7 +1954,9 @@ summary:focus-visible {
 .panel-progreso__item {
   display: grid;
   grid-template-columns: 1fr 130px 150px;
-  grid-template-areas: "titulo badge enlace";
+  grid-template-areas:
+    "titulo badge enlace"
+    "fecha fecha fecha";
   align-items: center;
   column-gap: 0.6rem;
   row-gap: 0.3rem;
@@ -1983,6 +1985,12 @@ summary:focus-visible {
   font-weight: 700;
   color: var(--color-turquesa);
   text-decoration: none;
+}
+
+.panel-progreso__item-fecha {
+  grid-area: fecha;
+  font-size: 0.78rem;
+  color: var(--color-texto-suave);
 }
 
 /* Pantallas angostas: 2 filas por renglón (título arriba; badge + enlace
