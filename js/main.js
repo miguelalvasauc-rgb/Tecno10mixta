@@ -2981,11 +2981,13 @@ if (TRIMESTRE_ACTUAL) {
 const CLAVE_PERFIL = "perfilActivo";
 const CLAVE_PINES = "pinesAlumnos";
 
-// Bandera de localStorage para el banner de "Examen de Diagnóstico" en la
-// portada (#examen-diagnostico): una vez que el alumno confirma que ya lo
-// contestó, el banner se oculta en todas las visitas futuras desde este
-// dispositivo.
-const CLAVE_EXAMEN_DIAGNOSTICO = "examenDiagnosticoCompletado";
+// Registro por alumno (no una bandera global) de quién ya contestó el
+// Examen de Diagnóstico (ver #examen-diagnostico). Es necesario por
+// alumno porque el dispositivo se comparte entre compañeros: si fuera un
+// solo booleano, que el Alumno A lo descarte ocultaría el banner para el
+// Alumno B aunque este no haya contestado nada. La clave de cada alumno
+// reutiliza el mismo formato grupo+nombre que claveProgreso().
+const CLAVE_EXAMEN_DIAGNOSTICO_POR_ALUMNO = "examenDiagnosticoPorAlumno";
 
 /* =========================================================
    4. UTILIDADES
@@ -4128,25 +4130,70 @@ function activarBotonEncuadreAnual() {
   });
 }
 
+function obtenerRegistroExamenDiagnostico() {
+  try {
+    return JSON.parse(localStorage.getItem(CLAVE_EXAMEN_DIAGNOSTICO_POR_ALUMNO)) || {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function idAlumnoExamenDiagnostico(perfil) {
+  return perfil.grupo + "_" + slugAlumno(perfil.nombre);
+}
+
+function marcarExamenDiagnosticoCompletado(perfil) {
+  const registro = obtenerRegistroExamenDiagnostico();
+  registro[idAlumnoExamenDiagnostico(perfil)] = true;
+  localStorage.setItem(CLAVE_EXAMEN_DIAGNOSTICO_POR_ALUMNO, JSON.stringify(registro));
+}
+
+// Se activa cuando el alumno hace clic en "Ya lo contesté" sin estar
+// identificado: abre el modal de identificación de #progreso y, si el
+// alumno completa ese flujo, alEnviarFormularioPerfil revisa esta bandera
+// para registrar el examen como completado justo después. Se limpia al
+// cerrarse el modal por cualquier vía (ver activarModalPerfil) para no
+// registrar de más si el alumno cancela y se identifica después por otro
+// motivo.
+let registroExamenDiagnosticoPendiente = false;
+
 // Banner estático del Examen de Diagnóstico en la portada
-// (#examen-diagnostico). Se oculta por completo si el alumno ya marcó que
-// lo contestó (ver CLAVE_EXAMEN_DIAGNOSTICO); el botón "Ya lo contesté"
-// guarda esa bandera y oculta la sección de inmediato, sin esperar a un
-// recargado de página.
+// (#examen-diagnostico). Sin alumno identificado en este dispositivo se
+// muestra siempre (no hay forma de saber quién lo contestó); con alumno
+// identificado, se oculta solo si ESE alumno ya está en
+// CLAVE_EXAMEN_DIAGNOSTICO_POR_ALUMNO. Se vuelve a evaluar cada vez que
+// cambia el perfil activo (alEnviarFormularioPerfil, alCambiarAlumno).
+function actualizarVisibilidadBannerExamenDiagnostico() {
+  const seccion = document.getElementById("examen-diagnostico");
+  if (!seccion) return;
+
+  const perfil = obtenerPerfilActivo();
+  if (!perfil) {
+    seccion.hidden = false;
+    return;
+  }
+
+  const registro = obtenerRegistroExamenDiagnostico();
+  seccion.hidden = Boolean(registro[idAlumnoExamenDiagnostico(perfil)]);
+}
+
 function activarBannerExamenDiagnostico() {
   const seccion = document.getElementById("examen-diagnostico");
   if (!seccion) return;
 
-  if (localStorage.getItem(CLAVE_EXAMEN_DIAGNOSTICO) === "true") {
-    seccion.hidden = true;
-    return;
-  }
+  actualizarVisibilidadBannerExamenDiagnostico();
 
   const botonDescartar = document.getElementById("boton-ya-lo-conteste");
   if (botonDescartar) {
     botonDescartar.addEventListener("click", () => {
-      localStorage.setItem(CLAVE_EXAMEN_DIAGNOSTICO, "true");
-      seccion.hidden = true;
+      const perfil = obtenerPerfilActivo();
+      if (perfil) {
+        marcarExamenDiagnosticoCompletado(perfil);
+        actualizarVisibilidadBannerExamenDiagnostico();
+        return;
+      }
+      registroExamenDiagnosticoPendiente = true;
+      abrirModalPerfil();
     });
   }
 }
@@ -5221,6 +5268,16 @@ function alEnviarFormularioPerfil(evento) {
   renderizarProgreso();
   renderizarProgresoDetallado();
 
+  // Si este flujo de identificación se abrió desde el botón "Ya lo
+  // contesté" del banner de examen diagnóstico (ver
+  // activarBannerExamenDiagnostico), registrar ahora al alumno recién
+  // identificado como completado.
+  if (registroExamenDiagnosticoPendiente) {
+    registroExamenDiagnosticoPendiente = false;
+    marcarExamenDiagnosticoCompletado({ grupo, nombre });
+  }
+  actualizarVisibilidadBannerExamenDiagnostico();
+
   const modal = document.getElementById("modal-perfil");
   if (modal) modal.close();
 }
@@ -5232,6 +5289,7 @@ function alCambiarAlumno() {
   renderizarTodo();
   renderizarProgreso();
   renderizarProgresoDetallado();
+  actualizarVisibilidadBannerExamenDiagnostico();
 }
 
 // Mismo patrón que activarCierreModalDetalle: showModal()/close(), cierre
@@ -5257,6 +5315,16 @@ function activarModalPerfil() {
 
   modal.addEventListener("click", (evento) => {
     if (evento.target === modal) modal.close();
+  });
+
+  // El <dialog> dispara "close" tanto si se cierra por ESC/backdrop/botón
+  // ✕ como si alEnviarFormularioPerfil llama a modal.close() tras
+  // identificarse con éxito. En ese segundo caso la bandera ya quedó en
+  // false; en cualquier cierre sin identificarse (cancelado), esto evita
+  // que una identificación posterior y no relacionada quede marcada como
+  // "ya contestó el examen".
+  modal.addEventListener("close", () => {
+    registroExamenDiagnosticoPendiente = false;
   });
 
   const selectorGrupoPerfil = document.getElementById("perfil-grupo");
