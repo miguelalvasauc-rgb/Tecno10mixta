@@ -971,7 +971,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "Detective de IA en mi casa",
       descripcion: "Identifica 5 ejemplos de Inteligencia Artificial presentes en la vida diaria.",
-      fechaEntrega: "2025-09-01",
+      fechaEntrega: { "3C": "2026-08-31", "3E": "2026-09-01" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 minutos | 👥 Modalidad: Individual (en casa)</p>
@@ -996,7 +996,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "Mi diálogo con un asistente virtual",
       descripcion: "Escribe un diálogo de al menos 8 líneas con un asistente virtual y reflexiona sobre su \"inteligencia\".",
-      fechaEntrega: "2025-09-03",
+      fechaEntrega: { "3C": "2026-09-07", "3E": "2026-09-08" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 15 minutos | 👥 Modalidad: Individual</p>
@@ -1020,7 +1020,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "La IA y mi creatividad",
       descripcion: "Representa con un dibujo o collage cómo la IA podría apoyar a un artista sin reemplazarlo.",
-      fechaEntrega: "2025-09-05",
+      fechaEntrega: { "3C": "2026-09-14", "3E": "2026-09-15" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 25 minutos | 👥 Modalidad: Individual</p>
@@ -1045,7 +1045,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "Cazador de AR/VR",
       descripcion: "Clasifica 4 ejemplos cotidianos como Realidad Aumentada, Virtual o Mixta.",
-      fechaEntrega: "2025-09-22",
+      fechaEntrega: { "3C": "2026-09-22", "3E": "2026-09-29" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 minutos | 👥 Modalidad: Individual</p>
@@ -1068,7 +1068,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "Mi casa en Realidad Aumentada",
       descripcion: "Dibuja una habitación de tu casa con anotaciones tipo Realidad Aumentada.",
-      fechaEntrega: "2025-09-24",
+      fechaEntrega: { "3C": "2026-09-29", "3E": "2026-10-06" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 25 minutos | 👥 Modalidad: Individual</p>
@@ -1090,7 +1090,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "Noticia del futuro",
       descripcion: "Redacta una noticia de periódico ambientada en 2035 sobre el metaverso educativo.",
-      fechaEntrega: "2025-09-26",
+      fechaEntrega: { "3C": "2026-10-13", "3E": "2026-10-20" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 minutos | 👥 Modalidad: Individual</p>
@@ -1112,7 +1112,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "Detective de Robots",
       descripcion: "Investiga 4 robots reales o ficticios y clasifica si usan IA.",
-      fechaEntrega: "2025-10-13",
+      fechaEntrega: { "3C": "2026-10-19", "3E": "2026-10-21" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 minutos | 👥 Modalidad: Individual</p>
@@ -1135,7 +1135,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "Mi rutina como algoritmo",
       descripcion: "Describe tu rutina matutina como un algoritmo con condicionales SI/ENTONCES/SINO.",
-      fechaEntrega: "2025-10-15",
+      fechaEntrega: { "3C": "2026-10-26", "3E": "2026-10-28" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 minutos | 👥 Modalidad: Individual</p>
@@ -1157,7 +1157,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "Mi robot ideal — Boceto inicial",
       descripcion: "Diseña el boceto de un robot que resuelva un problema de tu familia o comunidad.",
-      fechaEntrega: "2025-10-17",
+      fechaEntrega: { "3C": "2026-11-03", "3E": "2026-11-04" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 25 minutos | 👥 Modalidad: Individual</p>
@@ -1183,7 +1183,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "🔍 Detective de Datos en mi Vida",
       descripcion: "Busca 5 situaciones de tu día donde alguien (o algo) use datos para tomar decisiones sobre ti.",
-      fechaEntrega: "2026-12-01",
+      fechaEntrega: { "3C": "2026-11-17", "3E": "2026-11-17" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla en cuaderno</p>
@@ -1200,7 +1200,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "📊 Mi Semana en Números",
       descripcion: "Registra durante 5 días cuántas horas dedicas a: escuela, redes sociales, deportes, familia y sueño.",
-      fechaEntrega: "2026-12-03",
+      fechaEntrega: { "3C": "2026-11-23", "3E": "2026-11-18" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla + gráfica de barras en cuaderno</p>
@@ -1217,7 +1217,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "🕵️‍♂️ El Algoritmo me Vigila",
       descripcion: "Imagina que un algoritmo decide TODO por ti durante un día: qué comer, qué vestir, qué ver, con quién hablar.",
-      fechaEntrega: "2026-12-05",
+      fechaEntrega: { "3C": "2026-11-24", "3E": "2026-11-24" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Texto de 10 líneas + dibujo</p>
@@ -1236,7 +1236,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "🏠 Mi Presupuesto Mensual en Papel",
       descripcion: "Crea un 'presupuesto' de tu mes: ingresos (dinero de papás, trabajo, regalos) y gastos (transporte, comida, pasatiempos).",
-      fechaEntrega: "2026-12-15",
+      fechaEntrega: { "3C": "2026-12-15", "3E": "2026-12-16" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla en cuaderno</p>
@@ -1253,7 +1253,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "📐 Mi Horario Escolar como Hoja de Cálculo",
       descripcion: "Dibuja tu horario escolar como si fuera una hoja de cálculo de Excel.",
-      fechaEntrega: "2026-12-17",
+      fechaEntrega: { "3C": "2027-01-12", "3E": "2027-01-13" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Dibujo de tabla en cuaderno</p>
@@ -1271,7 +1271,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "📊 Mi Tienda Imaginaria",
       descripcion: "Imagina que tienes una tienda de dulces. Registra las ventas de una semana.",
-      fechaEntrega: "2026-12-19",
+      fechaEntrega: { "3C": "2027-01-25", "3E": "2027-01-26" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla + cálculos en cuaderno</p>
@@ -1290,7 +1290,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "🔍 Mi Huella Digital",
       descripcion: "Haz una lista de TODAS las cuentas, apps, juegos y redes sociales donde tienes perfil.",
-      fechaEntrega: "2027-01-12",
+      fechaEntrega: { "3C": "2027-02-09", "3E": "2027-02-10" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Lista + dibujo en cuaderno</p>
@@ -1307,7 +1307,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "🔐 La Contraseña Invencible",
       descripcion: "Crea 3 contraseñas seguras para 3 situaciones diferentes y explica por qué son fuertes.",
-      fechaEntrega: "2027-01-14",
+      fechaEntrega: { "3C": "2027-02-16", "3E": "2027-02-17" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: 3 contraseñas + explicación</p>
@@ -1324,7 +1324,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "📰 Reportero de Ciberseguridad",
       descripcion: "Investiga un caso de robo de datos o estafa por internet y cuéntalo como noticia.",
-      fechaEntrega: "2027-01-16",
+      fechaEntrega: { "3C": "2027-03-01", "3E": "2027-03-02" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Noticia de 10 líneas + cartel de prevención</p>
@@ -1344,7 +1344,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "🔍 Detective de Soluciones Digitales",
       descripcion: "Busca en tu comunidad o familia 5 problemas que podrían resolverse con una app o sistema digital.",
-      fechaEntrega: "2027-02-15",
+      fechaEntrega: { "3C": "2027-03-09", "3E": "2027-03-10" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Cuadro en cuaderno</p>
@@ -1361,7 +1361,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "📝 Mi Rutina como Algoritmo Mejorado",
       descripcion: "Toma tu rutina de la mañana y mejórala usando los 4 pilares del pensamiento computacional.",
-      fechaEntrega: "2027-02-17",
+      fechaEntrega: { "3C": "2027-04-06", "3E": "2027-04-06" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Diagrama de flujo en papel</p>
@@ -1379,7 +1379,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "🎨 Mi App Ideal — Boceto en Papel",
       descripcion: "Diseña en papel las 3 pantallas principales de una app que resuelva un problema de tu escuela.",
-      fechaEntrega: "2027-02-19",
+      fechaEntrega: { "3C": "2027-04-19", "3E": "2027-04-14" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: 3 pantallas dibujadas en hoja carta</p>
@@ -1398,7 +1398,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "🔍 Crítico de Sitios Web",
       descripcion: "Analiza 3 sitios web que uses frecuentemente y evalúa su usabilidad.",
-      fechaEntrega: "2027-03-01",
+      fechaEntrega: { "3C": "2027-05-03", "3E": "2027-04-28" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Cuadro + dibujo en cuaderno</p>
@@ -1415,7 +1415,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "📝 Mi Sitio Web en Papel — Wireframe",
       descripcion: "Diseña en papel 3 versiones de tu portafolio digital: móvil, tablet y computadora.",
-      fechaEntrega: "2027-03-03",
+      fechaEntrega: { "3C": "2027-05-11", "3E": "2027-05-12" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: 3 wireframes en hoja carta</p>
@@ -1432,7 +1432,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "🎨 Mi Marca Personal",
       descripcion: "Crea la identidad visual de tu portafolio digital: colores, logo y tipografía.",
-      fechaEntrega: "2027-03-05",
+      fechaEntrega: { "3C": "2027-05-24", "3E": "2027-05-25" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Paleta de colores + logo + tipografía en cartulina</p>
@@ -1450,7 +1450,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "🔍 Detective de IoT",
       descripcion: "Busca en tu casa o comunidad 5 objetos que sean 'inteligentes' o 'conectados'.",
-      fechaEntrega: "2027-03-22",
+      fechaEntrega: { "3C": "2027-06-07", "3E": "2027-06-08" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Cuadro en cuaderno</p>
@@ -1467,7 +1467,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "📝 Mi Primer MVP en Papel",
       descripcion: "Diseña el Producto Mínimo Viable (MVP) de un dispositivo IoT que resuelva un problema de tu escuela.",
-      fechaEntrega: "2027-03-24",
+      fechaEntrega: { "3C": "2027-06-14", "3E": "2027-06-15" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: 1 cartulina con prototipo mínimo</p>
@@ -1484,7 +1484,7 @@ const DATOS_TAREAS = {
       grupo: "todos",
       titulo: "🎤 Mi Pitch de 3 Minutos — Escrito",
       descripcion: "Escribe el guion de un pitch para vender tu MVP a un director de escuela.",
-      fechaEntrega: "2027-03-26",
+      fechaEntrega: { "3C": "2027-06-22", "3E": "2027-06-23" },
       estado: "pendiente",
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Texto de 1 página + tarjetas de "feedback"</p>
@@ -1515,7 +1515,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "Rompecabezas de Conceptos",
       descripcion: "Dinámica grupal de emparejar términos de IA con sus definiciones.",
-      fecha: "2025-09-02",
+      fecha: { "3C": "2026-09-01", "3E": "2026-09-02" },
       detalleCompleto: `
         <p>👥 Modalidad: Grupal (todo el salón), en parejas | ⏱️ Duración: 20 min</p>
         <ul>
@@ -1540,7 +1540,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "Teatro de Chatbots",
       descripcion: "En equipos, diseñan el árbol de decisión de un chatbot y lo representan en una obra corta.",
-      fecha: "2025-09-04",
+      fecha: { "3C": "2026-09-08", "3E": "2026-09-09" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 4 personas | ⏱️ Duración: 30 min</p>
         <ul>
@@ -1564,7 +1564,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "Círculo de Debate: ¿La IA nos quitará el trabajo?",
       descripcion: "Debate grupal sobre si la IA reemplazará los trabajos humanos.",
-      fecha: "2025-09-08",
+      fecha: { "3C": "2026-09-15", "3E": "2026-09-22" },
       detalleCompleto: `
         <p>👥 Modalidad: Grupal, dividido en 3 equipos | ⏱️ Duración: 25 min</p>
         <ul>
@@ -1588,7 +1588,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "Juego de Cartas AR/VR/MR",
       descripcion: "Juego de cartas para clasificar escenarios de AR, VR y MR en equipo.",
-      fecha: "2025-09-23",
+      fecha: { "3C": "2026-09-28", "3E": "2026-09-30" },
       detalleCompleto: `
         <p>👥 Modalidad: Grupal (todo el salón) | ⏱️ Duración: 20 min</p>
         <ul>
@@ -1612,7 +1612,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "Construcción de Mundos Virtuales",
       descripcion: "Equipos diseñan un mundo virtual educativo sobre un tema escolar.",
-      fecha: "2025-09-29",
+      fecha: { "3C": "2026-10-05", "3E": "2026-10-07" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 5 personas | ⏱️ Duración: 40 min</p>
         <ul>
@@ -1635,7 +1635,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "Tribunal del Metaverso",
       descripcion: "Juicio simulado sobre dilemas éticos del metaverso.",
-      fecha: "2025-10-02",
+      fecha: { "3C": "2026-10-06", "3E": "2026-10-13" },
       detalleCompleto: `
         <p>👥 Modalidad: Grupal, con roles asignados | ⏱️ Duración: 30 min</p>
         <ul>
@@ -1658,7 +1658,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "Simulación de Fábrica Robotizada",
       descripcion: "Simulación de una línea de producción, comparando trabajo manual vs. instrucciones tipo robot.",
-      fecha: "2025-10-14",
+      fecha: { "3C": "2026-10-20", "3E": "2026-10-27" },
       detalleCompleto: `
         <p>👥 Modalidad: Grupal, en 4 estaciones rotativas | ⏱️ Duración: 30 min</p>
         <ul>
@@ -1681,7 +1681,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "Programación en Papel: El Laberinto",
       descripcion: "En parejas, un alumno programa con instrucciones exactas para resolver un laberinto.",
-      fecha: "2025-10-21",
+      fecha: { "3C": "2026-10-27", "3E": "2026-11-03" },
       detalleCompleto: `
         <p>👥 Modalidad: Parejas | ⏱️ Duración: 35 min</p>
         <ul>
@@ -1704,7 +1704,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "Estación de Sensores",
       descripcion: "Equipos identifican qué sensores necesitaría un robot para interactuar con objetos cotidianos.",
-      fecha: "2025-10-24",
+      fecha: { "3C": "2026-11-09", "3E": "2026-11-10" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 4 personas | ⏱️ Duración: 25 min</p>
         <ul>
@@ -1729,7 +1729,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🧩 Rompecabezas del Pipeline de Datos",
       descripcion: "Dinámica grupal donde los alumnos forman la cadena completa del pipeline de datos con fichas.",
-      fecha: "2026-11-30",
+      fecha: { "3C": "2026-11-30", "3E": "2026-12-01" },
       detalleCompleto: `
         <p>👥 Modalidad: Grupal, en parejas o individual | ⏱️ Duración: 25 min</p>
         <ul>
@@ -1750,7 +1750,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🎭 Juego de Roles: El Algoritmo en Acción",
       descripcion: "Los alumnos representan usuarios de redes sociales y descubren cómo actúa un algoritmo de recomendación.",
-      fecha: "2026-12-02",
+      fecha: { "3C": "2026-12-07", "3E": "2026-12-02" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 35 min</p>
         <ul>
@@ -1772,7 +1772,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "📊 Taller de Infografías de Papel",
       descripcion: "En equipos, los alumnos analizan un dataset impreso y crean una infografía en cartulina.",
-      fecha: "2026-12-04",
+      fecha: { "3C": "2026-12-08", "3E": "2026-12-08" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 40 min</p>
         <ul>
@@ -1795,7 +1795,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🖥️ Explorando la Interfaz",
       descripcion: "Primer acercamiento guiado a Excel/LibreOffice: celdas, filas, columnas y formato básico.",
-      fecha: "2026-12-14",
+      fecha: { "3C": "2027-01-11", "3E": "2027-01-12" },
       detalleCompleto: `
         <p>👥 Modalidad: Individual, en taller de cómputo | ⏱️ Duración: 30 min</p>
         <ul>
@@ -1815,7 +1815,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🔢 Fórmulas en Acción: El Supermercado Escolar",
       descripcion: "Los alumnos aplican fórmulas de Excel a un inventario ficticio de un supermercado escolar.",
-      fecha: "2026-12-16",
+      fecha: { "3C": "2027-01-18", "3E": "2027-01-19" },
       detalleCompleto: `
         <p>👥 Modalidad: Individual, en taller de cómputo | ⏱️ Duración: 40 min</p>
         <ul>
@@ -1835,7 +1835,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🎨 Diseñando mi Primera Infografía en Excel",
       descripcion: "En equipos, los alumnos crean gráficas a partir de una encuesta y las maquetan como infografía en Excel.",
-      fecha: "2026-12-18",
+      fecha: { "3C": "2027-01-26", "3E": "2027-01-27" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 3, en taller de cómputo | ⏱️ Duración: 45 min</p>
         <ul>
@@ -1856,7 +1856,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🎭 Teatro de Phishing",
       descripcion: "En equipos, los alumnos clasifican correos reales y de phishing e identifican señales de alarma.",
-      fecha: "2027-01-11",
+      fecha: { "3C": "2027-02-08", "3E": "2027-02-03" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 30 min</p>
         <ul>
@@ -1875,7 +1875,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🏰 Construyendo Murallas Digitales",
       descripcion: "En equipos, los alumnos diseñan un 'castillo digital' con 3 niveles de defensa contra amenazas.",
-      fecha: "2027-01-13",
+      fecha: { "3C": "2027-02-15", "3E": "2027-02-16" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 3 | ⏱️ Duración: 35 min</p>
         <ul>
@@ -1894,7 +1894,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "⚖️ Tribunal del Ciberespacio",
       descripcion: "Los alumnos debaten 3 dilemas digitales en formato de juicio (juez, defensores, acusadores, jurado).",
-      fecha: "2027-01-15",
+      fecha: { "3C": "2027-02-23", "3E": "2027-02-23" },
       detalleCompleto: `
         <p>👥 Modalidad: Grupal | ⏱️ Duración: 30 min</p>
         <ul>
@@ -1917,7 +1917,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🧩 Rompecabezas de Pensamiento Computacional",
       descripcion: "Dinámica grupal donde los alumnos forman grupos aplicando los 4 pilares a problemas cotidianos.",
-      fecha: "2027-02-14",
+      fecha: { "3C": "2027-03-08", "3E": "2027-03-09" },
       detalleCompleto: `
         <p>👥 Modalidad: Grupal o en parejas | ⏱️ Duración: 25 min</p>
         <ul>
@@ -1936,7 +1936,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🏭 La Fábrica de Algoritmos",
       descripcion: "En equipos, los alumnos aplican los 4 pilares para resolver un problema real de la escuela.",
-      fecha: "2027-02-16",
+      fecha: { "3C": "2027-04-05", "3E": "2027-03-17" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 35 min</p>
         <ul>
@@ -1955,7 +1955,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🚀 Simulacro de Hackatón",
       descripcion: "Los equipos viven las 4 fases de un hackatón (empatía, ideación, prototipado, pitch) sobre un desafío social.",
-      fecha: "2027-02-18",
+      fecha: { "3C": "2027-04-13", "3E": "2027-04-13" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 40 min</p>
         <ul>
@@ -1976,7 +1976,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🏗️ Arquitectos de la Información",
       descripcion: "En equipos, los alumnos rediseñan el mapa de navegación de sitios web mal organizados.",
-      fecha: "2027-02-28",
+      fecha: { "3C": "2027-04-27", "3E": "2027-04-27" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 3 | ⏱️ Duración: 25 min</p>
         <ul>
@@ -1995,7 +1995,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "💻 Mi Primera Página en Bloc de Notas",
       descripcion: "Los alumnos escriben su primera página HTML en el bloc de notas y la abren en el navegador.",
-      fecha: "2027-03-02",
+      fecha: { "3C": "2027-05-04", "3E": "2027-05-04" },
       detalleCompleto: `
         <p>👥 Modalidad: Individual, en taller de cómputo | ⏱️ Duración: 40 min</p>
         <ul>
@@ -2014,7 +2014,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🎨 CSS en Papel: Dando Estilo a mi Web",
       descripcion: "Los alumnos 'colorean' su página HTML como si aplicaran reglas de CSS.",
-      fecha: "2027-03-04",
+      fecha: { "3C": "2027-05-17", "3E": "2027-05-18" },
       detalleCompleto: `
         <p>👥 Modalidad: Individual | ⏱️ Duración: 35 min</p>
         <ul>
@@ -2035,7 +2035,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🧠 Design Thinking Express",
       descripcion: "Los alumnos aplican las 5 fases de design thinking a un usuario ficticio en tiempo cronometrado.",
-      fecha: "2027-03-21",
+      fecha: { "3C": "2027-05-31", "3E": "2027-06-01" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 30 min</p>
         <ul>
@@ -2054,7 +2054,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🔌 Estación de Sensores y Actuadores",
       descripcion: "En equipos, los alumnos identifican qué sensor y actuador necesitaría un dispositivo IoT para interactuar con objetos cotidianos.",
-      fecha: "2027-03-23",
+      fecha: { "3C": "2027-06-08", "3E": "2027-06-09" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 35 min</p>
         <ul>
@@ -2073,7 +2073,7 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       titulo: "🚀 Hackatón Final: Prototipo IoT",
       descripcion: "Los equipos diseñan un dispositivo IoT completo para un desafío comunitario, con pitch final.",
-      fecha: "2027-03-25",
+      fecha: { "3C": "2027-06-21", "3E": "2027-06-22" },
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 45 min</p>
         <ul>
@@ -2102,7 +2102,7 @@ const DATOS_PROYECTOS = {
       titulo: "Mi Chatbot en Papel",
       descripcion: "Diseño individual de un chatbot en papel que resuelve un problema real de la escuela.",
       avance: 0,
-      fechaEntrega: "2025-09-19",
+      fechaEntrega: { "3C": "2026-09-21", "3E": "2026-09-23" },
       detalleCompleto: `
         <p>⏱️ Tiempo: 3 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual</p>
         <p>Cada alumno diseñará un chatbot completo en formato físico (papel/cartulina) que resuelva un problema real de su comunidad escolar. El alumno elige uno de estos propósitos: chatbot de la cafetería escolar, de la biblioteca, de orientación médica básica o de orientación escolar.</p>
@@ -2127,7 +2127,7 @@ const DATOS_PROYECTOS = {
       titulo: "Mi Metaverso Educativo",
       descripcion: "Equipos diseñan un prototipo de espacio educativo en el metaverso.",
       avance: 0,
-      fechaEntrega: "2025-10-10",
+      fechaEntrega: { "3C": "2026-10-12", "3E": "2026-10-14" },
       detalleCompleto: `
         <p>⏱️ Tiempo: 4 sesiones de clase (50 min c/u) | 👥 Modalidad: Equipos de 5 personas</p>
         <p>En equipos, diseñarán un prototipo en papel de un espacio en el metaverso para resolver un problema real de la escuela: falta de laboratorios de ciencias, dificultad para entender historia, falta de conciencia ecológica, poco espacio para arte, o falta de actividad física.</p>
@@ -2153,7 +2153,7 @@ const DATOS_PROYECTOS = {
       titulo: "Diseña tu Robot Ideal",
       descripcion: "Diseño individual de un robot que resuelve un problema social de la comunidad.",
       avance: 0,
-      fechaEntrega: "2025-11-07",
+      fechaEntrega: { "3C": "2026-11-10", "3E": "2026-11-11" },
       detalleCompleto: `
         <p>⏱️ Tiempo: 5 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre compañeros)</p>
         <p>Cada alumno diseñará un robot completo en papel/cartulina que resuelva un problema social real de su comunidad: asistente para personas con discapacidad visual, recolector de basura en ríos y playas, enfermero para comunidades rurales, agrícola para pequeños campesinos, de limpieza para la escuela, o de búsqueda y rescate en desastres naturales.</p>
@@ -2181,7 +2181,7 @@ const DATOS_PROYECTOS = {
       titulo: "Mi Análisis de Datos Escolar",
       descripcion: "Cada alumno analiza datos reales de su propio rendimiento, tiempo o hábitos y crea un informe visual en papel.",
       avance: 0,
-      fechaEntrega: "2026-12-12",
+      fechaEntrega: { "3C": "2026-12-14", "3E": "2026-12-09" },
       detalleCompleto: `
         <p>⏱️ Tiempo: 3 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual</p>
         <p>El alumno elige uno de estos enfoques: análisis de sus calificaciones, análisis de su tiempo fuera de clase, o análisis de sus hábitos (sueño, alimentación, ejercicio).</p>
@@ -2204,7 +2204,7 @@ const DATOS_PROYECTOS = {
       titulo: "Mi Hoja de Cálculo para Decidir",
       descripcion: "Cada alumno crea una hoja de cálculo en Excel que resuelve un problema real de toma de decisiones en su vida escolar o familiar.",
       avance: 0,
-      fechaEntrega: "2026-12-22",
+      fechaEntrega: { "3C": "2027-02-02", "3E": "2027-02-02" },
       detalleCompleto: `
         <p>⏱️ Tiempo: 4 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
         <p>El alumno elige uno de estos enfoques: planificador de estudio, control de gastos familiares, o comparador de calificaciones.</p>
@@ -2227,7 +2227,7 @@ const DATOS_PROYECTOS = {
       titulo: "Mi Manual de Supervivencia Digital",
       descripcion: "Cada alumno crea un manual físico (librito o tríptico) de ciberseguridad personal dirigido a estudiantes de secundaria.",
       avance: 0,
-      fechaEntrega: "2027-01-23",
+      fechaEntrega: { "3C": "2027-03-02", "3E": "2027-03-03" },
       detalleCompleto: `
         <p>⏱️ Tiempo: 4 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
         <p>El alumno elige el enfoque: manual del novato, manual del experto, o manual familiar (para papás y hermanos pequeños).</p>
@@ -2252,7 +2252,7 @@ const DATOS_PROYECTOS = {
       titulo: "Mi Solución Digital Social",
       descripcion: "Cada alumno diseña en papel una solución digital completa que resuelve un problema social real de su comunidad.",
       avance: 0,
-      fechaEntrega: "2027-02-26",
+      fechaEntrega: { "3C": "2027-04-20", "3E": "2027-04-20" },
       detalleCompleto: `
         <p>⏱️ Tiempo: 4 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
         <p>El alumno elige un propósito: app de accesibilidad, app ecológica, app educativa, app de salud, app de transporte, o app de emergencias.</p>
@@ -2275,7 +2275,7 @@ const DATOS_PROYECTOS = {
       titulo: "Mi Portafolio Web en Papel",
       descripcion: "Cada alumno diseña un portafolio digital completo en papel, simulando la estructura de un sitio web real con HTML, CSS y navegación.",
       avance: 0,
-      fechaEntrega: "2027-03-12",
+      fechaEntrega: { "3C": "2027-05-25", "3E": "2027-05-26" },
       detalleCompleto: `
         <p>⏱️ Tiempo: 5 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
         <p>El alumno elige el enfoque: portafolio académico, creativo, de logros, o profesional futuro.</p>
@@ -2299,7 +2299,7 @@ const DATOS_PROYECTOS = {
       titulo: "Mi Prototipo Tecnológico Integrador",
       descripcion: "Cada alumno diseña un prototipo tecnológico completo en papel que integra pensamiento computacional, análisis de datos y tecnologías emergentes (IA, VR o robótica).",
       avance: 0,
-      fechaEntrega: "2027-04-16",
+      fechaEntrega: { "3C": "2027-06-29", "3E": "2027-06-30" },
       detalleCompleto: `
         <p>⏱️ Tiempo: 5 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
         <p>El alumno elige un propósito: dispositivo de salud conectado, sistema ecológico inteligente, asistente educativo virtual, hogar conectado accesible, agricultura inteligente, o sistema de emergencias comunitarias.</p>
@@ -3012,6 +3012,19 @@ function formatearFecha(fechaISO) {
   return fecha.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+// Resuelve el valor de fechaEntrega/fecha de un ítem a texto ya formateado.
+// Soporta el formato legado (string, una sola fecha para ambos grupos) y el
+// formato por grupo ({ "3C": ..., "3E": ... }, para ítems grupo:"todos" con
+// horarios distintos por grupo). Con "todos" seleccionado se muestran las
+// dos fechas juntas porque no hay una sola fecha "correcta" que mostrar.
+function resolverFechaItem(valorFecha) {
+  if (typeof valorFecha === "string") return formatearFecha(valorFecha);
+
+  if (grupoActual === "3C" || grupoActual === "3E") return formatearFecha(valorFecha[grupoActual]);
+
+  return "3°C: " + formatearFecha(valorFecha["3C"]) + " · 3°E: " + formatearFecha(valorFecha["3E"]);
+}
+
 function crearBadgeGrupo(grupo) {
   const span = document.createElement("span");
   span.className = "badge-grupo";
@@ -3645,7 +3658,7 @@ async function renderizarTareas() {
 
       const fecha = document.createElement("p");
       fecha.className = "tarjeta__fecha";
-      fecha.textContent = "Entrega: " + formatearFecha(item.fechaEntrega);
+      fecha.textContent = "Entrega: " + resolverFechaItem(item.fechaEntrega);
 
       const meta = document.createElement("div");
       meta.className = "tarjeta__meta";
@@ -3787,7 +3800,7 @@ async function renderizarActividades() {
 
       const fecha = document.createElement("p");
       fecha.className = "tarjeta__fecha";
-      fecha.textContent = "Fecha: " + formatearFecha(item.fecha);
+      fecha.textContent = "Fecha: " + resolverFechaItem(item.fecha);
 
       const iconoTarjeta = document.createElement("span");
       iconoTarjeta.className = "tarjeta-actividad__icono";
@@ -3945,7 +3958,7 @@ async function renderizarProyectos() {
 
       const fecha = document.createElement("p");
       fecha.className = "tarjeta__fecha";
-      fecha.textContent = "Entrega final: " + formatearFecha(item.fechaEntrega);
+      fecha.textContent = "Entrega final: " + resolverFechaItem(item.fechaEntrega);
 
       const iconoTarjeta = document.createElement("span");
       iconoTarjeta.className = "tarjeta-proyecto__icono";
