@@ -2468,6 +2468,11 @@ const DATOS_TEMARIO = {
       titulo: "¿Qué relación existe entre la IA, el Machine Learning y los asistentes virtuales?",
       descripcion: "Relación entre inteligencia artificial, machine learning y asistentes virtuales.",
       imagen: "assets/temario/t1-seq1-tema1.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> La IA es el concepto general; el Machine Learning es cómo la IA "aprende" de datos; los asistentes virtuales son un ejemplo de IA aplicada.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Entender esto te ayuda a distinguir cuándo algo "es IA de verdad" y cuándo solo sigue reglas fijas.</p>
+        <p>💡 <strong>Dato curioso:</strong> El término "Inteligencia Artificial" se usó por primera vez en 1956, ¡mucho antes de que existieran los celulares!</p>
+      `,
     },
     {
       id: "tm1-2",
@@ -2475,6 +2480,11 @@ const DATOS_TEMARIO = {
       titulo: "¿Qué tan inteligente es tu asistente virtual?",
       descripcion: "Uso cotidiano de asistentes virtuales como Siri, Alexa y Google Assistant.",
       imagen: "assets/temario/t1-seq1-tema2.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo Siri, Alexa o Google Assistant entienden lo que les dices y responden.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Los usas todos los días sin darte cuenta de cómo "piensan" (o no piensan) realmente.</p>
+        <p>💡 <strong>Dato curioso:</strong> Estos asistentes no "entienden" como humanos: buscan patrones de palabras para adivinar qué quieres.</p>
+      `,
     },
     {
       id: "tm1-3",
@@ -2482,6 +2492,11 @@ const DATOS_TEMARIO = {
       titulo: "Explorando la IA conversacional",
       descripcion: "Chatbots y procesamiento de lenguaje natural (NLP).",
       imagen: "assets/temario/t1-seq1-tema3.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Qué es un chatbot y cómo el Procesamiento de Lenguaje Natural (NLP) le permite entender texto.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Los chatbots de atención a clientes, videojuegos o apps educativas funcionan así.</p>
+        <p>💡 <strong>Dato curioso:</strong> El primer chatbot de la historia se llamó ELIZA y se creó en 1966; simulaba ser un psicólogo.</p>
+      `,
     },
     {
       id: "tm1-4",
@@ -2489,6 +2504,11 @@ const DATOS_TEMARIO = {
       titulo: "Creando tu propio chatbot",
       descripcion: "Diseño de chatbots simples y el papel de la IA en la creatividad y el diseño.",
       imagen: "assets/temario/t1-seq1-tema4.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo se diseña la lógica de conversación de un chatbot (árbol de decisiones) y el papel de la IA en la creatividad.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Vas a construir el tuyo en papel — aquí entiendes la lógica antes de hacerlo.</p>
+        <p>💡 <strong>Dato curioso:</strong> Muchos chatbots "simples" en realidad no usan IA: solo siguen un árbol de opciones, como un menú telefónico.</p>
+      `,
     },
 
     // ===== SECUENCIA 2 — REALIDAD VIRTUAL (p. 31) =====
@@ -2498,6 +2518,11 @@ const DATOS_TEMARIO = {
       titulo: "Del papel a la inmersión: cómo se crean los mundos virtuales",
       descripcion: "Diseño de entornos 3D y motores de renderizado.",
       imagen: "assets/temario/t1-seq2-tema1.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Los pasos para diseñar un entorno 3D, desde la idea hasta que se ve en pantalla.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Así se hacen los videojuegos y simuladores que usas o has visto.</p>
+        <p>💡 <strong>Dato curioso:</strong> Crear un solo escenario 3D realista puede tomarle a un equipo de diseñadores varias semanas.</p>
+      `,
     },
     {
       id: "tm1-6",
@@ -2505,6 +2530,11 @@ const DATOS_TEMARIO = {
       titulo: "Realidad aumentada vs. realidad virtual",
       descripcion: "Diferencias entre AR y VR, con aplicaciones educativas y lúdicas.",
       imagen: "assets/temario/t1-seq2-tema2.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> La diferencia entre AR (agrega cosas a tu mundo real) y VR (te mete a un mundo totalmente digital).</p>
+        <p>🔍 <strong>Por qué importa:</strong> Filtros de Instagram/Snapchat son AR; unos lentes VR te llevan a otro mundo.</p>
+        <p>💡 <strong>Dato curioso:</strong> Pokémon GO fue uno de los primeros juegos de AR en volverse famoso mundialmente, en 2016.</p>
+      `,
     },
     {
       id: "tm1-7",
@@ -2512,6 +2542,11 @@ const DATOS_TEMARIO = {
       titulo: "Explorando el metaverso",
       descripcion: "Construcción de experiencias interactivas en mundos virtuales colaborativos.",
       imagen: "assets/temario/t1-seq2-tema3.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Qué es el metaverso y cómo varias personas pueden compartir un mundo virtual.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Es la base de espacios digitales colaborativos que ya existen (juegos, reuniones virtuales).</p>
+        <p>💡 <strong>Dato curioso:</strong> La palabra "metaverso" viene de una novela de ciencia ficción de 1992 llamada Snow Crash.</p>
+      `,
     },
 
     // ===== SECUENCIA 3 — ROBÓTICA (p. 51) =====
@@ -2521,6 +2556,11 @@ const DATOS_TEMARIO = {
       titulo: "Evaluación de sistemas tecnológicos a través de la robótica",
       descripcion: "Análisis crítico de sistemas robóticos.",
       imagen: "assets/temario/t1-seq3-tema1.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo analizar un sistema robótico con criterio técnico (qué hace bien, qué le falta).</p>
+        <p>🔍 <strong>Por qué importa:</strong> Te prepara para pensar como ingeniero antes de diseñar tu propio robot.</p>
+        <p>💡 <strong>Dato curioso:</strong> La palabra "robot" viene del checo robota, que significa "trabajo forzado" — apareció en una obra de teatro de 1920.</p>
+      `,
     },
     {
       id: "tm1-9",
@@ -2528,6 +2568,11 @@ const DATOS_TEMARIO = {
       titulo: "¿Qué relación existe entre robótica, IA y automatización?",
       descripcion: "Relación entre robótica, inteligencia artificial y automatización.",
       imagen: "assets/temario/t1-seq3-tema2.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo estos tres conceptos se combinan: la robótica es el "cuerpo", la IA la "mente", la automatización el resultado.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Fábricas, drones y electrodomésticos inteligentes usan esta combinación.</p>
+        <p>💡 <strong>Dato curioso:</strong> No todo robot tiene IA: muchos robots de fábrica solo repiten el mismo movimiento sin "pensar" nada.</p>
+      `,
     },
     {
       id: "tm1-10",
@@ -2535,6 +2580,11 @@ const DATOS_TEMARIO = {
       titulo: "De la idea al movimiento: programando un robot desde cero",
       descripcion: "Programación básica de robots con bloques o código.",
       imagen: "assets/temario/t1-seq3-tema3.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Los pasos básicos para programar el comportamiento de un robot (con bloques o código simple).</p>
+        <p>🔍 <strong>Por qué importa:</strong> Es la base de cómo se mueven los robots reales, aunque tú lo hagas en papel.</p>
+        <p>💡 <strong>Dato curioso:</strong> Los brazos robóticos que arman coches pueden repetir un movimiento con precisión de fracciones de milímetro.</p>
+      `,
     },
     {
       id: "tm1-11",
@@ -2542,6 +2592,11 @@ const DATOS_TEMARIO = {
       titulo: "Robots en acción: automatización y toma de decisiones",
       descripcion: "Sensores, actuadores y lógica de decisiones.",
       imagen: "assets/temario/t1-seq3-tema4.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo un robot usa sensores para "sentir" su entorno y actuadores para "actuar" según lo que detecta.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Así funciona una aspiradora robot, un semáforo inteligente o una alarma.</p>
+        <p>💡 <strong>Dato curioso:</strong> Una aspiradora robot puede usar hasta 3 tipos distintos de sensores solo para no caerse de las escaleras.</p>
+      `,
     },
     {
       id: "tm1-12",
@@ -2549,6 +2604,11 @@ const DATOS_TEMARIO = {
       titulo: "Diseña tu robot ideal",
       descripcion: "Desafíos de creatividad y tecnología en el diseño de un robot.",
       imagen: "assets/temario/t1-seq3-tema5.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> A aplicar todo lo anterior para crear tu propio diseño de robot que resuelva un problema real.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Es tu proyecto final de la secuencia — aquí conectas todo lo aprendido.</p>
+        <p>💡 <strong>Dato curioso:</strong> Muchos inventos robóticos reales (como el Roomba) nacieron de resolver un problema doméstico simple, igual que el tuyo.</p>
+      `,
     },
   ],
   2: [
@@ -2559,6 +2619,11 @@ const DATOS_TEMARIO = {
       titulo: "¿Qué es la ciencia de datos?",
       descripcion: "Qué son los datos, tipos de datos (numéricos, categóricos, temporales, geoespaciales) y cómo se convierten en información útil.",
       imagen: "assets/temario/t2-seq4-tema1.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Qué son los datos (numéricos, categóricos, temporales, geoespaciales) y cómo se convierten en información útil.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Todo lo que haces en tu celular genera datos que alguien más analiza.</p>
+        <p>💡 <strong>Dato curioso:</strong> Cada minuto se generan más de 500 horas de video nuevo en YouTube — puros datos por procesar.</p>
+      `,
     },
     {
       id: "tm2-2",
@@ -2566,6 +2631,11 @@ const DATOS_TEMARIO = {
       titulo: "Algoritmos y decisiones",
       descripcion: "Cómo los algoritmos de recomendación (redes sociales, streaming) influyen en lo que vemos y compramos, y qué son los sesgos algorítmicos.",
       imagen: "assets/temario/t2-seq4-tema2.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo los algoritmos de recomendación deciden qué ves en redes sociales o streaming, y qué son los sesgos algorítmicos.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Si no entiendes cómo funcionan, crees que "eliges" libremente lo que en realidad te muestran.</p>
+        <p>💡 <strong>Dato curioso:</strong> A esto se le llama "filtro burbuja": entre más le das like a un tema, menos ves de los demás — puedes acabar viendo solo un lado del mundo.</p>
+      `,
     },
     {
       id: "tm2-3",
@@ -2573,6 +2643,11 @@ const DATOS_TEMARIO = {
       titulo: "Visualizando datos",
       descripcion: "Cómo convertir datos en gráficas e infografías que cuenten una historia clara.",
       imagen: "assets/temario/t2-seq4-tema3.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo convertir números en gráficas e infografías que cuenten una historia clara de un vistazo.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Una buena gráfica comunica en segundos lo que una tabla de 50 filas no logra explicar.</p>
+        <p>💡 <strong>Dato curioso:</strong> Una tabla con demasiados números "nadie la lee" — pero la misma información en una gráfica de barras se entiende en 3 segundos.</p>
+      `,
     },
 
     // ===== SECUENCIA 5 — HOJAS DE CÁLCULO =====
@@ -2582,6 +2657,11 @@ const DATOS_TEMARIO = {
       titulo: "Primeros pasos en Excel",
       descripcion: "Celdas, filas, columnas, tipos de datos y formato básico.",
       imagen: "assets/temario/t2-seq5-tema1.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Qué son celdas, filas, columnas, tipos de datos y cómo dar formato básico a una hoja.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Es la herramienta que más se usa en oficinas, negocios y hasta para llevar las cuentas de la casa.</p>
+        <p>💡 <strong>Dato curioso:</strong> Excel existe desde 1985 — ¡tiene más de 40 años y sigue siendo la hoja de cálculo más usada del mundo!</p>
+      `,
     },
     {
       id: "tm2-5",
@@ -2589,6 +2669,11 @@ const DATOS_TEMARIO = {
       titulo: "Fórmulas y funciones",
       descripcion: "SUMA, PROMEDIO, CONTAR y otras funciones para analizar datos.",
       imagen: "assets/temario/t2-seq5-tema2.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> A usar SUMA, PROMEDIO, CONTAR y otras funciones para analizar datos automáticamente.</p>
+        <p>🔍 <strong>Por qué importa:</strong> En vez de sumar a mano 100 números, una fórmula lo hace en un segundo y sin errores.</p>
+        <p>💡 <strong>Dato curioso:</strong> Excel tiene más de 450 funciones distintas — en la secundaria usarás apenas un puñado de las más útiles.</p>
+      `,
     },
     {
       id: "tm2-6",
@@ -2596,6 +2681,11 @@ const DATOS_TEMARIO = {
       titulo: "Gráficos e infografías",
       descripcion: "Cómo representar datos visualmente para tomar mejores decisiones.",
       imagen: "assets/temario/t2-seq5-tema3.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo representar tus datos visualmente para tomar mejores decisiones.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Convertir una tabla aburrida en una gráfica clara ayuda a explicar tus ideas a cualquier persona.</p>
+        <p>💡 <strong>Dato curioso:</strong> Combinar datos con buen diseño es exactamente lo que hacen los periódicos y noticieros para explicar estadísticas.</p>
+      `,
     },
 
     // ===== SECUENCIA 6 — SEGURIDAD DIGITAL =====
@@ -2605,6 +2695,11 @@ const DATOS_TEMARIO = {
       titulo: "Identidad digital y ciberataques",
       descripcion: "Phishing, robo de identidad y huella digital.",
       imagen: "assets/temario/t2-seq6-tema1.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Qué es el phishing, el robo de identidad y tu "huella digital" (todo lo que compartes en línea).</p>
+        <p>🔍 <strong>Por qué importa:</strong> Todos dejamos rastro en internet sin darnos cuenta; saber identificarlo te protege.</p>
+        <p>💡 <strong>Dato curioso:</strong> El virus "ILOVEYOU" del año 2000 llegaba como un correo de amor y logró infectar 50 millones de computadoras en todo el mundo.</p>
+      `,
     },
     {
       id: "tm2-8",
@@ -2612,6 +2707,11 @@ const DATOS_TEMARIO = {
       titulo: "Contraseñas y cifrado",
       descripcion: "Cómo crear contraseñas seguras y proteger información personal.",
       imagen: "assets/temario/t2-seq6-tema2.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo crear contraseñas realmente seguras y la idea básica de cómo funciona el cifrado.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Una contraseña débil es como dejar la puerta de tu casa sin llave.</p>
+        <p>💡 <strong>Dato curioso:</strong> Con cifrado, aunque un hacker robe tu mensaje, solo ve símbolos sin sentido — sin la clave correcta, es inútil para él.</p>
+      `,
     },
     {
       id: "tm2-9",
@@ -2619,6 +2719,11 @@ const DATOS_TEMARIO = {
       titulo: "Casos históricos de ciberataques",
       descripcion: "Ejemplos reales (como WannaCry) para aprender a prevenir ataques.",
       imagen: "assets/temario/t2-seq6-tema3.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Ejemplos reales (como WannaCry) para entender cómo ocurren los ataques y cómo prevenirlos.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Aprender de casos reales te enseña a reconocer señales de peligro antes de que te pase a ti.</p>
+        <p>💡 <strong>Dato curioso:</strong> El ataque WannaCry de 2017 "secuestró" archivos de hospitales en 150 países y pedía pago en bitcoins para liberarlos.</p>
+      `,
     },
   ],
   3: [
@@ -2629,6 +2734,11 @@ const DATOS_TEMARIO = {
       titulo: "Soluciones Digitales",
       descripcion: "Pensamiento computacional y descomposición de problemas cotidianos en algoritmos.",
       imagen: "assets/temario/t3-seq7-tema1.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Qué es una solución digital y cómo el pensamiento computacional descompone un problema cotidiano en pasos ordenados (algoritmo).</p>
+        <p>🔍 <strong>Por qué importa:</strong> Toda app o sistema que usas nació de alguien "descomponiendo" un problema real en pasos simples.</p>
+        <p>💡 <strong>Dato curioso:</strong> Apps como las de transporte o alertas sísmicas empezaron como un problema cotidiano que alguien decidió resolver paso a paso.</p>
+      `,
     },
     {
       id: "tm3-2",
@@ -2636,6 +2746,11 @@ const DATOS_TEMARIO = {
       titulo: "Abstracción y reconocimiento de patrones",
       descripcion: "Cómo simplificar problemas complejos identificando solo lo esencial y detectar patrones para automatizar soluciones, con ejemplos cotidianos como rutas de camiones o el horario de clase.",
       imagen: "assets/temario/t3-seq7-tema2.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo simplificar un problema complejo quedándote solo con lo esencial, y cómo detectar patrones para automatizar soluciones.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Reconocer patrones (como rutas de camiones o el horario de clases) es la base para crear sistemas que se anticipen a lo que necesitas.</p>
+        <p>💡 <strong>Dato curioso:</strong> Google Maps predice el tráfico analizando patrones de miles de viajes anteriores, no adivinando al azar.</p>
+      `,
     },
     {
       id: "tm3-3",
@@ -2643,6 +2758,11 @@ const DATOS_TEMARIO = {
       titulo: "Programación con propósito social",
       descripcion: "La programación como herramienta para resolver problemas reales; el hackatón como metodología de innovación rápida y ejemplos de apps que mejoran la vida cotidiana.",
       imagen: "assets/temario/t3-seq7-tema3.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Que programar no es solo escribir código: es resolver problemas reales, y qué es un hackatón como forma de innovar rápido.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Las mejores apps no nacen de la tecnología más avanzada, sino de entender bien un problema humano.</p>
+        <p>💡 <strong>Dato curioso:</strong> WhatsApp, Uber y Airbnb comenzaron como prototipos muy simples que resolvían un solo problema puntual.</p>
+      `,
     },
 
     // ===== SECUENCIA 8 — DISEÑO WEB =====
@@ -2652,6 +2772,11 @@ const DATOS_TEMARIO = {
       titulo: "Diseño Web",
       descripcion: "Lógica de las páginas web con HTML y CSS básico para un portafolio digital propio.",
       imagen: "assets/temario/t3-seq8-tema1.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> La lógica detrás de una página web con HTML (estructura) y CSS (estilo) básico, para construir tu propio portafolio digital.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Con estas dos herramientas puedes crear tu primera página web real, aunque sea sencilla.</p>
+        <p>💡 <strong>Dato curioso:</strong> HTML tiene más de 30 años (creado en 1991) y sigue siendo la base de absolutamente todas las páginas web que visitas.</p>
+      `,
     },
     {
       id: "tm3-5",
@@ -2659,6 +2784,11 @@ const DATOS_TEMARIO = {
       titulo: "UX/UI y arquitectura de la información",
       descripcion: "Cómo navegan los usuarios un sitio web: jerarquía visual, mapas de navegación y wireframes, con ejemplos de buena y mala usabilidad y el principio de 'usuario primero'.",
       imagen: "assets/temario/t3-seq8-tema2.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo se organiza un sitio para que cualquier persona lo entienda fácil: jerarquía visual, mapas de navegación y wireframes.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Un sitio mal organizado hace que la gente se vaya en segundos, sin importar qué tan bonito se vea.</p>
+        <p>💡 <strong>Dato curioso:</strong> El principio "usuario primero" significa diseñar pensando en cómo navega la gente, no en lo que al diseñador le gusta ver.</p>
+      `,
     },
     {
       id: "tm3-6",
@@ -2666,6 +2796,11 @@ const DATOS_TEMARIO = {
       titulo: "Sitios estáticos vs. dinámicos",
       descripcion: "Diferencia entre sitios que solo muestran información y sitios que responden al usuario, y el papel de JavaScript para dar interactividad a la web.",
       imagen: "assets/temario/t3-seq8-tema3.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> La diferencia entre un sitio que solo muestra información y uno que responde a lo que haces (gracias a JavaScript).</p>
+        <p>🔍 <strong>Por qué importa:</strong> Explica por qué unas páginas solo se leen y otras te dejan dar clic, escribir o jugar.</p>
+        <p>💡 <strong>Dato curioso:</strong> JavaScript se creó en apenas 10 días en 1995 — hoy es uno de los lenguajes más usados del mundo.</p>
+      `,
     },
 
     // ===== SECUENCIA 9 — PROTOTIPOS IOT =====
@@ -2675,6 +2810,11 @@ const DATOS_TEMARIO = {
       titulo: "Prototipos Tecnológicos e IoT",
       descripcion: "Design thinking, MVP e Internet de las Cosas para presentar un prototipo.",
       imagen: "assets/temario/t3-seq9-tema1.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Qué es el design thinking, un MVP (producto mínimo viable) y el Internet de las Cosas (IoT).</p>
+        <p>🔍 <strong>Por qué importa:</strong> Así se crean los primeros prototipos de cualquier invento, antes de gastar en la versión final.</p>
+        <p>💡 <strong>Dato curioso:</strong> Muchas startups famosas empezaron probando un MVP muy simple antes de convertirse en las apps que conoces hoy.</p>
+      `,
     },
     {
       id: "tm3-8",
@@ -2682,6 +2822,11 @@ const DATOS_TEMARIO = {
       titulo: "Sensores, actuadores y dispositivos conectados",
       descripcion: "Cómo los dispositivos IoT 'sienten' el mundo con sensores y 'actúan' sobre él con actuadores, con ejemplos cotidianos como termostatos inteligentes o riego automático.",
       imagen: "assets/temario/t3-seq9-tema2.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo un dispositivo IoT "siente" el mundo con sensores y "actúa" sobre él con actuadores.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Así funcionan objetos que ya usas: termostatos inteligentes, riego automático, focos que se prenden solos.</p>
+        <p>💡 <strong>Dato curioso:</strong> Una pulsera de actividad física puede tener hasta 5 sensores distintos trabajando al mismo tiempo sin que lo notes.</p>
+      `,
     },
     {
       id: "tm3-9",
@@ -2689,6 +2834,11 @@ const DATOS_TEMARIO = {
       titulo: "Pitch, iteración y mejora continua",
       descripcion: "El ciclo de iteración (probar → recibir feedback → ajustar → volver a probar), cómo practicar un pitch de 3 minutos, y casos de éxito que empezaron como prototipos simples.",
       imagen: "assets/temario/t3-seq9-tema3.png",
+      detalleTemario: `
+        <p>🎯 <strong>Qué vas a aprender:</strong> Que ningún prototipo queda "terminado" a la primera: se prueba, se recibe feedback, se ajusta y se vuelve a probar. Y cómo dar un pitch de 3 minutos.</p>
+        <p>🔍 <strong>Por qué importa:</strong> Esta es la forma real en que se mejoran los productos tecnológicos, incluso después de lanzarse.</p>
+        <p>💡 <strong>Dato curioso:</strong> Airbnb e Instagram fueron rediseñados varias veces después de su primera versión, gracias a la iteración constante.</p>
+      `,
     },
   ],
 };
@@ -2978,7 +3128,7 @@ function abrirModalDetalle(item) {
   const titulo = document.getElementById("modal-detalle-titulo");
   const contenido = document.getElementById("modal-detalle-contenido");
   titulo.textContent = item.titulo;
-  contenido.innerHTML = item.detalleCompleto || "";
+  contenido.innerHTML = item.detalleCompleto || item.detalleTemario || "";
 
   modal.showModal();
 }
@@ -3177,6 +3327,9 @@ async function renderizarTemario() {
       const descripcion = document.createElement("p");
       descripcion.textContent = item.descripcion;
       info.append(titulo, descripcion);
+      if (item.detalleTemario) {
+        info.appendChild(crearBotonVerDetalle(item));
+      }
 
       tarjeta.append(imagen, info);
       cuadriculaGrupo.appendChild(tarjeta);
@@ -5130,6 +5283,7 @@ document.addEventListener("DOMContentLoaded", () => {
   activarDelegacionVerDetalle("contenedor-tareas");
   activarDelegacionVerDetalle("contenedor-actividades");
   activarDelegacionVerDetalle("contenedor-proyectos");
+  activarDelegacionVerDetalle("contenedor-temario");
   activarCierreModalDetalle();
 
   // El formulario de contacto solo existe en la portada (index.html).
