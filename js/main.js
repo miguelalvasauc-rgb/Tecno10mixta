@@ -1816,6 +1816,7 @@ const DATOS_ACTIVIDADES = {
       titulo: "🔢 Fórmulas en Acción: El Supermercado Escolar",
       descripcion: "Los alumnos aplican fórmulas de Excel a un inventario ficticio de un supermercado escolar.",
       fecha: { "3C": "2027-01-18", "3E": "2027-01-19" },
+      archivoUrl: "https://docs.google.com/spreadsheets/d/1EqV4snRy_KgfvE6qguVY7W-VDL3eZ53v5XC-e7r5ZfY/edit?usp=sharing",
       detalleCompleto: `
         <p>👥 Modalidad: Individual, en taller de cómputo | ⏱️ Duración: 40 min</p>
         <ul>
@@ -1836,6 +1837,7 @@ const DATOS_ACTIVIDADES = {
       titulo: "🎨 Diseñando mi Primera Infografía en Excel",
       descripcion: "En equipos, los alumnos crean gráficas a partir de una encuesta y las maquetan como infografía en Excel.",
       fecha: { "3C": "2027-01-26", "3E": "2027-01-27" },
+      archivoUrl: "https://docs.google.com/spreadsheets/d/1rr9-Lvssi0IuZ-G67hxGlrL9hDOKNK7G506cRFE0JB0/edit?usp=sharing",
       detalleCompleto: `
         <p>👥 Modalidad: Equipos de 3, en taller de cómputo | ⏱️ Duración: 45 min</p>
         <ul>
@@ -1996,6 +1998,7 @@ const DATOS_ACTIVIDADES = {
       titulo: "💻 Mi Primera Página en Bloc de Notas",
       descripcion: "Los alumnos escriben su primera página HTML en el bloc de notas y la abren en el navegador.",
       fecha: { "3C": "2027-05-04", "3E": "2027-05-04" },
+      archivoUrl: "https://drive.google.com/file/d/1jRlIHCxdPugtJcY5-Lz18X09zuORlemE/view?usp=sharing",
       detalleCompleto: `
         <p>👥 Modalidad: Individual, en taller de cómputo | ⏱️ Duración: 40 min</p>
         <ul>
@@ -2154,6 +2157,7 @@ const DATOS_PROYECTOS = {
       descripcion: "Diseño individual de un robot que resuelve un problema social de la comunidad.",
       avance: 0,
       fechaEntrega: { "3C": "2026-11-10", "3E": "2026-11-11" },
+      materialApoyoUrl: "https://drive.google.com/file/d/19fNmLqA3piGtxKcgPKGt3E0AVkhWyGwW/view?usp=sharing",
       detalleCompleto: `
         <p>⏱️ Tiempo: 5 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre compañeros)</p>
         <p>Cada alumno diseñará un robot completo en papel/cartulina que resuelva un problema social real de su comunidad: asistente para personas con discapacidad visual, recolector de basura en ríos y playas, enfermero para comunidades rurales, agrícola para pequeños campesinos, de limpieza para la escuela, o de búsqueda y rescate en desastres naturales.</p>
@@ -2205,6 +2209,7 @@ const DATOS_PROYECTOS = {
       descripcion: "Cada alumno crea una hoja de cálculo en Excel que resuelve un problema real de toma de decisiones en su vida escolar o familiar.",
       avance: 0,
       fechaEntrega: { "3C": "2027-02-02", "3E": "2027-02-02" },
+      materialApoyoUrl: "https://docs.google.com/spreadsheets/d/1WJdm70e8AbrAjy1WPuxqrkPREjTP0zB5hD9ZqYHPkj4/edit?usp=sharing",
       detalleCompleto: `
         <p>⏱️ Tiempo: 4 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
         <p>El alumno elige uno de estos enfoques: planificador de estudio, control de gastos familiares, o comparador de calificaciones.</p>
@@ -2300,6 +2305,7 @@ const DATOS_PROYECTOS = {
       descripcion: "Cada alumno diseña un prototipo tecnológico completo en papel que integra pensamiento computacional, análisis de datos y tecnologías emergentes (IA, VR o robótica).",
       avance: 0,
       fechaEntrega: { "3C": "2027-06-29", "3E": "2027-06-30" },
+      materialApoyoUrl: "https://drive.google.com/file/d/1CBvwXJX9mIoYs0HPDhEsnxPySFdcppBX/view?usp=sharing",
       detalleCompleto: `
         <p>⏱️ Tiempo: 5 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
         <p>El alumno elige un propósito: dispositivo de salud conectado, sistema ecológico inteligente, asistente educativo virtual, hogar conectado accesible, agricultura inteligente, o sistema de emergencias comunitarias.</p>
