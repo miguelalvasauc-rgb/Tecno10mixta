@@ -2854,6 +2854,51 @@ summary:focus-visible {
   }
 }
 
+/* ---------- Horario de clases ---------- */
+.horario-contenedor {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.horario-grupo {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  padding: 1.25rem;
+  box-shadow: var(--sombra);
+}
+
+.horario-grupo__titulo {
+  margin: 0 0 0.75rem;
+  color: var(--color-turquesa);
+}
+
+.tabla-horario {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabla-horario th,
+.tabla-horario td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.tabla-horario thead th {
+  color: var(--color-texto-suave);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+}
+
+.tabla-horario tbody tr:last-child td {
+  border-bottom: none;
+}
+
 .entrega__nota {
   margin: 0.6rem 0 0;
   font-size: 0.8rem;

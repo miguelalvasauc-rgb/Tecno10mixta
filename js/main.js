@@ -67,6 +67,15 @@ const DATOS_EVENTOS = [
   { id: "e5", grupo: "todos", titulo: "Entrega final de proyectos", fecha: "2026-08-14" },
 ];
 
+// Horario de clases de Educación Tecnológica por grupo.
+const DATOS_HORARIO = [
+  { id: "h1", grupo: "3C", dia: "Lunes", horaInicio: "11:40", horaFin: "1:20 pm" },
+  { id: "h2", grupo: "3C", dia: "Martes", horaInicio: "12:30", horaFin: "1:20 pm" },
+  { id: "h3", grupo: "3E", dia: "Martes", horaInicio: "7:00", horaFin: "7:50 am" },
+  { id: "h4", grupo: "3E", dia: "Martes", horaInicio: "10:50", horaFin: "11:40 am" },
+  { id: "h5", grupo: "3E", dia: "Miércoles", horaInicio: "7:00", horaFin: "7:50 am" },
+];
+
 // Calendario oficial del ciclo escolar SEP 2026-2027 (agosto 2026 a julio
 // 2027): "tipo de día" del ciclo (vacaciones, CTE, suspensión, etc.), un
 // concepto DISTINTO de DATOS_EVENTOS/TAREAS/ACTIVIDADES/PROYECTOS (eso es
@@ -2886,6 +2895,10 @@ async function obtenerEventos() {
   return DATOS_EVENTOS;
 }
 
+async function obtenerHorario() {
+  return DATOS_HORARIO;
+}
+
 // Estas funciones sí reciben el trimestre (1, 2 o 3). Cuando se conecte
 // Google Sheets, lo natural es que cada trimestre lea de su propia hoja,
 // por ejemplo:
@@ -3221,6 +3234,53 @@ function activarCierreModalDetalle() {
 // para la portada (avisos y calendario) como para las páginas de
 // trimestre (rúbricas, tareas, actividades, proyectos y videos)
 // sin necesidad de duplicar el script.
+
+async function renderizarHorario() {
+  const contenedor = document.getElementById("contenedor-horario");
+  if (!contenedor) return;
+
+  const datos = (await obtenerHorario()).filter(elementoCoincideConGrupo);
+
+  if (datos.length === 0) {
+    mostrarSinResultados(contenedor, "No hay horario registrado para este grupo.");
+    return;
+  }
+
+  const grupos = new Map();
+  datos.forEach((item) => {
+    if (!grupos.has(item.grupo)) grupos.set(item.grupo, []);
+    grupos.get(item.grupo).push(item);
+  });
+
+  contenedor.innerHTML = "";
+  grupos.forEach((itemsDelGrupo, grupo) => {
+    const bloque = document.createElement("div");
+    bloque.className = "horario-grupo";
+
+    const titulo = document.createElement("h3");
+    titulo.className = "horario-grupo__titulo";
+    titulo.textContent = textoGrupo(grupo);
+    bloque.appendChild(titulo);
+
+    const tabla = document.createElement("table");
+    tabla.className = "tabla-horario";
+    tabla.innerHTML = "<thead><tr><th>Día</th><th>Horario</th></tr></thead>";
+
+    const tbody = document.createElement("tbody");
+    itemsDelGrupo.forEach((item) => {
+      const tr = document.createElement("tr");
+      const tdDia = document.createElement("td");
+      tdDia.textContent = item.dia;
+      const tdHora = document.createElement("td");
+      tdHora.textContent = item.horaInicio + " – " + item.horaFin;
+      tr.append(tdDia, tdHora);
+      tbody.appendChild(tr);
+    });
+    tabla.appendChild(tbody);
+    bloque.appendChild(tabla);
+    contenedor.appendChild(bloque);
+  });
+}
 
 async function renderizarAvisos() {
   const contenedor = document.getElementById("contenedor-avisos");
@@ -5073,6 +5133,7 @@ function activarResaltadoDeNavegacion() {
 async function renderizarTodo() {
   await Promise.all([
     renderizarAvisos(),
+    renderizarHorario(),
     renderizarCalendario(),
     renderizarTemario(),
     renderizarRubricas(),
