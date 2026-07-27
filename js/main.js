@@ -4002,6 +4002,9 @@ async function renderizarProyectos() {
       textoAvance.textContent = "Avance: " + avanceMostrado + "%";
 
       tarjeta.append(descripcion, barra, textoAvance);
+      if (item.materialApoyoUrl) {
+        tarjeta.appendChild(crearEnlaceDescarga(item.materialApoyoUrl, "📎 Material de apoyo"));
+      }
       if (item.detalleCompleto) {
         tarjeta.appendChild(crearBotonVerDetalle(item));
       }
