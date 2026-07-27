@@ -2951,6 +2951,8 @@ let grupoActual = localStorage.getItem(CLAVE_GRUPO) || "todos";
 let temaActual = localStorage.getItem(CLAVE_TEMA) || "oscuro";
 
 const CLAVE_SIDEBAR_COLAPSADA = "sidebarColapsada";
+const CLAVE_SUBMENU_INICIO = "submenuInicioExpandido";
+const CLAVE_SUBMENU_TRIMESTRE = "submenuTrimestreExpandido";
 
 // Preferencia de sidebar colapsada/expandida (desktop ≥1024px). Se lee
 // y se aplica aquí mismo, en código de nivel superior que corre antes
@@ -4908,6 +4910,29 @@ function alternarSidebarColapsada() {
   aplicarEstadoSidebarColapsada(sidebarColapsada);
 }
 
+function aplicarEstadoSubmenu(grupo, expandido) {
+  const boton = document.querySelector('.barra-lateral__nav-toggle[data-grupo="' + grupo + '"]');
+  const submenu = document.getElementById("submenu-" + grupo);
+  if (!boton || !submenu) return;
+  boton.setAttribute("aria-expanded", String(expandido));
+  submenu.hidden = !expandido;
+}
+
+function activarSubmenusSidebar() {
+  ["inicio", "trimestre"].forEach((grupo) => {
+    const clave = grupo === "inicio" ? CLAVE_SUBMENU_INICIO : CLAVE_SUBMENU_TRIMESTRE;
+    aplicarEstadoSubmenu(grupo, localStorage.getItem(clave) === "true");
+
+    const boton = document.querySelector('.barra-lateral__nav-toggle[data-grupo="' + grupo + '"]');
+    if (!boton) return;
+    boton.addEventListener("click", () => {
+      const nuevoEstado = boton.getAttribute("aria-expanded") !== "true";
+      localStorage.setItem(clave, String(nuevoEstado));
+      aplicarEstadoSubmenu(grupo, nuevoEstado);
+    });
+  });
+}
+
 // Los 7 enlaces de la barra lateral que apuntan a secciones dentro de una
 // página de trimestre (identificados por data-enlace en el HTML). En una
 // página de trimestre ya son anclas locales ("#temario") y no se tocan;
@@ -4934,6 +4959,13 @@ function actualizarEnlacesTrimestreEnSidebar() {
     const enlace = nav.querySelector('[data-enlace="' + id + '"]');
     if (enlace) enlace.href = "trimestre-" + ultimoTrimestreVisto + ".html#" + id;
   });
+
+  const textoTrimestre = nav.querySelector("[data-texto-trimestre]");
+  if (textoTrimestre) {
+    textoTrimestre.textContent = "Trimestre " + ultimoTrimestreVisto;
+    const enlacePadre = textoTrimestre.closest("a");
+    if (enlacePadre) enlacePadre.href = "trimestre-" + ultimoTrimestreVisto + ".html";
+  }
 }
 
 // Marca cada .tarjeta-trimestre de la portada como "finalizado", "actual"
@@ -5518,6 +5550,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   activarModalGrupo();
   activarModalPerfil();
+  activarSubmenusSidebar();
   activarResaltadoDeNavegacion();
   activarBotonVolverArriba();
   activarBannerExamenDiagnostico();

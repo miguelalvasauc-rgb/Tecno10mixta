@@ -40,49 +40,101 @@
          último trimestre visto (ver actualizarEnlacesTrimestreEnSidebar
          en js/main.js), porque esas secciones no existen en la portada. -->
     <nav id="nav-principal" class="barra-lateral__nav" aria-label="Secciones">
-      <a href="#inicio">
-        <span class="barra-lateral__nav-icono" aria-hidden="true">🏠</span>
-        <span class="barra-lateral__nav-texto">Inicio</span>
-      </a>
-      <a href="trimestre-1.html#temario" data-enlace="temario">
-        <span class="barra-lateral__nav-icono" aria-hidden="true">📘</span>
-        <span class="barra-lateral__nav-texto">Temario</span>
-      </a>
-      <a href="trimestre-1.html#presentaciones" data-enlace="presentaciones">
-        <span class="barra-lateral__nav-icono" aria-hidden="true">📽️</span>
-        <span class="barra-lateral__nav-texto">Presentaciones</span>
-      </a>
-      <a href="trimestre-1.html#rubricas" data-enlace="rubricas">
-        <span class="barra-lateral__nav-icono" aria-hidden="true">📋</span>
-        <span class="barra-lateral__nav-texto">Rúbricas</span>
-      </a>
-      <a href="trimestre-1.html#tareas" data-enlace="tareas">
-        <span class="barra-lateral__nav-icono" aria-hidden="true">📝</span>
-        <span class="barra-lateral__nav-texto">Tareas</span>
-      </a>
-      <a href="trimestre-1.html#actividades" data-enlace="actividades">
-        <span class="barra-lateral__nav-icono" aria-hidden="true">🎯</span>
-        <span class="barra-lateral__nav-texto">Actividades</span>
-      </a>
-      <a href="trimestre-1.html#proyectos" data-enlace="proyectos">
-        <span class="barra-lateral__nav-icono" aria-hidden="true">🚀</span>
-        <span class="barra-lateral__nav-texto">Proyectos</span>
-      </a>
-      <a href="trimestre-1.html#videos" data-enlace="videos">
-        <span class="barra-lateral__nav-icono" aria-hidden="true">🎬</span>
-        <span class="barra-lateral__nav-texto">Videos</span>
-      </a>
-      <a href="trimestre-1.html#entrega" data-enlace="entrega">
-        <span class="barra-lateral__nav-icono" aria-hidden="true">📤</span>
-        <span class="barra-lateral__nav-texto">Entrega de trabajos</span>
-      </a>
-      <a href="faq.html">
+      <div class="barra-lateral__nav-grupo">
+        <div class="barra-lateral__nav-fila">
+          <a href="#inicio" class="barra-lateral__nav-enlace">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">🏠</span>
+            <span class="barra-lateral__nav-texto">Inicio</span>
+          </a>
+          <button type="button" class="barra-lateral__nav-toggle" data-grupo="inicio" aria-expanded="false" aria-controls="submenu-inicio" aria-label="Mostrar secciones de Inicio">
+            <span class="barra-lateral__nav-toggle-icono" aria-hidden="true">▾</span>
+          </button>
+        </div>
+        <div id="submenu-inicio" class="barra-lateral__submenu" hidden>
+          <a href="#avisos">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📢</span>
+            <span class="barra-lateral__nav-texto">Avisos</span>
+          </a>
+          <a href="#calendario">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📅</span>
+            <span class="barra-lateral__nav-texto">Calendario</span>
+          </a>
+          <a href="#perfil-docente">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">👤</span>
+            <span class="barra-lateral__nav-texto">Conoce a tu profesor</span>
+          </a>
+          <a href="#horario-clases">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">🕐</span>
+            <span class="barra-lateral__nav-texto">Horario de clases</span>
+          </a>
+          <a href="#criterios-evaluacion">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📊</span>
+            <span class="barra-lateral__nav-texto">Criterios de evaluación</span>
+          </a>
+          <a href="#reglamento-taller">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📋</span>
+            <span class="barra-lateral__nav-texto">Reglamento</span>
+          </a>
+          <a href="#lista-materiales">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">🎒</span>
+            <span class="barra-lateral__nav-texto">Materiales</span>
+          </a>
+          <a href="#contacto">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📧</span>
+            <span class="barra-lateral__nav-texto">Contacto</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="barra-lateral__nav-grupo">
+        <div class="barra-lateral__nav-fila">
+          <a href="trimestre-1.html" class="barra-lateral__nav-enlace">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📘</span>
+            <span class="barra-lateral__nav-texto" data-texto-trimestre>Trimestre 1</span>
+          </a>
+          <button type="button" class="barra-lateral__nav-toggle" data-grupo="trimestre" aria-expanded="false" aria-controls="submenu-trimestre" aria-label="Mostrar secciones del trimestre">
+            <span class="barra-lateral__nav-toggle-icono" aria-hidden="true">▾</span>
+          </button>
+        </div>
+        <div id="submenu-trimestre" class="barra-lateral__submenu" hidden>
+          <a href="trimestre-1.html#temario" data-enlace="temario">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📘</span>
+            <span class="barra-lateral__nav-texto">Temario</span>
+          </a>
+          <a href="trimestre-1.html#presentaciones" data-enlace="presentaciones">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📽️</span>
+            <span class="barra-lateral__nav-texto">Presentaciones</span>
+          </a>
+          <a href="trimestre-1.html#rubricas" data-enlace="rubricas">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📋</span>
+            <span class="barra-lateral__nav-texto">Rúbricas</span>
+          </a>
+          <a href="trimestre-1.html#tareas" data-enlace="tareas">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📝</span>
+            <span class="barra-lateral__nav-texto">Tareas</span>
+          </a>
+          <a href="trimestre-1.html#actividades" data-enlace="actividades">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">🎯</span>
+            <span class="barra-lateral__nav-texto">Actividades</span>
+          </a>
+          <a href="trimestre-1.html#proyectos" data-enlace="proyectos">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">🚀</span>
+            <span class="barra-lateral__nav-texto">Proyectos</span>
+          </a>
+          <a href="trimestre-1.html#videos" data-enlace="videos">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">🎬</span>
+            <span class="barra-lateral__nav-texto">Videos</span>
+          </a>
+          <a href="trimestre-1.html#entrega" data-enlace="entrega">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📤</span>
+            <span class="barra-lateral__nav-texto">Entrega de trabajos</span>
+          </a>
+        </div>
+      </div>
+
+      <a href="faq.html" class="barra-lateral__nav-enlace-simple">
         <span class="barra-lateral__nav-icono" aria-hidden="true">❓</span>
         <span class="barra-lateral__nav-texto">FAQ</span>
-      </a>
-      <a href="#contacto">
-        <span class="barra-lateral__nav-icono" aria-hidden="true">📧</span>
-        <span class="barra-lateral__nav-texto">Contacto</span>
       </a>
     </nav>
 

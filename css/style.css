@@ -3412,6 +3412,51 @@ summary:focus-visible {
   border-left-color: var(--md-secondary);
 }
 
+.barra-lateral__nav-grupo {
+  display: flex;
+  flex-direction: column;
+}
+
+.barra-lateral__nav-fila {
+  display: flex;
+  align-items: stretch;
+}
+
+.barra-lateral__nav-fila .barra-lateral__nav-enlace,
+.barra-lateral__nav-enlace-simple {
+  flex: 1;
+}
+
+.barra-lateral__nav-toggle {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.barra-lateral__nav-toggle-icono {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.barra-lateral__nav-toggle[aria-expanded="true"] .barra-lateral__nav-toggle-icono {
+  transform: rotate(180deg);
+}
+
+.barra-lateral__submenu {
+  display: flex;
+  flex-direction: column;
+  padding-left: 1.5rem;
+}
+
+.barra-lateral__submenu[hidden] {
+  display: none;
+}
+
 .barra-lateral__tema {
   margin: auto var(--espacio-base) 0;
   justify-content: center;
