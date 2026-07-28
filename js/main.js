@@ -2981,12 +2981,20 @@ if (TRIMESTRE_ACTUAL) {
 // async, pero se lee de forma síncrona en el resto del archivo.
 let perfilActivoCache = null;
 
+// progresoCache guarda las filas {tipo, item_id, trimestre} de la tabla
+// "progreso" de Supabase que pertenecen al alumno con sesión iniciada (el
+// origen real ahora es automático, no un checkbox manual). La puebla
+// sincronizarPerfilActivo() en el mismo momento que perfilActivoCache (ver
+// sección 11) para que ambas cachés estén listas antes del primer render;
+// itemEstaCompletado() la lee de forma síncrona igual que obtenerPerfilActivo().
+let progresoCache = [];
+
 // Registro por alumno (no una bandera global) de quién ya contestó el
 // Examen de Diagnóstico (ver #examen-diagnostico). Es necesario por
 // alumno porque el dispositivo se comparte entre compañeros: si fuera un
 // solo booleano, que el Alumno A lo descarte ocultaría el banner para el
 // Alumno B aunque este no haya contestado nada. La clave de cada alumno
-// reutiliza el mismo formato grupo+nombre que claveProgreso().
+// reutiliza el mismo formato grupo+nombre que usa idAlumnoExamenDiagnostico().
 const CLAVE_EXAMEN_DIAGNOSTICO_POR_ALUMNO = "examenDiagnosticoPorAlumno";
 
 // Mismo Google Form que #enlace-examen-diagnostico en el banner de la
@@ -3067,26 +3075,40 @@ function crearEnlaceInstrucciones(url) {
   return enlace;
 }
 
-// Clave de localStorage para el progreso personal de un ítem (tarea o
-// actividad, según "tipo"): incluye trimestre, tipo e id para que no se
-// mezcle "tarea t1 del Trimestre 1" con "actividad t1" ni con el mismo id
-// en otro trimestre. Si hay una sesión de Supabase activa (ver sección 11
-// y perfilActivoCache), la clave también incluye su grupo y nombre para
-// que cada quien vea su propio checklist aunque compartan equipo; si
-// nadie ha iniciado sesión, cae a una clave "invitado" compartida por el
-// dispositivo (el comportamiento de antes de agregar cuentas).
-// "trimestre" por defecto es el de la página actual; el panel de Progreso
-// de la portada (que no tiene TRIMESTRE_ACTUAL) lo pasa explícito para
-// poder leer el checklist de los 3 trimestres desde ahí.
-function claveProgreso(tipo, id, trimestre) {
+// Fuente real del progreso personal de un ítem (tarea, actividad o
+// proyecto): filas de la tabla "progreso" de Supabase, cacheadas en
+// progresoCache (ver sección 11 y sincronizarPerfilActivo). "trimestre" por
+// defecto es el de la página actual; el panel de Progreso de la portada
+// (que no tiene TRIMESTRE_ACTUAL) lo pasa explícito para poder leer el
+// estado de los 3 trimestres desde ahí. Sin sesión iniciada, progresoCache
+// queda vacío y todo se reporta como no completado.
+function itemEstaCompletado(tipo, id, trimestre) {
   trimestre = trimestre || TRIMESTRE_ACTUAL;
-  const perfil = obtenerPerfilActivo();
-  const base = "progreso_" + (perfil ? perfil.grupo + "_" + slugAlumno(perfil.nombre) : "invitado");
-  return base + "_trimestre" + trimestre + "_" + tipo + "_" + id;
+  return progresoCache.some(
+    (fila) =>
+      fila.tipo === tipo &&
+      String(fila.item_id) === String(id) &&
+      String(fila.trimestre) === String(trimestre)
+  );
 }
 
-function itemEstaCompletado(tipo, id, trimestre) {
-  return localStorage.getItem(claveProgreso(tipo, id, trimestre)) === "true";
+// Fecha límite (ISO, sin formatear) de un ítem para decidir si está
+// vencido: mismo campo por tipo que usa resolverFechaItem (item.fecha para
+// actividades, item.fechaEntrega para tareas/proyectos) y mismo soporte de
+// fecha por grupo ({3C, 3E}) para ítems "todos" con horarios distintos.
+function fechaLimiteISO(tipo, item, grupo) {
+  const valor = tipo === "actividad" ? item.fecha : item.fechaEntrega;
+  if (valor == null) return null;
+  if (typeof valor === "string") return valor;
+  return valor[grupo] || null;
+}
+
+// Vencido = ya pasó el final del día de la fecha límite. Solo tiene
+// sentido para ítems no completados (ver crearChecklistProgreso).
+function itemEstaVencido(tipo, item, grupo) {
+  const iso = fechaLimiteISO(tipo, item, grupo);
+  if (!iso) return false;
+  return new Date(iso + "T23:59:59") < new Date();
 }
 
 // Recalcula "X de Y completadas" y la barra de progreso de una sección
@@ -3537,87 +3559,42 @@ async function renderizarRubricas() {
   });
 }
 
-// Recalcula "X de Y completadas" y la barra de progreso de un grupo de
-// tareas (acordeón por secuencia) in-place, sin volver a renderizar toda
-// la sección, para no cerrar los demás acordeones abiertos por el usuario.
-function actualizarResumenGrupo(detailsGrupo, itemsDelGrupo, tipo) {
-  const total = itemsDelGrupo.length;
-  const completadas = itemsDelGrupo.filter((item) => itemEstaCompletado(tipo, item.id)).length;
-  const porcentaje = total === 0 ? 0 : Math.round((completadas / total) * 100);
+// Indicador de solo lectura del progreso personal de una tarjeta de tarea,
+// actividad o proyecto: el progreso ya no lo marca el alumno con un
+// checkbox, se calcula automático a partir de progresoCache (tabla
+// "progreso" de Supabase, ver sección 11). Común a renderizarTareas,
+// renderizarActividades y renderizarProyectos.
+function crearChecklistProgreso(tipo, item, tarjeta) {
+  const indicador = document.createElement("div");
+  indicador.className = "indicador-progreso";
 
-  const conteo = detailsGrupo.querySelector('[data-rol="conteo-grupo"]');
-  if (conteo) conteo.textContent = completadas + " de " + total + " completadas";
+  const perfil = obtenerPerfilActivo();
+  if (!perfil) {
+    const aviso = document.createElement("span");
+    aviso.className = "indicador-progreso__aviso-sesion";
+    aviso.textContent = "🔑 Inicia sesión para ver tu progreso";
+    indicador.appendChild(aviso);
+    return indicador;
+  }
 
-  const barra = detailsGrupo.querySelector(".barra-progreso");
-  if (barra) barra.setAttribute("aria-valuenow", String(completadas));
-
-  const relleno = detailsGrupo.querySelector(".barra-progreso__relleno");
-  if (relleno) relleno.style.width = porcentaje + "%";
-}
-
-// Construye el <label> con checkbox de "Marcar como completada" para una
-// tarjeta de tarea o actividad, y engancha su guardado en localStorage
-// (ver claveProgreso). Común a renderizarTareas y renderizarActividades.
-function crearChecklistProgreso(tipo, item, tarjeta, datos, idResumen, etiqueta) {
   const completada = itemEstaCompletado(tipo, item.id);
   tarjeta.classList.toggle("tarjeta--completada", completada);
 
-  const checklist = document.createElement("label");
-  checklist.className = "checklist-tarea";
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-  checkbox.className = "checklist-tarea__input";
-  checkbox.checked = completada;
-  const textoChecklist = document.createElement("span");
-  textoChecklist.className = "checklist-tarea__texto";
-  textoChecklist.textContent = completada ? "Completada" : "Marcar como completada";
+  const badge = document.createElement("span");
+  badge.className = "badge-estado";
+  if (completada) {
+    badge.dataset.estado = "completada";
+    badge.textContent = "🟢 Entregado";
+  } else if (itemEstaVencido(tipo, item, perfil.grupo)) {
+    badge.dataset.estado = "atrasada";
+    badge.textContent = "🔒 Vencido sin entregar";
+  } else {
+    badge.dataset.estado = "pendiente";
+    badge.textContent = "🟡 Pendiente";
+  }
+  indicador.appendChild(badge);
 
-  checkbox.addEventListener("change", () => {
-    localStorage.setItem(claveProgreso(tipo, item.id), String(checkbox.checked));
-    tarjeta.classList.toggle("tarjeta--completada", checkbox.checked);
-    textoChecklist.textContent = checkbox.checked ? "Completada" : "Marcar como completada";
-    // Colapsa la tarjeta al completarla (deja de estorbar en pendientes);
-    // la reabre si el alumno la desmarca por error.
-    tarjeta.open = !checkbox.checked;
-    actualizarResumenProgreso(idResumen, datos, tipo, etiqueta);
-    // Acordeón por secuencia: tanto Tareas (.tareas-grupo) como Actividades
-    // (.actividades-grupo) usan el mismo fallback "Otras <etiqueta>" que
-    // renderizarTareas()/renderizarActividades() para agrupar los items sin
-    // campo "secuencia" (trimestres 2 y 3, por ahora).
-    // .proyectos-grupo queda fuera a propósito: su resumen muestra el
-    // "avance" estático del proyecto (promedio de item.avance), no un
-    // conteo de completados, así que no debe recalcularse al marcar/
-    // desmarcar el checklist personal.
-    const detailsGrupo = tarjeta.closest(".tareas-grupo, .actividades-grupo");
-    if (detailsGrupo) {
-      const claveGrupoFallback = "Otras " + etiqueta;
-      const claveGrupo = item.secuencia || claveGrupoFallback;
-      const itemsDelGrupo = datos.filter((d) => (d.secuencia || claveGrupoFallback) === claveGrupo);
-      actualizarResumenGrupo(detailsGrupo, itemsDelGrupo, tipo);
-    }
-    // Proyectos: la barra/texto de avance individual y la insignia 🏆
-    // reflejan "avanceMostrado" (100% si el checklist está marcado, si no
-    // el "avance" estático de DATOS_PROYECTOS — ver renderizarProyectos()).
-    // Se actualizan aquí en vivo para no desincronizarse del checkbox.
-    if (tipo === "proyecto") {
-      const avanceMostrado = checkbox.checked ? 100 : item.avance;
-      const relleno = tarjeta.querySelector(".barra-progreso__relleno");
-      if (relleno) relleno.style.width = avanceMostrado + "%";
-      const barra = tarjeta.querySelector(".barra-progreso");
-      if (barra) {
-        barra.setAttribute("aria-valuenow", String(avanceMostrado));
-        barra.setAttribute("aria-label", "Avance del proyecto: " + avanceMostrado + "%");
-      }
-      const textoAvance = tarjeta.querySelector('[data-rol="texto-avance-individual"]');
-      if (textoAvance) textoAvance.textContent = "Avance: " + avanceMostrado + "%";
-      const insignia = tarjeta.querySelector(".insignia-proyecto");
-      if (insignia) insignia.hidden = avanceMostrado < 100;
-    }
-    renderizarProgreso();
-  });
-
-  checklist.append(checkbox, textoChecklist);
-  return checklist;
+  return indicador;
 }
 
 async function renderizarTareas() {
@@ -3746,11 +3723,9 @@ async function renderizarTareas() {
         tarjeta.appendChild(crearBotonVerDetalle(item));
       }
 
-      // Checklist de progreso personal: guardado en localStorage, aparte
-      // por completo del filtro de grupo (ver claveProgreso).
-      tarjeta.appendChild(
-        crearChecklistProgreso("tarea", item, tarjeta, datos, "resumen-progreso-tareas", "tareas")
-      );
+      // Indicador de progreso personal (ver progresoCache): aparte por
+      // completo del filtro de grupo.
+      tarjeta.appendChild(crearChecklistProgreso("tarea", item, tarjeta));
 
       cuadriculaGrupo.appendChild(tarjeta);
     });
@@ -3875,18 +3850,9 @@ async function renderizarActividades() {
         tarjeta.appendChild(crearBotonVerDetalle(item));
       }
 
-      // Checklist de progreso personal, mismo patrón que en Tareas (ver
-      // claveProgreso).
-      tarjeta.appendChild(
-        crearChecklistProgreso(
-          "actividad",
-          item,
-          tarjeta,
-          datos,
-          "resumen-progreso-actividades",
-          "actividades"
-        )
-      );
+      // Indicador de progreso personal, mismo patrón que en Tareas (ver
+      // progresoCache).
+      tarjeta.appendChild(crearChecklistProgreso("actividad", item, tarjeta));
 
       cuadriculaGrupo.appendChild(tarjeta);
     });
@@ -3984,11 +3950,10 @@ async function renderizarProyectos() {
       const resumenTarjeta = document.createElement("summary");
       resumenTarjeta.className = "tarjeta-proyecto__resumen";
 
-      // "avanceMostrado" refleja el checklist personal del alumno además
-      // del avance estático del proyecto: si ya marcó la tarjeta como
-      // completada, se muestra 100% aunque el dato de DATOS_PROYECTOS diga
-      // otra cosa (ver también el listener del checkbox en
-      // crearChecklistProgreso, que mantiene esto sincronizado en vivo).
+      // "avanceMostrado" refleja el progreso personal del alumno además
+      // del avance estático del proyecto: si progresoCache ya tiene una
+      // fila para este proyecto, se muestra 100% aunque el dato de
+      // DATOS_PROYECTOS diga otra cosa.
       const avanceMostrado = itemEstaCompletado("proyecto", item.id) ? 100 : item.avance;
 
       const cabecera = document.createElement("div");
@@ -4050,20 +4015,11 @@ async function renderizarProyectos() {
         tarjeta.appendChild(crearBotonVerDetalle(item));
       }
 
-      // Checklist de progreso personal (ver claveProgreso): independiente
+      // Indicador de progreso personal (ver progresoCache): independiente
       // por completo del "avance" estático de arriba, que es del proyecto
-      // en general y no del alumno. El border-top de .checklist-tarea ya
+      // en general y no del alumno. El border-top de .indicador-progreso ya
       // lo separa visualmente de ese bloque.
-      tarjeta.appendChild(
-        crearChecklistProgreso(
-          "proyecto",
-          item,
-          tarjeta,
-          datos,
-          "resumen-progreso-proyectos",
-          "proyectos"
-        )
-      );
+      tarjeta.appendChild(crearChecklistProgreso("proyecto", item, tarjeta));
 
       cuadriculaGrupo.appendChild(tarjeta);
     });
@@ -5271,7 +5227,7 @@ function slugAlumno(nombre) {
 }
 
 // perfilActivoCache respalda obtenerPerfilActivo(): el resto del archivo
-// (claveProgreso, renderizarProgreso, renderizarProgresoDetallado, el
+// (itemEstaCompletado, renderizarProgreso, renderizarProgresoDetallado, el
 // banner de examen diagnóstico) lo sigue leyendo de forma síncrona, igual
 // que con el perfil de localStorage anterior. sincronizarPerfilActivo()
 // es quien la mantiene al día (ver los dos puntos donde se llama más
@@ -5280,24 +5236,33 @@ function obtenerPerfilActivo() {
   return perfilActivoCache;
 }
 
+// Puebla perfilActivoCache y progresoCache en el mismo momento, para que
+// ambas queden listas antes del primer renderizarTodo(). Sin sesión activa
+// (visitante sin login) las dos quedan vacías: itemEstaCompletado() ya
+// reporta todo como no completado, y crearChecklistProgreso() muestra el
+// aviso de "inicia sesión" en vez de un indicador de estado.
 async function sincronizarPerfilActivo() {
   const { data: { session } } = await clienteSupabase.auth.getSession();
   if (!session) {
     perfilActivoCache = null;
+    progresoCache = [];
     return;
   }
 
-  const { data: perfil, error } = await clienteSupabase
+  const { data: perfil } = await clienteSupabase
     .from("perfiles")
     .select("nombre, grupo")
     .eq("id", session.user.id)
     .single();
 
-  // TEMPORAL — diagnóstico: quitar una vez resuelto por qué no llega el
-  // nombre real de perfiles.
-  console.log("[DIAGNOSTICO sincronizarPerfilActivo] perfil:", perfil, "error:", error, "user.id:", session.user.id);
-
   perfilActivoCache = perfil ? { nombre: perfil.nombre, grupo: perfil.grupo } : null;
+
+  const { data: progreso } = await clienteSupabase
+    .from("progreso")
+    .select("tipo, item_id, trimestre")
+    .eq("perfil_id", session.user.id);
+
+  progresoCache = progreso || [];
 }
 
 // Botón "Perfil" de la barra lateral (desktop) y de la barra inferior
@@ -5505,10 +5470,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   actualizarEnlacesTrimestreEnSidebar();
   actualizarEstadoTarjetasTrimestre();
 
-  // Espera la sesión de Supabase antes del primer render: claveProgreso,
+  // Espera la sesión de Supabase antes del primer render: itemEstaCompletado,
   // renderizarProgreso y renderizarProgresoDetallado leen
-  // obtenerPerfilActivo() de forma síncrona y necesitan la cache ya
-  // poblada (ver sección 11).
+  // obtenerPerfilActivo()/progresoCache de forma síncrona y necesitan las
+  // cachés ya pobladas (ver sección 11).
   await sincronizarPerfilActivo();
   await renderizarTodo();
 

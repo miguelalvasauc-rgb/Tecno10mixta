@@ -1664,7 +1664,7 @@ summary:focus-visible {
   border-radius: var(--radio-full);
 }
 
-/* ---------- Checklist de progreso personal (Tareas) ---------- */
+/* ---------- Indicador de progreso personal (solo lectura) ---------- */
 
 /* Tarjeta marcada como completada: opacidad reducida + título tachado,
    además de un borde verde (mismo verde que "entregada"/"finalizado"). */
@@ -1690,73 +1690,19 @@ summary:focus-visible {
   color: var(--color-texto-suave);
 }
 
-.checklist-tarea {
+.indicador-progreso {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-top: 0.2rem;
   padding-top: 0.4rem;
   border-top: 1px solid var(--color-borde);
+}
+
+.indicador-progreso__aviso-sesion {
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--color-texto-suave);
-  cursor: pointer;
-}
-
-.checklist-tarea__input {
-  appearance: none;
-  -webkit-appearance: none;
-  margin: 0;
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  position: relative;
-  border: 2px solid var(--color-turquesa);
-  border-radius: 5px;
-  background-color: var(--color-superficie);
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.checklist-tarea__input:checked {
-  background-color: var(--color-turquesa);
-}
-
-.checklist-tarea__input:checked::after {
-  content: "";
-  position: absolute;
-  left: 5px;
-  top: 1px;
-  width: 6px;
-  height: 11px;
-  border: solid #04211D;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-/* Modo oscuro: usa el mint de "completado" del sistema de diseño en vez
-   del turquesa institucional, ya que aquí sí hay suficiente contraste
-   contra la superficie oscura de la tarjeta (a diferencia del modo claro,
-   ver override de abajo). */
-:root[data-theme="oscuro"] .checklist-tarea__input:checked {
-  background-color: var(--color-estado-completado);
-  border-color: var(--color-estado-completado);
-}
-
-/* Modo claro: el turquesa (y el mint, más claro todavía) sobre el fondo
-   blanco de la tarjeta no llega a 3:1 (mismo problema ya corregido en
-   nav, foco y botón flotante), así que el checkbox usa navy en su lugar
-   en los dos estados. */
-:root[data-theme="claro"] .checklist-tarea__input {
-  border-color: var(--color-primario);
-}
-
-:root[data-theme="claro"] .checklist-tarea__input:checked {
-  background-color: var(--color-primario);
-}
-
-:root[data-theme="claro"] .checklist-tarea__input:checked::after {
-  border-color: var(--color-claro-sobre-navy);
 }
 
 /* ---------- Rúbricas expandibles (acordeón con <details>/<summary>) ---------- */
