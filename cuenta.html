@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tu progreso · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
-  <meta name="description" content="Progreso personal detallado por trimestre — Educación Tecnológica 3°C y 3°E, Esc. Sec. No. 10 Mixta 'Fernando Hernández Alcalá'.">
+  <title>Mi cuenta · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
+  <meta name="description" content="Inicia sesión o crea tu cuenta para que tu progreso de tareas, actividades y proyectos quede registrado.">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
   <a href="#main-content" class="enlace-saltar">Saltar al contenido principal</a>
 
-  <!-- ===================== BARRA LATERAL (desktop ≥1024px) ===================== -->
   <aside class="barra-lateral" aria-label="Navegación principal">
     <a href="index.html" class="barra-lateral__logo" aria-label="Ir a la portada">
       <img
@@ -36,10 +35,6 @@
       </select>
     </div>
 
-    <!-- Los enlaces a Temario/Rúbricas/Tareas/Actividades/Proyectos/Videos/
-         Entrega apuntan por defecto al Trimestre 1; JS los reescribe al
-         último trimestre visto (ver actualizarEnlacesTrimestreEnSidebar
-         en js/main.js), porque esas secciones no existen en esta página. -->
     <nav id="nav-principal" class="barra-lateral__nav" aria-label="Secciones">
       <div class="barra-lateral__nav-grupo">
         <div class="barra-lateral__nav-fila">
@@ -141,14 +136,94 @@
 
     <button type="button" class="barra-lateral__perfil" data-boton-cuenta></button>
 
-    <!-- Botón de cambio de tema claro/oscuro. La preferencia se guarda en localStorage para que no se pierda al navegar entre páginas. -->
     <button id="boton-tema" class="boton-tema barra-lateral__tema" type="button" aria-pressed="true" aria-label="Cambiar a modo claro">
       <span class="boton-tema__icono" aria-hidden="true">☀️</span>
       <span class="boton-tema__texto">Modo claro</span>
     </button>
   </aside>
 
-  <!-- ===================== BARRA INFERIOR (móvil <1024px) ===================== -->
+  <main id="main-content" class="contenido-principal">
+    <section id="cuenta" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>Mi cuenta</h2>
+        <p>Inicia sesión o crea tu cuenta para que tu progreso quede registrado.</p>
+      </div>
+
+      <div class="cuenta-tarjeta">
+        <div class="cuenta-tabs" role="tablist">
+          <button type="button" class="cuenta-tabs__boton cuenta-tabs__boton--activo"
+                  id="tab-crear" role="tab" aria-selected="true" aria-controls="panel-crear">
+            Crear cuenta
+          </button>
+          <button type="button" class="cuenta-tabs__boton"
+                  id="tab-login" role="tab" aria-selected="false" aria-controls="panel-login">
+            Iniciar sesión
+          </button>
+        </div>
+
+        <div id="panel-crear" class="cuenta-panel" role="tabpanel" aria-labelledby="tab-crear">
+          <p class="cuenta-mensaje">
+            Tu cuenta no es un simple "progreso" — representa los trabajos
+            reales que entregaste en clase y en casa. Al iniciar sesión,
+            tus tareas, actividades y proyectos entregados quedan
+            registrados a tu nombre, sin importar desde qué dispositivo los
+            subas.
+          </p>
+          <form id="formulario-crear-cuenta" class="cuenta-formulario" novalidate>
+            <label for="codigo-invitacion">Código de invitación</label>
+            <input type="text" id="codigo-invitacion" name="codigo" placeholder="XXXX-XXXX-XXXX"
+                   autocomplete="off" required>
+
+            <label for="crear-correo">Correo</label>
+            <input type="email" id="crear-correo" name="correo" autocomplete="email" required>
+
+            <label for="crear-contrasena">Contraseña</label>
+            <input type="password" id="crear-contrasena" name="contrasena" minlength="6"
+                   autocomplete="new-password" required>
+
+            <label for="crear-contrasena-confirmar">Confirmar contraseña</label>
+            <input type="password" id="crear-contrasena-confirmar" name="contrasenaConfirmar"
+                   minlength="6" autocomplete="new-password" required>
+
+            <p id="crear-cuenta-error" class="cuenta-error" role="alert" hidden></p>
+
+            <button type="submit" class="boton-primario">Crear mi cuenta</button>
+          </form>
+        </div>
+
+        <div id="panel-login" class="cuenta-panel" role="tabpanel" aria-labelledby="tab-login" hidden>
+          <form id="formulario-login" class="cuenta-formulario" novalidate>
+            <label for="login-correo">Correo</label>
+            <input type="email" id="login-correo" name="correo" autocomplete="email" required>
+
+            <label for="login-contrasena">Contraseña</label>
+            <input type="password" id="login-contrasena" name="contrasena" autocomplete="current-password" required>
+
+            <p id="login-error" class="cuenta-error" role="alert" hidden></p>
+
+            <button type="submit" class="boton-primario">Iniciar sesión</button>
+          </form>
+          <p class="cuenta-ayuda">
+            ¿Olvidaste tu contraseña? Contacta a tu profesor:
+            <a href="mailto:hiram.alvarado@jaliscoedu.mx">hiram.alvarado@jaliscoedu.mx</a>
+          </p>
+        </div>
+
+        <div id="panel-sesion-activa" class="cuenta-panel" hidden>
+          <p id="cuenta-sesion-texto"></p>
+          <button type="button" id="boton-cerrar-sesion-cuenta" class="boton-secundario">
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <p>Escuela Secundaria No. 10 Mixta &ldquo;Fernando Hernández Alcalá&rdquo; · Educación Tecnológica</p>
+    <p class="pie__grupos">Grupos 3°C y 3°E</p>
+  </footer>
+
   <nav class="barra-inferior" aria-label="Navegación móvil">
     <a href="index.html" class="barra-inferior__item">
       <span class="barra-inferior__icono" aria-hidden="true">🏠</span>
@@ -165,9 +240,6 @@
     <button type="button" class="barra-inferior__item" data-boton-cuenta></button>
   </nav>
 
-  <!-- Modal de grupo: duplica el selector de la barra lateral para que
-       también se pueda cambiar de grupo desde la barra inferior móvil
-       (ver activarModalGrupo en js/main.js). -->
   <dialog id="modal-grupo" aria-labelledby="modal-grupo-titulo">
     <button type="button" class="modal-grupo__cerrar" aria-label="Cerrar">✕</button>
     <h3 id="modal-grupo-titulo">Elige tu grupo</h3>
@@ -181,59 +253,11 @@
     </div>
   </dialog>
 
-  <!-- ===================== MIGAS DE PAN ===================== -->
-  <nav aria-label="breadcrumb" class="migas-de-pan">
-    <ol>
-      <li><a href="index.html">Inicio</a></li>
-      <li class="migas-de-pan__separador" aria-hidden="true">/</li>
-      <li><span class="migas-de-pan__actual" aria-current="page">Progreso</span></li>
-    </ol>
-  </nav>
-
-  <main id="main-content">
-    <!-- ===================== INTRODUCCIÓN ===================== -->
-    <section id="progreso-intro" class="seccion">
-      <div class="seccion__encabezado">
-        <h2>Tu progreso</h2>
-        <p>Consulta el detalle de qué tareas, actividades y proyectos ya marcaste como completados en cada trimestre.</p>
-      </div>
-    </section>
-
-    <!-- ===================== PROGRESO DETALLADO ===================== -->
-    <section id="progreso-detalle" class="seccion seccion--alterna">
-      <div id="progreso-sin-perfil" class="panel-progreso__invitacion">
-        <p>Aún no te has identificado en este dispositivo.</p>
-        <button type="button" id="boton-identificarme-progreso" class="boton-secundario">Identificarme</button>
-      </div>
-
-      <div id="progreso-con-perfil" class="panel-progreso" hidden>
-        <p id="progreso-alumno-info" class="panel-progreso__alumno">
-          Viendo el progreso de: <strong id="progreso-alumno-nombre"></strong> (<span id="progreso-alumno-grupo"></span>)
-          <button type="button" id="boton-cambiar-alumno-progreso" class="boton-secundario">Cambiar de alumno</button>
-        </p>
-
-        <p id="progreso-mensaje" class="panel-progreso__mensaje"></p>
-        <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
-
-        <div id="progreso-detalle-trimestres" class="panel-progreso__detalle" aria-live="polite"></div>
-      </div>
-    </section>
-  </main>
-
-  <!-- ===================== PIE DE PÁGINA ===================== -->
-  <footer class="pie">
-    <p>Escuela Secundaria No. 10 Mixta &ldquo;Fernando Hernández Alcalá&rdquo; · Educación Tecnológica</p>
-    <p class="pie__grupos">Grupos 3°C y 3°E</p>
-  </footer>
-
-  <!-- Botón flotante de tema: solo visible en móvil (<1024px), ya que el
-       botón de tema de la barra lateral queda oculto en ese ancho. -->
   <button id="boton-tema-flotante" class="boton-tema boton-tema--flotante" type="button" aria-pressed="true" aria-label="Cambiar a modo claro">
     <span class="boton-tema__icono" aria-hidden="true">☀️</span>
     <span class="boton-tema__texto sr-only">Modo claro</span>
   </button>
 
-  <!-- Botón flotante "Volver arriba": oculto hasta que JS detecte scroll. -->
   <button id="boton-volver-arriba" class="boton-volver-arriba" type="button" aria-label="Volver arriba">
     <span aria-hidden="true">↑</span>
   </button>

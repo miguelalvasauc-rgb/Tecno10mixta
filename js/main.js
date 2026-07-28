@@ -2858,26 +2858,6 @@ const DATOS_TEMARIO = {
   ],
 };
 
-// Nombres de alumnos por grupo, usados para llenar el selector de nombre
-// del modal de identificación (ver sección 11 más abajo).
-// ⚠️ DATOS TEMPORALES DE PRUEBA — sustituir por la lista real de
-// asistencia de cada grupo antes de publicar en producción. Ver
-// pendiente en project knowledge: "reemplazar con lista oficial
-// cuando Hiram la tenga (cerca del inicio de clases)".
-const ALUMNOS_3C = [
-  "Alumno Prueba Uno",
-  "Alumno Prueba Dos",
-  "Alumno Prueba Tres",
-  "Alumno Prueba Cuatro",
-];
-
-const ALUMNOS_3E = [
-  "Alumna Prueba Cinco",
-  "Alumna Prueba Seis",
-  "Alumna Prueba Siete",
-  "Alumna Prueba Ocho",
-];
-
 /* =========================================================
    2. "CONECTORES" DE DATOS (aquí se integrará Google Sheets)
    ========================================================= */
@@ -2995,12 +2975,11 @@ if (TRIMESTRE_ACTUAL) {
   localStorage.setItem(CLAVE_ULTIMO_TRIMESTRE, TRIMESTRE_ACTUAL);
 }
 
-// Identificación ligera de alumno (ver sección 11 para el resto de la
-// lógica). CLAVE_PERFIL guarda quién está "identificado" ahora mismo;
-// CLAVE_PINES guarda, por separado, el PIN que cada alumno registró la
-// primera vez que se identificó (para poder "confirmar que es él" luego).
-const CLAVE_PERFIL = "perfilActivo";
-const CLAVE_PINES = "pinesAlumnos";
+// Cuenta e identificación de alumno (ver sección 11 para el resto de la
+// lógica). perfilActivoCache guarda {grupo, nombre} del alumno con sesión
+// iniciada en Supabase; lo puebla sincronizarPerfilActivo() de forma
+// async, pero se lee de forma síncrona en el resto del archivo.
+let perfilActivoCache = null;
 
 // Registro por alumno (no una bandera global) de quién ya contestó el
 // Examen de Diagnóstico (ver #examen-diagnostico). Es necesario por
@@ -3091,11 +3070,11 @@ function crearEnlaceInstrucciones(url) {
 // Clave de localStorage para el progreso personal de un ítem (tarea o
 // actividad, según "tipo"): incluye trimestre, tipo e id para que no se
 // mezcle "tarea t1 del Trimestre 1" con "actividad t1" ni con el mismo id
-// en otro trimestre. Si hay un alumno identificado (ver sección 11 y
-// CLAVE_PERFIL), la clave también incluye su grupo y nombre para que cada
-// quien vea su propio checklist aunque compartan equipo; si nadie se ha
-// identificado, cae a una clave "invitado" compartida por el dispositivo
-// (el comportamiento de antes de agregar identificación de alumno).
+// en otro trimestre. Si hay una sesión de Supabase activa (ver sección 11
+// y perfilActivoCache), la clave también incluye su grupo y nombre para
+// que cada quien vea su propio checklist aunque compartan equipo; si
+// nadie ha iniciado sesión, cae a una clave "invitado" compartida por el
+// dispositivo (el comportamiento de antes de agregar cuentas).
 // "trimestre" por defecto es el de la página actual; el panel de Progreso
 // de la portada (que no tiene TRIMESTRE_ACTUAL) lo pasa explícito para
 // poder leer el checklist de los 3 trimestres desde ahí.
@@ -4291,30 +4270,31 @@ function construirListaExamenDiagnostico(perfil) {
   return lista;
 }
 
-// Se activa cuando el alumno hace clic en "Ya lo contesté" sin estar
-// identificado: abre el modal de identificación de #progreso y, si el
-// alumno completa ese flujo, alEnviarFormularioPerfil revisa esta bandera
-// para registrar el examen como completado justo después. Se limpia al
-// cerrarse el modal por cualquier vía (ver activarModalPerfil) para no
-// registrar de más si el alumno cancela y se identifica después por otro
-// motivo.
-let registroExamenDiagnosticoPendiente = false;
-
 // Banner estático del Examen de Diagnóstico en la portada
-// (#examen-diagnostico). Sin alumno identificado en este dispositivo se
-// muestra siempre (no hay forma de saber quién lo contestó); con alumno
-// identificado, se oculta solo si ESE alumno ya está en
-// CLAVE_EXAMEN_DIAGNOSTICO_POR_ALUMNO. Se vuelve a evaluar cada vez que
-// cambia el perfil activo (alEnviarFormularioPerfil, alCambiarAlumno).
+// (#examen-diagnostico). Sin sesión de Supabase, el banner se muestra
+// siempre (no hay forma de saber si ya se contestó) y el botón "Ya lo
+// contesté" se oculta a favor de un aviso para iniciar sesión: el examen
+// no cuenta para calificación, así que no vale la pena forzar un login
+// solo para descartar un recordatorio. Con sesión activa, se oculta solo
+// si ESE alumno ya está en CLAVE_EXAMEN_DIAGNOSTICO_POR_ALUMNO; se vuelve
+// a evaluar cada vez que cambia la sesión (ver onAuthStateChange).
 function actualizarVisibilidadBannerExamenDiagnostico() {
   const seccion = document.getElementById("examen-diagnostico");
   if (!seccion) return;
 
+  const boton = document.getElementById("boton-ya-lo-conteste");
+  const avisoSesion = document.getElementById("texto-inicia-sesion-examen");
   const perfil = obtenerPerfilActivo();
+
   if (!perfil) {
     seccion.hidden = false;
+    if (boton) boton.hidden = true;
+    if (avisoSesion) avisoSesion.hidden = false;
     return;
   }
+
+  if (boton) boton.hidden = false;
+  if (avisoSesion) avisoSesion.hidden = true;
 
   const registro = obtenerRegistroExamenDiagnostico();
   seccion.hidden = Boolean(registro[idAlumnoExamenDiagnostico(perfil)]);
@@ -4330,13 +4310,9 @@ function activarBannerExamenDiagnostico() {
   if (botonDescartar) {
     botonDescartar.addEventListener("click", () => {
       const perfil = obtenerPerfilActivo();
-      if (perfil) {
-        marcarExamenDiagnosticoCompletado(perfil);
-        actualizarVisibilidadBannerExamenDiagnostico();
-        return;
-      }
-      registroExamenDiagnosticoPendiente = true;
-      abrirModalPerfil();
+      if (!perfil) return;
+      marcarExamenDiagnosticoCompletado(perfil);
+      actualizarVisibilidadBannerExamenDiagnostico();
     });
   }
 }
@@ -5270,31 +5246,18 @@ async function alEnviarContacto(evento) {
 }
 
 /* =========================================================
-   11. IDENTIFICACIÓN DE ALUMNO (PERFIL)
+   11. CUENTA Y SESIÓN (SUPABASE)
 
-   IMPORTANTE: esto NO es un sistema de autenticación real. No hay
-   backend ni contraseñas con hash: todo vive en localStorage del
-   navegador, legible y modificable por cualquiera con las herramientas
-   de desarrollador. Su único propósito es evitar que compañeros que
-   comparten equipo mezclen su checklist de progreso sin querer. No debe
-   usarse para nada sensible ni tratarse como una cuenta protegida.
+   Reemplaza la identificación ligera anterior (localStorage + PIN) por
+   autenticación real: cada alumno tiene su propia cuenta de Supabase,
+   creada al reclamar un código de invitación (ver cuenta.html). La tabla
+   "perfiles" guarda grupo y nombre de cada usuario autenticado.
    ========================================================= */
 
-function obtenerPerfilActivo() {
-  try {
-    return JSON.parse(localStorage.getItem(CLAVE_PERFIL));
-  } catch (error) {
-    return null;
-  }
-}
+const SUPABASE_URL = "https://dugfyqtzcnuwjfvijsqs.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_aofoI-IHSwFh4yi5jzLANw_k_2e11dj";
 
-function guardarPerfilActivo(perfil) {
-  localStorage.setItem(CLAVE_PERFIL, JSON.stringify(perfil));
-}
-
-function limpiarPerfilActivo() {
-  localStorage.removeItem(CLAVE_PERFIL);
-}
+const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Convierte un nombre en un fragmento seguro para usar como parte de una
 // llave de localStorage: sin acentos, espacios ni mayúsculas.
@@ -5307,230 +5270,201 @@ function slugAlumno(nombre) {
     .toLowerCase();
 }
 
-function obtenerPines() {
-  try {
-    return JSON.parse(localStorage.getItem(CLAVE_PINES)) || {};
-  } catch (error) {
-    return {};
-  }
+// perfilActivoCache respalda obtenerPerfilActivo(): el resto del archivo
+// (claveProgreso, renderizarProgreso, renderizarProgresoDetallado, el
+// banner de examen diagnóstico) lo sigue leyendo de forma síncrona, igual
+// que con el perfil de localStorage anterior. sincronizarPerfilActivo()
+// es quien la mantiene al día (ver los dos puntos donde se llama más
+// abajo: DOMContentLoaded y onAuthStateChange).
+function obtenerPerfilActivo() {
+  return perfilActivoCache;
 }
 
-// La primera vez que alguien elige un nombre, el PIN que escribe queda
-// registrado como suyo. Las veces siguientes tiene que volver a
-// escribirlo para "confirmar que es él". No hay hash: se guarda tal cual,
-// así que esto no protege nada — solo evita que dos compañeros que
-// comparten equipo se confundan de perfil por accidente.
-function verificarOCrearPin(grupo, nombre, pin) {
-  const pines = obtenerPines();
-  const clave = grupo + "_" + nombre;
-  if (pines[clave]) return pines[clave] === pin;
-  pines[clave] = pin;
-  localStorage.setItem(CLAVE_PINES, JSON.stringify(pines));
-  return true;
-}
-
-function poblarSelectorNombreAlumno(grupo) {
-  const select = document.getElementById("perfil-nombre");
-  if (!select) return;
-
-  const nombres = grupo === "3C" ? ALUMNOS_3C : grupo === "3E" ? ALUMNOS_3E : [];
-  select.innerHTML = "";
-
-  if (nombres.length === 0) {
-    const opcion = document.createElement("option");
-    opcion.value = "";
-    opcion.textContent = grupo
-      ? "Aún no hay nombres cargados para este grupo"
-      : "Primero elige tu grupo";
-    opcion.disabled = true;
-    opcion.selected = true;
-    select.appendChild(opcion);
-    select.disabled = true;
+async function sincronizarPerfilActivo() {
+  const { data: { session } } = await clienteSupabase.auth.getSession();
+  if (!session) {
+    perfilActivoCache = null;
     return;
   }
 
-  const marcador = document.createElement("option");
-  marcador.value = "";
-  marcador.textContent = "Elige tu nombre";
-  marcador.disabled = true;
-  marcador.selected = true;
-  select.appendChild(marcador);
+  const { data: perfil } = await clienteSupabase
+    .from("perfiles")
+    .select("nombre, grupo")
+    .eq("id", session.user.id)
+    .single();
 
-  nombres.forEach((nombre) => {
-    const opcion = document.createElement("option");
-    opcion.value = nombre;
-    opcion.textContent = nombre;
-    select.appendChild(opcion);
-  });
-
-  select.disabled = false;
+  perfilActivoCache = perfil ? { nombre: perfil.nombre, grupo: perfil.grupo } : null;
 }
 
-function mostrarErrorPerfil(mensaje) {
-  const error = document.getElementById("perfil-error");
-  if (!error) return;
-  error.textContent = mensaje;
-  error.hidden = false;
-}
+// Botón "Perfil" de la barra lateral (desktop) y de la barra inferior
+// (móvil), marcados con data-boton-cuenta: antes alternaban el modal de
+// identificación, ahora reflejan la sesión de Supabase y llevan a
+// cuenta.html o cierran sesión según el caso.
+async function actualizarUISesion() {
+  const { data: { session } } = await clienteSupabase.auth.getSession();
+  const elementos = document.querySelectorAll("[data-boton-cuenta]");
 
-function ocultarErrorPerfil() {
-  const error = document.getElementById("perfil-error");
-  if (error) error.hidden = true;
-}
+  if (!session) {
+    elementos.forEach((el) => {
+      el.textContent = "";
+      const icono = document.createElement("span");
+      icono.setAttribute("aria-hidden", "true");
+      icono.textContent = "🧑‍🎓";
+      const texto = document.createElement("span");
+      texto.textContent = "Iniciar sesión";
+      el.append(icono, texto);
+      el.onclick = () => { window.location.href = "cuenta.html"; };
+    });
+    return;
+  }
 
-// Alterna entre el formulario de identificación (sin perfil activo) y el
-// resumen con botón "Cambiar de alumno" (con perfil activo).
-function actualizarVistaModalPerfil() {
   const perfil = obtenerPerfilActivo();
-  const formulario = document.getElementById("formulario-perfil");
-  const resumen = document.getElementById("perfil-resumen");
-  if (!formulario || !resumen) return;
+  const nombreMostrado = perfil?.nombre ? perfil.nombre.split(" ")[0] : "Mi cuenta";
 
-  formulario.hidden = Boolean(perfil);
-  resumen.hidden = !perfil;
-
-  if (perfil) {
-    const nombreEl = document.getElementById("perfil-resumen-nombre");
-    const grupoEl = document.getElementById("perfil-resumen-grupo");
-    if (nombreEl) nombreEl.textContent = perfil.nombre;
-    if (grupoEl) grupoEl.textContent = textoGrupo(perfil.grupo);
-  }
+  elementos.forEach((el) => {
+    el.textContent = "";
+    const icono = document.createElement("span");
+    icono.setAttribute("aria-hidden", "true");
+    icono.textContent = "🧑‍🎓";
+    const texto = document.createElement("span");
+    texto.textContent = nombreMostrado;
+    el.append(icono, texto);
+    el.onclick = async () => {
+      await clienteSupabase.auth.signOut();
+      window.location.href = "index.html";
+    };
+  });
 }
 
-// Refleja si hay perfil activo en los botones "Perfil" de la barra
-// lateral (desktop) y de la barra inferior (móvil).
-function actualizarIndicadorPerfil() {
-  const perfil = obtenerPerfilActivo();
-  const etiquetaCorta = perfil ? perfil.nombre.split(" ")[0] : "Perfil";
+// Los formularios de "Crear cuenta" / "Iniciar sesión" solo existen en
+// cuenta.html (se buscan por id y, si no están, la función no hace nada
+// en el resto de páginas).
+function activarFormulariosCuenta() {
+  const tabCrear = document.getElementById("tab-crear");
+  const tabLogin = document.getElementById("tab-login");
+  const panelCrear = document.getElementById("panel-crear");
+  const panelLogin = document.getElementById("panel-login");
+  if (!tabCrear || !tabLogin) return;
 
-  const textoMovil = document.querySelector("#boton-perfil-movil .barra-inferior__texto");
-  if (textoMovil) textoMovil.textContent = etiquetaCorta;
-
-  const textoSidebar = document.getElementById("texto-perfil-sidebar");
-  if (textoSidebar) textoSidebar.textContent = perfil ? perfil.nombre : "Identificarme";
-}
-
-function abrirModalPerfil() {
-  const modal = document.getElementById("modal-perfil");
-  if (!modal) return;
-  ocultarErrorPerfil();
-  actualizarVistaModalPerfil();
-  modal.showModal();
-}
-
-function alEnviarFormularioPerfil(evento) {
-  evento.preventDefault();
-  ocultarErrorPerfil();
-
-  const grupo = document.getElementById("perfil-grupo").value;
-  const nombre = document.getElementById("perfil-nombre").value;
-  const pin = document.getElementById("perfil-pin").value;
-
-  if (!grupo || !nombre || !/^[0-9]{4}$/.test(pin)) {
-    mostrarErrorPerfil("Elige tu grupo, tu nombre y escribe un PIN de 4 dígitos.");
-    return;
+  function mostrarTab(activo) {
+    const esCrear = activo === "crear";
+    tabCrear.classList.toggle("cuenta-tabs__boton--activo", esCrear);
+    tabLogin.classList.toggle("cuenta-tabs__boton--activo", !esCrear);
+    tabCrear.setAttribute("aria-selected", String(esCrear));
+    tabLogin.setAttribute("aria-selected", String(!esCrear));
+    panelCrear.hidden = !esCrear;
+    panelLogin.hidden = esCrear;
   }
 
-  if (!verificarOCrearPin(grupo, nombre, pin)) {
-    mostrarErrorPerfil("Ese PIN no coincide con el que registraste antes para este nombre.");
-    return;
-  }
+  tabCrear.addEventListener("click", () => mostrarTab("crear"));
+  tabLogin.addEventListener("click", () => mostrarTab("login"));
 
-  guardarPerfilActivo({ grupo, nombre, pin });
+  const formCrear = document.getElementById("formulario-crear-cuenta");
+  const errorCrear = document.getElementById("crear-cuenta-error");
 
-  // Identificarse también fija el grupo del sitio: no tendría sentido ver
-  // el contenido de otro grupo mientras se navega con este perfil activo.
-  grupoActual = grupo;
-  localStorage.setItem(CLAVE_GRUPO, grupo);
-  sincronizarSelectoresGrupo(grupo);
-  renderizarTodo();
+  formCrear?.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    errorCrear.hidden = true;
 
-  document.getElementById("formulario-perfil").reset();
-  actualizarVistaModalPerfil();
-  actualizarIndicadorPerfil();
-  renderizarProgreso();
-  renderizarProgresoDetallado();
+    const codigo = document.getElementById("codigo-invitacion").value.trim().toUpperCase();
+    const correo = document.getElementById("crear-correo").value.trim();
+    const contrasena = document.getElementById("crear-contrasena").value;
+    const confirmar = document.getElementById("crear-contrasena-confirmar").value;
 
-  // Si este flujo de identificación se abrió desde el botón "Ya lo
-  // contesté" del banner de examen diagnóstico (ver
-  // activarBannerExamenDiagnostico), registrar ahora al alumno recién
-  // identificado como completado.
-  if (registroExamenDiagnosticoPendiente) {
-    registroExamenDiagnosticoPendiente = false;
-    marcarExamenDiagnosticoCompletado({ grupo, nombre });
-  }
-  actualizarVisibilidadBannerExamenDiagnostico();
+    const formatoValido = /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(codigo);
+    if (!formatoValido) {
+      errorCrear.textContent = "El código debe tener el formato XXXX-XXXX-XXXX. Verifica que esté bien escrito.";
+      errorCrear.hidden = false;
+      return;
+    }
+    if (contrasena !== confirmar) {
+      errorCrear.textContent = "Las contraseñas no coinciden.";
+      errorCrear.hidden = false;
+      return;
+    }
+    if (contrasena.length < 6) {
+      errorCrear.textContent = "La contraseña debe tener al menos 6 caracteres.";
+      errorCrear.hidden = false;
+      return;
+    }
 
-  const modal = document.getElementById("modal-perfil");
-  if (modal) modal.close();
-}
+    const { error: errorSignUp } = await clienteSupabase.auth.signUp({ email: correo, password: contrasena });
+    if (errorSignUp) {
+      errorCrear.textContent = "No se pudo crear la cuenta: " + errorSignUp.message;
+      errorCrear.hidden = false;
+      return;
+    }
 
-function alCambiarAlumno() {
-  limpiarPerfilActivo();
-  actualizarVistaModalPerfil();
-  actualizarIndicadorPerfil();
-  renderizarTodo();
-  renderizarProgreso();
-  renderizarProgresoDetallado();
-  actualizarVisibilidadBannerExamenDiagnostico();
-}
+    const { error: errorRpc } = await clienteSupabase.rpc("reclamar_codigo_invitacion", { p_codigo: codigo });
+    if (errorRpc) {
+      errorCrear.textContent = "Ese código no es válido, ya fue usado, o está inactivo. Verifica con tu profesor.";
+      errorCrear.hidden = false;
+      await clienteSupabase.auth.signOut();
+      return;
+    }
 
-// Mismo patrón que activarCierreModalDetalle: showModal()/close(), cierre
-// por botón "✕" o click en el ::backdrop, ESC vía el <dialog> nativo.
-// Tiene dos disparadores: el botón de la barra lateral (desktop) y el de
-// la barra inferior (móvil).
-function activarModalPerfil() {
-  const modal = document.getElementById("modal-perfil");
-  if (!modal) return;
-
-  [
-    "boton-perfil-movil",
-    "boton-perfil-sidebar",
-    "boton-identificarme-progreso",
-    "boton-cambiar-alumno-progreso",
-  ].forEach((id) => {
-    const boton = document.getElementById(id);
-    if (boton) boton.addEventListener("click", abrirModalPerfil);
+    window.location.href = "index.html";
   });
 
-  const botonCerrar = modal.querySelector(".modal-perfil__cerrar");
-  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+  const formLogin = document.getElementById("formulario-login");
+  const errorLogin = document.getElementById("login-error");
 
-  modal.addEventListener("click", (evento) => {
-    if (evento.target === modal) modal.close();
+  formLogin?.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    errorLogin.hidden = true;
+
+    const correo = document.getElementById("login-correo").value.trim();
+    const contrasena = document.getElementById("login-contrasena").value;
+
+    const { error } = await clienteSupabase.auth.signInWithPassword({ email: correo, password: contrasena });
+    if (error) {
+      errorLogin.textContent = "Correo o contraseña incorrectos.";
+      errorLogin.hidden = false;
+      return;
+    }
+    window.location.href = "index.html";
   });
+}
 
-  // El <dialog> dispara "close" tanto si se cierra por ESC/backdrop/botón
-  // ✕ como si alEnviarFormularioPerfil llama a modal.close() tras
-  // identificarse con éxito. En ese segundo caso la bandera ya quedó en
-  // false; en cualquier cierre sin identificarse (cancelado), esto evita
-  // que una identificación posterior y no relacionada quede marcada como
-  // "ya contestó el examen".
-  modal.addEventListener("close", () => {
-    registroExamenDiagnosticoPendiente = false;
-  });
-
-  const selectorGrupoPerfil = document.getElementById("perfil-grupo");
-  if (selectorGrupoPerfil) {
-    selectorGrupoPerfil.addEventListener("change", () => {
-      poblarSelectorNombreAlumno(selectorGrupoPerfil.value);
+// Los botones "Identificarme" / "Cambiar de alumno" del panel de
+// Progreso (index.html y progreso.html): "Identificarme" solo es visible
+// sin sesión (ver renderizarProgreso/renderizarProgresoDetallado), así
+// que basta con llevar a cuenta.html; "Cambiar de alumno" solo es visible
+// con sesión activa, así que ahora equivale a cerrar sesión.
+function activarAccionesPerfilProgreso() {
+  const botonIdentificar = document.getElementById("boton-identificarme-progreso");
+  if (botonIdentificar) {
+    botonIdentificar.addEventListener("click", () => {
+      window.location.href = "cuenta.html";
     });
   }
 
-  const formulario = document.getElementById("formulario-perfil");
-  if (formulario) formulario.addEventListener("submit", alEnviarFormularioPerfil);
-
-  const botonCambiar = document.getElementById("boton-cambiar-alumno");
-  if (botonCambiar) botonCambiar.addEventListener("click", alCambiarAlumno);
-
-  actualizarIndicadorPerfil();
+  const botonCambiar = document.getElementById("boton-cambiar-alumno-progreso");
+  if (botonCambiar) {
+    botonCambiar.addEventListener("click", async () => {
+      await clienteSupabase.auth.signOut();
+      window.location.href = "index.html";
+    });
+  }
 }
+
+// Mantiene perfilActivoCache al día mientras la pestaña sigue abierta:
+// sesión iniciada, cerrada, token refrescado o cerrada en otra pestaña.
+// La sincronización inicial (antes del primer renderizarTodo) corre por
+// separado en DOMContentLoaded para no depender del orden de disparo del
+// evento "INITIAL_SESSION" de Supabase.
+clienteSupabase.auth.onAuthStateChange(async () => {
+  await sincronizarPerfilActivo();
+  await actualizarUISesion();
+  await renderizarTodo();
+  actualizarVisibilidadBannerExamenDiagnostico();
+});
 
 /* =========================================================
    10. INICIALIZACIÓN
    ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   aplicarTema(temaActual);
 
   // Sincroniza los <select> de grupo (barra lateral y modal móvil) con
@@ -5540,7 +5474,12 @@ document.addEventListener("DOMContentLoaded", () => {
   actualizarEnlacesTrimestreEnSidebar();
   actualizarEstadoTarjetasTrimestre();
 
-  renderizarTodo();
+  // Espera la sesión de Supabase antes del primer render: claveProgreso,
+  // renderizarProgreso y renderizarProgresoDetallado leen
+  // obtenerPerfilActivo() de forma síncrona y necesitan la cache ya
+  // poblada (ver sección 11).
+  await sincronizarPerfilActivo();
+  await renderizarTodo();
 
   document.querySelectorAll(".boton-tema").forEach((boton) => boton.addEventListener("click", alternarTema));
   document.getElementById("boton-colapsar-sidebar").addEventListener("click", alternarSidebarColapsada);
@@ -5549,7 +5488,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (selector) selector.addEventListener("change", alCambiarGrupo);
   });
   activarModalGrupo();
-  activarModalPerfil();
+  activarFormulariosCuenta();
+  activarAccionesPerfilProgreso();
+  actualizarUISesion();
   activarSubmenusSidebar();
   activarResaltadoDeNavegacion();
   activarBotonVolverArriba();

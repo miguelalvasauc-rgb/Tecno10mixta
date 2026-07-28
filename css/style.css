@@ -2248,6 +2248,13 @@ summary:focus-visible {
   color: var(--color-texto);
 }
 
+.tarjeta-examen-diagnostico__aviso {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+  white-space: nowrap;
+}
+
 @media (max-width: 640px) {
   .tarjeta-examen-diagnostico {
     flex-direction: column;
@@ -2966,6 +2973,78 @@ summary:focus-visible {
 
 .criterios-nota {
   margin: 1.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+  text-align: center;
+}
+
+/* ---------- Cuenta (login/registro con Supabase) ---------- */
+.cuenta-tarjeta {
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: var(--sombra);
+}
+
+.cuenta-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.cuenta-tabs__boton {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 0.75rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+}
+
+.cuenta-tabs__boton--activo {
+  color: var(--color-turquesa);
+  border-bottom-color: var(--color-turquesa);
+}
+
+.cuenta-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cuenta-formulario input {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  margin-bottom: 0.75rem;
+}
+
+.cuenta-mensaje {
+  font-size: 0.88rem;
+  color: var(--color-texto-suave);
+  background-color: var(--color-fondo);
+  border-left: 3px solid var(--color-turquesa);
+  padding: 0.75rem 1rem;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 1.25rem;
+}
+
+.cuenta-error {
+  color: #E5484D;
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.cuenta-ayuda {
+  margin-top: 1rem;
   font-size: 0.85rem;
   color: var(--color-texto-suave);
   text-align: center;
@@ -3757,89 +3836,6 @@ summary:focus-visible {
 
 .barra-lateral__perfil:hover {
   background-color: var(--color-superficie-baja);
-}
-
-/* ---------- Modal de identificación de alumno ----------
-   NOTA: esto es solo para separar el progreso de compañeros que
-   comparten equipo — no es un sistema de seguridad. Ver comentario
-   extenso en js/main.js junto a CLAVE_PERFIL. */
-#modal-perfil {
-  width: 92%;
-  max-width: 420px;
-  max-height: 85vh;
-  overflow-y: auto;
-  margin: auto;
-  padding: 1.4rem 1.4rem 1.5rem;
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-lg);
-  background-color: var(--color-superficie);
-  color: var(--color-texto);
-  box-shadow: var(--sombra);
-}
-
-#modal-perfil::backdrop {
-  background-color: rgba(0, 0, 0, 0.55);
-}
-
-#modal-perfil-titulo {
-  margin: 0 1.8rem 0.6rem 0;
-  font-family: var(--font-encabezados);
-  font-size: 1.15rem;
-}
-
-.modal-perfil__ayuda {
-  margin: 0 0 1rem;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: var(--color-texto-suave);
-}
-
-.modal-perfil__cerrar {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 50%;
-  background-color: transparent;
-  color: var(--color-texto-suave);
-  font-size: 1rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.modal-perfil__cerrar:hover,
-.modal-perfil__cerrar:focus-visible {
-  background-color: var(--color-superficie-alterna);
-  color: var(--color-texto);
-}
-
-.formulario-perfil {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.campo-formulario__ayuda {
-  margin: 0;
-  font-size: 0.78rem;
-  color: var(--color-texto-suave);
-}
-
-.perfil-resumen {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.perfil-resumen__texto {
-  margin: 0;
-  font-size: 0.95rem;
 }
 
 .boton-secundario {
