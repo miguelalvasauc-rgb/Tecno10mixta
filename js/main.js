@@ -3691,20 +3691,12 @@ async function renderizarTareas() {
       fecha.className = "tarjeta__fecha";
       fecha.textContent = "Entrega: " + resolverFechaItem(item.fechaEntrega);
 
-      const meta = document.createElement("div");
-      meta.className = "tarjeta__meta";
-      const estado = document.createElement("span");
-      estado.className = "badge-estado";
-      estado.dataset.estado = item.estado;
-      estado.textContent = item.estado.charAt(0).toUpperCase() + item.estado.slice(1);
-      meta.appendChild(estado);
-
       const iconoTarjeta = document.createElement("span");
       iconoTarjeta.className = "tarjeta-tarea__icono";
       iconoTarjeta.setAttribute("aria-hidden", "true");
       iconoTarjeta.textContent = "▾";
 
-      resumenTarjeta.append(cabecera, fecha, meta, iconoTarjeta);
+      resumenTarjeta.append(cabecera, fecha, iconoTarjeta);
       tarjeta.appendChild(resumenTarjeta);
 
       const descripcion = document.createElement("p");
