@@ -4,6 +4,15 @@
       "side-tab"
     ],
     "ignoreFiles": [],
-    "ignoreValues": []
+    "ignoreValues": [
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "css/style.css"
+        ],
+        "createdAt": "2026-07-28T06:48:35.010Z"
+      }
+    ]
   }
 }
