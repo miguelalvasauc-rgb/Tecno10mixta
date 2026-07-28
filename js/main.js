@@ -5287,11 +5287,15 @@ async function sincronizarPerfilActivo() {
     return;
   }
 
-  const { data: perfil } = await clienteSupabase
+  const { data: perfil, error } = await clienteSupabase
     .from("perfiles")
     .select("nombre, grupo")
     .eq("id", session.user.id)
     .single();
+
+  // TEMPORAL — diagnóstico: quitar una vez resuelto por qué no llega el
+  // nombre real de perfiles.
+  console.log("[DIAGNOSTICO sincronizarPerfilActivo] perfil:", perfil, "error:", error, "user.id:", session.user.id);
 
   perfilActivoCache = perfil ? { nombre: perfil.nombre, grupo: perfil.grupo } : null;
 }
@@ -5329,10 +5333,7 @@ async function actualizarUISesion() {
     const texto = document.createElement("span");
     texto.textContent = nombreMostrado;
     el.append(icono, texto);
-    el.onclick = async () => {
-      await clienteSupabase.auth.signOut();
-      window.location.href = "index.html";
-    };
+    el.onclick = () => { window.location.href = "cuenta.html"; };
   });
 }
 
@@ -5426,24 +5427,54 @@ function activarFormulariosCuenta() {
   });
 }
 
-// Los botones "Identificarme" / "Cambiar de alumno" del panel de
-// Progreso (index.html y progreso.html): "Identificarme" solo es visible
-// sin sesión (ver renderizarProgreso/renderizarProgresoDetallado), así
-// que basta con llevar a cuenta.html; "Cambiar de alumno" solo es visible
-// con sesión activa, así que ahora equivale a cerrar sesión.
+// Solo existe #panel-sesion-activa en cuenta.html. Si ya hay sesión al
+// cargar esa página, oculta las pestañas de crear cuenta/iniciar sesión
+// y muestra este panel en su lugar; boton-cerrar-sesion-cuenta es el
+// único disparador real de signOut() en todo el flujo de cuenta.html
+// (los botones data-boton-cuenta del sidebar/barra inferior solo llevan
+// a cuenta.html, ver actualizarUISesion).
+async function activarPanelSesionCuenta() {
+  const panelSesion = document.getElementById("panel-sesion-activa");
+  if (!panelSesion) return;
+
+  const { data: { session } } = await clienteSupabase.auth.getSession();
+  if (!session) return;
+
+  const tabs = document.querySelector(".cuenta-tabs");
+  const panelCrear = document.getElementById("panel-crear");
+  const panelLogin = document.getElementById("panel-login");
+  if (tabs) tabs.hidden = true;
+  if (panelCrear) panelCrear.hidden = true;
+  if (panelLogin) panelLogin.hidden = true;
+  panelSesion.hidden = false;
+
+  const perfil = obtenerPerfilActivo();
+  const textoSesion = document.getElementById("cuenta-sesion-texto");
+  if (textoSesion) {
+    textoSesion.textContent = "Sesión iniciada como: " + (perfil?.nombre || "tu cuenta");
+  }
+
+  const botonCerrar = document.getElementById("boton-cerrar-sesion-cuenta");
+  if (botonCerrar) {
+    botonCerrar.addEventListener("click", async () => {
+      if (!window.confirm("¿Seguro que quieres cerrar sesión?")) return;
+      await clienteSupabase.auth.signOut();
+      window.location.href = "index.html";
+    });
+  }
+}
+
+// Botón "Identificarme" del panel de Progreso (index.html y
+// progreso.html): solo es visible sin sesión (ver
+// renderizarProgreso/renderizarProgresoDetallado), así que basta con
+// llevar a cuenta.html. Ya no existe un botón "Cambiar de alumno" — con
+// cuentas reales por alumno, cerrar sesión se hace únicamente desde
+// cuenta.html (ver activarPanelSesionCuenta).
 function activarAccionesPerfilProgreso() {
   const botonIdentificar = document.getElementById("boton-identificarme-progreso");
   if (botonIdentificar) {
     botonIdentificar.addEventListener("click", () => {
       window.location.href = "cuenta.html";
-    });
-  }
-
-  const botonCambiar = document.getElementById("boton-cambiar-alumno-progreso");
-  if (botonCambiar) {
-    botonCambiar.addEventListener("click", async () => {
-      await clienteSupabase.auth.signOut();
-      window.location.href = "index.html";
     });
   }
 }
@@ -5489,6 +5520,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   activarModalGrupo();
   activarFormulariosCuenta();
+  activarPanelSesionCuenta();
   activarAccionesPerfilProgreso();
   actualizarUISesion();
   activarSubmenusSidebar();
