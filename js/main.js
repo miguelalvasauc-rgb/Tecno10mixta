@@ -5252,7 +5252,7 @@ async function sincronizarPerfilActivo() {
   const { data: progreso } = await clienteSupabase
     .from("progreso")
     .select("tipo, item_id, trimestre")
-    .eq("perfil_id", session.user.id);
+    .eq("alumno_id", session.user.id);
 
   progresoCache = progreso || [];
 }
