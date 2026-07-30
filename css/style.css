@@ -751,6 +751,12 @@ summary:focus-visible {
   font-size: 0.95rem;
 }
 
+.seccion__nota-leyenda {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: var(--color-texto-suave);
+}
+
 /* ---------- Avisos (bento grid: "importante" ocupa más espacio) ---------- */
 .lista-avisos {
   list-style: none;
@@ -3928,6 +3934,38 @@ summary:focus-visible {
 
 :root[data-theme="claro"] .panel-progreso__enlace {
   color: var(--color-primario);
+}
+
+.leyenda-estados {
+  margin-top: 1rem;
+}
+
+.leyenda-estados h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  color: var(--color-texto);
+}
+
+.leyenda-estados__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.leyenda-estados__lista li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.leyenda-estados__texto {
+  font-family: var(--font-cuerpo);
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
 }
 
 /* ---------- Progreso detallado (progreso.html) ---------- */
