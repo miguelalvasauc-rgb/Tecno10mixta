@@ -97,11 +97,11 @@ const DATOS_HORARIO = [
 // "cte-ordinaria", "suspension", "evaluacion"
 const CALENDARIO_ESCOLAR_2026_2027 = [
   // --- CTE Fase Intensiva (regreso de docentes) ---
-  { fecha: "2026-08-24", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva", verificado: true },
-  { fecha: "2026-08-25", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva", verificado: true },
-  { fecha: "2026-08-26", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva", verificado: true },
-  { fecha: "2026-08-27", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva", verificado: true },
-  { fecha: "2026-08-28", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva", verificado: true },
+  { fecha: "2026-08-24", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva (sin clases)", verificado: true },
+  { fecha: "2026-08-25", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva (sin clases)", verificado: true },
+  { fecha: "2026-08-26", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva (sin clases)", verificado: true },
+  { fecha: "2026-08-27", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva (sin clases)", verificado: true },
+  { fecha: "2026-08-28", tipo: "cte-intensiva", etiqueta: "CTE Fase Intensiva (sin clases)", verificado: true },
 
   // --- Inicio / fin de clases ---
   { fecha: "2026-08-31", tipo: "inicio", etiqueta: "Inicio de clases", verificado: true },
@@ -116,14 +116,14 @@ const CALENDARIO_ESCOLAR_2026_2027 = [
   { fecha: "2027-05-05", tipo: "suspension", etiqueta: "Batalla de Puebla", verificado: true },
 
   // --- CTE Sesión Ordinaria (un viernes al mes, sin clases para alumnos) ---
-  { fecha: "2026-09-25", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
-  { fecha: "2026-10-30", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
-  { fecha: "2026-11-27", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
-  { fecha: "2027-01-29", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
-  { fecha: "2027-02-26", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
-  { fecha: "2027-04-30", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
-  { fecha: "2027-05-28", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
-  { fecha: "2027-06-25", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria", verificado: true },
+  { fecha: "2026-09-25", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria (sin clases)", verificado: true },
+  { fecha: "2026-10-30", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria (sin clases)", verificado: true },
+  { fecha: "2026-11-27", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria (sin clases)", verificado: true },
+  { fecha: "2027-01-29", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria (sin clases)", verificado: true },
+  { fecha: "2027-02-26", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria (sin clases)", verificado: true },
+  { fecha: "2027-04-30", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria (sin clases)", verificado: true },
+  { fecha: "2027-05-28", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria (sin clases)", verificado: true },
+  { fecha: "2027-06-25", tipo: "cte-ordinaria", etiqueta: "CTE Sesión Ordinaria (sin clases)", verificado: true },
 
   // --- Vacaciones de Invierno (21 dic 2026 al 6 ene 2027, + 4-5 ene
   // como continuación de receso para alumnos; el regreso a clases es el
@@ -4590,8 +4590,8 @@ const ETIQUETAS_TIPO_DIA = {
   inicio: "Inicio de clases",
   fin: "Fin de clases",
   vacaciones: "Vacaciones",
-  "cte-intensiva": "CTE Fase Intensiva",
-  "cte-ordinaria": "CTE Sesión Ordinaria",
+  "cte-intensiva": "CTE Fase Intensiva (sin clases)",
+  "cte-ordinaria": "CTE Sesión Ordinaria (sin clases)",
   suspension: "Suspensión de labores",
   evaluacion: "Evaluación",
 };
