@@ -5058,47 +5058,51 @@ function activarFabMenu() {
   itemTema.addEventListener("click", alternarTema);
   aplicarTema(temaActual); // rellena ícono/texto/aria-pressed del botón recién creado
 
-  // ---- 3-4. Selector de trimestre (solo en páginas de trimestre) ----
-  if (TRIMESTRE_ACTUAL) {
-    const divisorTrimestre = document.createElement("div");
-    divisorTrimestre.className = "fab-menu__divisor";
-    panel.appendChild(divisorTrimestre);
+  // ---- 3-4. Selector de trimestre (en las 8 páginas; el resaltado de
+  // "actual" depende solo de TRIMESTRE_DESBLOQUEADO, no de en qué página
+  // estás. Una píldora no navega si está bloqueada o si ya estás en esa
+  // página (TRIMESTRE_ACTUAL); la píldora "actual" vista desde otra
+  // página sí navega normalmente). ----
+  const divisorTrimestre = document.createElement("div");
+  divisorTrimestre.className = "fab-menu__divisor";
+  panel.appendChild(divisorTrimestre);
 
-    const fila = document.createElement("div");
-    fila.className = "fab-menu__trimestres";
-    fila.setAttribute("role", "group");
-    fila.setAttribute("aria-label", "Cambiar de trimestre");
+  const fila = document.createElement("div");
+  fila.className = "fab-menu__trimestres";
+  fila.setAttribute("role", "group");
+  fila.setAttribute("aria-label", "Cambiar de trimestre");
 
-    for (let numero = 1; numero <= 3; numero++) {
-      const estado = calcularEstadoTrimestre(numero);
-      const pildora = document.createElement("a");
-      pildora.href = "trimestre-" + numero + ".html";
-      pildora.className = "fab-menu__trimestre-pildora";
-      pildora.dataset.estado = estado;
-      pildora.textContent = (estado === "proximamente" ? "🔒 " : "") + numero + "°";
+  for (let numero = 1; numero <= 3; numero++) {
+    const estado = calcularEstadoTrimestre(numero);
+    const enEstaPagina = TRIMESTRE_ACTUAL !== null && Number(TRIMESTRE_ACTUAL) === numero;
+    const bloqueada = estado === "proximamente";
+    const pildora = document.createElement("a");
+    pildora.href = "trimestre-" + numero + ".html";
+    pildora.className = "fab-menu__trimestre-pildora";
+    pildora.dataset.estado = estado;
+    pildora.textContent = (bloqueada ? "🔒 " : "") + numero + "°";
 
-      if (estado === "actual") {
-        pildora.setAttribute("aria-current", "page");
-        pildora.setAttribute("aria-label", "Trimestre " + numero + " (actual)");
-      } else if (estado === "finalizado") {
-        pildora.setAttribute("aria-label", "Ir al Trimestre " + numero + " (finalizado)");
-      } else {
-        pildora.setAttribute("aria-label", "Trimestre " + numero + " (bloqueado)");
-      }
-
-      pildora.addEventListener("click", (evento) => {
-        cerrarFab();
-        if (estado !== "finalizado") {
-          evento.preventDefault();
-          if (estado === "proximamente") mostrarMensajeTrimestreBloqueado();
-        }
-      });
-
-      fila.appendChild(pildora);
+    if (enEstaPagina) {
+      pildora.setAttribute("aria-current", "page");
+      pildora.setAttribute("aria-label", "Trimestre " + numero + " (página actual)");
+    } else if (bloqueada) {
+      pildora.setAttribute("aria-label", "Trimestre " + numero + " (bloqueado)");
+    } else {
+      pildora.setAttribute("aria-label", "Ir al Trimestre " + numero);
     }
 
-    panel.appendChild(fila);
+    pildora.addEventListener("click", (evento) => {
+      cerrarFab();
+      if (bloqueada || enEstaPagina) {
+        evento.preventDefault();
+        if (bloqueada) mostrarMensajeTrimestreBloqueado();
+      }
+    });
+
+    fila.appendChild(pildora);
   }
+
+  panel.appendChild(fila);
 
   // ---- 5-6. "Ir a...": clonado en vivo desde el submenu del sidebar que
   // corresponda (#submenu-trimestre en páginas de trimestre, #submenu-inicio
