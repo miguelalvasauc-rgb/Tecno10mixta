@@ -2012,6 +2012,17 @@ summary:focus-visible {
   color: var(--color-texto-suave);
 }
 
+.padres-lista-enlaces li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.padres-lista-enlaces li a {
+  flex: 0 0 300px;
+}
+
 .padres-lista-enlaces a {
   color: var(--color-turquesa);
   font-weight: 700;
@@ -2021,6 +2032,10 @@ summary:focus-visible {
 .padres-lista-enlaces a:hover,
 .padres-lista-enlaces a:focus-visible {
   text-decoration: underline;
+}
+
+.padres-lista-enlaces__desc {
+  color: var(--color-texto-suave);
 }
 
 :root[data-theme="claro"] .padres-lista-enlaces a {
