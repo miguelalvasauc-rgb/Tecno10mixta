@@ -1993,6 +1993,15 @@ summary:focus-visible {
   color: var(--color-texto-suave);
 }
 
+.faq-item__imagen-ejemplo {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+  margin: 1rem auto 0;
+  border-radius: 10px;
+}
+
 /* ---------- Videos ---------- */
 .cuadricula-videos {
   display: grid;
