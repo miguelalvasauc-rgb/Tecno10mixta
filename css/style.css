@@ -2002,6 +2002,31 @@ summary:focus-visible {
   border-radius: 10px;
 }
 
+.padres-lista-enlaces {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  color: var(--color-texto-suave);
+}
+
+.padres-lista-enlaces a {
+  color: var(--color-turquesa);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.padres-lista-enlaces a:hover,
+.padres-lista-enlaces a:focus-visible {
+  text-decoration: underline;
+}
+
+:root[data-theme="claro"] .padres-lista-enlaces a {
+  color: var(--color-primario);
+}
+
 /* ---------- Videos ---------- */
 .cuadricula-videos {
   display: grid;
