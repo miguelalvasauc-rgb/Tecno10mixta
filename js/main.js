@@ -5104,16 +5104,9 @@ async function renderizarTodo() {
   activarBotonEncuadreAnual();
 }
 
-// La barra lateral (desktop) y el modal de grupo (barra inferior móvil)
-// tienen cada uno su propio <select> ("selector-grupo" y
-// "selector-grupo-movil" respectivamente, un <select> no puede repetir
-// id). Cambiar cualquiera de los dos debe reflejarse en el otro para que
-// no queden desincronizados al cambiar de tamaño de ventana.
-function sincronizarSelectoresGrupo(valor) {
+function sincronizarSelectorGrupo(valor) {
   const desktop = document.getElementById("selector-grupo");
-  const movil = document.getElementById("selector-grupo-movil");
   if (desktop) desktop.value = valor;
-  if (movil) movil.value = valor;
 }
 
 async function alCambiarGrupo(evento) {
@@ -5121,26 +5114,8 @@ async function alCambiarGrupo(evento) {
   // al navegar entre la portada y las páginas de trimestre.
   grupoActual = evento.target.value;
   localStorage.setItem(CLAVE_GRUPO, grupoActual);
-  sincronizarSelectoresGrupo(grupoActual);
+  sincronizarSelectorGrupo(grupoActual);
   await renderizarTodo();
-}
-
-// Modal de grupo: mismo patrón que activarCierreModalDetalle (showModal/
-// close, cierre por botón "✕" o click en el ::backdrop; ESC lo maneja el
-// <dialog> nativo). Solo tiene disparador en la barra inferior móvil.
-function activarModalGrupo() {
-  const boton = document.getElementById("boton-grupo-movil");
-  const modal = document.getElementById("modal-grupo");
-  if (!boton || !modal) return;
-
-  boton.addEventListener("click", () => modal.showModal());
-
-  const botonCerrar = modal.querySelector(".modal-grupo__cerrar");
-  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
-
-  modal.addEventListener("click", (evento) => {
-    if (evento.target === modal) modal.close();
-  });
 }
 
 /* =========================================================
@@ -5455,9 +5430,9 @@ clienteSupabase.auth.onAuthStateChange(async () => {
 document.addEventListener("DOMContentLoaded", async () => {
   aplicarTema(temaActual);
 
-  // Sincroniza los <select> de grupo (barra lateral y modal móvil) con
-  // el grupo recuperado de localStorage (por defecto "todos").
-  sincronizarSelectoresGrupo(grupoActual);
+  // Sincroniza el <select> de grupo de la barra lateral con el grupo
+  // recuperado de localStorage (por defecto "todos").
+  sincronizarSelectorGrupo(grupoActual);
 
   actualizarEnlacesTrimestreEnSidebar();
   actualizarEstadoTarjetasTrimestre();
@@ -5471,11 +5446,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.querySelectorAll(".boton-tema").forEach((boton) => boton.addEventListener("click", alternarTema));
   document.getElementById("boton-colapsar-sidebar").addEventListener("click", alternarSidebarColapsada);
-  ["selector-grupo", "selector-grupo-movil"].forEach((id) => {
-    const selector = document.getElementById(id);
-    if (selector) selector.addEventListener("change", alCambiarGrupo);
-  });
-  activarModalGrupo();
+  const selectorGrupo = document.getElementById("selector-grupo");
+  if (selectorGrupo) selectorGrupo.addEventListener("change", alCambiarGrupo);
   activarFormulariosCuenta();
   activarPanelSesionCuenta();
   activarAccionesPerfilProgreso();

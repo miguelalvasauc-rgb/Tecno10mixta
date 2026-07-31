@@ -170,10 +170,10 @@
       <span class="barra-inferior__icono" aria-hidden="true">🏠</span>
       <span class="barra-inferior__texto">Inicio</span>
     </a>
-    <button type="button" class="barra-inferior__item" id="boton-grupo-movil">
-      <span class="barra-inferior__icono" aria-hidden="true">👥</span>
-      <span class="barra-inferior__texto">Grupo</span>
-    </button>
+    <a href="padres.html" class="barra-inferior__item">
+      <span class="barra-inferior__icono" aria-hidden="true">👨‍👩‍👧‍👦</span>
+      <span class="barra-inferior__texto">Para Padres</span>
+    </a>
     <a href="progreso.html" class="barra-inferior__item">
       <span class="barra-inferior__icono" aria-hidden="true">📊</span>
       <span class="barra-inferior__texto">Progreso</span>
@@ -181,23 +181,7 @@
     <button type="button" class="barra-inferior__item" data-boton-cuenta></button>
   </nav>
 
-  <!-- Modal de grupo: duplica el selector de la barra lateral para que
-       también se pueda cambiar de grupo desde la barra inferior móvil
-       (ver activarModalGrupo en js/main.js). -->
-  <dialog id="modal-grupo" aria-labelledby="modal-grupo-titulo">
-    <button type="button" class="modal-grupo__cerrar" aria-label="Cerrar">✕</button>
-    <h3 id="modal-grupo-titulo">Elige tu grupo</h3>
-    <div class="campo-grupo">
-      <label for="selector-grupo-movil">Grupo</label>
-      <select id="selector-grupo-movil" aria-label="Filtrar contenido por grupo">
-        <option value="todos">Todos los grupos</option>
-        <option value="3C">3°C</option>
-        <option value="3E">3°E</option>
-      </select>
-    </div>
-  </dialog>
-
-  <!-- ===================== MIGAS DE PAN ===================== -->
+<!-- ===================== MIGAS DE PAN ===================== -->
   <!-- El tercer nivel (sección) se completa por JS conforme se hace scroll,
        reutilizando la misma detección de sección visible del menú (ver
        activarResaltadoDeNavegacion en js/main.js). Empieza oculto. -->
