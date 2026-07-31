@@ -3252,11 +3252,21 @@ summary:focus-visible {
 }
 
 /* ---------- Botón flotante "Volver arriba" ---------- */
-.boton-volver-arriba {
+/* ---------- FAB de accesos rápidos ----------
+   Reemplaza los antiguos #boton-volver-arriba y #boton-tema-flotante por
+   un único botón expandible. .fab-menu conserva la posición/z-index que
+   tenía #boton-volver-arriba (bottom-right); .fab-menu__panel se abre
+   hacia arriba, posicionado absolute respecto a .fab-menu, así que no
+   afecta el tamaño en flujo del contenedor (solo el botón lo hace). */
+.fab-menu {
   position: fixed;
   right: 1.25rem;
   bottom: 1.25rem;
-  z-index: 60;
+  z-index: 90;
+}
+
+.fab-menu__boton {
+  position: relative;
   width: 48px;
   height: 48px;
   border: none;
@@ -3270,10 +3280,7 @@ summary:focus-visible {
   justify-content: center;
   cursor: pointer;
   box-shadow: var(--sombra);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(12px);
-  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s;
+  transition: filter 0.2s ease;
 }
 
 /* En modo claro el turquesa no da suficiente contraste para un ícono
@@ -3286,59 +3293,127 @@ summary:focus-visible {
    ~10.5:1 ahí), pero sobre el footer navy ese borde da ~9.6:1 y
    rompe el camuflaje. Se probó reemplazar el relleno por turquesa,
    pero eso falla contra el fondo normal de la página (~2.3:1). */
-:root[data-theme="claro"] .boton-volver-arriba {
+:root[data-theme="claro"] .fab-menu__boton {
   background-color: var(--color-primario);
   color: var(--color-claro-sobre-navy);
   border: 3px solid var(--color-claro-sobre-navy);
 }
 
-.boton-volver-arriba--visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0s;
-}
-
-.boton-volver-arriba:hover,
-.boton-volver-arriba:focus-visible {
+.fab-menu__boton:hover,
+.fab-menu__boton:focus-visible {
   filter: brightness(1.1);
 }
 
-/* ---------- Botón flotante de tema (solo móvil, ver .boton-tema--flotante
-   oculto en @media (min-width: 1024px) más abajo) ----------
-   Mismo patrón visual que .boton-volver-arriba (circular, fixed, misma
-   sombra), pero arriba a la derecha para no chocar con ese botón, y
-   siempre visible desde la carga (sin la lógica de aparecer al hacer
-   scroll). Hereda color/fondo/contraste de .boton-tema (incluida la
-   variante :root[data-theme="claro"] .boton-tema ya definida arriba). */
-.boton-tema--flotante {
-  position: fixed;
-  top: 1.25rem;
-  right: 1.25rem;
-  z-index: 60;
-  width: 48px;
-  height: 48px;
-  padding: 0;
-  border-radius: 50%;
-  justify-content: center;
-  font-size: 1.2rem;
+.fab-menu__panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.75rem);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  min-width: 200px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* [hidden] normalmente aplica display:none vía la hoja de estilos del
+   navegador; se sobreescribe aquí a display:flex (una regla de autor
+   siempre gana sobre la del user-agent, sin importar especificidad) para
+   poder animar opacity/transform en vez de cortar abruptamente. */
+.fab-menu__panel[hidden] {
+  display: flex;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+.fab-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-cuerpo);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
   box-shadow: var(--sombra);
 }
 
-@media (max-width: 480px) {
-  .boton-tema--flotante {
-    top: 1rem;
-    right: 1rem;
-    width: 44px;
-    height: 44px;
-    font-size: 1.1rem;
-  }
+/* Tipografía/colores reutilizados de .barra-inferior__item (texto suave,
+   resalta a --md-secondary en hover/focus); a diferencia de esa barra,
+   cada ítem del FAB flota solo en el aire, así que necesita su propio
+   fondo/borde de tarjeta para poder leerse sobre cualquier contenido. */
+.fab-menu__item:not(.boton-tema) {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-full);
+  padding: 0.5rem 1rem;
+  color: var(--color-texto-suave);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.fab-menu__item:not(.boton-tema):hover,
+.fab-menu__item:not(.boton-tema):focus-visible {
+  color: var(--md-secondary);
+  border-color: var(--color-turquesa);
+}
+
+.fab-menu__item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fab-menu__divisor {
+  height: 1px;
+  background-color: var(--color-borde);
+  margin: 0.15rem 0.5rem;
+}
+
+/* Selector de trimestre del FAB: mismos colores de estado que
+   .tarjeta-trimestre[data-estado="…"] en la portada, calculados por la
+   misma función (calcularEstadoTrimestre() en js/main.js). */
+.fab-menu__trimestres {
+  display: flex;
+  gap: 0.4rem;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-full);
+  padding: 0.4rem;
+  box-shadow: var(--sombra);
+}
+
+.fab-menu__trimestre-pildora {
+  flex: 1;
+  text-align: center;
+  padding: 0.35rem 0;
+  border-radius: var(--radio-full);
+  background-color: var(--color-superficie-baja);
+  color: var(--color-texto-suave);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.fab-menu__trimestre-pildora[data-estado="actual"] {
+  background-color: var(--color-estado-progreso);
+  color: #2a1400;
+}
+
+.fab-menu__trimestre-pildora[data-estado="finalizado"] {
+  background-color: var(--color-estado-completado);
+  color: #04211d;
+}
+
+.fab-menu__trimestre-pildora[data-estado="proximamente"] {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .boton-volver-arriba {
-    transition: opacity 0.01ms linear, visibility 0.01ms linear;
-    transform: none;
+  .fab-menu__panel {
+    transition: opacity 0.01ms linear, transform 0.01ms linear;
   }
 
   .barra-lateral {
@@ -3351,12 +3426,15 @@ summary:focus-visible {
 }
 
 @media (max-width: 480px) {
-  .boton-volver-arriba {
+  .fab-menu {
     right: 1rem;
     bottom: 1rem;
+  }
+
+  .fab-menu__boton {
     width: 44px;
     height: 44px;
-    font-size: 1.25rem;
+    font-size: 1.2rem;
   }
 }
 
@@ -3796,10 +3874,6 @@ summary:focus-visible {
     display: none;
   }
 
-  .boton-tema--flotante {
-    display: none;
-  }
-
   body {
     padding-left: 256px;
   }
@@ -3820,10 +3894,10 @@ summary:focus-visible {
     padding-bottom: 64px;
   }
 
-  /* Deja aire para que el botón "volver arriba" no quede tapado por la
-     barra inferior fija; gana sobre la regla de la media query de 480px
-     de arriba porque aparece después en el archivo. */
-  .boton-volver-arriba {
+  /* Deja aire para que el FAB no quede tapado por la barra inferior fija;
+     gana sobre la regla de la media query de 480px de arriba porque
+     aparece después en el archivo. */
+  .fab-menu {
     bottom: calc(64px + 1rem);
   }
 }

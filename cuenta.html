@@ -245,14 +245,19 @@
     <button type="button" class="barra-inferior__item" data-boton-cuenta></button>
   </nav>
 
-<button id="boton-tema-flotante" class="boton-tema boton-tema--flotante" type="button" aria-pressed="true" aria-label="Cambiar a modo claro">
-    <span class="boton-tema__icono" aria-hidden="true">☀️</span>
-    <span class="boton-tema__texto sr-only">Modo claro</span>
-  </button>
-
-  <button id="boton-volver-arriba" class="boton-volver-arriba" type="button" aria-label="Volver arriba">
-    <span aria-hidden="true">↑</span>
-  </button>
+<!-- FAB de accesos rápidos: reemplaza los antiguos botones flotantes de
+       tema y volver arriba. El panel se rellena en runtime por
+       activarFabMenu() en js/main.js, con contenido distinto según la
+       página (ver esa función). -->
+  <div class="fab-menu" data-fab>
+    <div class="fab-menu__panel" id="fab-menu-panel" hidden>
+      <!-- el contenido se genera/rellena en JS: volver arriba, tema,
+           selector de trimestre (si aplica), "ir a..." (si aplica) -->
+    </div>
+    <button type="button" class="fab-menu__boton" id="fab-menu-boton" aria-expanded="false" aria-controls="fab-menu-panel" aria-label="Abrir menú de accesos rápidos">
+      <span aria-hidden="true">☰</span>
+    </button>
+  </div>
 
   <script src="js/main.js"></script>
 </body>

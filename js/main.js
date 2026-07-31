@@ -4892,38 +4892,40 @@ function actualizarEnlacesTrimestreEnSidebar() {
   }
 }
 
-// Marca cada .tarjeta-trimestre de la portada como "finalizado", "actual"
-// o "proximamente" comparando su número contra TRIMESTRE_DESBLOQUEADO (el
-// control real de acceso; ultimoTrimestreVisto solo sirve para los
-// enlaces del sidebar, no para esto). Las tarjetas "proximamente" son
-// <a href> funcionales en el HTML (por si se quita el bloqueo más
-// adelante), así que aquí también se intercepta su clic para que no
-// naveguen mientras sigan bloqueadas.
+// Compara `numero` contra TRIMESTRE_DESBLOQUEADO (el control real de
+// acceso; ultimoTrimestreVisto solo sirve para los enlaces del sidebar,
+// no para esto) y devuelve su estado: "finalizado", "actual" o
+// "proximamente". Usado tanto por actualizarEstadoTarjetasTrimestre()
+// (tarjetas de la portada) como por activarFabMenu() (píldoras del FAB),
+// para no duplicar el cálculo en dos lugares.
+function calcularEstadoTrimestre(numero) {
+  if (numero < TRIMESTRE_DESBLOQUEADO) return "finalizado";
+  if (numero === TRIMESTRE_DESBLOQUEADO) return "actual";
+  return "proximamente";
+}
+
+const TEXTO_ESTADO_TRIMESTRE = {
+  finalizado: "Finalizado",
+  actual: "Actual",
+  proximamente: "🔒 Próximamente",
+};
+
+// Marca cada .tarjeta-trimestre de la portada con el estado calculado por
+// calcularEstadoTrimestre(). Las tarjetas "proximamente" son <a href>
+// funcionales en el HTML (por si se quita el bloqueo más adelante), así
+// que aquí también se intercepta su clic para que no naveguen mientras
+// sigan bloqueadas.
 function actualizarEstadoTarjetasTrimestre() {
   const tarjetas = document.querySelectorAll(".tarjeta-trimestre[data-trimestre]");
   if (tarjetas.length === 0) return;
 
-  const actual = TRIMESTRE_DESBLOQUEADO;
-
   tarjetas.forEach((tarjeta) => {
     const numero = Number(tarjeta.dataset.trimestre);
     const etiqueta = tarjeta.querySelector(".tarjeta-trimestre__estado");
-    let estado;
-    let texto;
-
-    if (numero < actual) {
-      estado = "finalizado";
-      texto = "Finalizado";
-    } else if (numero === actual) {
-      estado = "actual";
-      texto = "Actual";
-    } else {
-      estado = "proximamente";
-      texto = "🔒 Próximamente";
-    }
+    const estado = calcularEstadoTrimestre(numero);
 
     tarjeta.dataset.estado = estado;
-    if (etiqueta) etiqueta.textContent = texto;
+    if (etiqueta) etiqueta.textContent = TEXTO_ESTADO_TRIMESTRE[estado];
 
     tarjeta.addEventListener("click", (evento) => {
       if (tarjeta.dataset.estado === "proximamente") {
@@ -4963,19 +4965,62 @@ function actualizarMigaDeSeccion(enlaceActivo) {
   item.hidden = false;
 }
 
-// Botón flotante "Volver arriba": solo existe en las páginas de
-// trimestre (no en la portada), así que si no se encuentra el botón la
-// función simplemente no hace nada.
-function activarBotonVolverArriba() {
-  const boton = document.getElementById("boton-volver-arriba");
-  if (!boton) return;
+// FAB de accesos rápidos (reemplaza los antiguos #boton-volver-arriba y
+// #boton-tema-flotante): un único botón que despliega, hacia arriba,
+// "Volver arriba", el toggle de tema y, según la página, el selector de
+// trimestre y "Ir a...". El panel completo se genera aquí en vez de
+// escribirse en el HTML de las 8 páginas, para no duplicar el contenido
+// del sidebar (los ítems de "Ir a..." se clonan en vivo desde él) ni el
+// cálculo de estado de los trimestres (ver calcularEstadoTrimestre()).
+function activarFabMenu() {
+  const contenedor = document.querySelector("[data-fab]");
+  const boton = document.getElementById("fab-menu-boton");
+  const panel = document.getElementById("fab-menu-panel");
+  if (!contenedor || !boton || !panel) return;
+
+  const iconoBoton = boton.querySelector("span");
+
+  function cerrarFab() {
+    panel.hidden = true;
+    boton.setAttribute("aria-expanded", "false");
+    if (iconoBoton) iconoBoton.textContent = "☰";
+  }
+
+  function abrirFab() {
+    panel.hidden = false;
+    boton.setAttribute("aria-expanded", "true");
+    if (iconoBoton) iconoBoton.textContent = "✕";
+  }
+
+  boton.addEventListener("click", () => {
+    if (panel.hidden) abrirFab();
+    else cerrarFab();
+  });
+
+  document.addEventListener("click", (evento) => {
+    if (!panel.hidden && !contenedor.contains(evento.target)) cerrarFab();
+  });
+
+  document.addEventListener("keydown", (evento) => {
+    if (evento.key === "Escape" && !panel.hidden) {
+      cerrarFab();
+      boton.focus();
+    }
+  });
+
+  // ---- 1. Volver arriba (mismo umbral y comportamiento que antes) ----
+  const itemVolverArriba = document.createElement("button");
+  itemVolverArriba.type = "button";
+  itemVolverArriba.className = "fab-menu__item";
+  itemVolverArriba.innerHTML =
+    '<span aria-hidden="true">🔝</span><span>Volver arriba</span>';
+  panel.appendChild(itemVolverArriba);
 
   const UMBRAL_PX = 400;
   let actualizacionPendiente = false;
 
-  function actualizarVisibilidad() {
-    const visible = window.scrollY > UMBRAL_PX;
-    boton.classList.toggle("boton-volver-arriba--visible", visible);
+  function actualizarEstadoVolverArriba() {
+    itemVolverArriba.disabled = window.scrollY <= UMBRAL_PX;
     actualizacionPendiente = false;
   }
 
@@ -4987,19 +5032,100 @@ function activarBotonVolverArriba() {
     () => {
       if (actualizacionPendiente) return;
       actualizacionPendiente = true;
-      window.requestAnimationFrame(actualizarVisibilidad);
+      window.requestAnimationFrame(actualizarEstadoVolverArriba);
     },
     { passive: true }
   );
 
-  actualizarVisibilidad(); // por si la página carga con scroll ya restaurado
+  actualizarEstadoVolverArriba(); // por si la página carga con scroll ya restaurado
 
-  boton.addEventListener("click", () => {
+  itemVolverArriba.addEventListener("click", () => {
     const prefiereMovimientoReducido = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
     window.scrollTo({ top: 0, behavior: prefiereMovimientoReducido ? "auto" : "smooth" });
+    cerrarFab();
   });
+
+  // ---- 2. Tema (misma clase .boton-tema para heredar ícono/texto/
+  // aria-pressed vía aplicarTema(), igual que hacían los botones viejos) ----
+  const itemTema = document.createElement("button");
+  itemTema.type = "button";
+  itemTema.className = "fab-menu__item boton-tema";
+  itemTema.innerHTML =
+    '<span class="boton-tema__icono" aria-hidden="true"></span><span class="boton-tema__texto"></span>';
+  panel.appendChild(itemTema);
+  itemTema.addEventListener("click", alternarTema);
+  aplicarTema(temaActual); // rellena ícono/texto/aria-pressed del botón recién creado
+
+  // ---- 3-4. Selector de trimestre (solo en páginas de trimestre) ----
+  if (TRIMESTRE_ACTUAL) {
+    const divisorTrimestre = document.createElement("div");
+    divisorTrimestre.className = "fab-menu__divisor";
+    panel.appendChild(divisorTrimestre);
+
+    const fila = document.createElement("div");
+    fila.className = "fab-menu__trimestres";
+    fila.setAttribute("role", "group");
+    fila.setAttribute("aria-label", "Cambiar de trimestre");
+
+    for (let numero = 1; numero <= 3; numero++) {
+      const estado = calcularEstadoTrimestre(numero);
+      const pildora = document.createElement("a");
+      pildora.href = "trimestre-" + numero + ".html";
+      pildora.className = "fab-menu__trimestre-pildora";
+      pildora.dataset.estado = estado;
+      pildora.textContent = (estado === "proximamente" ? "🔒 " : "") + numero + "°";
+
+      if (estado === "actual") {
+        pildora.setAttribute("aria-current", "page");
+        pildora.setAttribute("aria-label", "Trimestre " + numero + " (actual)");
+      } else if (estado === "finalizado") {
+        pildora.setAttribute("aria-label", "Ir al Trimestre " + numero + " (finalizado)");
+      } else {
+        pildora.setAttribute("aria-label", "Trimestre " + numero + " (bloqueado)");
+      }
+
+      pildora.addEventListener("click", (evento) => {
+        cerrarFab();
+        if (estado !== "finalizado") {
+          evento.preventDefault();
+          if (estado === "proximamente") mostrarMensajeTrimestreBloqueado();
+        }
+      });
+
+      fila.appendChild(pildora);
+    }
+
+    panel.appendChild(fila);
+  }
+
+  // ---- 5-6. "Ir a...": clonado en vivo desde el submenu del sidebar que
+  // corresponda (#submenu-trimestre en páginas de trimestre, #submenu-inicio
+  // en la portada). Solo se toman los <a> con ancla local ("#..."); en
+  // faq/padres/progreso/cuenta esos mismos enlaces apuntan a
+  // "index.html#..." o "trimestre-N.html#...", así que el filtro los
+  // excluye automáticamente y la sección "Ir a..." no aparece ahí. ----
+  const idSubmenuOrigen = TRIMESTRE_ACTUAL ? "submenu-trimestre" : "submenu-inicio";
+  const submenuOrigen = document.getElementById(idSubmenuOrigen);
+  const enlacesOrigen = submenuOrigen
+    ? Array.from(submenuOrigen.querySelectorAll('a[href^="#"]'))
+    : [];
+
+  if (enlacesOrigen.length > 0) {
+    const divisorIrA = document.createElement("div");
+    divisorIrA.className = "fab-menu__divisor";
+    panel.appendChild(divisorIrA);
+
+    enlacesOrigen.forEach((enlaceOriginal) => {
+      const enlace = document.createElement("a");
+      enlace.href = enlaceOriginal.getAttribute("href");
+      enlace.className = "fab-menu__item";
+      enlace.innerHTML = enlaceOriginal.innerHTML;
+      enlace.addEventListener("click", cerrarFab);
+      panel.appendChild(enlace);
+    });
+  }
 }
 
 // Resalta en el menú el enlace de la sección que se está viendo mientras
@@ -5454,7 +5580,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   actualizarUISesion();
   activarSubmenusSidebar();
   activarResaltadoDeNavegacion();
-  activarBotonVolverArriba();
+  activarFabMenu();
   activarBannerExamenDiagnostico();
 
   const botonMesAnterior = document.getElementById("calendario-mes-anterior");
