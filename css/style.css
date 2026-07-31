@@ -1621,10 +1621,10 @@ summary:focus-visible {
 
 /* Mismo bug de contraste documentado en el resto del sitio: turquesa +
    texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro.
-   Hoy ningún dato usa este estado sin sobreescribir (entregada/pendiente/
-   atrasada ya tienen su propio color), pero queda corregido por si se
-   agrega un nuevo valor de estado en el futuro. */
-:root[data-theme="claro"] .badge-estado {
+   El :not([data-estado]) excluye explícitamente a los badges con estado
+   (entregada/pendiente/atrasada/etc.), que ya tienen su propio color y no
+   deben quedar pisados por esta regla, sin depender del orden en el archivo. */
+:root[data-theme="claro"] .badge-estado:not([data-estado]) {
   background-color: var(--color-primario);
   color: var(--color-claro-sobre-navy);
 }
@@ -3175,6 +3175,19 @@ summary:focus-visible {
 .pie__grupos {
   color: var(--color-turquesa);
   font-weight: 700;
+}
+
+/* El pie es una superficie siempre-navy en ambos temas (igual que el
+   header y el hero), así que el turquesa del enlace no necesita override
+   de modo claro: el fondo nunca cambia. */
+.pie__privacidad {
+  color: var(--color-claro-sobre-navy-suave);
+}
+
+.pie__privacidad a {
+  color: var(--color-turquesa);
+  font-weight: 700;
+  text-decoration: underline;
 }
 
 /* ---------- Botón flotante "Volver arriba" ---------- */
