@@ -5739,6 +5739,99 @@ clienteSupabase.auth.onAuthStateChange(async () => {
 });
 
 /* =========================================================
+   12. PANEL ADMINISTRATIVO DOCENTE (admin.html)
+
+   admin.html no se enlaza desde la navegación pública: se entra solo por
+   URL directa, y el guard de abajo es el control de acceso real (no solo
+   visual). ¿Existe una función es_docente() en JS? No: es un RPC de
+   Postgres ya expuesto vía PostgREST (clienteSupabase.rpc("es_docente")),
+   confirmado en vivo — evalúa el rol del usuario en sesión del lado del
+   servidor (perfiles.rol) y devuelve un booleano; no hace falta
+   replicar ese chequeo consultando "perfiles" directamente desde aquí.
+   ========================================================= */
+
+// admin.html es la única página marcada con <body data-pagina="admin">;
+// en el resto queda en false y todo este bloque no hace nada.
+const ES_PAGINA_ADMIN = document.body.dataset.pagina === "admin";
+
+if (ES_PAGINA_ADMIN) {
+  // Mismo criterio de "sin parpadeo" que el guard de trimestre (sección
+  // 2): overlay de carga si la verificación tarda más de 150ms, nunca un
+  // mensaje de "no autorizado" a medio camino — solo redirección directa.
+  (async function guardPanelDocente() {
+    let overlayCarga = null;
+    const temporizadorOverlay = setTimeout(() => {
+      overlayCarga = mostrarOverlayCargaTrimestre();
+    }, 150);
+
+    const {
+      data: { session },
+    } = await clienteSupabase.auth.getSession();
+
+    if (!session) {
+      window.location.replace("cuenta.html");
+      return;
+    }
+
+    const { data: esDocente, error } = await clienteSupabase.rpc("es_docente");
+    if (error || !esDocente) {
+      window.location.replace("index.html");
+      return;
+    }
+
+    // Puebla perfilActivoCache (nombre/grupo) para mostrar el nombre del
+    // docente en el header; no depende de que el DOMContentLoaded
+    // compartido ya la haya poblado, para no encadenar con esa carrera.
+    await sincronizarPerfilActivo();
+    const nombreDocente = document.getElementById("admin-nombre-docente");
+    if (nombreDocente) {
+      nombreDocente.textContent = obtenerPerfilActivo()?.nombre || "Docente";
+    }
+
+    clearTimeout(temporizadorOverlay);
+    if (overlayCarga) ocultarOverlayCargaTrimestre(overlayCarga);
+  })();
+}
+
+// Pestañas de los 5 módulos del panel (Calificación y progreso, Alumnos,
+// Avisos, Trimestre, Fechas de entrega). Mismo patrón de
+// tabs/tabpanels que activarFormulariosCuenta() en cuenta.html, generalizado
+// a N pestañas. El contenido real de cada módulo se agrega en prompts
+// posteriores; por ahora cada <section> solo trae un placeholder.
+function activarTabsAdmin() {
+  const tabs = Array.from(document.querySelectorAll(".admin-tabs__boton"));
+  if (tabs.length === 0) return;
+
+  function mostrarTab(idActivo) {
+    tabs.forEach((tab) => {
+      const activo = tab.id === idActivo;
+      tab.classList.toggle("admin-tabs__boton--activo", activo);
+      tab.setAttribute("aria-selected", String(activo));
+      const panel = document.getElementById(tab.getAttribute("aria-controls"));
+      if (panel) panel.hidden = !activo;
+    });
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => mostrarTab(tab.id));
+  });
+}
+
+// Botón "Cerrar sesión" del header de admin.html (distinto del de
+// cuenta.html: aquí siempre hay una sesión de docente ya confirmada por
+// el guard, así que no hace falta el panel de "sesión activa").
+function activarCierreSesionAdmin() {
+  const boton = document.getElementById("boton-cerrar-sesion-admin");
+  if (!boton) return;
+
+  boton.addEventListener("click", async () => {
+    if (!window.confirm("¿Seguro que quieres cerrar sesión?")) return;
+    await clienteSupabase.auth.signOut();
+    window.location.href = "index.html";
+  });
+}
+
+/* =========================================================
    10. INICIALIZACIÓN
    ========================================================= */
 
@@ -5779,6 +5872,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarResaltadoDeNavegacion();
   activarFabMenu();
   activarBannerExamenDiagnostico();
+  activarTabsAdmin();
+  activarCierreSesionAdmin();
 
   const botonMesAnterior = document.getElementById("calendario-mes-anterior");
   if (botonMesAnterior) botonMesAnterior.addEventListener("click", () => avanzarMesCalendario(-1));

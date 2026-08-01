@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel docente · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
+  <meta name="description" content="Panel de control docente: calificación y progreso, alumnos, avisos, trimestre y fechas de entrega.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body data-pagina="admin">
+  <a href="#main-content" class="enlace-saltar">Saltar al contenido principal</a>
+
+  <aside class="barra-lateral" aria-label="Navegación principal">
+    <a href="index.html" class="barra-lateral__logo" aria-label="Ir a la portada">
+      <img
+        src="assets/logo-10mixta.jpg"
+        alt="Logo institucional de la Escuela Secundaria No. 10 Mixta Fernando Hernández Alcalá"
+        class="barra-lateral__logo-img">
+    </a>
+    <button type="button" id="boton-colapsar-sidebar" class="barra-lateral__toggle"
+            aria-expanded="true" aria-controls="nav-principal"
+            aria-label="Colapsar menú lateral">
+      <span aria-hidden="true">◀</span>
+    </button>
+    <h1 class="sr-only">Escuela Secundaria No. 10 Mixta &ldquo;Fernando Hernández Alcalá&rdquo; — Educación Tecnológica</h1>
+    <p class="barra-lateral__eyebrow">Educación Tecnológica</p>
+
+    <nav id="nav-principal" class="barra-lateral__nav" aria-label="Secciones">
+      <div class="barra-lateral__nav-grupo">
+        <div class="barra-lateral__nav-fila">
+          <a href="index.html" class="barra-lateral__nav-enlace">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">🏠</span>
+            <span class="barra-lateral__nav-texto">Inicio</span>
+          </a>
+          <button type="button" class="barra-lateral__nav-toggle" data-grupo="inicio" aria-expanded="false" aria-controls="submenu-inicio" aria-label="Mostrar secciones de Inicio">
+            <span class="barra-lateral__nav-toggle-icono" aria-hidden="true">▾</span>
+          </button>
+        </div>
+        <div id="submenu-inicio" class="barra-lateral__submenu" hidden>
+          <a href="index.html#avisos">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📢</span>
+            <span class="barra-lateral__nav-texto">Avisos</span>
+          </a>
+          <a href="index.html#calendario">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📅</span>
+            <span class="barra-lateral__nav-texto">Calendario</span>
+          </a>
+          <a href="index.html#perfil-docente">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">👤</span>
+            <span class="barra-lateral__nav-texto">Conoce a tu profesor</span>
+          </a>
+          <a href="index.html#horario-clases">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">🕐</span>
+            <span class="barra-lateral__nav-texto">Horario de clases</span>
+          </a>
+          <a href="index.html#criterios-evaluacion">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📊</span>
+            <span class="barra-lateral__nav-texto">Criterios de evaluación</span>
+          </a>
+          <a href="index.html#reglamento-taller">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📋</span>
+            <span class="barra-lateral__nav-texto">Reglamento</span>
+          </a>
+          <a href="index.html#lista-materiales">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">🎒</span>
+            <span class="barra-lateral__nav-texto">Materiales</span>
+          </a>
+          <a href="index.html#contacto">
+            <span class="barra-lateral__nav-icono" aria-hidden="true">📧</span>
+            <span class="barra-lateral__nav-texto">Contacto</span>
+          </a>
+        </div>
+      </div>
+
+      <a href="faq.html" class="barra-lateral__nav-enlace-simple">
+        <span class="barra-lateral__nav-icono" aria-hidden="true">❓</span>
+        <span class="barra-lateral__nav-texto">FAQ</span>
+      </a>
+      <a href="padres.html" class="barra-lateral__nav-enlace-simple">
+        <span class="barra-lateral__nav-icono" aria-hidden="true">👨‍👩‍👧‍👦</span>
+        <span class="barra-lateral__nav-texto">Para Padres</span>
+      </a>
+    </nav>
+  </aside>
+
+  <nav class="barra-inferior" aria-label="Navegación móvil">
+    <a href="index.html" class="barra-inferior__item">
+      <span class="barra-inferior__icono" aria-hidden="true">🏠</span>
+      <span class="barra-inferior__texto">Inicio</span>
+    </a>
+    <a href="faq.html" class="barra-inferior__item">
+      <span class="barra-inferior__icono" aria-hidden="true">❓</span>
+      <span class="barra-inferior__texto">FAQ</span>
+    </a>
+    <a href="padres.html" class="barra-inferior__item">
+      <span class="barra-inferior__icono" aria-hidden="true">👨‍👩‍👧‍👦</span>
+      <span class="barra-inferior__texto">Para Padres</span>
+    </a>
+  </nav>
+
+  <nav aria-label="breadcrumb" class="migas-de-pan">
+    <ol>
+      <li><a href="index.html">Inicio</a></li>
+      <li class="migas-de-pan__separador" aria-hidden="true">/</li>
+      <li><span class="migas-de-pan__actual" aria-current="page">Panel docente</span></li>
+    </ol>
+  </nav>
+
+  <main id="main-content">
+    <section class="seccion">
+      <div class="admin-header">
+        <div class="admin-header__titulo">
+          <h2>Panel de control docente</h2>
+          <p>Sesión iniciada como: <span id="admin-nombre-docente">Cargando…</span></p>
+        </div>
+        <div class="admin-header__acciones">
+          <button id="boton-tema" class="boton-tema" type="button" aria-pressed="true" aria-label="Cambiar a modo claro">
+            <span class="boton-tema__icono" aria-hidden="true">☀️</span>
+            <span class="boton-tema__texto">Modo claro</span>
+          </button>
+          <button type="button" id="boton-cerrar-sesion-admin" class="boton-secundario">
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-tabs" role="tablist" aria-label="Módulos del panel docente">
+        <button type="button" class="admin-tabs__boton admin-tabs__boton--activo"
+                id="tab-calificacion" role="tab" aria-selected="true" aria-controls="panel-calificacion">
+          Calificación y progreso
+        </button>
+        <button type="button" class="admin-tabs__boton"
+                id="tab-alumnos" role="tab" aria-selected="false" aria-controls="panel-alumnos">
+          Alumnos
+        </button>
+        <button type="button" class="admin-tabs__boton"
+                id="tab-avisos" role="tab" aria-selected="false" aria-controls="panel-avisos">
+          Avisos
+        </button>
+        <button type="button" class="admin-tabs__boton"
+                id="tab-trimestre" role="tab" aria-selected="false" aria-controls="panel-trimestre">
+          Trimestre
+        </button>
+        <button type="button" class="admin-tabs__boton"
+                id="tab-fechas" role="tab" aria-selected="false" aria-controls="panel-fechas">
+          Fechas de entrega
+        </button>
+      </div>
+
+      <section id="panel-calificacion" class="admin-panel" role="tabpanel" aria-labelledby="tab-calificacion">
+        <p class="admin-panel__placeholder">Módulo en construcción.</p>
+      </section>
+
+      <section id="panel-alumnos" class="admin-panel" role="tabpanel" aria-labelledby="tab-alumnos" hidden>
+        <p class="admin-panel__placeholder">Módulo en construcción.</p>
+      </section>
+
+      <section id="panel-avisos" class="admin-panel" role="tabpanel" aria-labelledby="tab-avisos" hidden>
+        <p class="admin-panel__placeholder">Módulo en construcción.</p>
+      </section>
+
+      <section id="panel-trimestre" class="admin-panel" role="tabpanel" aria-labelledby="tab-trimestre" hidden>
+        <p class="admin-panel__placeholder">Módulo en construcción.</p>
+      </section>
+
+      <section id="panel-fechas" class="admin-panel" role="tabpanel" aria-labelledby="tab-fechas" hidden>
+        <p class="admin-panel__placeholder">Módulo en construcción.</p>
+      </section>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <p>Escuela Secundaria No. 10 Mixta &ldquo;Fernando Hernández Alcalá&rdquo; · Educación Tecnológica</p>
+    <p class="pie__grupos">Grupos 3°C y 3°E</p>
+    <p class="pie__privacidad">🛡️ Privacidad: tus datos se usan solo para tu evaluación en Educación Tecnológica. <a href="faq.html#aviso-privacidad">Ver aviso de privacidad completo →</a></p>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
