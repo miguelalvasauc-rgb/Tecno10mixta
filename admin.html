@@ -191,6 +191,15 @@
                  placeholder="🔍 Buscar por nombre o número de lista…" autocomplete="off">
         </div>
 
+        <!-- Exportar/imprimir la vista actual (mismo filtro Trimestre/Grupo/
+             Tipo/Secuencia/búsqueda ya aplicado en la tabla) — ver
+             exportarCSVCalificacion()/activarImpresionTablaCalificacion()
+             en js/main.js. -->
+        <div class="calificacion-acciones">
+          <button type="button" id="calificacion-boton-csv" class="boton-secundario">⬇️ Exportar CSV</button>
+          <button type="button" id="calificacion-boton-imprimir-tabla" class="boton-secundario">🖨️ Imprimir tabla</button>
+        </div>
+
         <!-- Navegación de scroll horizontal, solo visible en mobile (<1024px,
              mismo breakpoint que .barra-lateral/.barra-inferior): en
              desktop el scroll libre ya se ve bien y estos botones se
@@ -241,6 +250,35 @@
     <button type="button" id="boton-imprimir-historial" class="boton-secundario modal-historial__boton-imprimir" hidden>
       🖨️ Imprimir/exportar este historial
     </button>
+  </dialog>
+
+  <!-- Panel de marcar/editar una entrega manualmente: mismo patrón de
+       accesibilidad que #modal-detalle/#modal-historial-alumno. Un solo
+       dialog reutilizado tanto por la tabla matriz como por el modal de
+       historial (ver pintarBadgeCalificacion()/abrirModalEditarEntrega()
+       en js/main.js) — el modo "Marcar"/"Editar" y el contexto (alumno +
+       entregable) se resuelven en JS antes de abrirlo. -->
+  <dialog id="modal-editar-entrega" aria-labelledby="modal-editar-entrega-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-editar-entrega-titulo">Marcar entrega</h3>
+    <p id="modal-editar-entrega-contexto" class="modal-historial__subtitulo"></p>
+    <form id="formulario-editar-entrega" novalidate>
+      <label for="editar-entrega-fecha">Fecha de entrega</label>
+      <input type="date" id="editar-entrega-fecha" name="fecha" required>
+
+      <label for="editar-entrega-nota">Nota (opcional)</label>
+      <textarea id="editar-entrega-nota" name="nota" rows="3"></textarea>
+
+      <p id="editar-entrega-error" class="cuenta-error" role="alert" hidden></p>
+
+      <div class="modal-editar-entrega__acciones">
+        <button type="submit" class="modal-editar-entrega__confirmar" id="editar-entrega-confirmar">Confirmar</button>
+        <button type="button" class="boton-secundario" id="editar-entrega-cancelar">Cancelar</button>
+        <button type="button" class="modal-editar-entrega__deshacer" id="editar-entrega-deshacer" hidden>
+          Deshacer marca manual
+        </button>
+      </div>
+    </form>
   </dialog>
 
   <script src="js/main.js"></script>

@@ -5988,10 +5988,99 @@ async function actualizarOpcionesSecuenciaCalificacion() {
   select.value = estadoCalificacion.secuencia || "";
 }
 
-// Badge de una celda alumno×entregable. "sinCuenta" ya viene resuelto por
-// el llamador (alumnos_registro.usado === false o auth_user_id nulo) para
-// no repetir esa lectura por cada celda de la fila.
-function crearBadgeCalificacion(alumno, item, filaProgreso, sinCuenta) {
+// Construye (o repinta) el badge de estado de una celda/ítem
+// alumno×entregable dentro de "contenedor" (un <td> en la tabla matriz,
+// un <span> envoltorio en el modal de historial): se usa tanto para el
+// pintado inicial como para repintar SOLO esta celda después de guardar/
+// deshacer una marca manual (Prompt 5c), sin duplicar los 4 estados de
+// badge en dos lugares distintos del código — antes crearBadgeCalificacion
+// y crearSeccionTrimestreHistorial tenían cada una su propia copia.
+//
+// Reglas de qué celdas son clicleables (abren el panel de marcar/editar):
+//   1. Alumno sin cuenta activa → nunca clicleable (no hay alumno_id
+//      válido para insertar en "progreso").
+//   2. Con fila de progreso de origen "formulario" → nunca clicleable:
+//      es la fuente de verdad real de una entrega, no se altera desde
+//      aquí (si algún día hace falta corregir una, es un flujo aparte).
+//   3. Sin fila de progreso (pendiente/atrasada) → clicleable, abre en
+//      modo "Marcar".
+//   4. Con fila de progreso de origen "manual-docente" → clicleable,
+//      abre en modo "Editar" (con botón extra "Deshacer marca manual").
+//
+// "contexto" trae: alumno, item, trimestre, filaProgreso, sinCuenta, y
+// opcionalmente mapaProgreso + claveMapaProgreso (el Map y la llave de
+// ESE alumno×item×trimestre en ese Map) para poder mantenerlo
+// sincronizado tras guardar/deshacer sin que el llamador tenga que saber
+// cómo hacerlo.
+function pintarBadgeCalificacion(contenedor, contexto) {
+  const { alumno, item, trimestre, filaProgreso, sinCuenta, mapaProgreso, claveMapaProgreso } = contexto;
+  contenedor.innerHTML = "";
+
+  const editable = !sinCuenta && (!filaProgreso || filaProgreso.origen === "manual-docente");
+  const badge = document.createElement(editable ? "button" : "span");
+  if (editable) badge.type = "button";
+  badge.className = "badge-estado";
+
+  if (sinCuenta) {
+    badge.dataset.estado = "sin-cuenta";
+    badge.textContent = "🚫 Sin cuenta activa";
+    badge.title = "Este alumno no tiene cuenta activa todavía";
+    contenedor.appendChild(badge);
+    return;
+  }
+
+  if (filaProgreso && filaProgreso.completado) {
+    badge.dataset.estado = "completada";
+    badge.textContent = "🟢 Entregado";
+  } else if (itemEstaVencido(item.tipoEntregable, item, alumno.grupo)) {
+    badge.dataset.estado = "atrasada";
+    badge.textContent = "🔒 Atrasada";
+  } else {
+    badge.dataset.estado = "pendiente";
+    badge.textContent = "🟡 Pendiente";
+  }
+
+  if (editable) {
+    badge.classList.add("badge-estado--editable");
+    badge.addEventListener("click", () => {
+      abrirModalEditarEntrega({
+        alumno,
+        item,
+        trimestre,
+        filaProgreso,
+        alGuardar: (nuevaFila) => {
+          if (mapaProgreso && claveMapaProgreso) mapaProgreso.set(claveMapaProgreso, nuevaFila);
+          pintarBadgeCalificacion(contenedor, { ...contexto, filaProgreso: nuevaFila });
+        },
+        alDeshacer: () => {
+          if (mapaProgreso && claveMapaProgreso) mapaProgreso.delete(claveMapaProgreso);
+          pintarBadgeCalificacion(contenedor, { ...contexto, filaProgreso: null });
+        },
+      });
+    });
+  } else if (filaProgreso && filaProgreso.origen === "formulario") {
+    badge.title = "Esta entrega llegó por el formulario del alumno; no se puede editar desde aquí.";
+  }
+
+  contenedor.appendChild(badge);
+
+  if (filaProgreso?.completado && filaProgreso.origen === "manual-docente") {
+    const marcaManual = document.createElement("span");
+    marcaManual.className = "calificacion-tabla__origen-manual";
+    marcaManual.title = "Marcado manualmente por el docente";
+    marcaManual.textContent = "🖊️";
+    contenedor.appendChild(marcaManual);
+  }
+}
+
+// Celda <td> de la tabla matriz para un alumno×entregable. "sinCuenta" ya
+// viene resuelto por el llamador (alumnos_registro.usado === false o
+// auth_user_id nulo) para no repetir esa lectura por cada celda de la
+// fila. "mapaProgreso" es el mismo Map que ya construyó
+// renderizarTablaCalificacion() para esta vista: se pasa para que
+// pintarBadgeCalificacion() pueda actualizarlo en memoria tras marcar/
+// deshacer sin volver a consultar Supabase.
+function crearBadgeCalificacion(alumno, item, filaProgreso, sinCuenta, trimestre, mapaProgreso) {
   const celda = document.createElement("td");
   // "tabla-calificacion__col-item" es la misma clase del <th> de esta
   // columna: comparte min-width y scroll-snap-align en mobile (ver
@@ -5999,42 +6088,13 @@ function crearBadgeCalificacion(alumno, item, filaProgreso, sinCuenta) {
   // en el encabezado como en cada celda de datos.
   celda.className = "calificacion-tabla__celda tabla-calificacion__col-item";
 
-  const badge = document.createElement("span");
-  badge.className = "badge-estado";
+  const claveMapaProgreso = alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id;
+  pintarBadgeCalificacion(celda, { alumno, item, trimestre, filaProgreso, sinCuenta, mapaProgreso, claveMapaProgreso });
 
-  if (sinCuenta) {
-    badge.dataset.estado = "sin-cuenta";
-    badge.textContent = "🚫 Sin cuenta activa";
-    celda.appendChild(badge);
-    return celda;
-  }
-
-  if (filaProgreso && filaProgreso.completado) {
-    badge.dataset.estado = "completada";
-    badge.textContent = "🟢 Entregado";
-    celda.appendChild(badge);
-    if (filaProgreso.origen === "manual-docente") {
-      const marcaManual = document.createElement("span");
-      marcaManual.className = "calificacion-tabla__origen-manual";
-      marcaManual.title = "Marcado manualmente por el docente";
-      marcaManual.textContent = "🖊️";
-      celda.appendChild(marcaManual);
-    }
-    return celda;
-  }
-
-  if (itemEstaVencido(item.tipoEntregable, item, alumno.grupo)) {
-    badge.dataset.estado = "atrasada";
-    badge.textContent = "🔒 Atrasada";
-  } else {
-    badge.dataset.estado = "pendiente";
-    badge.textContent = "🟡 Pendiente";
-  }
-  celda.appendChild(badge);
   return celda;
 }
 
-function crearFilaAlumnoCalificacion(alumno, entregables, mapaProgreso) {
+function crearFilaAlumnoCalificacion(alumno, entregables, mapaProgreso, trimestre) {
   const fila = document.createElement("tr");
   if (alumno.activo === false) fila.classList.add("fila-alumno--inactivo");
 
@@ -6073,7 +6133,7 @@ function crearFilaAlumnoCalificacion(alumno, entregables, mapaProgreso) {
       ? null
       : mapaProgreso.get(alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id);
     if (filaProgreso && filaProgreso.completado) completados++;
-    fila.appendChild(crearBadgeCalificacion(alumno, item, filaProgreso, sinCuenta));
+    fila.appendChild(crearBadgeCalificacion(alumno, item, filaProgreso, sinCuenta, trimestre, mapaProgreso));
   });
 
   const celdaAvance = document.createElement("td");
@@ -6121,7 +6181,7 @@ function crearPieCalificacion(alumnos, entregables, mapaProgreso) {
   return tfoot;
 }
 
-function construirTablaCalificacion(alumnos, entregables, mapaProgreso) {
+function construirTablaCalificacion(alumnos, entregables, mapaProgreso, trimestre) {
   const tabla = document.createElement("table");
   tabla.className = "tabla-calificacion";
 
@@ -6153,7 +6213,7 @@ function construirTablaCalificacion(alumnos, entregables, mapaProgreso) {
 
   const tbody = document.createElement("tbody");
   alumnos.forEach((alumno) => {
-    tbody.appendChild(crearFilaAlumnoCalificacion(alumno, entregables, mapaProgreso));
+    tbody.appendChild(crearFilaAlumnoCalificacion(alumno, entregables, mapaProgreso, trimestre));
   });
   tabla.appendChild(tbody);
 
@@ -6240,10 +6300,13 @@ function activarDelegacionHistorialCalificacion() {
 // actividades y proyectos juntos, en ese orden — el mismo orden de
 // concatenación que ya usa obtenerEntregablesPorTipo("todos", ...), no
 // hay un orden distinto especificado para el historial). Mismos 4
-// estados de badge que la tabla matriz, sin el caso "sin cuenta": esta
-// función solo se usa para alumnos que sí tienen cuenta activa (ver
-// abrirModalHistorialAlumno).
-function crearSeccionTrimestreHistorial(trimestre, entregables, mapaProgreso, grupoAlumno) {
+// estados de badge que la tabla matriz (vía pintarBadgeCalificacion, con
+// las mismas reglas de qué items son clicleables), sin el caso "sin
+// cuenta": esta función solo se usa para alumnos que sí tienen cuenta
+// activa (ver abrirModalHistorialAlumno). Recibe el "alumno" completo
+// (no solo su grupo) porque marcar/editar una entrega desde aquí necesita
+// su auth_user_id y nombre, no solo el grupo para itemEstaVencido.
+function crearSeccionTrimestreHistorial(trimestre, entregables, mapaProgreso, alumno) {
   const seccion = document.createElement("section");
   seccion.className = "calificacion-historial__trimestre";
 
@@ -6298,19 +6361,19 @@ function crearSeccionTrimestreHistorial(trimestre, entregables, mapaProgreso, gr
     encabezadoItem.appendChild(tituloItem);
 
     const filaProgreso = mapaProgreso.get(item.tipoEntregable + "-" + item.id + "-" + trimestre);
-    const badge = document.createElement("span");
-    badge.className = "badge-estado";
-    if (filaProgreso && filaProgreso.completado) {
-      badge.dataset.estado = "completada";
-      badge.textContent = "🟢 Entregado";
-    } else if (itemEstaVencido(item.tipoEntregable, item, grupoAlumno)) {
-      badge.dataset.estado = "atrasada";
-      badge.textContent = "🔒 Atrasada";
-    } else {
-      badge.dataset.estado = "pendiente";
-      badge.textContent = "🟡 Pendiente";
-    }
-    encabezadoItem.appendChild(badge);
+    const contenedorBadge = document.createElement("span");
+    contenedorBadge.className = "calificacion-historial__badge-contenedor";
+    const claveMapaProgreso = item.tipoEntregable + "-" + item.id + "-" + trimestre;
+    pintarBadgeCalificacion(contenedorBadge, {
+      alumno,
+      item,
+      trimestre,
+      filaProgreso,
+      sinCuenta: false,
+      mapaProgreso,
+      claveMapaProgreso,
+    });
+    encabezadoItem.appendChild(contenedorBadge);
     li.appendChild(encabezadoItem);
 
     // Título arriba, fecha en una línea pequeña debajo: mismo formato y
@@ -6327,7 +6390,7 @@ function crearSeccionTrimestreHistorial(trimestre, entregables, mapaProgreso, gr
     const valorFecha = item.tipoEntregable === "actividad" ? item.fecha : item.fechaEntrega;
     const fechaItem = document.createElement("p");
     fechaItem.className = "tarjeta__fecha";
-    fechaItem.textContent = etiquetaFecha + resolverFechaItem(valorFecha, grupoAlumno);
+    fechaItem.textContent = etiquetaFecha + resolverFechaItem(valorFecha, alumno.grupo);
     li.appendChild(fechaItem);
 
     if (filaProgreso?.completado && filaProgreso.origen === "manual-docente" && filaProgreso.nota) {
@@ -6402,7 +6465,7 @@ async function abrirModalHistorialAlumno(alumno) {
   contenido.innerHTML = "";
   trimestres.forEach((trimestre, indice) => {
     contenido.appendChild(
-      crearSeccionTrimestreHistorial(trimestre, entregablesPorTrimestre[indice], mapaProgreso, alumno.grupo)
+      crearSeccionTrimestreHistorial(trimestre, entregablesPorTrimestre[indice], mapaProgreso, alumno)
     );
   });
 
@@ -6424,11 +6487,278 @@ function activarCierreModalHistorialCalificacion() {
   });
 }
 
-// El botón solo es visible en CASO A (ver abrirModalHistorialAlumno);
-// llamar a window.print() dispara las reglas @media print de
-// css/style.css que ocultan todo excepto #modal-historial-alumno.
+// El botón solo es visible en CASO A (ver abrirModalHistorialAlumno). La
+// clase "calificacion--imprimiendo-historial" es lo que le dice al CSS
+// (ver @media print en style.css) que imprima el modal de historial y no
+// la tabla general — sin ella, ambos bloques de @media print (este y el
+// de "Imprimir tabla") se pisarían entre sí. Se agrega justo antes de
+// window.print() y se quita en "afterprint" (no inmediatamente después de
+// window.print(), porque esa llamada no es garantizado-síncrona en todos
+// los navegadores mientras el diálogo de impresión sigue abierto).
 function activarImpresionHistorialCalificacion() {
   const boton = document.getElementById("boton-imprimir-historial");
+  if (!boton) return;
+
+  boton.addEventListener("click", () => {
+    document.body.classList.add("calificacion--imprimiendo-historial");
+    window.print();
+  });
+
+  window.addEventListener("afterprint", () => {
+    document.body.classList.remove("calificacion--imprimiendo-historial");
+  });
+}
+
+// Hace upsert manual en "progreso" (update si ya había fila para este
+// alumno×item×trimestre, insert si no) con completado=true, origen=
+// "manual-docente" y la fecha/nota del formulario. Se resuelve como
+// update-o-insert explícito (no un .upsert() nativo de PostgREST) porque
+// eso requeriría una constraint UNIQUE(alumno_id,tipo,item_id,trimestre)
+// cuya existencia no está confirmada — con la fila ya cargada (modo
+// Editar) alcanza con actualizar por su "id" real, que sí es único.
+async function guardarEntregaManual({ alumno, item, trimestre, filaProgreso, fecha, nota }) {
+  const payload = {
+    completado: true,
+    origen: "manual-docente",
+    fecha_entrega_manual: fecha,
+    nota: nota || null,
+    actualizado_en: new Date().toISOString(),
+  };
+
+  if (filaProgreso) {
+    const { data, error } = await clienteSupabase
+      .from("progreso")
+      .update(payload)
+      .eq("id", filaProgreso.id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  const { data, error } = await clienteSupabase
+    .from("progreso")
+    .insert({
+      alumno_id: alumno.auth_user_id,
+      tipo: item.tipoEntregable,
+      item_id: item.id,
+      trimestre: Number(trimestre),
+      ...payload,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// Elimina por completo la fila de progreso de una marca manual: el
+// estado vuelve a calcularse como pendiente/atrasada normal (ya no hay
+// fila que consultar).
+async function eliminarEntregaManual(filaProgreso) {
+  const { error } = await clienteSupabase.from("progreso").delete().eq("id", filaProgreso.id);
+  if (error) throw error;
+}
+
+// Contexto del panel de marcar/editar entrega manual actualmente abierto
+// (alumno/item/trimestre/filaProgreso + los callbacks alGuardar/
+// alDeshacer que sabe repintar la celda o ítem exacto que lo abrió, sea
+// en la tabla matriz o en el modal de historial — ver
+// pintarBadgeCalificacion). Se reemplaza cada vez que se abre el panel.
+let contextoEdicionEntrega = null;
+
+// Abre #modal-editar-entrega en modo "Marcar" (sin filaProgreso previa) o
+// "Editar" (con una fila de origen "manual-docente" ya existente),
+// precargando fecha/nota según el modo.
+function abrirModalEditarEntrega({ alumno, item, trimestre, filaProgreso, alGuardar, alDeshacer }) {
+  const modal = document.getElementById("modal-editar-entrega");
+  if (!modal) return;
+
+  contextoEdicionEntrega = { alumno, item, trimestre, filaProgreso, alGuardar, alDeshacer };
+
+  const modoEditar = !!filaProgreso;
+  document.getElementById("modal-editar-entrega-titulo").textContent = modoEditar
+    ? "Editar marca manual"
+    : "Marcar entrega";
+  document.getElementById("modal-editar-entrega-contexto").textContent = alumno.nombre + " — " + item.titulo;
+
+  const campoFecha = document.getElementById("editar-entrega-fecha");
+  const campoNota = document.getElementById("editar-entrega-nota");
+  const botonConfirmar = document.getElementById("editar-entrega-confirmar");
+  const botonDeshacer = document.getElementById("editar-entrega-deshacer");
+  const error = document.getElementById("editar-entrega-error");
+
+  campoFecha.value = filaProgreso?.fecha_entrega_manual || new Date().toISOString().slice(0, 10);
+  campoNota.value = filaProgreso?.nota || "";
+  botonConfirmar.textContent = modoEditar ? "Guardar cambios" : "Confirmar";
+  botonDeshacer.hidden = !modoEditar;
+  error.hidden = true;
+  error.textContent = "";
+
+  modal.showModal();
+}
+
+// Envía el formulario (Confirmar/Guardar cambios), el botón "Deshacer
+// marca manual" (con confirmación previa porque borra el registro), y el
+// cierre estándar del dialog. Un solo listener por elemento, registrado
+// una vez desde inicializarModuloCalificacion() — el contexto de CADA
+// apertura vive en contextoEdicionEntrega, no en el DOM.
+function activarFormularioEditarEntrega() {
+  const modal = document.getElementById("modal-editar-entrega");
+  const formulario = document.getElementById("formulario-editar-entrega");
+  if (!modal || !formulario) return;
+
+  formulario.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    if (!contextoEdicionEntrega) return;
+
+    const { alumno, item, trimestre, filaProgreso, alGuardar } = contextoEdicionEntrega;
+    const campoFecha = document.getElementById("editar-entrega-fecha");
+    const campoNota = document.getElementById("editar-entrega-nota");
+    const botonConfirmar = document.getElementById("editar-entrega-confirmar");
+    const error = document.getElementById("editar-entrega-error");
+
+    error.hidden = true;
+    botonConfirmar.disabled = true;
+
+    try {
+      const nuevaFila = await guardarEntregaManual({
+        alumno,
+        item,
+        trimestre,
+        filaProgreso,
+        fecha: campoFecha.value,
+        nota: campoNota.value.trim(),
+      });
+      modal.close();
+      alGuardar(nuevaFila);
+    } catch (err) {
+      // No se cierra el dialog ni se pierde lo que el docente ya
+      // escribió: el error se muestra dentro del mismo panel.
+      error.textContent = "No se pudo guardar: " + (err?.message || "intenta de nuevo.");
+      error.hidden = false;
+    } finally {
+      botonConfirmar.disabled = false;
+    }
+  });
+
+  document.getElementById("editar-entrega-cancelar").addEventListener("click", () => modal.close());
+
+  document.getElementById("editar-entrega-deshacer").addEventListener("click", async () => {
+    if (!contextoEdicionEntrega?.filaProgreso) return;
+    if (!window.confirm("¿Seguro que quieres deshacer esta marca manual? Se eliminará el registro de progreso."))
+      return;
+
+    const error = document.getElementById("editar-entrega-error");
+    error.hidden = true;
+
+    try {
+      await eliminarEntregaManual(contextoEdicionEntrega.filaProgreso);
+      modal.close();
+      contextoEdicionEntrega.alDeshacer();
+    } catch (err) {
+      error.textContent = "No se pudo deshacer: " + (err?.message || "intenta de nuevo.");
+      error.hidden = false;
+    }
+  });
+
+  const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.close();
+  });
+}
+
+// Texto plano por estado para el CSV (Paso 4): sin ícono, coincide con
+// los mismos 4 estados que ya usa pintarBadgeCalificacion().
+const TEXTO_ESTADO_CALIFICACION_CSV = {
+  completada: "Entregado",
+  pendiente: "Pendiente",
+  atrasada: "Atrasada",
+  "sin-cuenta": "Sin cuenta activa",
+};
+
+// Envuelve en comillas y escapa comillas internas solo si el valor trae
+// coma, comilla o salto de línea — regla estándar de CSV (RFC 4180).
+function escaparValorCSV(valor) {
+  const texto = String(valor ?? "");
+  if (/[",\n]/.test(texto)) return '"' + texto.replace(/"/g, '""') + '"';
+  return texto;
+}
+
+// Genera y descarga (Blob + enlace temporal, sin librerías) un CSV de la
+// vista ACTUALMENTE visible en la tabla matriz: mismo filtro de
+// Trimestre/Grupo/Tipo/Secuencia ya aplicado, y respeta también las filas
+// que el buscador esté ocultando en ese momento (si el docente ya filtró
+// hasta un alumno puntual, exportar solo ese es lo esperable). Una
+// columna por entregable con el texto plano del estado, no el ícono.
+function exportarCSVCalificacion() {
+  const contenedor = document.getElementById("calificacion-tabla-contenedor");
+  const tabla = contenedor?.querySelector(".tabla-calificacion");
+  if (!tabla) return;
+
+  const encabezados = ["Alumno"];
+  tabla.querySelectorAll("thead th").forEach((th, indice) => {
+    if (indice === 0) return; // "Alumno": ya está arriba
+    encabezados.push(th.title || th.textContent.trim());
+  });
+
+  const lineas = [encabezados.map(escaparValorCSV).join(",")];
+
+  tabla.querySelectorAll("tbody tr:not([hidden])").forEach((fila) => {
+    const celdas = Array.from(fila.querySelectorAll("td"));
+    const nombre = celdas[0].querySelector(".calificacion-tabla__alumno-nombre")?.textContent || "";
+    const numero = celdas[0].querySelector(".calificacion-tabla__alumno-numero")?.textContent || "";
+    const valores = [(nombre + " " + numero).trim()];
+
+    celdas.slice(1, -1).forEach((celda) => {
+      const estado = celda.querySelector(".badge-estado")?.dataset.estado;
+      valores.push(TEXTO_ESTADO_CALIFICACION_CSV[estado] || "");
+    });
+
+    lineas.push(valores.map(escaparValorCSV).join(","));
+  });
+
+  // BOM al inicio para que Excel abra el UTF-8 sin corromper acentos/°
+  // ("3°C", nombres con tildes) — sin esto, Excel en Windows suele
+  // interpretar el archivo con la codificación regional en vez de UTF-8.
+  const blob = new Blob(["﻿" + lineas.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  // slugAlumno() ya existe (sección 11) para convertir texto libre en un
+  // fragmento sin acentos/espacios/mayúsculas; pese al nombre, su lógica
+  // es genérica y sirve igual para simplificar el nombre de la secuencia.
+  const nombreArchivo =
+    "calificacion_" +
+    estadoCalificacion.grupo +
+    "_trimestre" +
+    estadoCalificacion.trimestre +
+    "_" +
+    slugAlumno(estadoCalificacion.secuencia || "") +
+    ".csv";
+
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = nombreArchivo;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  URL.revokeObjectURL(url);
+}
+
+function activarExportarCSVCalificacion() {
+  const boton = document.getElementById("calificacion-boton-csv");
+  if (!boton) return;
+  boton.addEventListener("click", exportarCSVCalificacion);
+}
+
+// Imprime la tabla matriz general (a diferencia del historial individual,
+// sin dialog intermedio: window.print() directo). Las reglas @media
+// print de css/style.css (gateadas por ":not(.calificacion--imprimiendo-
+// historial)", ver activarImpresionHistorialCalificacion) ya saben mostrar
+// solo #calificacion-tabla-contenedor con badges en blanco y negro.
+function activarImpresionTablaCalificacion() {
+  const boton = document.getElementById("calificacion-boton-imprimir-tabla");
   if (!boton) return;
   boton.addEventListener("click", () => window.print());
 }
@@ -6488,7 +6818,7 @@ async function renderizarTablaCalificacion() {
   const mapaProgreso = await obtenerMapaProgresoCalificacion(estadoCalificacion.trimestre, tipos, idsParaProgreso);
 
   contenedor.innerHTML = "";
-  contenedor.appendChild(construirTablaCalificacion(alumnos, entregables, mapaProgreso));
+  contenedor.appendChild(construirTablaCalificacion(alumnos, entregables, mapaProgreso, estadoCalificacion.trimestre));
 
   // Los filtros cambian cuántas columnas hay (o si hace falta scroll),
   // así que hay que recalcular el estado de los botones ◀▶ y del
@@ -6576,6 +6906,9 @@ async function inicializarModuloCalificacion() {
   activarDelegacionHistorialCalificacion();
   activarCierreModalHistorialCalificacion();
   activarImpresionHistorialCalificacion();
+  activarFormularioEditarEntrega();
+  activarExportarCSVCalificacion();
+  activarImpresionTablaCalificacion();
 
   selectTrimestre.addEventListener("change", async () => {
     estadoCalificacion.trimestre = selectTrimestre.value;

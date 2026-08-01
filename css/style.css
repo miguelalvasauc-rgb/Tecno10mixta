@@ -4594,22 +4594,159 @@ summary:focus-visible {
   }
 }
 
+/* ---------- Celdas/ítems clicleables (marcar/editar entrega manual) ----------
+   El badge se crea como <button> en vez de <span> cuando es clicleable
+   (ver pintarBadgeCalificacion en main.js): el reset de abajo le quita el
+   estilo nativo de <button> para que se vea idéntico al <span> de
+   siempre, y ".badge-estado--editable" solo agrega el estado de foco/
+   hover — el color de fondo y demás lo sigue dando
+   ".badge-estado[data-estado]" tal cual ya existía. */
+button.badge-estado {
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+}
+
+.badge-estado--editable:hover,
+.badge-estado--editable:focus-visible {
+  outline: 2px solid var(--color-turquesa);
+  outline-offset: 2px;
+}
+
+/* Envoltura del badge dentro de un <li> del historial (a diferencia de la
+   tabla matriz, donde el badge vive directo en el <td>): necesita su
+   propio "position: relative" para que el ícono superpuesto de "marcado
+   a mano" (.calificacion-tabla__origen-manual) se posicione contra ella
+   y no contra todo el encabezado del ítem. */
+.calificacion-historial__badge-contenedor {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ---------- Barra de acciones (Exportar CSV / Imprimir tabla) ---------- */
+.calificacion-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+/* ---------- Panel de marcar/editar entrega manual (#modal-editar-entrega) ----------
+   Mismo patrón visual que #modal-historial-alumno (ver esa sección más
+   arriba), pero más angosto: es un formulario corto, no una lista larga
+   de trimestres. */
+#modal-editar-entrega {
+  width: 92%;
+  max-width: 420px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-editar-entrega::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-editar-entrega-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+#formulario-editar-entrega {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+#formulario-editar-entrega label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+}
+
+#formulario-editar-entrega input,
+#formulario-editar-entrega textarea {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--font-cuerpo);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  resize: vertical;
+}
+
+.modal-editar-entrega__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+/* Mismo patrón turquesa/navy (Light-Mode Turquoise Rule) que ya usa
+   .boton-tema: relleno sólido con texto claro falla contraste AA en modo
+   claro, así que ahí se cambia a navy. */
+.modal-editar-entrega__confirmar {
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+  border: none;
+  border-radius: var(--radio-md);
+  padding: 0.55rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+:root[data-theme="claro"] .modal-editar-entrega__confirmar {
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+/* Texto simple en rojo de estado ("vencido"), no un botón lleno: es una
+   acción destructiva poco frecuente, no debe competir visualmente con
+   "Confirmar"/"Cancelar". */
+.modal-editar-entrega__deshacer {
+  background: none;
+  border: none;
+  color: var(--color-estado-vencido);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: auto;
+}
+
 /* ---------- Impresión del historial (botón "🖨️ Imprimir/exportar") ----------
    Escondido tras "body[data-pagina='admin']": main.js/style.css son
    compartidos por todo el sitio, así que sin ese scope estas reglas
    ocultarían TODO al imprimir cualquier otra página (index.html,
-   trimestre-*.html, etc.), no solo admin.html. */
+   trimestre-*.html, etc.), no solo admin.html.
+
+   Además condicionado a ".calificacion--imprimiendo-historial" (clase que
+   activarImpresionHistorialCalificacion() agrega justo antes de
+   window.print() y quita en "afterprint"): sin esto, esta regla y la de
+   "Impresión de la tabla general" de abajo se pisarían entre sí — ambas
+   dicen "ocultar todo excepto lo mío", y si las dos aplicaran a la vez
+   ninguno de los dos objetivos terminaría siendo visible. */
 @media print {
-  body[data-pagina="admin"] * {
+  body[data-pagina="admin"].calificacion--imprimiendo-historial * {
     visibility: hidden;
   }
 
-  body[data-pagina="admin"] #modal-historial-alumno[open],
-  body[data-pagina="admin"] #modal-historial-alumno[open] * {
+  body[data-pagina="admin"].calificacion--imprimiendo-historial #modal-historial-alumno[open],
+  body[data-pagina="admin"].calificacion--imprimiendo-historial #modal-historial-alumno[open] * {
     visibility: visible;
   }
 
-  body[data-pagina="admin"] #modal-historial-alumno {
+  body[data-pagina="admin"].calificacion--imprimiendo-historial #modal-historial-alumno {
     position: absolute;
     top: 0;
     left: 0;
@@ -4619,12 +4756,64 @@ summary:focus-visible {
     border: none;
   }
 
-  body[data-pagina="admin"] #modal-historial-alumno::backdrop {
+  body[data-pagina="admin"].calificacion--imprimiendo-historial #modal-historial-alumno::backdrop {
     display: none;
   }
 
-  body[data-pagina="admin"] .modal-detalle__cerrar,
-  body[data-pagina="admin"] #boton-imprimir-historial {
+  body[data-pagina="admin"].calificacion--imprimiendo-historial .modal-detalle__cerrar,
+  body[data-pagina="admin"].calificacion--imprimiendo-historial #boton-imprimir-historial {
+    display: none !important;
+  }
+}
+
+/* ---------- Impresión de la tabla general (botón "🖨️ Imprimir tabla") ----------
+   Mismo scope que el bloque de arriba, pero solo cuando NO se está
+   imprimiendo el historial individual (ver nota de arriba). Colores de
+   estado reales (turquesa/naranja/rojo/gris) se reemplazan por texto
+   plano con borde negro — "sin badges de colores complejos" pedido en el
+   prompt: en una impresora B/N esos colores ya se ven como grises poco
+   distinguibles entre sí, así que un borde + texto negro es más legible
+   que confiar en el color. */
+@media print {
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) * {
+    visibility: hidden;
+  }
+
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla-contenedor,
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla-contenedor * {
+    visibility: visible;
+  }
+
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla-contenedor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    border: none;
+  }
+
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla-contenedor::after {
+    display: none;
+  }
+
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .tabla-calificacion th,
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .tabla-calificacion td {
+    position: static !important;
+    background: #fff !important;
+    color: #000 !important;
+    white-space: normal;
+  }
+
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .badge-estado {
+    background: none !important;
+    color: #000 !important;
+    border: 1px solid #000;
+  }
+
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla__boton-historial,
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla__origen-manual {
     display: none !important;
   }
 }
