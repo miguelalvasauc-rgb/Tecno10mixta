@@ -2964,10 +2964,55 @@ const CLAVE_SUBMENU_TRIMESTRE = "submenuTrimestreExpandido";
 let sidebarColapsada = localStorage.getItem(CLAVE_SIDEBAR_COLAPSADA) === "true";
 aplicarEstadoSidebarColapsada(sidebarColapsada);
 
+// Cliente de Supabase. Se define aquí (antes que nada que lo use) porque
+// el guard de trimestre de abajo necesita consultarlo de inmediato, en
+// código de nivel superior que corre antes de llegar a la sección 11
+// (donde antes vivía esta constante): un `const` más abajo en el mismo
+// archivo no es accesible todavía en ese punto (zona muerta temporal),
+// aunque la función que lo usa esté definida más arriba, si esa función
+// se invoca antes de llegar a su declaración.
+const SUPABASE_URL = "https://dugfyqtzcnuwjfvijsqs.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_aofoI-IHSwFh4yi5jzLANw_k_2e11dj";
+const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // Trimestre desbloqueado de verdad. El sitio no tiene un calendario
 // académico real que decida solo cuándo abrir cada trimestre, así que
-// esto se sube a mano (a 2 o a 3) cuando toca abrirlo.
-const TRIMESTRE_DESBLOQUEADO = 3; // Cambiar manualmente a 2 o 3 para abrir ese trimestre
+// esto se sube a mano (a 2 o a 3, en la tabla config_sitio de Supabase,
+// fila clave="trimestre_desbloqueado") cuando toca abrirlo.
+//
+// trimestreDesbloqueado queda null hasta que promesaTrimestreDesbloqueado
+// resuelve; calcularEstadoTrimestre() y el guard de abajo son los únicos
+// lugares que lo leen, y ambos esperan esa promesa antes de leerlo.
+let trimestreDesbloqueado = null;
+const CLAVE_CACHE_TRIMESTRE_DESBLOQUEADO = "cache_trimestre_desbloqueado";
+
+async function obtenerTrimestreDesbloqueado() {
+  try {
+    const { data, error } = await clienteSupabase
+      .from("config_sitio")
+      .select("valor")
+      .eq("clave", "trimestre_desbloqueado")
+      .single();
+
+    if (error) throw error;
+
+    const valor = Number(data.valor);
+    localStorage.setItem(CLAVE_CACHE_TRIMESTRE_DESBLOQUEADO, String(valor));
+    return valor;
+  } catch (error) {
+    // Sin red o RLS mal configurado: usa el último valor visto en este
+    // dispositivo. Sin nada en caché (primera visita sin internet, caso
+    // raro), 1 es la opción conservadora: bloquea todo excepto el
+    // Trimestre 1, nunca al revés.
+    const cache = localStorage.getItem(CLAVE_CACHE_TRIMESTRE_DESBLOQUEADO);
+    return cache !== null ? Number(cache) : 1;
+  }
+}
+
+// Arranca la consulta de inmediato (no dentro del IIFE de abajo) para que
+// el guard y el DOMContentLoaded de la sección 10 compartan la misma
+// petición en vez de duplicarla.
+const promesaTrimestreDesbloqueado = obtenerTrimestreDesbloqueado();
 
 // Trimestre de la página actual ('1', '2' o '3'), tomado de
 // <body data-trimestre="…">. En la portada (index.html) no existe
@@ -2975,11 +3020,57 @@ const TRIMESTRE_DESBLOQUEADO = 3; // Cambiar manualmente a 2 o 3 para abrir ese 
 const TRIMESTRE_ACTUAL = document.body.dataset.trimestre || null;
 
 // Guarda de acceso real (no solo visual): si se entra por URL directa a
-// la página de un trimestre que TRIMESTRE_DESBLOQUEADO todavía no
-// libera, se redirige a la portada de inmediato, antes de renderizar
-// nada de esa página.
-if (TRIMESTRE_ACTUAL && Number(TRIMESTRE_ACTUAL) > TRIMESTRE_DESBLOQUEADO) {
-  window.location.replace("index.html");
+// la página de un trimestre que trimestreDesbloqueado todavía no libera,
+// se redirige a la portada de inmediato, antes de renderizar nada de esa
+// página. Como ahora la consulta es asíncrona, en páginas de trimestre
+// se muestra un overlay de carga si la respuesta tarda más de 150ms (para
+// no dejar la página en blanco/a medio renderizar mientras se resuelve).
+(async function guardTrimestreDesbloqueado() {
+  let overlayCarga = null;
+  let temporizadorOverlay = null;
+
+  if (TRIMESTRE_ACTUAL) {
+    temporizadorOverlay = setTimeout(() => {
+      overlayCarga = mostrarOverlayCargaTrimestre();
+    }, 150);
+  }
+
+  trimestreDesbloqueado = await promesaTrimestreDesbloqueado;
+
+  if (temporizadorOverlay) clearTimeout(temporizadorOverlay);
+
+  if (TRIMESTRE_ACTUAL && Number(TRIMESTRE_ACTUAL) > trimestreDesbloqueado) {
+    window.location.replace("index.html");
+    return;
+  }
+
+  if (overlayCarga) ocultarOverlayCargaTrimestre(overlayCarga);
+})();
+
+// Inserta el overlay de carga a pantalla completa (fondo sólido, no
+// semitransparente) y lo hace aparecer con fade-in en el siguiente frame.
+// Solo se usa desde el guard de arriba, en páginas de trimestre, cuando
+// la consulta a Supabase tarda más de 150ms.
+function mostrarOverlayCargaTrimestre() {
+  const overlay = document.createElement("div");
+  overlay.className = "overlay-carga-trimestre";
+  overlay.innerHTML =
+    '<div class="overlay-carga-trimestre__anillo" aria-hidden="true"></div>' +
+    '<p class="overlay-carga-trimestre__texto">Cargando…</p>';
+  document.body.appendChild(overlay);
+
+  // Fuerza reflow: si se agregara la clase "--visible" en el mismo tick
+  // que se crea el elemento, el navegador colapsaría ambos cambios de
+  // estilo en uno solo y la transición de opacity no se vería.
+  overlay.offsetHeight;
+  overlay.classList.add("overlay-carga-trimestre--visible");
+  return overlay;
+}
+
+// Hace fade-out del overlay y lo quita del DOM al terminar la transición.
+function ocultarOverlayCargaTrimestre(overlay) {
+  overlay.classList.remove("overlay-carga-trimestre--visible");
+  overlay.addEventListener("transitionend", () => overlay.remove(), { once: true });
 }
 
 // Último trimestre que el alumno visitó ('1' por defecto). La barra
@@ -4912,15 +5003,17 @@ function actualizarEnlacesTrimestreEnSidebar() {
   }
 }
 
-// Compara `numero` contra TRIMESTRE_DESBLOQUEADO (el control real de
+// Compara `numero` contra trimestreDesbloqueado (el control real de
 // acceso; ultimoTrimestreVisto solo sirve para los enlaces del sidebar,
 // no para esto) y devuelve su estado: "finalizado", "actual" o
 // "proximamente". Usado tanto por actualizarEstadoTarjetasTrimestre()
 // (tarjetas de la portada) como por activarFabMenu() (píldoras del FAB),
-// para no duplicar el cálculo en dos lugares.
+// para no duplicar el cálculo en dos lugares. Ambos llamadores esperan
+// primero promesaTrimestreDesbloqueado (ver sección 10), así que
+// trimestreDesbloqueado ya está resuelto cuando esta función corre.
 function calcularEstadoTrimestre(numero) {
-  if (numero < TRIMESTRE_DESBLOQUEADO) return "finalizado";
-  if (numero === TRIMESTRE_DESBLOQUEADO) return "actual";
+  if (numero < trimestreDesbloqueado) return "finalizado";
+  if (numero === trimestreDesbloqueado) return "actual";
   return "proximamente";
 }
 
@@ -5325,12 +5418,13 @@ async function alEnviarContacto(evento) {
    autenticación real: cada alumno tiene su propia cuenta de Supabase,
    creada al reclamar un código de invitación (ver cuenta.html). La tabla
    "perfiles" guarda grupo y nombre de cada usuario autenticado.
+
+   clienteSupabase (SUPABASE_URL/SUPABASE_ANON_KEY) ya no se define aquí:
+   se movió arriba, junto a TRIMESTRE_DESBLOQUEADO (sección 2), porque el
+   guard de trimestre necesita el cliente listo antes de que se ejecute
+   ese bloque de nivel superior (que corre antes de llegar a esta
+   sección del archivo).
    ========================================================= */
-
-const SUPABASE_URL = "https://dugfyqtzcnuwjfvijsqs.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_aofoI-IHSwFh4yi5jzLANw_k_2e11dj";
-
-const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Convierte un nombre en un fragmento seguro para usar como parte de una
 // llave de localStorage: sin acentos, espacios ni mayúsculas.
@@ -5583,6 +5677,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Sincroniza el <select> de grupo de la barra lateral con el grupo
   // recuperado de localStorage (por defecto "todos").
   sincronizarSelectorGrupo(grupoActual);
+
+  // calcularEstadoTrimestre() (usado por las dos llamadas de abajo y por
+  // activarFabMenu() más adelante en este mismo listener) necesita
+  // trimestreDesbloqueado ya resuelto. La consulta arrancó al cargar el
+  // script (ver sección 2), así que normalmente esta espera es instantánea;
+  // solo tarda de verdad si el guard de arriba todavía no había resuelto
+  // (por ejemplo en index.html, donde no hay overlay que lo cubra).
+  trimestreDesbloqueado = await promesaTrimestreDesbloqueado;
 
   actualizarEnlacesTrimestreEnSidebar();
   actualizarEstadoTarjetasTrimestre();
