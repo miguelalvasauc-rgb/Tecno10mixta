@@ -2868,7 +2868,27 @@ const DATOS_TEMARIO = {
 //   const resp = await fetch(URL_API_SHEETS + "Avisos");
 //   return await resp.json();
 async function obtenerAvisos() {
-  return DATOS_AVISOS;
+  try {
+    const fechaHoyISO = new Date().toISOString().slice(0, 10);
+    const { data, error } = await clienteSupabase
+      .from("avisos")
+      .select("*")
+      .or(`fecha_expiracion.is.null,fecha_expiracion.gte.${fechaHoyISO}`)
+      .order("fecha", { ascending: true });
+
+    if (error) throw error;
+
+    return data.map((aviso) => ({
+      id: aviso.id,
+      grupo: aviso.grupo,
+      fecha: aviso.fecha,
+      titulo: aviso.titulo,
+      descripcion: aviso.descripcion,
+      prioridad: aviso.prioridad,
+    }));
+  } catch (error) {
+    return DATOS_AVISOS;
+  }
 }
 
 async function obtenerEventos() {
