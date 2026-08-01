@@ -2912,16 +2912,87 @@ async function obtenerRubricas(trimestre) {
   return DATOS_RUBRICAS[trimestre] || [];
 }
 
+// Aplica correcciones de fecha (tabla fechas_override de Supabase, para
+// cuando una fecha de entrega cambia después de publicada) sobre un array
+// de tareas/actividades/proyectos ya obtenido. Devuelve un array e items
+// NUEVOS: nunca muta `items` ni sus objetos, así que DATOS_TAREAS/
+// DATOS_ACTIVIDADES/DATOS_PROYECTOS se quedan intactos como fuente
+// original. resolverFechaItem() y fechaLimiteISO() no cambian: ambas solo
+// leen item.fecha/item.fechaEntrega, que aquí ya llega corregido.
+async function aplicarOverridesFechas(items, tipo, trimestre) {
+  let overrides;
+  try {
+    const { data, error } = await clienteSupabase
+      .from("fechas_override")
+      .select("*")
+      .eq("trimestre", trimestre)
+      .eq("tipo", tipo);
+
+    if (error) throw error;
+    overrides = data;
+  } catch (error) {
+    // Sin red o tabla no accesible: se queda con las fechas originales.
+    return items;
+  }
+
+  if (!overrides || overrides.length === 0) return items;
+
+  // item_id -> filas de override de ese item (puede haber una por grupo:
+  // "3C", "3E" y/o "todos").
+  const overridesPorItem = new Map();
+  overrides.forEach((fila) => {
+    if (!overridesPorItem.has(fila.item_id)) overridesPorItem.set(fila.item_id, []);
+    overridesPorItem.get(fila.item_id).push(fila);
+  });
+
+  // Mismo campo por tipo que ya usan resolverFechaItem() y fechaLimiteISO().
+  const campoFecha = tipo === "actividad" ? "fecha" : "fechaEntrega";
+
+  return items.map((item) => {
+    const filasOverride = overridesPorItem.get(item.id);
+    if (!filasOverride) return item;
+
+    const valorOriginal = item[campoFecha];
+    const itemConOverride = { ...item };
+
+    if (typeof valorOriginal === "string") {
+      // Grupo específico: la fila de override de ese grupo gana sobre la
+      // de "todos" si existen ambas.
+      const filaTodos = filasOverride.find((fila) => fila.grupo === "todos");
+      const filaGrupo = filasOverride.find((fila) => fila.grupo === item.grupo);
+      const filaAplicable = filaGrupo || filaTodos;
+      if (filaAplicable) itemConOverride[campoFecha] = filaAplicable.fecha;
+    } else if (valorOriginal && typeof valorOriginal === "object") {
+      // grupo:"todos" con fecha distinta por grupo ({3C, 3E}): una fila de
+      // override "todos" reemplaza ambas claves; una fila de grupo
+      // específico reemplaza solo esa clave y gana sobre la de "todos".
+      const nuevoValor = { ...valorOriginal };
+      const filaTodos = filasOverride.find((fila) => fila.grupo === "todos");
+      if (filaTodos) {
+        nuevoValor["3C"] = filaTodos.fecha;
+        nuevoValor["3E"] = filaTodos.fecha;
+      }
+      const fila3C = filasOverride.find((fila) => fila.grupo === "3C");
+      if (fila3C) nuevoValor["3C"] = fila3C.fecha;
+      const fila3E = filasOverride.find((fila) => fila.grupo === "3E");
+      if (fila3E) nuevoValor["3E"] = fila3E.fecha;
+      itemConOverride[campoFecha] = nuevoValor;
+    }
+
+    return itemConOverride;
+  });
+}
+
 async function obtenerTareas(trimestre) {
-  return DATOS_TAREAS[trimestre] || [];
+  return aplicarOverridesFechas(DATOS_TAREAS[trimestre] || [], "tarea", trimestre);
 }
 
 async function obtenerActividades(trimestre) {
-  return DATOS_ACTIVIDADES[trimestre] || [];
+  return aplicarOverridesFechas(DATOS_ACTIVIDADES[trimestre] || [], "actividad", trimestre);
 }
 
 async function obtenerProyectos(trimestre) {
-  return DATOS_PROYECTOS[trimestre] || [];
+  return aplicarOverridesFechas(DATOS_PROYECTOS[trimestre] || [], "proyecto", trimestre);
 }
 
 async function obtenerVideos(trimestre) {
