@@ -220,7 +220,28 @@
       </section>
 
       <section id="panel-alumnos" class="admin-panel" role="tabpanel" aria-labelledby="tab-alumnos" hidden>
-        <p class="admin-panel__placeholder">Módulo en construcción.</p>
+        <div class="calificacion-filtros">
+          <div class="calificacion-filtro">
+            <label for="alumnos-filtro-grupo">Grupo</label>
+            <select id="alumnos-filtro-grupo">
+              <option value="todos">Todos</option>
+              <option value="3C">3°C</option>
+              <option value="3E">3°E</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Buscador en vivo: mismo patrón que
+             filtrarFilasTablaCalificacion() (filtra las filas ya
+             renderizadas, no dispara una nueva consulta) — ver
+             filtrarFilasTablaAlumnos() en js/main.js. -->
+        <div class="calificacion-buscador">
+          <label for="alumnos-buscador-input" class="sr-only">Buscar alumno por nombre o número de lista</label>
+          <input type="search" id="alumnos-buscador-input" class="calificacion-buscador__input"
+                 placeholder="🔍 Buscar por nombre o número de lista…" autocomplete="off">
+        </div>
+
+        <div id="alumnos-tabla-contenedor" aria-live="polite"></div>
       </section>
 
       <section id="panel-avisos" class="admin-panel" role="tabpanel" aria-labelledby="tab-avisos" hidden>

@@ -7083,6 +7083,243 @@ async function inicializarModuloCalificacion() {
   });
 }
 
+/* ---------------------------------------------------------
+   Módulo "Alumnos" (tab-alumnos)
+
+   Listado simple de alumnos_registro con filtro de Grupo, buscador en
+   vivo y dar de baja/reactivar. Reutiliza deliberadamente varias piezas
+   ya construidas en el módulo de Calificación y progreso en vez de
+   duplicarlas: obtenerAlumnosParaCalificacion() (consulta genérica, no
+   tiene nada específico de calificación pese al nombre),
+   normalizarParaBusqueda(), textoGrupo(), y sobre todo
+   abrirModalHistorialAlumno() para "Ver historial completo" — se
+   invoca tal cual, sin adaptar nada (ver el resumen al final del
+   prompt que agregó este módulo).
+   --------------------------------------------------------- */
+
+const estadoAlumnos = { grupo: "todos" };
+
+// Determina el badge de estado de CUENTA de un alumno (eje distinto al
+// de progreso: ver "data-estado-cuenta" en css/style.css), en el orden
+// de prioridad pedido: dado de baja siempre gana, sin importar
+// usado/auth_user_id.
+function estadoCuentaAlumno(alumno) {
+  if (alumno.activo === false) return { estado: "baja", texto: "⚪ Dado de baja" };
+  if (alumno.usado === false) return { estado: "sin-usar", texto: "🔵 Código sin usar" };
+  if (!alumno.auth_user_id) return { estado: "incompleto", texto: "🟡 Registro incompleto" };
+  return { estado: "activa", texto: "🟢 Cuenta activa" };
+}
+
+// UPDATE activo=false/true en alumnos_registro. Sin mapaProgreso que
+// mantener aquí (a diferencia de guardarEntregaManual/eliminarEntregaManual
+// en Calificación): esta tabla no tiene ningún caché en memoria más allá
+// del objeto "alumno" que ya trae cada fila, así que basta con mutarlo y
+// repintar esa fila.
+async function actualizarActivoAlumno(alumno, activo) {
+  const { error } = await clienteSupabase.from("alumnos_registro").update({ activo }).eq("id", alumno.id);
+  if (error) throw error;
+  alumno.activo = activo;
+}
+
+async function darDeBajaAlumno(alumno, fila) {
+  if (!window.confirm("¿Seguro que quieres dar de baja a " + alumno.nombre + "?")) return;
+
+  try {
+    await actualizarActivoAlumno(alumno, false);
+  } catch (error) {
+    window.alert("No se pudo dar de baja al alumno: " + (error?.message || "intenta de nuevo."));
+    return;
+  }
+
+  fila.replaceWith(crearFilaAlumno(alumno));
+  filtrarFilasTablaAlumnos();
+}
+
+// Reactivar es una acción segura, reversible con "Dar de baja" de
+// nuevo, así que no pide confirmación adicional (a diferencia de dar de
+// baja o de "Deshacer marca manual" en Calificación, que sí eliminan/
+// desactivan algo de forma menos evidente a simple vista).
+async function reactivarAlumno(alumno, fila) {
+  try {
+    await actualizarActivoAlumno(alumno, true);
+  } catch (error) {
+    window.alert("No se pudo reactivar al alumno: " + (error?.message || "intenta de nuevo."));
+    return;
+  }
+
+  fila.replaceWith(crearFilaAlumno(alumno));
+  filtrarFilasTablaAlumnos();
+}
+
+function crearFilaAlumno(alumno) {
+  const fila = document.createElement("tr");
+  if (alumno.activo === false) fila.classList.add("fila-alumno--inactivo");
+
+  // Mismos data-attributes y misma normalización que
+  // crearFilaAlumnoCalificacion(), para reutilizar filtrarFilasTablaAlumnos
+  // con idéntica lógica a filtrarFilasTablaCalificacion.
+  fila.dataset.nombreBusqueda = normalizarParaBusqueda(alumno.nombre);
+  fila.dataset.numeroLista = String(alumno.numero_lista);
+
+  const celdaNombre = document.createElement("td");
+  const nombre = document.createElement("span");
+  // Misma clase que en Calificación: hereda gratis el
+  // "text-decoration: line-through" de .fila-alumno--inactivo, ya
+  // definido ahí (ver css/style.css).
+  nombre.className = "calificacion-tabla__alumno-nombre";
+  nombre.textContent = alumno.nombre;
+  celdaNombre.appendChild(nombre);
+  fila.appendChild(celdaNombre);
+
+  const celdaNumero = document.createElement("td");
+  celdaNumero.textContent = String(alumno.numero_lista);
+  fila.appendChild(celdaNumero);
+
+  const celdaEstado = document.createElement("td");
+  const { estado, texto } = estadoCuentaAlumno(alumno);
+  const badge = document.createElement("span");
+  badge.className = "badge-estado";
+  badge.dataset.estadoCuenta = estado;
+  badge.textContent = texto;
+  celdaEstado.appendChild(badge);
+  fila.appendChild(celdaEstado);
+
+  const celdaAcciones = document.createElement("td");
+  celdaAcciones.className = "alumnos-tabla__acciones";
+
+  const botonHistorial = document.createElement("button");
+  botonHistorial.type = "button";
+  botonHistorial.className = "boton-secundario";
+  botonHistorial.textContent = "👁️ Ver historial completo";
+  botonHistorial.addEventListener("click", () => abrirModalHistorialAlumno(alumno));
+  celdaAcciones.appendChild(botonHistorial);
+
+  if (alumno.activo === false) {
+    const botonReactivar = document.createElement("button");
+    botonReactivar.type = "button";
+    botonReactivar.className = "boton-secundario";
+    botonReactivar.textContent = "Reactivar";
+    botonReactivar.addEventListener("click", () => reactivarAlumno(alumno, fila));
+    celdaAcciones.appendChild(botonReactivar);
+  } else {
+    const botonBaja = document.createElement("button");
+    botonBaja.type = "button";
+    botonBaja.className = "alumnos-tabla__boton-baja";
+    botonBaja.textContent = "Dar de baja";
+    botonBaja.addEventListener("click", () => darDeBajaAlumno(alumno, fila));
+    celdaAcciones.appendChild(botonBaja);
+  }
+
+  fila.appendChild(celdaAcciones);
+  return fila;
+}
+
+function construirTablaAlumnos(alumnos) {
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-alumnos";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  ["Nombre", "N.° de lista", "Estado de cuenta", "Acciones"].forEach((texto) => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  alumnos.forEach((alumno) => tbody.appendChild(crearFilaAlumno(alumno)));
+  tabla.appendChild(tbody);
+
+  return tabla;
+}
+
+async function renderizarTablaAlumnos() {
+  const contenedor = document.getElementById("alumnos-tabla-contenedor");
+  if (!contenedor) return;
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  const alumnos = await obtenerAlumnosParaCalificacion(estadoAlumnos.grupo);
+  if (alumnos.length === 0) {
+    mostrarSinResultados(contenedor, "No hay alumnos registrados para este grupo.");
+    return;
+  }
+
+  contenedor.innerHTML = "";
+  contenedor.appendChild(construirTablaAlumnos(alumnos));
+
+  // El término de búsqueda no se limpia al cambiar de Grupo, así que hay
+  // que reaplicarlo sobre las filas recién creadas (mismo motivo que en
+  // renderizarTablaCalificacion).
+  filtrarFilasTablaAlumnos();
+}
+
+// Filtra en vivo las FILAS ya renderizadas (no dispara una nueva
+// consulta) — mismo patrón que filtrarFilasTablaCalificacion.
+function filtrarFilasTablaAlumnos() {
+  const input = document.getElementById("alumnos-buscador-input");
+  const contenedor = document.getElementById("alumnos-tabla-contenedor");
+  if (!input || !contenedor) return;
+
+  const tabla = contenedor.querySelector(".tabla-alumnos");
+  const filas = contenedor.querySelectorAll("tbody tr");
+  let mensajeSinCoincidencias = contenedor.querySelector(".alumnos-tabla__sin-coincidencias");
+
+  if (!tabla || filas.length === 0) {
+    if (mensajeSinCoincidencias) mensajeSinCoincidencias.remove();
+    return;
+  }
+
+  const termino = normalizarParaBusqueda(input.value.trim());
+  let algunaVisible = false;
+
+  filas.forEach((fila) => {
+    const coincide =
+      termino === "" ||
+      fila.dataset.nombreBusqueda.includes(termino) ||
+      fila.dataset.numeroLista.includes(termino);
+    fila.hidden = !coincide;
+    if (coincide) algunaVisible = true;
+  });
+
+  if (termino !== "" && !algunaVisible) {
+    if (!mensajeSinCoincidencias) {
+      mensajeSinCoincidencias = document.createElement("p");
+      mensajeSinCoincidencias.className = "sin-resultados alumnos-tabla__sin-coincidencias";
+      mensajeSinCoincidencias.textContent = "No se encontró ningún alumno con ese nombre o número de lista.";
+      tabla.after(mensajeSinCoincidencias);
+    }
+  } else if (mensajeSinCoincidencias) {
+    mensajeSinCoincidencias.remove();
+  }
+}
+
+function activarBuscadorAlumnos() {
+  const input = document.getElementById("alumnos-buscador-input");
+  if (!input) return;
+  input.addEventListener("input", filtrarFilasTablaAlumnos);
+}
+
+async function inicializarModuloAlumnos() {
+  const contenedor = document.getElementById("alumnos-tabla-contenedor");
+  if (!contenedor) return; // no es admin.html
+
+  // Mismo guard que Calificación: alumnos_registro está protegida por
+  // RLS para el rol docente.
+  await promesaGuardPanelDocente;
+
+  await renderizarTablaAlumnos();
+  activarBuscadorAlumnos();
+
+  const selectGrupo = document.getElementById("alumnos-filtro-grupo");
+  selectGrupo.addEventListener("change", async () => {
+    estadoAlumnos.grupo = selectGrupo.value;
+    await renderizarTablaAlumnos();
+  });
+}
+
 /* =========================================================
    10. INICIALIZACIÓN
    ========================================================= */
@@ -7127,6 +7364,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarTabsAdmin();
   activarCierreSesionAdmin();
   await inicializarModuloCalificacion();
+  await inicializarModuloAlumnos();
 
   const botonMesAnterior = document.getElementById("calendario-mes-anterior");
   if (botonMesAnterior) botonMesAnterior.addEventListener("click", () => avanzarMesCalendario(-1));

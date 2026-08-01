@@ -102,6 +102,23 @@
      el texto #12202E, AA en ambos temas porque es un valor fijo.       */
   --color-estado-sin-cuenta: #9AA4B2;
 
+  /* Estado de CUENTA de un alumno (módulo "Alumnos" del panel docente):
+     un eje semántico distinto al de progreso de arriba — "dado de baja"/
+     "cuenta activa" no son "vencido"/"completado", así que usan sus
+     propios 3 tokens nuevos en vez de repurposear los de progreso (misma
+     Regla de Exclusividad). "Dado de baja" sí reutiliza
+     --color-estado-sin-cuenta: ambos significan "esta cuenta no se puede
+     usar para registrar progreso", el mismo concepto visto desde dos
+     tablas distintas, no un repurposeo de un color ajeno. Los 3 nuevos
+     (azul/ámbar/verde) se eligieron con matiz deliberadamente alejado de
+     los de progreso (ámbar ~43° vs. el naranja de "pendiente" ~28°; verde
+     ~125° vs. el mint de "completado" ~166°) para que no se confundan a
+     primera vista pese a vivir en tablas distintas. Contraste verificado
+     ≥4.5:1 con su texto fijo, en ambos temas. */
+  --color-estado-codigo-sin-usar: #2D6CB0;
+  --color-estado-registro-incompleto: #D4A017;
+  --color-estado-cuenta-activa: #2F9E44;
+
   /* Foco de accesibilidad de alto contraste, obligatorio en todo elemento
      interactivo nuevo del rediseño (sidebar, modal de perfil, panel de
      progreso). Los focus-visible ya existentes (turquesa/navy) se
@@ -4370,6 +4387,31 @@ summary:focus-visible {
   color: #12202E;
 }
 
+/* Estado de CUENTA (módulo Alumnos) — atributo "data-estado-cuenta"
+   deliberadamente distinto de "data-estado" (progreso) de arriba, aunque
+   comparten la clase .badge-estado (misma forma de píldora): son dos
+   ejes semánticos independientes, ver los tokens en la sección de
+   variables. */
+.badge-estado[data-estado-cuenta="baja"] {
+  background-color: var(--color-estado-sin-cuenta);
+  color: #12202E;
+}
+
+.badge-estado[data-estado-cuenta="sin-usar"] {
+  background-color: var(--color-estado-codigo-sin-usar);
+  color: var(--color-claro-sobre-navy);
+}
+
+.badge-estado[data-estado-cuenta="incompleto"] {
+  background-color: var(--color-estado-registro-incompleto);
+  color: #12202E;
+}
+
+.badge-estado[data-estado-cuenta="activa"] {
+  background-color: var(--color-estado-cuenta-activa);
+  color: #12202E;
+}
+
 /* ---------- Navegación de scroll horizontal (solo mobile <1024px) ----------
    Mismo breakpoint que .barra-lateral/.barra-inferior en el resto del
    sitio: visibles por defecto (mobile), ocultos en desktop porque ahí el
@@ -4887,4 +4929,61 @@ button.badge-estado {
   body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla__origen-manual {
     display: none !important;
   }
+}
+
+/* =========================================================
+   MÓDULO "ALUMNOS" (admin.html)
+
+   Tabla simple (sin sticky/scroll horizontal, a diferencia de
+   .tabla-calificacion: solo 4 columnas, siempre caben en pantalla), en
+   el mismo espíritu que .tabla-horario. Reutiliza a propósito
+   .calificacion-filtros/.calificacion-filtro/.calificacion-buscador*
+   (genéricas, no específicas de Calificación) y
+   .calificacion-tabla__alumno-nombre/.fila-alumno--inactivo (mismo
+   patrón visual de "alumno dado de baja" ya definido ahí) para no
+   duplicar CSS que ya sirve igual aquí.
+   ========================================================= */
+.tabla-alumnos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabla-alumnos th,
+.tabla-alumnos td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.tabla-alumnos thead th {
+  color: var(--color-texto-suave);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+}
+
+.tabla-alumnos tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.alumnos-tabla__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Texto simple en rojo, no un botón lleno: mismo criterio que
+   .modal-editar-entrega__deshacer — es una acción poco frecuente que no
+   debe competir visualmente con el resto de la fila. */
+.alumnos-tabla__boton-baja {
+  background: none;
+  border: none;
+  color: var(--color-estado-vencido);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
 }
