@@ -6011,7 +6011,12 @@ async function actualizarOpcionesSecuenciaCalificacion() {
 // opcionalmente mapaProgreso + claveMapaProgreso (el Map y la llave de
 // ESE alumno×item×trimestre en ese Map) para poder mantenerlo
 // sincronizado tras guardar/deshacer sin que el llamador tenga que saber
-// cómo hacerlo.
+// cómo hacerlo. "alRepintarExtra(nuevaFilaProgresoOderNull)" es opcional:
+// se llama justo después de repintar el badge, para que un llamador con
+// contenido adicional que depende del mismo filaProgreso (el párrafo de
+// nota del modal de historial, que la tabla matriz no tiene) lo pueda
+// mantener en sincronía sin que esta función genérica necesite saber que
+// existe.
 function pintarBadgeCalificacion(contenedor, contexto) {
   const { alumno, item, trimestre, filaProgreso, sinCuenta, mapaProgreso, claveMapaProgreso } = contexto;
   contenedor.innerHTML = "";
@@ -6051,10 +6056,12 @@ function pintarBadgeCalificacion(contenedor, contexto) {
         alGuardar: (nuevaFila) => {
           if (mapaProgreso && claveMapaProgreso) mapaProgreso.set(claveMapaProgreso, nuevaFila);
           pintarBadgeCalificacion(contenedor, { ...contexto, filaProgreso: nuevaFila });
+          contexto.alRepintarExtra?.(nuevaFila);
         },
         alDeshacer: () => {
           if (mapaProgreso && claveMapaProgreso) mapaProgreso.delete(claveMapaProgreso);
           pintarBadgeCalificacion(contenedor, { ...contexto, filaProgreso: null });
+          contexto.alRepintarExtra?.(null);
         },
       });
     });
@@ -6295,6 +6302,29 @@ function activarDelegacionHistorialCalificacion() {
   });
 }
 
+// Agrega/actualiza/quita el párrafo "📝 Nota: ..." de un ítem del modal
+// de historial según su filaProgreso actual — usada tanto al construir
+// el <li> por primera vez como para mantenerlo en sincronía después de
+// guardar/deshacer una marca manual desde este mismo modal (ver
+// alRepintarExtra en crearSeccionTrimestreHistorial), sin duplicar esta
+// condición en dos lugares: si ya existe un párrafo y ya no aplica, se
+// quita; si no existía y ahora aplica, se crea; si existe y sigue
+// aplicando, solo se actualiza su texto.
+function actualizarNotaHistorial(li, filaProgreso) {
+  const notaExistente = li.querySelector(".calificacion-historial__nota");
+  const debeMostrarNota = filaProgreso?.completado && filaProgreso.origen === "manual-docente" && filaProgreso.nota;
+
+  if (!debeMostrarNota) {
+    notaExistente?.remove();
+    return;
+  }
+
+  const nota = notaExistente || document.createElement("p");
+  nota.className = "calificacion-historial__nota";
+  nota.textContent = "📝 Nota: " + filaProgreso.nota;
+  if (!notaExistente) li.appendChild(nota);
+}
+
 // Una sección <section> por trimestre dentro del modal de historial:
 // barra de avance + lista de TODOS los items de ese trimestre (tareas,
 // actividades y proyectos juntos, en ese orden — el mismo orden de
@@ -6372,6 +6402,10 @@ function crearSeccionTrimestreHistorial(trimestre, entregables, mapaProgreso, al
       sinCuenta: false,
       mapaProgreso,
       claveMapaProgreso,
+      // Solo el historial tiene un párrafo de nota separado del badge (la
+      // tabla matriz no); se mantiene en sincronía tras guardar/deshacer
+      // sin que pintarBadgeCalificacion tenga que saber que existe.
+      alRepintarExtra: (nuevaFila) => actualizarNotaHistorial(li, nuevaFila),
     });
     encabezadoItem.appendChild(contenedorBadge);
     li.appendChild(encabezadoItem);
@@ -6393,12 +6427,7 @@ function crearSeccionTrimestreHistorial(trimestre, entregables, mapaProgreso, al
     fechaItem.textContent = etiquetaFecha + resolverFechaItem(valorFecha, alumno.grupo);
     li.appendChild(fechaItem);
 
-    if (filaProgreso?.completado && filaProgreso.origen === "manual-docente" && filaProgreso.nota) {
-      const nota = document.createElement("p");
-      nota.className = "calificacion-historial__nota";
-      nota.textContent = "📝 Nota: " + filaProgreso.nota;
-      li.appendChild(nota);
-    }
+    actualizarNotaHistorial(li, filaProgreso);
 
     lista.appendChild(li);
   });
