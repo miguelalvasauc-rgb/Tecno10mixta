@@ -241,6 +241,10 @@
                  placeholder="🔍 Buscar por nombre o número de lista…" autocomplete="off">
         </div>
 
+        <div class="calificacion-acciones">
+          <button type="button" id="alumnos-boton-nuevo" class="boton-secundario">+ Nuevo alumno</button>
+        </div>
+
         <div id="alumnos-tabla-contenedor" aria-live="polite"></div>
       </section>
 
@@ -307,6 +311,46 @@
         </button>
       </div>
     </form>
+  </dialog>
+
+  <!-- Alta de alumno nuevo (a media cursada) — ver
+       activarBotonNuevoAlumno()/activarFormularioNuevoAlumno() en
+       js/main.js. Mismo patrón de accesibilidad que los demás dialogs. -->
+  <dialog id="modal-nuevo-alumno" aria-labelledby="modal-nuevo-alumno-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-nuevo-alumno-titulo">Nuevo alumno</h3>
+    <form id="formulario-nuevo-alumno" novalidate>
+      <label for="nuevo-alumno-nombre">Nombre completo</label>
+      <input type="text" id="nuevo-alumno-nombre" name="nombre" autocomplete="off" required>
+
+      <label for="nuevo-alumno-grupo">Grupo</label>
+      <select id="nuevo-alumno-grupo" name="grupo" required>
+        <option value="3C">3°C</option>
+        <option value="3E">3°E</option>
+      </select>
+
+      <label for="nuevo-alumno-numero-lista">Número de lista</label>
+      <input type="number" id="nuevo-alumno-numero-lista" name="numero_lista" min="1" step="1" required>
+
+      <p id="nuevo-alumno-error" class="cuenta-error" role="alert" hidden></p>
+
+      <div class="modal-editar-entrega__acciones">
+        <button type="submit" class="modal-editar-entrega__confirmar" id="nuevo-alumno-confirmar">Crear alumno</button>
+        <button type="button" class="boton-secundario" id="nuevo-alumno-cancelar">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Confirmación con el código de invitación recién generado (alta de
+       alumno nuevo o "🔄 Regenerar código" de uno existente) — ver
+       mostrarModalCodigoInvitacion()/activarCopiarCodigoInvitacion() en
+       js/main.js. Un solo dialog reutilizado por ambos flujos. -->
+  <dialog id="modal-codigo-invitacion" aria-labelledby="modal-codigo-invitacion-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-codigo-invitacion-titulo">Código de invitación</h3>
+    <p id="modal-codigo-invitacion-contexto" class="modal-historial__subtitulo"></p>
+    <p id="modal-codigo-invitacion-valor" class="alumnos-codigo__valor"></p>
+    <button type="button" id="boton-copiar-codigo" class="boton-secundario">📋 Copiar código</button>
   </dialog>
 
   <script src="js/main.js"></script>

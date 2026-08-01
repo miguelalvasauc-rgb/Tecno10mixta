@@ -7099,6 +7099,46 @@ async function inicializarModuloCalificacion() {
 
 const estadoAlumnos = { grupo: "todos" };
 
+// Sin 0/O ni 1/I/L (fácil de transcribir a mano/distinguir en voz alta) —
+// mismo criterio que ya siguen los códigos existentes del roster
+// original (confirmado en vivo: ninguno de los códigos ya guardados usa
+// esos caracteres, aunque se hayan generado por fuera de este repo).
+const ALFABETO_CODIGO_INVITACION = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+
+// Mismo formato ya usado en alumnos_registro.codigo_invitacion: 3 grupos
+// de 4 caracteres separados por guion (ej. "X7K2-9PQR-4LMN"). Puramente
+// aleatorio, sin verificar unicidad — eso lo hace
+// generarCodigoInvitacionUnico(), que es quien realmente se usa al dar
+// de alta/regenerar.
+function generarCodigoInvitacion() {
+  const grupoDeCuatro = () =>
+    Array.from({ length: 4 }, () => {
+      const indice = Math.floor(Math.random() * ALFABETO_CODIGO_INVITACION.length);
+      return ALFABETO_CODIGO_INVITACION[indice];
+    }).join("");
+  return grupoDeCuatro() + "-" + grupoDeCuatro() + "-" + grupoDeCuatro();
+}
+
+// Genera códigos hasta encontrar uno que no exista ya en
+// alumnos_registro (colisión prácticamente imposible con este alfabeto:
+// 31^12 combinaciones, muy por encima del tamaño real del roster, pero
+// se verifica de todos modos por seguridad). Máximo 5 intentos, tal como
+// se pidió; si ninguno resulta único, lanza un error legible en vez de
+// insertar/actualizar con un código repetido.
+async function generarCodigoInvitacionUnico() {
+  for (let intento = 0; intento < 5; intento++) {
+    const candidato = generarCodigoInvitacion();
+    const { data, error } = await clienteSupabase
+      .from("alumnos_registro")
+      .select("id")
+      .eq("codigo_invitacion", candidato)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return candidato;
+  }
+  throw new Error("No se pudo generar un código de invitación único después de varios intentos.");
+}
+
 // Determina el badge de estado de CUENTA de un alumno (eje distinto al
 // de progreso: ver "data-estado-cuenta" en css/style.css), en el orden
 // de prioridad pedido: dado de baja siempre gana, sin importar
@@ -7151,6 +7191,86 @@ async function reactivarAlumno(alumno, fila) {
   filtrarFilasTablaAlumnos();
 }
 
+// Muestra #modal-codigo-invitacion con el código recién generado —
+// compartido por el alta de alumno nuevo y por "🔄 Regenerar código",
+// para no construir dos veces la misma confirmación con botón de copiar.
+function mostrarModalCodigoInvitacion(alumno, codigo) {
+  const modal = document.getElementById("modal-codigo-invitacion");
+  if (!modal) return;
+
+  document.getElementById("modal-codigo-invitacion-contexto").textContent = alumno.nombre;
+  document.getElementById("modal-codigo-invitacion-valor").textContent = codigo;
+  modal.showModal();
+}
+
+function activarCierreModalCodigoInvitacion() {
+  const modal = document.getElementById("modal-codigo-invitacion");
+  if (!modal) return;
+
+  const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.close();
+  });
+}
+
+// navigator.clipboard.writeText requiere contexto seguro (https o
+// localhost); si por lo que sea falla (navegador viejo, permiso
+// denegado), se cae en un alert con el código tal cual, para que Hiram
+// pueda copiarlo a mano igual.
+function activarCopiarCodigoInvitacion() {
+  const boton = document.getElementById("boton-copiar-codigo");
+  if (!boton) return;
+
+  boton.addEventListener("click", async () => {
+    const codigo = document.getElementById("modal-codigo-invitacion-valor").textContent;
+    const textoOriginal = boton.textContent;
+    try {
+      await navigator.clipboard.writeText(codigo);
+      boton.textContent = "✅ Copiado";
+      setTimeout(() => {
+        boton.textContent = textoOriginal;
+      }, 1500);
+    } catch {
+      window.alert("No se pudo copiar automáticamente. Código: " + codigo);
+    }
+  });
+}
+
+// Genera un código nuevo y único, y lo guarda en esta fila — el código
+// anterior queda inservible de inmediato (deja de existir en la BD), por
+// eso pide confirmación antes. Solo tiene sentido mientras usado===false
+// (ver el botón condicional en crearFilaAlumno).
+async function regenerarCodigoAlumno(alumno, fila) {
+  if (
+    !window.confirm(
+      "¿Seguro que quieres regenerar el código de invitación de " +
+        alumno.nombre +
+        "? El código anterior dejará de servir."
+    )
+  )
+    return;
+
+  let nuevoCodigo;
+  try {
+    nuevoCodigo = await generarCodigoInvitacionUnico();
+    const { error } = await clienteSupabase
+      .from("alumnos_registro")
+      .update({ codigo_invitacion: nuevoCodigo })
+      .eq("id", alumno.id);
+    if (error) throw error;
+  } catch (error) {
+    window.alert("No se pudo regenerar el código: " + (error?.message || "intenta de nuevo."));
+    return;
+  }
+
+  alumno.codigo_invitacion = nuevoCodigo;
+  fila.replaceWith(crearFilaAlumno(alumno));
+  filtrarFilasTablaAlumnos();
+  mostrarModalCodigoInvitacion(alumno, nuevoCodigo);
+}
+
 function crearFilaAlumno(alumno) {
   const fila = document.createElement("tr");
   if (alumno.activo === false) fila.classList.add("fila-alumno--inactivo");
@@ -7193,6 +7313,18 @@ function crearFilaAlumno(alumno) {
   botonHistorial.textContent = "👁️ Ver historial completo";
   botonHistorial.addEventListener("click", () => abrirModalHistorialAlumno(alumno));
   celdaAcciones.appendChild(botonHistorial);
+
+  // Independiente de activo/reactivar-baja: solo tiene sentido mientras
+  // el código todavía no se consumió (regenerar uno ya usado no
+  // significa nada, la cuenta ya existe).
+  if (alumno.usado === false) {
+    const botonRegenerar = document.createElement("button");
+    botonRegenerar.type = "button";
+    botonRegenerar.className = "boton-secundario";
+    botonRegenerar.textContent = "🔄 Regenerar código";
+    botonRegenerar.addEventListener("click", () => regenerarCodigoAlumno(alumno, fila));
+    celdaAcciones.appendChild(botonRegenerar);
+  }
 
   if (alumno.activo === false) {
     const botonReactivar = document.createElement("button");
@@ -7302,6 +7434,105 @@ function activarBuscadorAlumnos() {
   input.addEventListener("input", filtrarFilasTablaAlumnos);
 }
 
+// Botón "+ Nuevo alumno": solo abre el formulario limpio (el envío real
+// vive en activarFormularioNuevoAlumno).
+function activarBotonNuevoAlumno() {
+  const boton = document.getElementById("alumnos-boton-nuevo");
+  const modal = document.getElementById("modal-nuevo-alumno");
+  const formulario = document.getElementById("formulario-nuevo-alumno");
+  if (!boton || !modal || !formulario) return;
+
+  boton.addEventListener("click", () => {
+    formulario.reset();
+    document.getElementById("nuevo-alumno-error").hidden = true;
+    modal.showModal();
+  });
+}
+
+// Validación mínima (Paso 4 del prompt): nombre no vacío, grupo
+// seleccionado, número de lista entero positivo. A propósito NO valida
+// unicidad de número de lista dentro del grupo — puede haber
+// reasignaciones legítimas, eso queda fuera de este alcance.
+function activarFormularioNuevoAlumno() {
+  const modal = document.getElementById("modal-nuevo-alumno");
+  const formulario = document.getElementById("formulario-nuevo-alumno");
+  if (!modal || !formulario) return;
+
+  formulario.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+
+    const nombre = document.getElementById("nuevo-alumno-nombre").value.trim();
+    const grupo = document.getElementById("nuevo-alumno-grupo").value;
+    const numeroLista = Number(document.getElementById("nuevo-alumno-numero-lista").value);
+    const error = document.getElementById("nuevo-alumno-error");
+    const botonConfirmar = document.getElementById("nuevo-alumno-confirmar");
+
+    error.hidden = true;
+
+    if (!nombre) {
+      error.textContent = "El nombre no puede estar vacío.";
+      error.hidden = false;
+      return;
+    }
+    if (grupo !== "3C" && grupo !== "3E") {
+      error.textContent = "Selecciona un grupo.";
+      error.hidden = false;
+      return;
+    }
+    if (!Number.isInteger(numeroLista) || numeroLista <= 0) {
+      error.textContent = "El número de lista debe ser un entero positivo.";
+      error.hidden = false;
+      return;
+    }
+
+    botonConfirmar.disabled = true;
+    try {
+      const codigo = await generarCodigoInvitacionUnico();
+      const { data, error: errorInsert } = await clienteSupabase
+        .from("alumnos_registro")
+        .insert({
+          nombre,
+          grupo,
+          numero_lista: numeroLista,
+          codigo_invitacion: codigo,
+          activo: true,
+          usado: false,
+          auth_user_id: null,
+        })
+        .select()
+        .single();
+      if (errorInsert) throw errorInsert;
+
+      modal.close();
+      formulario.reset();
+      await renderizarTablaAlumnos();
+      mostrarModalCodigoInvitacion(data, codigo);
+    } catch (err) {
+      error.textContent = "No se pudo crear al alumno: " + (err?.message || "intenta de nuevo.");
+      error.hidden = false;
+    } finally {
+      botonConfirmar.disabled = false;
+    }
+  });
+
+  document.getElementById("nuevo-alumno-cancelar").addEventListener("click", () => {
+    formulario.reset();
+    modal.close();
+  });
+
+  const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) {
+    botonCerrar.addEventListener("click", () => {
+      formulario.reset();
+      modal.close();
+    });
+  }
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.close();
+  });
+}
+
 async function inicializarModuloAlumnos() {
   const contenedor = document.getElementById("alumnos-tabla-contenedor");
   if (!contenedor) return; // no es admin.html
@@ -7312,6 +7543,10 @@ async function inicializarModuloAlumnos() {
 
   await renderizarTablaAlumnos();
   activarBuscadorAlumnos();
+  activarBotonNuevoAlumno();
+  activarFormularioNuevoAlumno();
+  activarCierreModalCodigoInvitacion();
+  activarCopiarCodigoInvitacion();
 
   const selectGrupo = document.getElementById("alumnos-filtro-grupo");
   selectGrupo.addEventListener("change", async () => {

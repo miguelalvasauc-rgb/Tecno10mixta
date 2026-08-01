@@ -4987,3 +4987,100 @@ button.badge-estado {
   text-decoration: underline;
   padding: 0;
 }
+
+/* ---------- Alta de alumno nuevo (#modal-nuevo-alumno) ----------
+   Mismo patrón visual que #modal-editar-entrega (ver esa sección más
+   arriba): dialog angosto para un formulario corto. Reutiliza
+   .modal-editar-entrega__acciones/.modal-editar-entrega__confirmar tal
+   cual (genéricas, no específicas de ese panel) — solo el tamaño del
+   dialog y el estilo de sus propios campos son nuevos aquí, porque
+   #formulario-editar-entrega los define con su propio id y no alcanzan
+   a este formulario. */
+#modal-nuevo-alumno {
+  width: 92%;
+  max-width: 420px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-nuevo-alumno::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-nuevo-alumno-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+#formulario-nuevo-alumno {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+#formulario-nuevo-alumno label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+}
+
+#formulario-nuevo-alumno input,
+#formulario-nuevo-alumno select {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--font-cuerpo);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ---------- Confirmación con código de invitación (#modal-codigo-invitacion) ----------
+   Compartido entre "Nuevo alumno" y "🔄 Regenerar código" — ver
+   mostrarModalCodigoInvitacion() en js/main.js. Más angosto todavía: solo
+   título + contexto + el código + un botón. */
+#modal-codigo-invitacion {
+  width: 92%;
+  max-width: 360px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+  text-align: center;
+}
+
+#modal-codigo-invitacion::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-codigo-invitacion-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+/* Código en fuente monoespaciada y tamaño grande: es lo único que Hiram
+   necesita copiar/transcribir a mano para dárselo al alumno. */
+.alumnos-codigo__valor {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background-color: var(--color-fondo);
+  border: 1px dashed var(--color-borde);
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--color-texto);
+}
