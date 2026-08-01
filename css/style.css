@@ -93,6 +93,15 @@
   --color-estado-pendiente: #FFB77D;
   --color-estado-vencido: #BA1A1A;
 
+  /* Quinto estado, exclusivo del panel docente (tabla de Calificación y
+     progreso): alumno sin cuenta reclamada todavía. Gris neutro a
+     propósito — nunca tuvo la oportunidad de completar el ítem, así que
+     no es equivalente a "pendiente" ni a ningún otro de los 4 estados de
+     arriba (ver la Regla de Exclusividad de Colores de Estado en
+     DESIGN.md: estos tokens no se repurposean entre sí). ~6.5:1 contra
+     el texto #12202E, AA en ambos temas porque es un valor fijo.       */
+  --color-estado-sin-cuenta: #9AA4B2;
+
   /* Foco de accesibilidad de alto contraste, obligatorio en todo elemento
      interactivo nuevo del rediseño (sidebar, modal de perfil, panel de
      progreso). Los focus-visible ya existentes (turquesa/navy) se
@@ -4206,5 +4215,247 @@ summary:focus-visible {
   .admin-tabs {
     overflow-x: auto;
     flex-wrap: nowrap;
+  }
+}
+
+/* =========================================================
+   MÓDULO "CALIFICACIÓN Y PROGRESO" (admin.html)
+
+   Filtros (trimestre/grupo/tipo/secuencia) + tabla matriz de solo
+   lectura: alumnos en filas, entregables en columnas. La columna de
+   "Alumno" y la fila de encabezado quedan sticky (position: sticky) para
+   no perderse al hacer scroll en tablas con muchas columnas/alumnos.
+   ========================================================= */
+.calificacion-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.calificacion-filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.calificacion-filtro label {
+  color: var(--color-texto-suave);
+  font-weight: 600;
+}
+
+.calificacion-filtro select {
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-size: 0.85rem;
+  min-width: 180px;
+  cursor: pointer;
+}
+
+.calificacion-tabla-contenedor {
+  overflow: auto;
+  max-height: 70vh;
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+}
+
+.tabla-calificacion {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.85rem;
+}
+
+.tabla-calificacion th,
+.tabla-calificacion td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-borde);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabla-calificacion thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--color-superficie-alterna);
+  color: var(--color-texto-suave);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+}
+
+.tabla-calificacion__col-item {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Columna "Alumno": sticky a la izquierda en todas las filas (thead,
+   tbody y tfoot comparten esta clase); la celda de encabezado necesita
+   z-index más alto porque es la esquina donde ambos sticky (top y left)
+   se cruzan. */
+.tabla-calificacion__col-fija {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: var(--color-superficie);
+}
+
+.tabla-calificacion thead .tabla-calificacion__col-fija {
+  z-index: 3;
+  background-color: var(--color-superficie-alterna);
+}
+
+.calificacion-tabla__alumno {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.calificacion-tabla__alumno-nombre {
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.calificacion-tabla__alumno-numero {
+  font-size: 0.75rem;
+  color: var(--color-texto-suave);
+}
+
+/* Alumno dado de baja (alumnos_registro.activo === false): toda la fila
+   se atenúa y el nombre queda tachado, independientemente de su
+   progreso. */
+.fila-alumno--inactivo {
+  opacity: 0.55;
+}
+
+.fila-alumno--inactivo .calificacion-tabla__alumno-nombre {
+  text-decoration: line-through;
+}
+
+.calificacion-tabla__celda {
+  position: relative;
+}
+
+/* Ícono superpuesto que distingue un "Entregado" marcado a mano por el
+   docente (origen = "manual-docente") de uno registrado por el propio
+   alumno vía el formulario. */
+.calificacion-tabla__origen-manual {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.15rem;
+  font-size: 0.75rem;
+}
+
+.calificacion-tabla__avance {
+  font-weight: 700;
+  text-align: center;
+}
+
+.tabla-calificacion tfoot td {
+  font-weight: 700;
+  color: var(--color-texto-suave);
+  border-top: 2px solid var(--color-borde);
+  border-bottom: none;
+}
+
+.badge-estado[data-estado="sin-cuenta"] {
+  background-color: var(--color-estado-sin-cuenta);
+  color: #12202E;
+}
+
+/* ---------- Navegación de scroll horizontal (solo mobile <1024px) ----------
+   Mismo breakpoint que .barra-lateral/.barra-inferior en el resto del
+   sitio: visibles por defecto (mobile), ocultos en desktop porque ahí el
+   scroll libre con mouse/trackpad ya se siente bien. */
+.calificacion-tabla__nav-movil {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.calificacion-tabla__nav-boton {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  color: var(--color-texto);
+  font-size: 0.9rem;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+}
+
+.calificacion-tabla__nav-boton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (min-width: 1024px) {
+  .calificacion-tabla__nav-movil {
+    display: none;
+  }
+}
+
+/* ---------- Scroll horizontal con snap + indicador de gradiente (solo mobile) ----------
+   En desktop (≥1024px) no se toca nada: el scroll libre de
+   .calificacion-tabla-contenedor ya definido arriba se queda igual. */
+@media (max-width: 1023.98px) {
+  .tabla-calificacion__col-item {
+    min-width: 140px;
+    scroll-snap-align: start;
+  }
+
+  /* La columna "Alumno" también necesita ser un punto de snap válido:
+     sin esto, "scroll-snap-type: x mandatory" no tiene ningún snap point
+     en scrollLeft 0 (el primero sería el de la primera columna de
+     entregable) y el navegador arranca la tabla ya desplazada hacia la
+     derecha, tapando el inicio real. */
+  .tabla-calificacion__col-fija {
+    scroll-snap-align: start;
+  }
+
+  .calificacion-tabla-contenedor {
+    scroll-snap-type: x mandatory;
+    position: relative;
+  }
+
+  /* Gradiente que señala "hay más columnas a la derecha": sticky al
+     borde visible derecho (no al borde real de la tabla) mientras se
+     hace scroll horizontal. Ancho fijo + margin-right negativo del mismo
+     valor para que no sume ancho de scroll extra (técnica estándar para
+     overlays sticky dentro de un contenedor con scroll). El alto usa una
+     variable CSS que fija JS (actualizarEstadoNavegacionTablaCalificacion
+     en main.js) porque "height: 100%" no se resuelve cuando la tabla es
+     más baja que max-height (70vh) — caso común con pocos alumnos pero
+     muchas columnas. Se oculta con opacity 0 (clase agregada por el
+     mismo JS) cuando el scroll ya llegó al final. */
+  .calificacion-tabla-contenedor::after {
+    content: "";
+    display: block;
+    position: sticky;
+    top: 0;
+    right: 0;
+    width: 28px;
+    height: var(--alto-contenedor-calificacion, 100%);
+    margin-right: -28px;
+    background: linear-gradient(to right, transparent, var(--color-fondo));
+    opacity: 1;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  .calificacion-tabla-contenedor--fin-alcanzado::after {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .calificacion-tabla-contenedor::after {
+      transition: none;
+    }
   }
 }

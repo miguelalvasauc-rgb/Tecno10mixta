@@ -150,7 +150,48 @@
       </div>
 
       <section id="panel-calificacion" class="admin-panel" role="tabpanel" aria-labelledby="tab-calificacion">
-        <p class="admin-panel__placeholder">Módulo en construcción.</p>
+        <div class="calificacion-filtros">
+          <div class="calificacion-filtro">
+            <label for="calificacion-filtro-trimestre">Trimestre</label>
+            <select id="calificacion-filtro-trimestre">
+              <option value="1">1° Trimestre</option>
+              <option value="2">2° Trimestre</option>
+              <option value="3">3° Trimestre</option>
+            </select>
+          </div>
+          <div class="calificacion-filtro">
+            <label for="calificacion-filtro-grupo">Grupo</label>
+            <select id="calificacion-filtro-grupo">
+              <option value="todos">Todos</option>
+              <option value="3C">3°C</option>
+              <option value="3E">3°E</option>
+            </select>
+          </div>
+          <div class="calificacion-filtro">
+            <label for="calificacion-filtro-tipo">Tipo</label>
+            <select id="calificacion-filtro-tipo">
+              <option value="todos">Todos</option>
+              <option value="tarea">Tareas</option>
+              <option value="actividad">Actividades</option>
+              <option value="proyecto">Proyectos</option>
+            </select>
+          </div>
+          <div class="calificacion-filtro">
+            <label for="calificacion-filtro-secuencia">Secuencia</label>
+            <select id="calificacion-filtro-secuencia"></select>
+          </div>
+        </div>
+
+        <!-- Navegación de scroll horizontal, solo visible en mobile (<1024px,
+             mismo breakpoint que .barra-lateral/.barra-inferior): en
+             desktop el scroll libre ya se ve bien y estos botones se
+             ocultan por CSS (ver @media (min-width: 1024px) en style.css). -->
+        <div class="calificacion-tabla__nav-movil">
+          <button type="button" id="calificacion-scroll-izq" class="calificacion-tabla__nav-boton" aria-label="Desplazar la tabla hacia la izquierda">◀</button>
+          <button type="button" id="calificacion-scroll-der" class="calificacion-tabla__nav-boton" aria-label="Desplazar la tabla hacia la derecha">▶</button>
+        </div>
+
+        <div id="calificacion-tabla-contenedor" class="calificacion-tabla-contenedor" aria-live="polite"></div>
       </section>
 
       <section id="panel-alumnos" class="admin-panel" role="tabpanel" aria-labelledby="tab-alumnos" hidden>

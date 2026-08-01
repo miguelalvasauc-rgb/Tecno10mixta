@@ -5754,11 +5754,17 @@ clienteSupabase.auth.onAuthStateChange(async () => {
 // en el resto queda en false y todo este bloque no hace nada.
 const ES_PAGINA_ADMIN = document.body.dataset.pagina === "admin";
 
+// Expuesta para que otros módulos del panel (ver "Calificación y
+// progreso" más abajo) esperen a que el guard confirme la sesión de
+// docente antes de consultar tablas protegidas por RLS (alumnos_registro,
+// progreso). En páginas que no son admin.html queda resuelta de una vez.
+let promesaGuardPanelDocente = Promise.resolve();
+
 if (ES_PAGINA_ADMIN) {
   // Mismo criterio de "sin parpadeo" que el guard de trimestre (sección
   // 2): overlay de carga si la verificación tarda más de 150ms, nunca un
   // mensaje de "no autorizado" a medio camino — solo redirección directa.
-  (async function guardPanelDocente() {
+  promesaGuardPanelDocente = (async function guardPanelDocente() {
     let overlayCarga = null;
     const temporizadorOverlay = setTimeout(() => {
       overlayCarga = mostrarOverlayCargaTrimestre();
@@ -5831,6 +5837,461 @@ function activarCierreSesionAdmin() {
   });
 }
 
+/* ---------------------------------------------------------
+   Módulo "Calificación y progreso" (tab-calificacion)
+
+   Tabla matriz de solo lectura: alumnos (de "alumnos_registro") en
+   filas, entregables (de obtenerTareas/Actividades/Proyectos, ya con
+   overrides de fecha aplicados) en columnas, y el cruce lo resuelve la
+   tabla "progreso" de Supabase. Sin interacciones de edición todavía
+   (clic en celda, buscador, exportar CSV son prompts aparte).
+   --------------------------------------------------------- */
+
+const ICONO_TIPO_ENTREGABLE = { tarea: "📝", actividad: "🎯", proyecto: "🚀" };
+
+// Mismo texto de respaldo que ya usan renderizarTareas/Actividades/
+// Proyectos cuando un ítem no trae "secuencia" (item.secuencia || "Otras
+// tareas", etc.) — se reutiliza aquí para que la etiqueta de la columna
+// "Secuencia" coincida con la que el alumno ve en su propia página.
+const ETIQUETA_SIN_SECUENCIA_POR_TIPO = {
+  tarea: "Otras tareas",
+  actividad: "Otras actividades",
+  proyecto: "Otros proyectos",
+};
+
+function claveSecuenciaDeEntregable(item) {
+  return item.secuencia || ETIQUETA_SIN_SECUENCIA_POR_TIPO[item.tipoEntregable];
+}
+
+// Filtro actual del módulo. trimestre/secuencia empiezan en null: se
+// resuelven en inicializarModuloCalificacion() antes del primer render
+// (trimestre = el trimestre desbloqueado; secuencia = la primera
+// disponible para ese trimestre/tipo).
+const estadoCalificacion = {
+  trimestre: null,
+  grupo: "todos",
+  tipo: "todos",
+  secuencia: null,
+};
+
+// Combina obtenerTareas/Actividades/Proyectos según el tipo elegido,
+// marcando cada item con item.tipoEntregable ("tarea"/"actividad"/
+// "proyecto") para poder construir la llave de progreso
+// (`${alumno_id}-${tipo}-${item_id}`) sin importar de qué array vino.
+async function obtenerEntregablesPorTipo(tipo, trimestre) {
+  if (tipo === "tarea") {
+    return (await obtenerTareas(trimestre)).map((item) => ({ ...item, tipoEntregable: "tarea" }));
+  }
+  if (tipo === "actividad") {
+    return (await obtenerActividades(trimestre)).map((item) => ({ ...item, tipoEntregable: "actividad" }));
+  }
+  if (tipo === "proyecto") {
+    return (await obtenerProyectos(trimestre)).map((item) => ({ ...item, tipoEntregable: "proyecto" }));
+  }
+
+  const [tareas, actividades, proyectos] = await Promise.all([
+    obtenerTareas(trimestre),
+    obtenerActividades(trimestre),
+    obtenerProyectos(trimestre),
+  ]);
+  return [
+    ...tareas.map((item) => ({ ...item, tipoEntregable: "tarea" })),
+    ...actividades.map((item) => ({ ...item, tipoEntregable: "actividad" })),
+    ...proyectos.map((item) => ({ ...item, tipoEntregable: "proyecto" })),
+  ];
+}
+
+// Todos los alumnos del grupo elegido (activos e inactivos: los
+// inactivos se muestran atenuados, ver crearFilaAlumnoCalificacion), no
+// solo los que ya reclamaron su cuenta — eso se distingue por celda, no
+// excluyendo filas.
+async function obtenerAlumnosParaCalificacion(grupo) {
+  let consulta = clienteSupabase.from("alumnos_registro").select("*").order("numero_lista", { ascending: true });
+  if (grupo !== "todos") consulta = consulta.eq("grupo", grupo);
+
+  const { data, error } = await consulta;
+  if (error) return [];
+  return data;
+}
+
+// Map `${alumno_id}-${tipo}-${item_id}` -> fila de progreso, para lookup
+// O(1) al pintar cada celda (mismo patrón que TIPOS_DIA_POR_FECHA para el
+// calendario). Solo consulta por los alumno_id que sí tienen cuenta
+// (auth_user_id no nulo): los que no, nunca van a tener fila de progreso.
+async function obtenerMapaProgresoCalificacion(trimestre, tipos, alumnoIds) {
+  const mapa = new Map();
+  if (alumnoIds.length === 0) return mapa;
+
+  const { data, error } = await clienteSupabase
+    .from("progreso")
+    .select("*")
+    .eq("trimestre", trimestre)
+    .in("tipo", tipos)
+    .in("alumno_id", alumnoIds);
+
+  if (error) return mapa;
+
+  data.forEach((fila) => {
+    mapa.set(fila.alumno_id + "-" + fila.tipo + "-" + fila.item_id, fila);
+  });
+  return mapa;
+}
+
+// Recalcula las opciones del <select> de secuencia a partir de los
+// entregables del trimestre/tipo actualmente elegidos, en el orden en que
+// aparecen en los datos (no alfabético). Conserva la selección previa si
+// sigue siendo una opción válida; si no, cae a la primera disponible.
+async function actualizarOpcionesSecuenciaCalificacion() {
+  const select = document.getElementById("calificacion-filtro-secuencia");
+  if (!select) return;
+
+  const entregables = await obtenerEntregablesPorTipo(estadoCalificacion.tipo, estadoCalificacion.trimestre);
+
+  const vistas = new Set();
+  const opciones = [];
+  entregables.forEach((item) => {
+    const clave = claveSecuenciaDeEntregable(item);
+    if (!vistas.has(clave)) {
+      vistas.add(clave);
+      opciones.push(clave);
+    }
+  });
+
+  const valorPrevio = estadoCalificacion.secuencia;
+  select.innerHTML = "";
+  opciones.forEach((clave) => {
+    const opcion = document.createElement("option");
+    opcion.value = clave;
+    opcion.textContent = clave;
+    select.appendChild(opcion);
+  });
+
+  estadoCalificacion.secuencia = opciones.includes(valorPrevio) ? valorPrevio : opciones[0] || null;
+  select.value = estadoCalificacion.secuencia || "";
+}
+
+// Badge de una celda alumno×entregable. "sinCuenta" ya viene resuelto por
+// el llamador (alumnos_registro.usado === false o auth_user_id nulo) para
+// no repetir esa lectura por cada celda de la fila.
+function crearBadgeCalificacion(alumno, item, filaProgreso, sinCuenta) {
+  const celda = document.createElement("td");
+  // "tabla-calificacion__col-item" es la misma clase del <th> de esta
+  // columna: comparte min-width y scroll-snap-align en mobile (ver
+  // css/style.css) para que el punto de snap quede en el mismo eje tanto
+  // en el encabezado como en cada celda de datos.
+  celda.className = "calificacion-tabla__celda tabla-calificacion__col-item";
+
+  const badge = document.createElement("span");
+  badge.className = "badge-estado";
+
+  if (sinCuenta) {
+    badge.dataset.estado = "sin-cuenta";
+    badge.textContent = "🚫 Sin cuenta activa";
+    celda.appendChild(badge);
+    return celda;
+  }
+
+  if (filaProgreso && filaProgreso.completado) {
+    badge.dataset.estado = "completada";
+    badge.textContent = "🟢 Entregado";
+    celda.appendChild(badge);
+    if (filaProgreso.origen === "manual-docente") {
+      const marcaManual = document.createElement("span");
+      marcaManual.className = "calificacion-tabla__origen-manual";
+      marcaManual.title = "Marcado manualmente por el docente";
+      marcaManual.textContent = "🖊️";
+      celda.appendChild(marcaManual);
+    }
+    return celda;
+  }
+
+  if (itemEstaVencido(item.tipoEntregable, item, alumno.grupo)) {
+    badge.dataset.estado = "atrasada";
+    badge.textContent = "🔒 Atrasada";
+  } else {
+    badge.dataset.estado = "pendiente";
+    badge.textContent = "🟡 Pendiente";
+  }
+  celda.appendChild(badge);
+  return celda;
+}
+
+function crearFilaAlumnoCalificacion(alumno, entregables, mapaProgreso) {
+  const fila = document.createElement("tr");
+  if (alumno.activo === false) fila.classList.add("fila-alumno--inactivo");
+
+  const celdaAlumno = document.createElement("td");
+  celdaAlumno.className = "tabla-calificacion__col-fija";
+  const envoltura = document.createElement("div");
+  envoltura.className = "calificacion-tabla__alumno";
+  const nombre = document.createElement("span");
+  nombre.className = "calificacion-tabla__alumno-nombre";
+  nombre.textContent = alumno.nombre;
+  const numero = document.createElement("span");
+  numero.className = "calificacion-tabla__alumno-numero";
+  numero.textContent = "N.° " + alumno.numero_lista;
+  envoltura.append(nombre, numero);
+  celdaAlumno.appendChild(envoltura);
+  fila.appendChild(celdaAlumno);
+
+  const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
+  let completados = 0;
+
+  entregables.forEach((item) => {
+    const filaProgreso = sinCuenta
+      ? null
+      : mapaProgreso.get(alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id);
+    if (filaProgreso && filaProgreso.completado) completados++;
+    fila.appendChild(crearBadgeCalificacion(alumno, item, filaProgreso, sinCuenta));
+  });
+
+  const celdaAvance = document.createElement("td");
+  celdaAvance.className = "calificacion-tabla__avance";
+  celdaAvance.textContent =
+    sinCuenta || entregables.length === 0 ? "—" : Math.round((completados / entregables.length) * 100) + "%";
+  fila.appendChild(celdaAvance);
+
+  return fila;
+}
+
+// Fila de totales al pie: % de alumnos CON cuenta activa que tienen cada
+// columna completada (los "sin cuenta" quedan fuera del cálculo, para no
+// diluir el porcentaje con alumnos que nunca pudieron entregar).
+function crearPieCalificacion(alumnos, entregables, mapaProgreso) {
+  const tfoot = document.createElement("tfoot");
+  const fila = document.createElement("tr");
+
+  const celdaEtiqueta = document.createElement("td");
+  celdaEtiqueta.className = "tabla-calificacion__col-fija";
+  celdaEtiqueta.textContent = "% completado";
+  fila.appendChild(celdaEtiqueta);
+
+  const alumnosConCuenta = alumnos.filter((alumno) => alumno.usado !== false && alumno.auth_user_id);
+
+  entregables.forEach((item) => {
+    const celda = document.createElement("td");
+    if (alumnosConCuenta.length === 0) {
+      celda.textContent = "—";
+    } else {
+      const completados = alumnosConCuenta.filter((alumno) => {
+        const filaProgreso = mapaProgreso.get(alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id);
+        return filaProgreso && filaProgreso.completado;
+      }).length;
+      celda.textContent = Math.round((completados / alumnosConCuenta.length) * 100) + "%";
+    }
+    fila.appendChild(celda);
+  });
+
+  const celdaAvance = document.createElement("td");
+  celdaAvance.textContent = "—";
+  fila.appendChild(celdaAvance);
+
+  tfoot.appendChild(fila);
+  return tfoot;
+}
+
+function construirTablaCalificacion(alumnos, entregables, mapaProgreso) {
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-calificacion";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+
+  const thAlumno = document.createElement("th");
+  thAlumno.className = "tabla-calificacion__col-fija";
+  thAlumno.textContent = "Alumno";
+  filaEncabezado.appendChild(thAlumno);
+
+  // El ícono de tipo solo se antepone al título cuando la vista mezcla
+  // los 3 tipos ("Todos"): con un tipo único ya es redundante.
+  const mostrarIconoTipo = estadoCalificacion.tipo === "todos";
+  entregables.forEach((item) => {
+    const th = document.createElement("th");
+    th.className = "tabla-calificacion__col-item";
+    th.title = item.titulo;
+    th.textContent = (mostrarIconoTipo ? ICONO_TIPO_ENTREGABLE[item.tipoEntregable] + " " : "") + item.titulo;
+    filaEncabezado.appendChild(th);
+  });
+
+  const thAvance = document.createElement("th");
+  thAvance.textContent = "Avance";
+  filaEncabezado.appendChild(thAvance);
+
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  alumnos.forEach((alumno) => {
+    tbody.appendChild(crearFilaAlumnoCalificacion(alumno, entregables, mapaProgreso));
+  });
+  tabla.appendChild(tbody);
+
+  tabla.appendChild(crearPieCalificacion(alumnos, entregables, mapaProgreso));
+
+  return tabla;
+}
+
+async function renderizarTablaCalificacion() {
+  const contenedor = document.getElementById("calificacion-tabla-contenedor");
+  if (!contenedor) return;
+
+  if (!estadoCalificacion.secuencia) {
+    mostrarSinResultados(contenedor, "No hay entregables para este trimestre y tipo.");
+    actualizarEstadoNavegacionTablaCalificacion();
+    return;
+  }
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  const tipos =
+    estadoCalificacion.tipo === "todos" ? ["tarea", "actividad", "proyecto"] : [estadoCalificacion.tipo];
+
+  const [alumnos, entregablesTodos] = await Promise.all([
+    obtenerAlumnosParaCalificacion(estadoCalificacion.grupo),
+    obtenerEntregablesPorTipo(estadoCalificacion.tipo, estadoCalificacion.trimestre),
+  ]);
+
+  // Tras filtrar por secuencia, las columnas también se filtran por el
+  // Grupo elegido en este panel (estadoCalificacion.grupo) — NO por
+  // grupoActual (el selector de grupo del sitio público, un estado
+  // independiente de este panel). Mismo criterio que
+  // elementoCoincideConGrupo() (sección 4), pero sin reutilizar esa
+  // función tal cual: en el resto del archivo se le pasa directo a
+  // Array.filter (`.filter(elementoCoincideConGrupo)`), así que agregarle
+  // un segundo parámetro capturaría silenciosamente el índice del array
+  // que Array.filter también le pasa a su callback, no "undefined" — eso
+  // rompería el filtro por grupo en avisos/horario/tareas/etc. de todo el
+  // sitio público para cualquier ítem que no sea el primero del array.
+  const entregables = entregablesTodos
+    .filter((item) => claveSecuenciaDeEntregable(item) === estadoCalificacion.secuencia)
+    .filter(
+      (item) =>
+        estadoCalificacion.grupo === "todos" ||
+        item.grupo === "todos" ||
+        item.grupo === estadoCalificacion.grupo
+    );
+
+  if (alumnos.length === 0) {
+    mostrarSinResultados(contenedor, "No hay alumnos registrados para este grupo.");
+    actualizarEstadoNavegacionTablaCalificacion();
+    return;
+  }
+  if (entregables.length === 0) {
+    mostrarSinResultados(contenedor, "No hay entregables para esta secuencia.");
+    actualizarEstadoNavegacionTablaCalificacion();
+    return;
+  }
+
+  const idsParaProgreso = alumnos.filter((alumno) => alumno.auth_user_id != null).map((alumno) => alumno.auth_user_id);
+  const mapaProgreso = await obtenerMapaProgresoCalificacion(estadoCalificacion.trimestre, tipos, idsParaProgreso);
+
+  contenedor.innerHTML = "";
+  contenedor.appendChild(construirTablaCalificacion(alumnos, entregables, mapaProgreso));
+
+  // Los filtros cambian cuántas columnas hay (o si hace falta scroll),
+  // así que hay que recalcular el estado de los botones ◀▶ y del
+  // gradiente después de CADA render, no solo una vez al inicio.
+  actualizarEstadoNavegacionTablaCalificacion();
+}
+
+// Ancho real de la primera columna de entregable (la de "Alumno" es fija
+// y no cuenta), para que el scroll de los botones ◀▶ avance exactamente
+// una columna sin importar cuántas haya ni su ancho real. 140 es el
+// mismo valor de respaldo que min-width en CSS, por si todavía no hay
+// tabla renderizada (mensaje de "Cargando…"/"Sin resultados").
+function anchoPrimeraColumnaDatosCalificacion() {
+  const contenedor = document.getElementById("calificacion-tabla-contenedor");
+  const primeraColumnaDatos = contenedor?.querySelector("thead th:nth-child(2)");
+  return primeraColumnaDatos ? primeraColumnaDatos.offsetWidth : 140;
+}
+
+// Refresca, en cada evento de scroll del contenedor y después de cada
+// renderizado nuevo de la tabla (los filtros cambian el ancho/alto
+// scrolleable): el estado deshabilitado de los botones ◀▶, la clase que
+// oculta el gradiente de "hay más contenido" al llegar al final, y la
+// variable CSS --alto-contenedor-calificacion que usa ese gradiente (ver
+// css/style.css: "height: 100%" no se resuelve cuando la tabla es más
+// baja que max-height, caso común con pocos alumnos y muchas columnas).
+function actualizarEstadoNavegacionTablaCalificacion() {
+  const contenedor = document.getElementById("calificacion-tabla-contenedor");
+  if (!contenedor) return;
+
+  const botonIzq = document.getElementById("calificacion-scroll-izq");
+  const botonDer = document.getElementById("calificacion-scroll-der");
+
+  const alInicio = contenedor.scrollLeft <= 0;
+  const alFinal = contenedor.scrollLeft + contenedor.clientWidth >= contenedor.scrollWidth - 1;
+
+  if (botonIzq) botonIzq.disabled = alInicio;
+  if (botonDer) botonDer.disabled = alFinal;
+  contenedor.classList.toggle("calificacion-tabla-contenedor--fin-alcanzado", alFinal);
+  contenedor.style.setProperty("--alto-contenedor-calificacion", contenedor.clientHeight + "px");
+}
+
+// Botones ◀▶ de scroll horizontal, solo visibles en mobile por CSS
+// (mismo breakpoint <1024px que .barra-lateral/.barra-inferior — ver
+// css/style.css). Siguen existiendo en el DOM en desktop, solo ocultos,
+// así que no hace falta ningún chequeo de "es mobile" aquí en JS.
+function activarNavegacionMovilTablaCalificacion() {
+  const contenedor = document.getElementById("calificacion-tabla-contenedor");
+  const botonIzq = document.getElementById("calificacion-scroll-izq");
+  const botonDer = document.getElementById("calificacion-scroll-der");
+  if (!contenedor || !botonIzq || !botonDer) return;
+
+  botonIzq.addEventListener("click", () => {
+    contenedor.scrollBy({ left: -anchoPrimeraColumnaDatosCalificacion(), behavior: "smooth" });
+  });
+  botonDer.addEventListener("click", () => {
+    contenedor.scrollBy({ left: anchoPrimeraColumnaDatosCalificacion(), behavior: "smooth" });
+  });
+
+  contenedor.addEventListener("scroll", actualizarEstadoNavegacionTablaCalificacion);
+  window.addEventListener("resize", actualizarEstadoNavegacionTablaCalificacion);
+}
+
+async function inicializarModuloCalificacion() {
+  const selectTrimestre = document.getElementById("calificacion-filtro-trimestre");
+  if (!selectTrimestre) return; // no es admin.html
+
+  // Espera la confirmación del guard (sesión + es_docente) antes de tocar
+  // alumnos_registro/progreso: ambas tablas están protegidas por RLS para
+  // el rol docente, y no tiene sentido consultarlas mientras el guard
+  // todavía podría redirigir a otra página.
+  await promesaGuardPanelDocente;
+
+  estadoCalificacion.trimestre = String(trimestreDesbloqueado);
+  selectTrimestre.value = estadoCalificacion.trimestre;
+
+  await actualizarOpcionesSecuenciaCalificacion();
+  await renderizarTablaCalificacion();
+  activarNavegacionMovilTablaCalificacion();
+
+  selectTrimestre.addEventListener("change", async () => {
+    estadoCalificacion.trimestre = selectTrimestre.value;
+    await actualizarOpcionesSecuenciaCalificacion();
+    await renderizarTablaCalificacion();
+  });
+
+  const selectGrupo = document.getElementById("calificacion-filtro-grupo");
+  selectGrupo.addEventListener("change", async () => {
+    estadoCalificacion.grupo = selectGrupo.value;
+    await renderizarTablaCalificacion();
+  });
+
+  const selectTipo = document.getElementById("calificacion-filtro-tipo");
+  selectTipo.addEventListener("change", async () => {
+    estadoCalificacion.tipo = selectTipo.value;
+    await actualizarOpcionesSecuenciaCalificacion();
+    await renderizarTablaCalificacion();
+  });
+
+  const selectSecuencia = document.getElementById("calificacion-filtro-secuencia");
+  selectSecuencia.addEventListener("change", async () => {
+    estadoCalificacion.secuencia = selectSecuencia.value;
+    await renderizarTablaCalificacion();
+  });
+}
+
 /* =========================================================
    10. INICIALIZACIÓN
    ========================================================= */
@@ -5874,6 +6335,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarBannerExamenDiagnostico();
   activarTabsAdmin();
   activarCierreSesionAdmin();
+  await inicializarModuloCalificacion();
 
   const botonMesAnterior = document.getElementById("calendario-mes-anterior");
   if (botonMesAnterior) botonMesAnterior.addEventListener("click", () => avanzarMesCalendario(-1));
