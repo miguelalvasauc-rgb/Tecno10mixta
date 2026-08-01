@@ -5874,6 +5874,24 @@ const estadoCalificacion = {
   secuencia: null,
 };
 
+// alumnos_registro.id (fila) -> objeto alumno completo, para que la
+// delegación de "Ver historial completo" recupere el alumno completo a
+// partir del data-alumno-id del botón sin volver a consultar Supabase.
+// Mismo patrón que mapaDetallesPorId (sección 5) para el modal de detalle
+// de tareas/actividades/proyectos. Se repuebla en cada render de la tabla.
+const mapaAlumnosCalificacionPorId = new Map();
+
+// Sin distinguir mayúsculas/acentos, para el buscador en vivo del Alumno.
+// Mismo criterio de normalización que slugAlumno() (sección 11), pero sin
+// convertir espacios en guiones: aquí se necesita una comparación de
+// substring normal, no una llave de localStorage.
+function normalizarParaBusqueda(texto) {
+  return String(texto)
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
 // Combina obtenerTareas/Actividades/Proyectos según el tipo elegido,
 // marcando cada item con item.tipoEntregable ("tarea"/"actividad"/
 // "proyecto") para poder construir la llave de progreso
@@ -6020,6 +6038,14 @@ function crearFilaAlumnoCalificacion(alumno, entregables, mapaProgreso) {
   const fila = document.createElement("tr");
   if (alumno.activo === false) fila.classList.add("fila-alumno--inactivo");
 
+  // Atributos de solo lectura para el buscador en vivo (filtra estas
+  // mismas filas ya renderizadas, ver filtrarFilasTablaCalificacion): sin
+  // acentos/mayúsculas para nombre, tal cual para número de lista.
+  fila.dataset.nombreBusqueda = normalizarParaBusqueda(alumno.nombre);
+  fila.dataset.numeroLista = String(alumno.numero_lista);
+
+  mapaAlumnosCalificacionPorId.set(String(alumno.id), alumno);
+
   const celdaAlumno = document.createElement("td");
   celdaAlumno.className = "tabla-calificacion__col-fija";
   const envoltura = document.createElement("div");
@@ -6030,7 +6056,12 @@ function crearFilaAlumnoCalificacion(alumno, entregables, mapaProgreso) {
   const numero = document.createElement("span");
   numero.className = "calificacion-tabla__alumno-numero";
   numero.textContent = "N.° " + alumno.numero_lista;
-  envoltura.append(nombre, numero);
+  const botonHistorial = document.createElement("button");
+  botonHistorial.type = "button";
+  botonHistorial.className = "calificacion-tabla__boton-historial";
+  botonHistorial.dataset.alumnoId = alumno.id;
+  botonHistorial.textContent = "👁️ Ver historial completo";
+  envoltura.append(nombre, numero, botonHistorial);
   celdaAlumno.appendChild(envoltura);
   fila.appendChild(celdaAlumno);
 
@@ -6131,6 +6162,277 @@ function construirTablaCalificacion(alumnos, entregables, mapaProgreso) {
   return tabla;
 }
 
+// Filtra en vivo las FILAS ya renderizadas de <tbody> (no dispara una
+// nueva consulta): compara el término contra nombre (sin acentos/
+// mayúsculas) y número de lista de cada fila, usando los data-attributes
+// que ya deja crearFilaAlumnoCalificacion(). Incluye a los alumnos "Sin
+// cuenta activa" — no se excluye a nadie de la búsqueda.
+function filtrarFilasTablaCalificacion() {
+  const input = document.getElementById("calificacion-buscador-input");
+  const contenedor = document.getElementById("calificacion-tabla-contenedor");
+  if (!input || !contenedor) return;
+
+  const tabla = contenedor.querySelector(".tabla-calificacion");
+  const filas = contenedor.querySelectorAll("tbody tr");
+  let mensajeSinCoincidencias = contenedor.querySelector(".calificacion-tabla__sin-coincidencias");
+
+  if (!tabla || filas.length === 0) {
+    if (mensajeSinCoincidencias) mensajeSinCoincidencias.remove();
+    return;
+  }
+
+  const termino = normalizarParaBusqueda(input.value.trim());
+  let algunaVisible = false;
+
+  filas.forEach((fila) => {
+    const coincide =
+      termino === "" ||
+      fila.dataset.nombreBusqueda.includes(termino) ||
+      fila.dataset.numeroLista.includes(termino);
+    fila.hidden = !coincide;
+    if (coincide) algunaVisible = true;
+  });
+
+  if (termino !== "" && !algunaVisible) {
+    if (!mensajeSinCoincidencias) {
+      mensajeSinCoincidencias = document.createElement("p");
+      mensajeSinCoincidencias.className = "sin-resultados calificacion-tabla__sin-coincidencias";
+      mensajeSinCoincidencias.textContent =
+        "No se encontró en esta vista — prueba cambiar el filtro de Trimestre/Secuencia.";
+      tabla.after(mensajeSinCoincidencias);
+    }
+  } else if (mensajeSinCoincidencias) {
+    mensajeSinCoincidencias.remove();
+  }
+}
+
+// El buscador vive fuera de la tabla (no se borra en cada
+// renderizarTablaCalificacion), así que su listener se registra una sola
+// vez desde inicializarModuloCalificacion(); el filtrado en sí se re-
+// aplica en cada render nuevo (ver el final de renderizarTablaCalificacion)
+// para que el término de búsqueda siga vigente al cambiar Trimestre/
+// Grupo/Tipo/Secuencia, no solo hasta el siguiente cambio de filtro.
+function activarBuscadorCalificacion() {
+  const input = document.getElementById("calificacion-buscador-input");
+  if (!input) return;
+  input.addEventListener("input", filtrarFilasTablaCalificacion);
+}
+
+// Delegación de eventos (mismo patrón que activarDelegacionVerDetalle en
+// sección 5) para el botón "👁️ Ver historial completo" de cada fila: un
+// único listener en el contenedor detecta clicks incluso en filas que se
+// vuelven a crear en cada render.
+function activarDelegacionHistorialCalificacion() {
+  const contenedor = document.getElementById("calificacion-tabla-contenedor");
+  if (!contenedor) return;
+
+  contenedor.addEventListener("click", (evento) => {
+    const boton = evento.target.closest(".calificacion-tabla__boton-historial");
+    if (!boton) return;
+    evento.preventDefault();
+    const alumno = mapaAlumnosCalificacionPorId.get(boton.dataset.alumnoId);
+    if (alumno) abrirModalHistorialAlumno(alumno);
+  });
+}
+
+// Una sección <section> por trimestre dentro del modal de historial:
+// barra de avance + lista de TODOS los items de ese trimestre (tareas,
+// actividades y proyectos juntos, en ese orden — el mismo orden de
+// concatenación que ya usa obtenerEntregablesPorTipo("todos", ...), no
+// hay un orden distinto especificado para el historial). Mismos 4
+// estados de badge que la tabla matriz, sin el caso "sin cuenta": esta
+// función solo se usa para alumnos que sí tienen cuenta activa (ver
+// abrirModalHistorialAlumno).
+function crearSeccionTrimestreHistorial(trimestre, entregables, mapaProgreso, grupoAlumno) {
+  const seccion = document.createElement("section");
+  seccion.className = "calificacion-historial__trimestre";
+
+  const titulo = document.createElement("h4");
+  titulo.textContent = "Trimestre " + trimestre;
+  seccion.appendChild(titulo);
+
+  const completados = entregables.filter((item) => {
+    const fila = mapaProgreso.get(item.tipoEntregable + "-" + item.id + "-" + trimestre);
+    return fila && fila.completado;
+  }).length;
+  const total = entregables.length;
+  const porcentaje = total === 0 ? 0 : Math.round((completados / total) * 100);
+
+  const resumen = document.createElement("p");
+  resumen.className = "resumen-progreso__texto";
+  resumen.textContent = completados + " de " + total + " completados (" + porcentaje + "%)";
+  seccion.appendChild(resumen);
+
+  const barra = document.createElement("div");
+  barra.className = "barra-progreso";
+  barra.setAttribute("role", "progressbar");
+  barra.setAttribute("aria-valuenow", String(completados));
+  barra.setAttribute("aria-valuemin", "0");
+  barra.setAttribute("aria-valuemax", String(total));
+  const relleno = document.createElement("div");
+  relleno.className = "barra-progreso__relleno";
+  relleno.style.width = porcentaje + "%";
+  barra.appendChild(relleno);
+  seccion.appendChild(barra);
+
+  if (total === 0) {
+    const sinItems = document.createElement("p");
+    sinItems.className = "sin-resultados";
+    sinItems.textContent = "Sin tareas, actividades ni proyectos registrados para este trimestre.";
+    seccion.appendChild(sinItems);
+    return seccion;
+  }
+
+  const lista = document.createElement("ul");
+  lista.className = "calificacion-historial__lista";
+
+  entregables.forEach((item) => {
+    const li = document.createElement("li");
+    li.className = "calificacion-historial__item";
+
+    const encabezadoItem = document.createElement("div");
+    encabezadoItem.className = "calificacion-historial__item-encabezado";
+
+    const tituloItem = document.createElement("span");
+    tituloItem.textContent = ICONO_TIPO_ENTREGABLE[item.tipoEntregable] + " " + item.titulo;
+    encabezadoItem.appendChild(tituloItem);
+
+    const filaProgreso = mapaProgreso.get(item.tipoEntregable + "-" + item.id + "-" + trimestre);
+    const badge = document.createElement("span");
+    badge.className = "badge-estado";
+    if (filaProgreso && filaProgreso.completado) {
+      badge.dataset.estado = "completada";
+      badge.textContent = "🟢 Entregado";
+    } else if (itemEstaVencido(item.tipoEntregable, item, grupoAlumno)) {
+      badge.dataset.estado = "atrasada";
+      badge.textContent = "🔒 Atrasada";
+    } else {
+      badge.dataset.estado = "pendiente";
+      badge.textContent = "🟡 Pendiente";
+    }
+    encabezadoItem.appendChild(badge);
+    li.appendChild(encabezadoItem);
+
+    // Título arriba, fecha en una línea pequeña debajo: mismo formato y
+    // clase (.tarjeta__fecha) que ya usan las tarjetas públicas de
+    // tareas/actividades/proyectos, con la misma etiqueta según tipo
+    // ("Entrega:"/"Fecha:"/"Entrega final:") y resolviendo la fecha con
+    // el grupo del alumno cuyo historial se ve, no grupoActual.
+    const etiquetaFecha =
+      item.tipoEntregable === "actividad"
+        ? "Fecha: "
+        : item.tipoEntregable === "proyecto"
+        ? "Entrega final: "
+        : "Entrega: ";
+    const valorFecha = item.tipoEntregable === "actividad" ? item.fecha : item.fechaEntrega;
+    const fechaItem = document.createElement("p");
+    fechaItem.className = "tarjeta__fecha";
+    fechaItem.textContent = etiquetaFecha + resolverFechaItem(valorFecha, grupoAlumno);
+    li.appendChild(fechaItem);
+
+    if (filaProgreso?.completado && filaProgreso.origen === "manual-docente" && filaProgreso.nota) {
+      const nota = document.createElement("p");
+      nota.className = "calificacion-historial__nota";
+      nota.textContent = "📝 Nota: " + filaProgreso.nota;
+      li.appendChild(nota);
+    }
+
+    lista.appendChild(li);
+  });
+  seccion.appendChild(lista);
+
+  return seccion;
+}
+
+// Abre el modal de historial para un alumno: CASO A (con cuenta activa)
+// consulta los 3 trimestres completos + todo su progreso de una sola vez;
+// CASO B (sin cuenta) solo muestra un mensaje con su código de invitación,
+// sin intentar simular datos que no existen.
+async function abrirModalHistorialAlumno(alumno) {
+  const modal = document.getElementById("modal-historial-alumno");
+  if (!modal) return;
+
+  const idAlumno = String(alumno.id);
+  modal.dataset.alumnoId = idAlumno;
+
+  const titulo = document.getElementById("modal-historial-titulo");
+  const subtitulo = document.getElementById("modal-historial-subtitulo");
+  const contenido = document.getElementById("modal-historial-contenido");
+  const botonImprimir = document.getElementById("boton-imprimir-historial");
+
+  titulo.textContent = alumno.nombre;
+  subtitulo.textContent = textoGrupo(alumno.grupo) + " · N.° " + alumno.numero_lista;
+  botonImprimir.hidden = true;
+
+  const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
+
+  if (sinCuenta) {
+    contenido.innerHTML = "";
+    const mensaje = document.createElement("p");
+    mensaje.className = "calificacion-historial__sin-cuenta";
+    mensaje.textContent =
+      "Este alumno todavía no ha activado su cuenta, por lo que no hay progreso registrado. " +
+      "Su código de invitación es: " + (alumno.codigo_invitacion || "—") + ".";
+    contenido.appendChild(mensaje);
+    modal.showModal();
+    return;
+  }
+
+  contenido.textContent = "Cargando historial…";
+  modal.showModal();
+
+  const trimestres = ["1", "2", "3"];
+  const [entregablesPorTrimestre, resultadoProgreso] = await Promise.all([
+    Promise.all(trimestres.map((trimestre) => obtenerEntregablesPorTipo("todos", trimestre))),
+    clienteSupabase.from("progreso").select("*").eq("alumno_id", alumno.auth_user_id),
+  ]);
+
+  // El docente pudo cerrar este modal y abrir el de otro alumno mientras
+  // esta consulta seguía en curso; si ya no es el alumno activo, no pisar
+  // el contenido del modal con una respuesta que ya no aplica.
+  if (modal.dataset.alumnoId !== idAlumno) return;
+
+  const mapaProgreso = new Map();
+  if (!resultadoProgreso.error && resultadoProgreso.data) {
+    resultadoProgreso.data.forEach((fila) => {
+      mapaProgreso.set(fila.tipo + "-" + fila.item_id + "-" + String(fila.trimestre), fila);
+    });
+  }
+
+  contenido.innerHTML = "";
+  trimestres.forEach((trimestre, indice) => {
+    contenido.appendChild(
+      crearSeccionTrimestreHistorial(trimestre, entregablesPorTrimestre[indice], mapaProgreso, alumno.grupo)
+    );
+  });
+
+  botonImprimir.hidden = false;
+}
+
+// Cierre del modal: botón "✕" y click en el ::backdrop — mismo patrón que
+// activarCierreModalDetalle() en sección 5 (el <dialog> nativo ya cierra
+// con Escape automáticamente).
+function activarCierreModalHistorialCalificacion() {
+  const modal = document.getElementById("modal-historial-alumno");
+  if (!modal) return;
+
+  const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.close();
+  });
+}
+
+// El botón solo es visible en CASO A (ver abrirModalHistorialAlumno);
+// llamar a window.print() dispara las reglas @media print de
+// css/style.css que ocultan todo excepto #modal-historial-alumno.
+function activarImpresionHistorialCalificacion() {
+  const boton = document.getElementById("boton-imprimir-historial");
+  if (!boton) return;
+  boton.addEventListener("click", () => window.print());
+}
+
 async function renderizarTablaCalificacion() {
   const contenedor = document.getElementById("calificacion-tabla-contenedor");
   if (!contenedor) return;
@@ -6192,6 +6494,11 @@ async function renderizarTablaCalificacion() {
   // así que hay que recalcular el estado de los botones ◀▶ y del
   // gradiente después de CADA render, no solo una vez al inicio.
   actualizarEstadoNavegacionTablaCalificacion();
+
+  // El término de búsqueda no se limpia al cambiar de filtro (Trimestre/
+  // Grupo/Tipo/Secuencia genera una tabla nueva), así que hay que
+  // reaplicarlo sobre las filas recién creadas para que siga vigente.
+  filtrarFilasTablaCalificacion();
 }
 
 // Ancho real de la primera columna de entregable (la de "Alumno" es fija
@@ -6265,6 +6572,10 @@ async function inicializarModuloCalificacion() {
   await actualizarOpcionesSecuenciaCalificacion();
   await renderizarTablaCalificacion();
   activarNavegacionMovilTablaCalificacion();
+  activarBuscadorCalificacion();
+  activarDelegacionHistorialCalificacion();
+  activarCierreModalHistorialCalificacion();
+  activarImpresionHistorialCalificacion();
 
   selectTrimestre.addEventListener("change", async () => {
     estadoCalificacion.trimestre = selectTrimestre.value;

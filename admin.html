@@ -182,6 +182,15 @@
           </div>
         </div>
 
+        <!-- Buscador en vivo: filtra las FILAS ya renderizadas de la tabla
+             (nombre/número de lista), no dispara una nueva consulta a
+             Supabase — ver activarBuscadorCalificacion() en js/main.js. -->
+        <div class="calificacion-buscador">
+          <label for="calificacion-buscador-input" class="sr-only">Buscar alumno por nombre o número de lista</label>
+          <input type="search" id="calificacion-buscador-input" class="calificacion-buscador__input"
+                 placeholder="🔍 Buscar por nombre o número de lista…" autocomplete="off">
+        </div>
+
         <!-- Navegación de scroll horizontal, solo visible en mobile (<1024px,
              mismo breakpoint que .barra-lateral/.barra-inferior): en
              desktop el scroll libre ya se ve bien y estos botones se
@@ -217,6 +226,22 @@
     <p class="pie__grupos">Grupos 3°C y 3°E</p>
     <p class="pie__privacidad">🛡️ Privacidad: tus datos se usan solo para tu evaluación en Educación Tecnológica. <a href="faq.html#aviso-privacidad">Ver aviso de privacidad completo →</a></p>
   </footer>
+
+  <!-- Modal de historial completo de un alumno (los 3 trimestres): mismo
+       patrón de accesibilidad que #modal-detalle (showModal(), Escape
+       nativo del <dialog>, cierre por click en el backdrop) — ver
+       abrirModalHistorialAlumno()/activarCierreModalHistorialCalificacion()
+       en js/main.js. Vive solo en admin.html, por eso no reutiliza el id
+       "modal-detalle" (ese vive en las páginas de trimestre). -->
+  <dialog id="modal-historial-alumno" aria-labelledby="modal-historial-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-historial-titulo"></h3>
+    <p id="modal-historial-subtitulo" class="modal-historial__subtitulo"></p>
+    <div id="modal-historial-contenido"></div>
+    <button type="button" id="boton-imprimir-historial" class="boton-secundario modal-historial__boton-imprimir" hidden>
+      🖨️ Imprimir/exportar este historial
+    </button>
+  </dialog>
 
   <script src="js/main.js"></script>
 </body>

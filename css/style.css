@@ -4459,3 +4459,172 @@ summary:focus-visible {
     }
   }
 }
+
+/* ---------- Buscador en vivo (filtra filas ya renderizadas) ---------- */
+.calificacion-buscador {
+  margin-bottom: 1rem;
+}
+
+.calificacion-buscador__input {
+  width: 100%;
+  max-width: 320px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-size: 0.85rem;
+}
+
+/* ---------- Botón "Ver historial completo" (dentro de la celda de Alumno) ----------
+   Turquesa como color de TEXTO plano (no como relleno sólido detrás de
+   texto claro), el uso que la Regla de Turquesa en Modo Claro de
+   DESIGN.md sí permite sin swap a navy. */
+.calificacion-tabla__boton-historial {
+  display: block;
+  margin-top: 0.35rem;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-turquesa);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.calificacion-tabla__boton-historial:hover,
+.calificacion-tabla__boton-historial:focus-visible {
+  text-decoration: underline;
+}
+
+/* ---------- Modal de historial completo de un alumno ----------
+   Mismo patrón visual que #modal-detalle (páginas de trimestre), pero
+   duplicado bajo su propio id: admin.html es un documento aparte que no
+   incluye #modal-detalle, así que no hay nada que compartir entre ambos
+   sin tocar las páginas públicas (fuera de alcance de este módulo). */
+#modal-historial-alumno {
+  width: 92%;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-historial-alumno::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-historial-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+.modal-historial__subtitulo {
+  margin: 0 0 1.25rem;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.calificacion-historial__trimestre {
+  margin-bottom: 1.5rem;
+}
+
+.calificacion-historial__trimestre h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  color: var(--color-texto);
+}
+
+.calificacion-historial__lista {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.calificacion-historial__item {
+  border-bottom: 1px solid var(--color-borde);
+  padding-bottom: 0.5rem;
+}
+
+.calificacion-historial__item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.calificacion-historial__item-encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+  color: var(--color-texto);
+}
+
+.calificacion-historial__nota {
+  margin: 0.3rem 0 0;
+  font-size: 0.78rem;
+  color: var(--color-texto-suave);
+}
+
+.calificacion-historial__sin-cuenta {
+  font-size: 0.9rem;
+  color: var(--color-texto-suave);
+  line-height: 1.6;
+}
+
+.modal-historial__boton-imprimir {
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  #modal-historial-alumno {
+    width: 100%;
+    padding: 1.6rem 1.8rem;
+  }
+}
+
+/* ---------- Impresión del historial (botón "🖨️ Imprimir/exportar") ----------
+   Escondido tras "body[data-pagina='admin']": main.js/style.css son
+   compartidos por todo el sitio, así que sin ese scope estas reglas
+   ocultarían TODO al imprimir cualquier otra página (index.html,
+   trimestre-*.html, etc.), no solo admin.html. */
+@media print {
+  body[data-pagina="admin"] * {
+    visibility: hidden;
+  }
+
+  body[data-pagina="admin"] #modal-historial-alumno[open],
+  body[data-pagina="admin"] #modal-historial-alumno[open] * {
+    visibility: visible;
+  }
+
+  body[data-pagina="admin"] #modal-historial-alumno {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-height: none;
+    box-shadow: none;
+    border: none;
+  }
+
+  body[data-pagina="admin"] #modal-historial-alumno::backdrop {
+    display: none;
+  }
+
+  body[data-pagina="admin"] .modal-detalle__cerrar,
+  body[data-pagina="admin"] #boton-imprimir-historial {
+    display: none !important;
+  }
+}
