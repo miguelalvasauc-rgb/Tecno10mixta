@@ -4766,6 +4766,21 @@ button.badge-estado {
   }
 }
 
+/* Contenedor de impresión "por tipo" (Tipo = Todos): nunca se ve en
+   pantalla, solo se llena y se muestra cuando prepararImpresionTablaPor
+   Tipo()/activarImpresionTablaCalificacion() lo activan (ver main.js). */
+#calificacion-impresion-por-tipo {
+  display: none;
+}
+
+.calificacion-impresion-bloque h3 {
+  margin: 0 0 0.75rem;
+}
+
+.calificacion-impresion-bloque + .calificacion-impresion-bloque {
+  margin-top: 1.5rem;
+}
+
 /* ---------- Impresión de la tabla general (botón "🖨️ Imprimir tabla") ----------
    Mismo scope que el bloque de arriba, pero solo cuando NO se está
    imprimiendo el historial individual (ver nota de arriba). Colores de
@@ -4773,18 +4788,34 @@ button.badge-estado {
    plano con borde negro — "sin badges de colores complejos" pedido en el
    prompt: en una impresora B/N esos colores ya se ven como grises poco
    distinguibles entre sí, así que un borde + texto negro es más legible
-   que confiar en el color. */
+   que confiar en el color.
+
+   Dos variantes conviven aquí, distinguidas por
+   ".calificacion--imprimiendo-por-tipo" (agregada solo cuando el filtro
+   Tipo = Todos, ver activarImpresionTablaCalificacion en main.js):
+   - Sin esa clase: se imprime la tabla tal cual se ve en pantalla (Tipo
+     ya es uno solo, así que no hace falta partirla).
+   - Con esa clase: se imprime #calificacion-impresion-por-tipo (3 tablas
+     separadas, una por tipo) en vez de la tabla en pantalla.
+   Las reglas "cosméticas" (badge en blanco y negro, ocultar botón de
+   historial/ícono de marca manual, fondo blanco/texto negro, sin
+   truncar títulos) no necesitan repetirse para cada variante: aplican
+   por clase (.badge-estado, etc.) sin importar de cuál de los dos
+   contenedores sean descendientes. */
 @media print {
-  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) * {
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial):not(.calificacion--imprimiendo-por-tipo) * {
     visibility: hidden;
   }
 
-  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla-contenedor,
-  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla-contenedor * {
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial):not(.calificacion--imprimiendo-por-tipo)
+    .calificacion-tabla-contenedor,
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial):not(.calificacion--imprimiendo-por-tipo)
+    .calificacion-tabla-contenedor * {
     visibility: visible;
   }
 
-  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla-contenedor {
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial):not(.calificacion--imprimiendo-por-tipo)
+    .calificacion-tabla-contenedor {
     position: absolute;
     top: 0;
     left: 0;
@@ -4798,12 +4829,52 @@ button.badge-estado {
     display: none;
   }
 
+  /* Variante "por tipo": mismo tratamiento que arriba, pero mostrando
+     #calificacion-impresion-por-tipo en vez de la tabla en pantalla. */
+  body[data-pagina="admin"].calificacion--imprimiendo-por-tipo * {
+    visibility: hidden;
+  }
+
+  body[data-pagina="admin"].calificacion--imprimiendo-por-tipo #calificacion-impresion-por-tipo,
+  body[data-pagina="admin"].calificacion--imprimiendo-por-tipo #calificacion-impresion-por-tipo * {
+    visibility: visible;
+  }
+
+  body[data-pagina="admin"].calificacion--imprimiendo-por-tipo #calificacion-impresion-por-tipo {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  /* Un bloque (h3 + tabla) por tipo, cada uno en su propia hoja — salvo
+     el primero, que ya empieza en la hoja actual. */
+  body[data-pagina="admin"].calificacion--imprimiendo-por-tipo .calificacion-impresion-bloque {
+    page-break-before: always;
+  }
+
+  body[data-pagina="admin"].calificacion--imprimiendo-por-tipo .calificacion-impresion-bloque:first-child {
+    page-break-before: auto;
+  }
+
   body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .tabla-calificacion th,
   body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .tabla-calificacion td {
     position: static !important;
     background: #fff !important;
     color: #000 !important;
     white-space: normal;
+  }
+
+  /* Títulos completos, sin truncar (Paso 3): en pantalla
+     .tabla-calificacion__col-item limita el ancho de columna a 160px con
+     elipsis; en impresión esa limitación no aplica — cada columna se
+     ensancha según su contenido y el título puede ocupar varias líneas
+     dentro del th/td en vez de cortarse. */
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .tabla-calificacion__col-item {
+    max-width: none;
+    overflow: visible;
+    text-overflow: clip;
   }
 
   body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .badge-estado {

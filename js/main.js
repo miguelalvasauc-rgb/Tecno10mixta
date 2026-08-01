@@ -5849,6 +5849,11 @@ function activarCierreSesionAdmin() {
 
 const ICONO_TIPO_ENTREGABLE = { tarea: "📝", actividad: "🎯", proyecto: "🚀" };
 
+// Título de cada bloque de la impresión "por tipo" (ver
+// prepararImpresionTablaPorTipo): plural, para el <h3> de cada tabla
+// separada.
+const ETIQUETA_TIPO_ENTREGABLE_PLURAL = { tarea: "Tareas", actividad: "Actividades", proyecto: "Proyectos" };
+
 // Mismo texto de respaldo que ya usan renderizarTareas/Actividades/
 // Proyectos cuando un ítem no trae "secuencia" (item.secuencia || "Otras
 // tareas", etc.) — se reutiliza aquí para que la etiqueta de la columna
@@ -6208,6 +6213,10 @@ function construirTablaCalificacion(alumnos, entregables, mapaProgreso, trimestr
     th.className = "tabla-calificacion__col-item";
     th.title = item.titulo;
     th.textContent = (mostrarIconoTipo ? ICONO_TIPO_ENTREGABLE[item.tipoEntregable] + " " : "") + item.titulo;
+    // Permite identificar a qué tipo pertenece cada columna leyendo solo
+    // el DOM ya renderizado (ver prepararImpresionTablaPorTipo), sin
+    // tener que volver a consultar "entregables" fuera de esta función.
+    th.dataset.tipoEntregable = item.tipoEntregable;
     filaEncabezado.appendChild(th);
   });
 
@@ -6781,15 +6790,124 @@ function activarExportarCSVCalificacion() {
   boton.addEventListener("click", exportarCSVCalificacion);
 }
 
+// Cuando el filtro Tipo = Todos, la tabla en pantalla mezcla tareas +
+// actividades + proyectos en una sola fila por alumno (demasiadas
+// columnas para caber en una hoja impresa). Esta función arma, dentro de
+// #calificacion-impresion-por-tipo (nunca visible en pantalla, ver
+// css/style.css), 3 tablas separadas — una por tipo — clonando las
+// celdas ya renderizadas de la tabla en pantalla (mismo enfoque que ya
+// usa exportarCSVCalificacion: leer del DOM ya construido, no volver a
+// consultar Supabase ni reconstruir alumnos/entregables/mapaProgreso
+// desde cero). Cada columna se identifica por el "data-tipo-entregable"
+// que construirTablaCalificacion ya deja en cada <th>; las columnas
+// "Alumno" (primera) y "Avance" (última) no llevan ese atributo y se
+// tratan aparte.
+function prepararImpresionTablaPorTipo() {
+  const contenedorImpresion = document.getElementById("calificacion-impresion-por-tipo");
+  const tablaOriginal = document.getElementById("calificacion-tabla-contenedor")?.querySelector(".tabla-calificacion");
+  if (!contenedorImpresion || !tablaOriginal) return;
+
+  contenedorImpresion.innerHTML = "";
+
+  const columnasEncabezado = Array.from(tablaOriginal.querySelectorAll("thead th"));
+  const filasAlumnos = Array.from(tablaOriginal.querySelectorAll("tbody tr:not([hidden])"));
+  const celdasTotales = Array.from(tablaOriginal.querySelector("tfoot tr")?.querySelectorAll("td") || []);
+
+  ["tarea", "actividad", "proyecto"].forEach((tipo) => {
+    // Índices (dentro de la fila completa, "Alumno" incluida) de las
+    // columnas de este tipo — se usan tal cual para tomar la celda
+    // correspondiente de cada <tr> del tbody y del tfoot, que tienen el
+    // mismo orden de columnas que el thead.
+    const indices = [];
+    columnasEncabezado.forEach((th, indice) => {
+      if (th.dataset.tipoEntregable === tipo) indices.push(indice);
+    });
+    if (indices.length === 0) return; // sin columnas de este tipo en la vista actual
+
+    const bloque = document.createElement("div");
+    bloque.className = "calificacion-impresion-bloque";
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = ICONO_TIPO_ENTREGABLE[tipo] + " " + ETIQUETA_TIPO_ENTREGABLE_PLURAL[tipo];
+    bloque.appendChild(titulo);
+
+    const tabla = document.createElement("table");
+    tabla.className = "tabla-calificacion";
+
+    const thead = document.createElement("thead");
+    const filaEncabezado = document.createElement("tr");
+    filaEncabezado.appendChild(columnasEncabezado[0].cloneNode(true)); // "Alumno"
+    indices.forEach((indice) => filaEncabezado.appendChild(columnasEncabezado[indice].cloneNode(true)));
+    thead.appendChild(filaEncabezado);
+    tabla.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    filasAlumnos.forEach((filaOriginal) => {
+      const celdasOriginales = filaOriginal.children;
+      const filaNueva = document.createElement("tr");
+      filaNueva.className = filaOriginal.className;
+      filaNueva.appendChild(celdasOriginales[0].cloneNode(true)); // celda "Alumno"
+      indices.forEach((indice) => filaNueva.appendChild(celdasOriginales[indice].cloneNode(true)));
+      tbody.appendChild(filaNueva);
+    });
+    tabla.appendChild(tbody);
+
+    // Fila de "% completado": mismos porcentajes ya calculados por
+    // crearPieCalificacion(), no se recalculan aquí. Sin columna de
+    // Avance (mezcla los 3 tipos, no tiene sentido dentro de un bloque
+    // de un solo tipo).
+    if (celdasTotales.length > 0) {
+      const tfoot = document.createElement("tfoot");
+      const filaPie = document.createElement("tr");
+      filaPie.appendChild(celdasTotales[0].cloneNode(true));
+      indices.forEach((indice) => filaPie.appendChild(celdasTotales[indice].cloneNode(true)));
+      tfoot.appendChild(filaPie);
+      tabla.appendChild(tfoot);
+    }
+
+    bloque.appendChild(tabla);
+    contenedorImpresion.appendChild(bloque);
+  });
+}
+
 // Imprime la tabla matriz general (a diferencia del historial individual,
 // sin dialog intermedio: window.print() directo). Las reglas @media
 // print de css/style.css (gateadas por ":not(.calificacion--imprimiendo-
 // historial)", ver activarImpresionHistorialCalificacion) ya saben mostrar
-// solo #calificacion-tabla-contenedor con badges en blanco y negro.
+// solo #calificacion-tabla-contenedor con badges en blanco y negro. Con
+// Tipo = Todos, arma antes las 3 tablas separadas de
+// prepararImpresionTablaPorTipo() y activa
+// ".calificacion--imprimiendo-por-tipo" para que el CSS muestre esas en
+// vez de la tabla en pantalla.
 function activarImpresionTablaCalificacion() {
   const boton = document.getElementById("calificacion-boton-imprimir-tabla");
   if (!boton) return;
-  boton.addEventListener("click", () => window.print());
+
+  boton.addEventListener("click", () => {
+    if (estadoCalificacion.tipo === "todos") {
+      prepararImpresionTablaPorTipo();
+      document.body.classList.add("calificacion--imprimiendo-por-tipo");
+    }
+
+    // "@page" no se puede acotar con selectores tipo
+    // "body[data-pagina='admin']" — aplica a nivel de documento completo
+    // de impresión, no de elemento. Si viviera fijo en style.css (que es
+    // compartido por todo el sitio), forzaría orientación horizontal al
+    // imprimir CUALQUIER página (index.html, trimestre-*.html, etc.), no
+    // solo esta tabla. Por eso se inyecta como <style> temporal, solo
+    // mientras dura esta impresión, y se quita en "afterprint" más abajo.
+    const estiloLandscape = document.createElement("style");
+    estiloLandscape.id = "estilo-impresion-landscape-calificacion";
+    estiloLandscape.textContent = "@media print { @page { size: landscape; } }";
+    document.head.appendChild(estiloLandscape);
+
+    window.print();
+  });
+
+  window.addEventListener("afterprint", () => {
+    document.body.classList.remove("calificacion--imprimiendo-por-tipo");
+    document.getElementById("estilo-impresion-landscape-calificacion")?.remove();
+  });
 }
 
 async function renderizarTablaCalificacion() {

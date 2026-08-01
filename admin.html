@@ -210,6 +210,13 @@
         </div>
 
         <div id="calificacion-tabla-contenedor" class="calificacion-tabla-contenedor" aria-live="polite"></div>
+
+        <!-- Nunca visible en pantalla: solo para impresión cuando el
+             filtro Tipo = Todos (3 tablas separadas, una por tipo, en vez
+             de una sola con demasiadas columnas) — ver
+             prepararImpresionTablaPorTipo()/activarImpresionTablaCalificacion()
+             en js/main.js. -->
+        <div id="calificacion-impresion-por-tipo"></div>
       </section>
 
       <section id="panel-alumnos" class="admin-panel" role="tabpanel" aria-labelledby="tab-alumnos" hidden>
