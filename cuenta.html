@@ -215,9 +215,20 @@
 
         <div id="panel-sesion-activa" class="cuenta-panel" hidden>
           <p id="cuenta-sesion-texto"></p>
-          <button type="button" id="boton-cerrar-sesion-cuenta" class="boton-secundario">
-            Cerrar sesión
-          </button>
+          <div class="cuenta-sesion-acciones">
+            <!-- Solo visible si la sesión activa pertenece a una cuenta
+                 con rol='docente' (mismo RPC es_docente() que ya usa el
+                 guard real de admin.html) — ver activarPanelSesionCuenta()
+                 en js/main.js. Este botón es solo un atajo visual, no un
+                 control de acceso: la seguridad real sigue siendo el
+                 guard de admin.html. -->
+            <a href="admin.html" id="boton-panel-docente-cuenta" class="boton-secundario" hidden>
+              🔐 Panel docente
+            </a>
+            <button type="button" id="boton-cerrar-sesion-cuenta" class="boton-secundario">
+              Cerrar sesión
+            </button>
+          </div>
         </div>
       </div>
     </section>

@@ -5710,6 +5710,23 @@ async function activarPanelSesionCuenta() {
       window.location.href = "index.html";
     });
   }
+
+  // Atajo visual a admin.html, solo para cuentas docente — mismo RPC y
+  // mismo criterio que el guard real de admin.html (guardPanelDocente,
+  // sección 11), no una verificación distinta. Sin sesión de alumno
+  // normal esto nunca se muestra: si el RPC falla (ej. sin conexión) o
+  // devuelve false, el botón se queda oculto sin más (ver su atributo
+  // "hidden" ya presente en el HTML) — es conveniencia, no una función
+  // crítica que amerite bloquear ni mostrar error.
+  const botonPanelDocente = document.getElementById("boton-panel-docente-cuenta");
+  if (botonPanelDocente) {
+    try {
+      const { data: esDocente, error } = await clienteSupabase.rpc("es_docente");
+      if (!error && esDocente) botonPanelDocente.hidden = false;
+    } catch {
+      // Se queda oculto.
+    }
+  }
 }
 
 // Botón "Identificarme" del panel de Progreso (index.html y
@@ -6335,6 +6352,58 @@ function actualizarNotaHistorial(li, filaProgreso) {
   if (!notaExistente) li.appendChild(nota);
 }
 
+// Promedio del trimestre para el modal de historial (30% tareas, 30%
+// actividades, 40% proyectos). itemsPorTipo = { tarea, actividad,
+// proyecto }, cada array con los items del trimestre tal cual los
+// devuelve obtenerEntregablesPorTipo (con su "secuencia" ya incluida).
+// mapaProgreso ya viene scoped a un solo alumno (misma clave
+// "tipo-item_id-trimestre" que usa crearSeccionTrimestreHistorial), así
+// que alumnoId no participa en ningún lookup — se recibe solo para que
+// la firma documente de quién es el mapaProgreso que se le pasa.
+//
+// Fórmula, por tipo: se agrupan los items por "secuencia" (string
+// exacto); cada secuencia promedia sus calificaciones (null o sin fila
+// en progreso cuenta como 0, no se excluye del promedio); el
+// promedio_tipo es el promedio de esos promedios de secuencia. Un tipo
+// sin ningún item en el trimestre cuenta como 0 (no se excluye la
+// ponderación 30/30/40).
+function calcularPromedioTrimestre(alumnoId, trimestre, itemsPorTipo, mapaProgreso) {
+  function promedioDeTipo(items, tipo) {
+    if (items.length === 0) return 0;
+
+    const itemsPorSecuencia = new Map();
+    items.forEach((item) => {
+      const clave = claveSecuenciaDeEntregable(item);
+      if (!itemsPorSecuencia.has(clave)) itemsPorSecuencia.set(clave, []);
+      itemsPorSecuencia.get(clave).push(item);
+    });
+
+    const promediosPorSecuencia = Array.from(itemsPorSecuencia.values()).map((itemsSecuencia) => {
+      const suma = itemsSecuencia.reduce((acumulado, item) => {
+        const calificacion = mapaProgreso.get(tipo + "-" + item.id + "-" + trimestre)?.calificacion;
+        return acumulado + (calificacion == null ? 0 : Number(calificacion));
+      }, 0);
+      return suma / itemsSecuencia.length;
+    });
+
+    return promediosPorSecuencia.reduce((acumulado, valor) => acumulado + valor, 0) / promediosPorSecuencia.length;
+  }
+
+  const redondear1Decimal = (valor) => Math.round(valor * 10) / 10;
+
+  const promedioTarea = promedioDeTipo(itemsPorTipo.tarea || [], "tarea");
+  const promedioActividad = promedioDeTipo(itemsPorTipo.actividad || [], "actividad");
+  const promedioProyecto = promedioDeTipo(itemsPorTipo.proyecto || [], "proyecto");
+  const promedioFinal = 0.3 * promedioTarea + 0.3 * promedioActividad + 0.4 * promedioProyecto;
+
+  return {
+    promedioFinal: redondear1Decimal(promedioFinal),
+    promedioTarea: redondear1Decimal(promedioTarea),
+    promedioActividad: redondear1Decimal(promedioActividad),
+    promedioProyecto: redondear1Decimal(promedioProyecto),
+  };
+}
+
 // Una sección <section> por trimestre dentro del modal de historial:
 // barra de avance + lista de TODOS los items de ese trimestre (tareas,
 // actividades y proyectos juntos, en ese orden — el mismo orden de
@@ -6385,6 +6454,37 @@ function crearSeccionTrimestreHistorial(trimestre, entregables, mapaProgreso, al
     seccion.appendChild(sinItems);
     return seccion;
   }
+
+  // Se recalcula en cada apertura del modal (mapaProgreso siempre viene
+  // recién consultado desde abrirModalHistorialAlumno, nunca cacheado),
+  // así que una calificación recién guardada ya se refleja la próxima
+  // vez que se abre el historial de ese alumno.
+  const itemsPorTipo = { tarea: [], actividad: [], proyecto: [] };
+  entregables.forEach((item) => {
+    itemsPorTipo[item.tipoEntregable]?.push(item);
+  });
+  const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgreso);
+
+  const bloquePromedio = document.createElement("div");
+  bloquePromedio.className = "calificacion-historial__promedio";
+
+  const textoPromedioFinal = document.createElement("p");
+  textoPromedioFinal.className = "calificacion-historial__promedio-final";
+  textoPromedioFinal.textContent = "Promedio del trimestre: " + promedio.promedioFinal.toFixed(1);
+  bloquePromedio.appendChild(textoPromedioFinal);
+
+  const textoDesglose = document.createElement("p");
+  textoDesglose.className = "calificacion-historial__promedio-desglose";
+  textoDesglose.textContent =
+    "Tareas: " +
+    promedio.promedioTarea.toFixed(1) +
+    " · Actividades: " +
+    promedio.promedioActividad.toFixed(1) +
+    " · Proyectos: " +
+    promedio.promedioProyecto.toFixed(1);
+  bloquePromedio.appendChild(textoDesglose);
+
+  seccion.appendChild(bloquePromedio);
 
   const lista = document.createElement("ul");
   lista.className = "calificacion-historial__lista";
@@ -8750,6 +8850,480 @@ async function inicializarModuloFechas() {
   });
 }
 
+/* ---------------------------------------------------------
+   Módulo "Evaluación" (tab-evaluacion)
+
+   Captura la calificación numérica (0.0–10.0) de entregas YA
+   realizadas. Reutiliza toda la consulta de datos del módulo
+   Calificación y progreso (obtenerAlumnosParaCalificacion,
+   obtenerEntregablesPorTipo, obtenerMapaProgresoCalificacion,
+   claveSecuenciaDeEntregable, ICONO_TIPO_ENTREGABLE) y su misma clase
+   de tabla (.tabla-calificacion y compañía, ver css/style.css) para
+   idéntica estructura visual — pero con su propio estado de filtros,
+   su propia consulta de secuencia y su propia navegación de scroll
+   móvil (copias adaptadas, en vez de darle una segunda responsabilidad
+   a las de Calificación, que están acopladas a sus propios ids de
+   DOM). El contenido de cada celda es un eje distinto al de
+   pintarBadgeCalificacion: aquí importa si HAY calificación numérica,
+   no el estado de entrega en sí.
+   --------------------------------------------------------- */
+
+const estadoEvaluacion = { trimestre: null, grupo: "todos", tipo: "todos", secuencia: null };
+
+// Copia adaptada de actualizarOpcionesSecuenciaCalificacion(), apuntando
+// a estadoEvaluacion/#evaluacion-filtro-secuencia — la original está
+// acoplada a estadoCalificacion y no se toca (módulo Calificación y
+// progreso fuera de alcance).
+async function actualizarOpcionesSecuenciaEvaluacion() {
+  const select = document.getElementById("evaluacion-filtro-secuencia");
+  if (!select) return;
+
+  const entregables = await obtenerEntregablesPorTipo(estadoEvaluacion.tipo, estadoEvaluacion.trimestre);
+
+  const vistas = new Set();
+  const opciones = [];
+  entregables.forEach((item) => {
+    const clave = claveSecuenciaDeEntregable(item);
+    if (!vistas.has(clave)) {
+      vistas.add(clave);
+      opciones.push(clave);
+    }
+  });
+
+  const valorPrevio = estadoEvaluacion.secuencia;
+  select.innerHTML = "";
+  opciones.forEach((clave) => {
+    const opcion = document.createElement("option");
+    opcion.value = clave;
+    opcion.textContent = clave;
+    select.appendChild(opcion);
+  });
+
+  estadoEvaluacion.secuencia = opciones.includes(valorPrevio) ? valorPrevio : opciones[0] || null;
+  select.value = estadoEvaluacion.secuencia || "";
+}
+
+function formatearCalificacion(valor) {
+  return Number(valor).toFixed(1);
+}
+
+// "no-entrego": sin cuenta, o sin fila de progreso con completado=true —
+// nada que calificar todavía. "sin-calificar": entregó pero
+// calificacion es null. "calificada": entregó y ya tiene calificacion
+// (sin importar el origen de la entrega, formulario o manual-docente).
+function estadoCeldaEvaluacion(sinCuenta, filaProgreso) {
+  if (sinCuenta || !filaProgreso || !filaProgreso.completado) return "no-entrego";
+  return filaProgreso.calificacion == null ? "sin-calificar" : "calificada";
+}
+
+// Repinta una celda según su estado actual — mismo patrón que
+// pintarBadgeCalificacion (recibe el contenedor + contexto completo, se
+// puede volver a llamar tras guardar para repintar SOLO esa celda sin
+// reconstruir toda la tabla).
+function pintarCeldaEvaluacion(contenedor, contexto) {
+  const { alumno, item, trimestre, filaProgreso, sinCuenta, mapaProgreso, claveMapaProgreso } = contexto;
+  contenedor.innerHTML = "";
+
+  const estado = estadoCeldaEvaluacion(sinCuenta, filaProgreso);
+
+  if (estado === "no-entrego") {
+    const span = document.createElement("span");
+    span.className = "evaluacion-tabla__sin-entrega";
+    span.textContent = "—";
+    contenedor.appendChild(span);
+    return;
+  }
+
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "badge-calificacion";
+  boton.dataset.estado = estado;
+  boton.textContent = estado === "calificada" ? formatearCalificacion(filaProgreso.calificacion) : "Sin calificar";
+  boton.addEventListener("click", () => {
+    abrirModalCalificar({
+      alumno,
+      item,
+      filaProgreso,
+      alGuardar: (nuevaFila) => {
+        if (mapaProgreso && claveMapaProgreso) mapaProgreso.set(claveMapaProgreso, nuevaFila);
+        pintarCeldaEvaluacion(contenedor, { ...contexto, filaProgreso: nuevaFila });
+      },
+    });
+  });
+  contenedor.appendChild(boton);
+}
+
+function crearCeldaEvaluacion(alumno, item, filaProgreso, sinCuenta, trimestre, mapaProgreso) {
+  const celda = document.createElement("td");
+  celda.className = "calificacion-tabla__celda tabla-calificacion__col-item";
+
+  const claveMapaProgreso = alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id;
+  pintarCeldaEvaluacion(celda, { alumno, item, trimestre, filaProgreso, sinCuenta, mapaProgreso, claveMapaProgreso });
+
+  return celda;
+}
+
+// Misma estructura de fila que crearFilaAlumnoCalificacion (celda de
+// alumno + una celda por entregable), sin el botón "Ver historial
+// completo" ni la columna "Avance": ninguno de los dos se pidió para
+// este módulo (el resumen numérico del trimestre es el Prompt 12b,
+// aparte).
+function crearFilaAlumnoEvaluacion(alumno, entregables, mapaProgreso, trimestre) {
+  const fila = document.createElement("tr");
+  if (alumno.activo === false) fila.classList.add("fila-alumno--inactivo");
+
+  fila.dataset.nombreBusqueda = normalizarParaBusqueda(alumno.nombre);
+  fila.dataset.numeroLista = String(alumno.numero_lista);
+
+  const celdaAlumno = document.createElement("td");
+  celdaAlumno.className = "tabla-calificacion__col-fija";
+  const envoltura = document.createElement("div");
+  envoltura.className = "calificacion-tabla__alumno";
+  const nombre = document.createElement("span");
+  nombre.className = "calificacion-tabla__alumno-nombre";
+  nombre.textContent = alumno.nombre;
+  const numero = document.createElement("span");
+  numero.className = "calificacion-tabla__alumno-numero";
+  numero.textContent = "N.° " + alumno.numero_lista;
+  envoltura.append(nombre, numero);
+  celdaAlumno.appendChild(envoltura);
+  fila.appendChild(celdaAlumno);
+
+  const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
+
+  entregables.forEach((item) => {
+    const filaProgreso = sinCuenta
+      ? null
+      : mapaProgreso.get(alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id);
+    fila.appendChild(crearCeldaEvaluacion(alumno, item, filaProgreso, sinCuenta, trimestre, mapaProgreso));
+  });
+
+  return fila;
+}
+
+function construirTablaEvaluacion(alumnos, entregables, mapaProgreso, trimestre) {
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-calificacion";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+
+  const thAlumno = document.createElement("th");
+  thAlumno.className = "tabla-calificacion__col-fija";
+  thAlumno.textContent = "Alumno";
+  filaEncabezado.appendChild(thAlumno);
+
+  const mostrarIconoTipo = estadoEvaluacion.tipo === "todos";
+  entregables.forEach((item) => {
+    const th = document.createElement("th");
+    th.className = "tabla-calificacion__col-item";
+    th.title = item.titulo;
+    th.textContent = (mostrarIconoTipo ? ICONO_TIPO_ENTREGABLE[item.tipoEntregable] + " " : "") + item.titulo;
+    filaEncabezado.appendChild(th);
+  });
+
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  alumnos.forEach((alumno) => {
+    tbody.appendChild(crearFilaAlumnoEvaluacion(alumno, entregables, mapaProgreso, trimestre));
+  });
+  tabla.appendChild(tbody);
+
+  return tabla;
+}
+
+// Copias adaptadas de filtrarFilasTablaCalificacion/activarBuscadorCalificacion,
+// apuntando a los ids propios de este módulo.
+function filtrarFilasTablaEvaluacion() {
+  const input = document.getElementById("evaluacion-buscador-input");
+  const contenedor = document.getElementById("evaluacion-tabla-contenedor");
+  if (!input || !contenedor) return;
+
+  const tabla = contenedor.querySelector(".tabla-calificacion");
+  const filas = contenedor.querySelectorAll("tbody tr");
+  let mensajeSinCoincidencias = contenedor.querySelector(".evaluacion-tabla__sin-coincidencias");
+
+  if (!tabla || filas.length === 0) {
+    if (mensajeSinCoincidencias) mensajeSinCoincidencias.remove();
+    return;
+  }
+
+  const termino = normalizarParaBusqueda(input.value.trim());
+  let algunaVisible = false;
+
+  filas.forEach((fila) => {
+    const coincide =
+      termino === "" ||
+      fila.dataset.nombreBusqueda.includes(termino) ||
+      fila.dataset.numeroLista.includes(termino);
+    fila.hidden = !coincide;
+    if (coincide) algunaVisible = true;
+  });
+
+  if (termino !== "" && !algunaVisible) {
+    if (!mensajeSinCoincidencias) {
+      mensajeSinCoincidencias = document.createElement("p");
+      mensajeSinCoincidencias.className = "sin-resultados evaluacion-tabla__sin-coincidencias";
+      mensajeSinCoincidencias.textContent =
+        "No se encontró en esta vista — prueba cambiar el filtro de Trimestre/Secuencia.";
+      tabla.after(mensajeSinCoincidencias);
+    }
+  } else if (mensajeSinCoincidencias) {
+    mensajeSinCoincidencias.remove();
+  }
+}
+
+function activarBuscadorEvaluacion() {
+  const input = document.getElementById("evaluacion-buscador-input");
+  if (!input) return;
+  input.addEventListener("input", filtrarFilasTablaEvaluacion);
+}
+
+// Copias adaptadas de anchoPrimeraColumnaDatosCalificacion/
+// actualizarEstadoNavegacionTablaCalificacion/
+// activarNavegacionMovilTablaCalificacion — mismo comportamiento de
+// scroll ◀▶ + gradiente, apuntando a los ids propios de este módulo.
+// Las clases CSS que consumen (.calificacion-tabla-contenedor,
+// --alto-contenedor-calificacion, .calificacion-tabla-contenedor--fin-
+// alcanzado) son genéricas por clase, no por id, así que ya aplican
+// tal cual sin tocar css/style.css.
+function anchoPrimeraColumnaDatosEvaluacion() {
+  const contenedor = document.getElementById("evaluacion-tabla-contenedor");
+  const primeraColumnaDatos = contenedor?.querySelector("thead th:nth-child(2)");
+  return primeraColumnaDatos ? primeraColumnaDatos.offsetWidth : 140;
+}
+
+function actualizarEstadoNavegacionTablaEvaluacion() {
+  const contenedor = document.getElementById("evaluacion-tabla-contenedor");
+  if (!contenedor) return;
+
+  const botonIzq = document.getElementById("evaluacion-scroll-izq");
+  const botonDer = document.getElementById("evaluacion-scroll-der");
+
+  const alInicio = contenedor.scrollLeft <= 0;
+  const alFinal = contenedor.scrollLeft + contenedor.clientWidth >= contenedor.scrollWidth - 1;
+
+  if (botonIzq) botonIzq.disabled = alInicio;
+  if (botonDer) botonDer.disabled = alFinal;
+  contenedor.classList.toggle("calificacion-tabla-contenedor--fin-alcanzado", alFinal);
+  contenedor.style.setProperty("--alto-contenedor-calificacion", contenedor.clientHeight + "px");
+}
+
+function activarNavegacionMovilTablaEvaluacion() {
+  const contenedor = document.getElementById("evaluacion-tabla-contenedor");
+  const botonIzq = document.getElementById("evaluacion-scroll-izq");
+  const botonDer = document.getElementById("evaluacion-scroll-der");
+  if (!contenedor || !botonIzq || !botonDer) return;
+
+  botonIzq.addEventListener("click", () => {
+    contenedor.scrollBy({ left: -anchoPrimeraColumnaDatosEvaluacion(), behavior: "smooth" });
+  });
+  botonDer.addEventListener("click", () => {
+    contenedor.scrollBy({ left: anchoPrimeraColumnaDatosEvaluacion(), behavior: "smooth" });
+  });
+
+  contenedor.addEventListener("scroll", actualizarEstadoNavegacionTablaEvaluacion);
+  window.addEventListener("resize", actualizarEstadoNavegacionTablaEvaluacion);
+}
+
+// Copia adaptada de renderizarTablaCalificacion, sin el cálculo de
+// avance/pie: apunta a estadoEvaluacion y a los ids propios de este
+// módulo, reutilizando las mismas 3 consultas de datos.
+async function renderizarTablaEvaluacion() {
+  const contenedor = document.getElementById("evaluacion-tabla-contenedor");
+  if (!contenedor) return;
+
+  if (!estadoEvaluacion.secuencia) {
+    mostrarSinResultados(contenedor, "No hay entregables para este trimestre y tipo.");
+    actualizarEstadoNavegacionTablaEvaluacion();
+    return;
+  }
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  const tipos = estadoEvaluacion.tipo === "todos" ? ["tarea", "actividad", "proyecto"] : [estadoEvaluacion.tipo];
+
+  const [alumnos, entregablesTodos] = await Promise.all([
+    obtenerAlumnosParaCalificacion(estadoEvaluacion.grupo),
+    obtenerEntregablesPorTipo(estadoEvaluacion.tipo, estadoEvaluacion.trimestre),
+  ]);
+
+  const entregables = entregablesTodos
+    .filter((item) => claveSecuenciaDeEntregable(item) === estadoEvaluacion.secuencia)
+    .filter(
+      (item) =>
+        estadoEvaluacion.grupo === "todos" || item.grupo === "todos" || item.grupo === estadoEvaluacion.grupo
+    );
+
+  if (alumnos.length === 0) {
+    mostrarSinResultados(contenedor, "No hay alumnos registrados para este grupo.");
+    actualizarEstadoNavegacionTablaEvaluacion();
+    return;
+  }
+  if (entregables.length === 0) {
+    mostrarSinResultados(contenedor, "No hay entregables para esta secuencia.");
+    actualizarEstadoNavegacionTablaEvaluacion();
+    return;
+  }
+
+  const idsParaProgreso = alumnos.filter((alumno) => alumno.auth_user_id != null).map((alumno) => alumno.auth_user_id);
+  const mapaProgreso = await obtenerMapaProgresoCalificacion(estadoEvaluacion.trimestre, tipos, idsParaProgreso);
+
+  contenedor.innerHTML = "";
+  contenedor.appendChild(construirTablaEvaluacion(alumnos, entregables, mapaProgreso, estadoEvaluacion.trimestre));
+
+  actualizarEstadoNavegacionTablaEvaluacion();
+  filtrarFilasTablaEvaluacion();
+}
+
+// Contexto del dialog de calificar actualmente abierto (alumno/item/
+// filaProgreso + el callback que sabe repintar la celda exacta que lo
+// abrió) — se reemplaza cada vez que se abre el dialog, mismo patrón
+// que contextoEdicionEntrega en Calificación y progreso.
+let contextoCalificar = null;
+
+// filaProgreso siempre existe al llegar aquí: esta función solo se
+// invoca desde celdas en estado "sin-calificar"/"calificada", ambas
+// con completado=true, o sea que ya hay una fila real en progreso que
+// actualizar — nunca hace falta un INSERT.
+function abrirModalCalificar({ alumno, item, filaProgreso, alGuardar }) {
+  const modal = document.getElementById("modal-calificar");
+  if (!modal) return;
+
+  contextoCalificar = { filaProgreso, alGuardar };
+
+  document.getElementById("modal-calificar-contexto").textContent = alumno.nombre + " — " + item.titulo;
+
+  const enlaceArchivo = document.getElementById("modal-calificar-archivo");
+  if (filaProgreso.archivo_url) {
+    enlaceArchivo.href = filaProgreso.archivo_url;
+    enlaceArchivo.hidden = false;
+  } else {
+    enlaceArchivo.hidden = true;
+  }
+
+  const campoValor = document.getElementById("calificar-valor");
+  campoValor.value = filaProgreso.calificacion != null ? filaProgreso.calificacion : "";
+
+  document.getElementById("calificar-error").hidden = true;
+  modal.showModal();
+}
+
+// UPDATE de progreso.calificacion (+ actualizado_en) SOLO — nunca toca
+// completado/origen/fecha_entrega_manual/nota de esa fila, sin importar
+// si la entrega original vino del formulario del alumno o de una marca
+// manual del docente.
+async function guardarCalificacion(filaProgreso, valor) {
+  const { data, error } = await clienteSupabase
+    .from("progreso")
+    .update({ calificacion: valor, actualizado_en: new Date().toISOString() })
+    .eq("id", filaProgreso.id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// Campo vacío guarda NULL (permite "desmarcar" una calificación puesta
+// por error, sin un botón aparte para eso) — no es required a propósito.
+function activarFormularioCalificar() {
+  const modal = document.getElementById("modal-calificar");
+  const formulario = document.getElementById("formulario-calificar");
+  if (!modal || !formulario) return;
+
+  formulario.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    if (!contextoCalificar) return;
+
+    const { filaProgreso, alGuardar } = contextoCalificar;
+    const campoValor = document.getElementById("calificar-valor");
+    const error = document.getElementById("calificar-error");
+    const botonConfirmar = document.getElementById("calificar-confirmar");
+
+    error.hidden = true;
+
+    const texto = campoValor.value.trim();
+    let valor = null;
+    if (texto !== "") {
+      valor = Number(texto);
+      if (Number.isNaN(valor) || valor < 0 || valor > 10) {
+        error.textContent = "La calificación debe ser un número entre 0.0 y 10.0.";
+        error.hidden = false;
+        return;
+      }
+      // step="0.1" ya lo sugiere en el input, pero no impide escribir más
+      // decimales a mano — se redondea a 1 decimal antes de guardar.
+      valor = Math.round(valor * 10) / 10;
+    }
+
+    botonConfirmar.disabled = true;
+    try {
+      const nuevaFila = await guardarCalificacion(filaProgreso, valor);
+      modal.close();
+      alGuardar(nuevaFila);
+    } catch (err) {
+      error.textContent = "No se pudo guardar: " + (err?.message || "intenta de nuevo.");
+      error.hidden = false;
+    } finally {
+      botonConfirmar.disabled = false;
+    }
+  });
+
+  document.getElementById("calificar-cancelar").addEventListener("click", () => modal.close());
+
+  const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.close();
+  });
+}
+
+async function inicializarModuloEvaluacion() {
+  const selectTrimestre = document.getElementById("evaluacion-filtro-trimestre");
+  if (!selectTrimestre) return; // no es admin.html
+
+  // Mismo guard que el resto de módulos del panel: progreso también
+  // está protegido por RLS para el rol docente.
+  await promesaGuardPanelDocente;
+
+  estadoEvaluacion.trimestre = String(trimestreDesbloqueado);
+  selectTrimestre.value = estadoEvaluacion.trimestre;
+
+  await actualizarOpcionesSecuenciaEvaluacion();
+  await renderizarTablaEvaluacion();
+  activarNavegacionMovilTablaEvaluacion();
+  activarBuscadorEvaluacion();
+  activarFormularioCalificar();
+
+  selectTrimestre.addEventListener("change", async () => {
+    estadoEvaluacion.trimestre = selectTrimestre.value;
+    await actualizarOpcionesSecuenciaEvaluacion();
+    await renderizarTablaEvaluacion();
+  });
+
+  const selectGrupo = document.getElementById("evaluacion-filtro-grupo");
+  selectGrupo.addEventListener("change", async () => {
+    estadoEvaluacion.grupo = selectGrupo.value;
+    await renderizarTablaEvaluacion();
+  });
+
+  const selectTipo = document.getElementById("evaluacion-filtro-tipo");
+  selectTipo.addEventListener("change", async () => {
+    estadoEvaluacion.tipo = selectTipo.value;
+    await actualizarOpcionesSecuenciaEvaluacion();
+    await renderizarTablaEvaluacion();
+  });
+
+  const selectSecuencia = document.getElementById("evaluacion-filtro-secuencia");
+  selectSecuencia.addEventListener("change", async () => {
+    estadoEvaluacion.secuencia = selectSecuencia.value;
+    await renderizarTablaEvaluacion();
+  });
+}
+
 /* =========================================================
    10. INICIALIZACIÓN
    ========================================================= */
@@ -8798,6 +9372,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await inicializarModuloAvisos();
   await inicializarModuloTrimestre();
   await inicializarModuloFechas();
+  await inicializarModuloEvaluacion();
 
   const botonMesAnterior = document.getElementById("calendario-mes-anterior");
   if (botonMesAnterior) botonMesAnterior.addEventListener("click", () => avanzarMesCalendario(-1));

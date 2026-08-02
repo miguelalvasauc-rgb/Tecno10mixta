@@ -3987,6 +3987,21 @@ summary:focus-visible {
   border-color: var(--color-texto-suave);
 }
 
+/* .boton-secundario ya cubre color/borde/padding sin importar la
+   etiqueta; solo hace falta anular el subrayado y el display inline
+   por defecto de <a>, que es el único consumidor no-<button> de esta
+   clase (#boton-panel-docente-cuenta). */
+a.boton-secundario {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.cuenta-sesion-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
 /* ---------- Panel de "Progreso" (portada) ---------- */
 .panel-progreso__invitacion {
   display: flex;
@@ -4622,6 +4637,34 @@ summary:focus-visible {
   margin: 0 0 0.4rem;
   font-size: 0.95rem;
   color: var(--color-texto);
+}
+
+/* Promedio del trimestre (30/30/40) — solo vive en el modal de
+   historial, ver calcularPromedioTrimestre()/crearSeccionTrimestreHistorial()
+   en js/main.js. Destacado por color+peso, no por un tamaño de fuente
+   nuevo (mismo criterio ya usado en .calificacion-tabla__avance: bold
+   heredando el tamaño base en vez de otro paso de la escala tipográfica). */
+.calificacion-historial__promedio {
+  margin: 0.5rem 0 1rem;
+}
+
+.calificacion-historial__promedio-final {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-turquesa);
+}
+
+/* Light-Mode Turquoise Rule (mismo bug de contraste documentado en el
+   resto del sitio): turquesa como texto plano sobre --color-superficie
+   da ~2.5:1 en modo claro (falla AA). Navy sí pasa, 11.3:1. */
+:root[data-theme="claro"] .calificacion-historial__promedio-final {
+  color: var(--color-primario);
+}
+
+.calificacion-historial__promedio-desglose {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
 }
 
 .calificacion-historial__lista {
@@ -5528,4 +5571,93 @@ button.badge-estado {
   margin: 1rem 0;
   max-height: 45vh;
   overflow-y: auto;
+}
+
+/* ---------- Módulo "Evaluación" (tab-evaluacion) ----------
+   La tabla en sí reutiliza .tabla-calificacion/.tabla-calificacion__col-*/
+   .calificacion-tabla__alumno* tal cual (misma estructura visual que
+   Calificación y progreso, ver construirTablaEvaluacion() en js/main.js)
+   — aquí solo van las clases nuevas del contenido de cada celda, que en
+   este módulo es el estado de CALIFICACIÓN (no el badge de entrega de
+   .badge-estado). */
+.evaluacion-tabla__sin-entrega {
+  color: var(--color-texto-suave);
+}
+
+.badge-calificacion {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-cuerpo);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.badge-calificacion:hover,
+.badge-calificacion:focus-visible {
+  text-decoration: underline;
+}
+
+.badge-calificacion[data-estado="sin-calificar"] {
+  color: var(--color-texto-suave);
+  font-style: italic;
+}
+
+.badge-calificacion[data-estado="calificada"] {
+  color: var(--color-texto);
+  font-weight: 700;
+}
+
+/* ---------- Calificar entrega (#modal-calificar) ----------
+   Mismo patrón visual angosto que #modal-editar-fecha: un solo campo
+   numérico. #modal-calificar-archivo (enlace opcional) reutiliza
+   .enlace-descarga tal cual, ya estilado en el resto del sitio. */
+#modal-calificar {
+  width: 92%;
+  max-width: 400px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-calificar::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-calificar-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+#modal-calificar-archivo {
+  margin-bottom: 0.75rem;
+}
+
+#formulario-calificar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+#formulario-calificar label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+}
+
+#formulario-calificar input {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--font-cuerpo);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
 }

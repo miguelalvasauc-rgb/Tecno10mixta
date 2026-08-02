@@ -147,6 +147,10 @@
                 id="tab-fechas" role="tab" aria-selected="false" aria-controls="panel-fechas">
           Fechas de entrega
         </button>
+        <button type="button" class="admin-tabs__boton"
+                id="tab-evaluacion" role="tab" aria-selected="false" aria-controls="panel-evaluacion">
+          Evaluación
+        </button>
       </div>
 
       <section id="panel-calificacion" class="admin-panel" role="tabpanel" aria-labelledby="tab-calificacion">
@@ -329,6 +333,61 @@
         </div>
 
         <div id="fechas-tabla-contenedor" aria-live="polite"></div>
+      </section>
+
+      <section id="panel-evaluacion" class="admin-panel" role="tabpanel" aria-labelledby="tab-evaluacion" hidden>
+        <div class="calificacion-filtros">
+          <div class="calificacion-filtro">
+            <label for="evaluacion-filtro-trimestre">Trimestre</label>
+            <select id="evaluacion-filtro-trimestre">
+              <option value="1">1° Trimestre</option>
+              <option value="2">2° Trimestre</option>
+              <option value="3">3° Trimestre</option>
+            </select>
+          </div>
+          <div class="calificacion-filtro">
+            <label for="evaluacion-filtro-grupo">Grupo</label>
+            <select id="evaluacion-filtro-grupo">
+              <option value="todos">Todos</option>
+              <option value="3C">3°C</option>
+              <option value="3E">3°E</option>
+            </select>
+          </div>
+          <div class="calificacion-filtro">
+            <label for="evaluacion-filtro-tipo">Tipo</label>
+            <select id="evaluacion-filtro-tipo">
+              <option value="todos">Todos</option>
+              <option value="tarea">Tareas</option>
+              <option value="actividad">Actividades</option>
+              <option value="proyecto">Proyectos</option>
+            </select>
+          </div>
+          <div class="calificacion-filtro">
+            <label for="evaluacion-filtro-secuencia">Secuencia</label>
+            <select id="evaluacion-filtro-secuencia"></select>
+          </div>
+        </div>
+
+        <!-- Buscador en vivo: mismo patrón que
+             filtrarFilasTablaCalificacion() (filtra las filas ya
+             renderizadas, no dispara una nueva consulta) — ver
+             filtrarFilasTablaEvaluacion() en js/main.js. -->
+        <div class="calificacion-buscador">
+          <label for="evaluacion-buscador-input" class="sr-only">Buscar alumno por nombre o número de lista</label>
+          <input type="search" id="evaluacion-buscador-input" class="calificacion-buscador__input"
+                 placeholder="🔍 Buscar por nombre o número de lista…" autocomplete="off">
+        </div>
+
+        <!-- Navegación de scroll horizontal, solo visible en mobile —
+             mismo patrón que .calificacion-tabla__nav-movil del módulo
+             Calificación y progreso (ver activarNavegacionMovilTablaEvaluacion()
+             en js/main.js). -->
+        <div class="calificacion-tabla__nav-movil">
+          <button type="button" id="evaluacion-scroll-izq" class="calificacion-tabla__nav-boton" aria-label="Desplazar la tabla hacia la izquierda">◀</button>
+          <button type="button" id="evaluacion-scroll-der" class="calificacion-tabla__nav-boton" aria-label="Desplazar la tabla hacia la derecha">▶</button>
+        </div>
+
+        <div id="evaluacion-tabla-contenedor" class="calificacion-tabla-contenedor" aria-live="polite"></div>
       </section>
     </section>
   </main>
@@ -538,6 +597,31 @@
       <button type="button" class="modal-editar-entrega__confirmar" id="fechas-recorrido-confirmar">Confirmar</button>
       <button type="button" class="boton-secundario" id="fechas-recorrido-cancelar">Cancelar</button>
     </div>
+  </dialog>
+
+  <!-- Calificar una entrega ya realizada (módulo "Evaluación") — ver
+       abrirModalCalificar()/activarFormularioCalificar() en js/main.js.
+       Solo se abre desde celdas que YA tienen completado=true en
+       progreso (nunca desde "—"), así que siempre hay una fila de
+       progreso real que actualizar. -->
+  <dialog id="modal-calificar" aria-labelledby="modal-calificar-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-calificar-titulo">Calificar entrega</h3>
+    <p id="modal-calificar-contexto" class="modal-historial__subtitulo"></p>
+    <a id="modal-calificar-archivo" href="#" target="_blank" rel="noopener noreferrer" class="enlace-descarga" hidden>
+      📄 Ver archivo entregado
+    </a>
+    <form id="formulario-calificar" novalidate>
+      <label for="calificar-valor">Calificación (0.0 – 10.0)</label>
+      <input type="number" id="calificar-valor" name="calificacion" min="0" max="10" step="0.1">
+
+      <p id="calificar-error" class="cuenta-error" role="alert" hidden></p>
+
+      <div class="modal-editar-entrega__acciones">
+        <button type="submit" class="modal-editar-entrega__confirmar" id="calificar-confirmar">Guardar calificación</button>
+        <button type="button" class="boton-secundario" id="calificar-cancelar">Cancelar</button>
+      </div>
+    </form>
   </dialog>
 
   <script src="js/main.js"></script>
