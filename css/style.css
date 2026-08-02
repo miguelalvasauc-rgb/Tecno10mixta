@@ -5608,6 +5608,24 @@ button.badge-estado {
   font-weight: 700;
 }
 
+/* ---------- Tabla de promedios (dentro de Evaluación) ----------
+   Tabla concentrada de TODOS los alumnos de un grupo/trimestre — reutiliza
+   .tabla-calificacion/.calificacion-tabla-contenedor/.calificacion-tabla__alumno*
+   tal cual (misma estructura visual y mismas reglas @media print de
+   "Impresión de la tabla general", que ya apuntan a esas clases genéricas
+   — ver renderizarTablaPromedios()/activarImpresionTablaPromedios() en
+   js/main.js). Solo la columna de Promedio final necesita un estilo
+   propio, mismo criterio de "destacado por color+peso" ya usado en
+   .calificacion-historial__promedio-final del modal de historial. */
+.tabla-promedios__promedio-final {
+  font-weight: 700;
+  color: var(--color-turquesa);
+}
+
+:root[data-theme="claro"] .tabla-promedios__promedio-final {
+  color: var(--color-primario);
+}
+
 /* ---------- Calificar entrega (#modal-calificar) ----------
    Mismo patrón visual angosto que #modal-editar-fecha: un solo campo
    numérico. #modal-calificar-archivo (enlace opcional) reutiliza

@@ -368,26 +368,53 @@
           </div>
         </div>
 
-        <!-- Buscador en vivo: mismo patrón que
-             filtrarFilasTablaCalificacion() (filtra las filas ya
-             renderizadas, no dispara una nueva consulta) — ver
-             filtrarFilasTablaEvaluacion() en js/main.js. -->
-        <div class="calificacion-buscador">
-          <label for="evaluacion-buscador-input" class="sr-only">Buscar alumno por nombre o número de lista</label>
-          <input type="search" id="evaluacion-buscador-input" class="calificacion-buscador__input"
-                 placeholder="🔍 Buscar por nombre o número de lista…" autocomplete="off">
+        <!-- Toggle a la tabla concentrada de promedios del trimestre (solo
+             Trimestre/Grupo aplican ahí; Tipo/Secuencia se ocultan
+             mientras esta vista está activa) — ver activarVistaPromedios()
+             en js/main.js. Nunca ambas vistas visibles a la vez. -->
+        <div class="calificacion-acciones">
+          <button type="button" id="evaluacion-boton-vista-promedios" class="boton-secundario">📊 Ver tabla de promedios</button>
         </div>
 
-        <!-- Navegación de scroll horizontal, solo visible en mobile —
-             mismo patrón que .calificacion-tabla__nav-movil del módulo
-             Calificación y progreso (ver activarNavegacionMovilTablaEvaluacion()
-             en js/main.js). -->
-        <div class="calificacion-tabla__nav-movil">
-          <button type="button" id="evaluacion-scroll-izq" class="calificacion-tabla__nav-boton" aria-label="Desplazar la tabla hacia la izquierda">◀</button>
-          <button type="button" id="evaluacion-scroll-der" class="calificacion-tabla__nav-boton" aria-label="Desplazar la tabla hacia la derecha">▶</button>
+        <div id="evaluacion-captura-vista">
+          <!-- Buscador en vivo: mismo patrón que
+               filtrarFilasTablaCalificacion() (filtra las filas ya
+               renderizadas, no dispara una nueva consulta) — ver
+               filtrarFilasTablaEvaluacion() en js/main.js. -->
+          <div class="calificacion-buscador">
+            <label for="evaluacion-buscador-input" class="sr-only">Buscar alumno por nombre o número de lista</label>
+            <input type="search" id="evaluacion-buscador-input" class="calificacion-buscador__input"
+                   placeholder="🔍 Buscar por nombre o número de lista…" autocomplete="off">
+          </div>
+
+          <!-- Navegación de scroll horizontal, solo visible en mobile —
+               mismo patrón que .calificacion-tabla__nav-movil del módulo
+               Calificación y progreso (ver activarNavegacionMovilTablaEvaluacion()
+               en js/main.js). -->
+          <div class="calificacion-tabla__nav-movil">
+            <button type="button" id="evaluacion-scroll-izq" class="calificacion-tabla__nav-boton" aria-label="Desplazar la tabla hacia la izquierda">◀</button>
+            <button type="button" id="evaluacion-scroll-der" class="calificacion-tabla__nav-boton" aria-label="Desplazar la tabla hacia la derecha">▶</button>
+          </div>
+
+          <div id="evaluacion-tabla-contenedor" class="calificacion-tabla-contenedor" aria-live="polite"></div>
         </div>
 
-        <div id="evaluacion-tabla-contenedor" class="calificacion-tabla-contenedor" aria-live="polite"></div>
+        <!-- Tabla concentrada de promedios (Tareas/Actividades/Proyectos/
+             Promedio final) de TODOS los alumnos del grupo elegido — ver
+             renderizarTablaPromedios()/calcularPromedioTrimestre() en
+             js/main.js. Oculta por defecto; reutiliza
+             .calificacion-tabla-contenedor tal cual para heredar las
+             mismas reglas @media print de "Impresión de la tabla general"
+             sin duplicarlas. -->
+        <div id="evaluacion-promedios-vista" hidden>
+          <div class="calificacion-acciones">
+            <button type="button" id="evaluacion-boton-vista-captura" class="boton-secundario">← Volver a captura individual</button>
+            <button type="button" id="evaluacion-promedios-boton-csv" class="boton-secundario">⬇️ Exportar CSV</button>
+            <button type="button" id="evaluacion-promedios-boton-imprimir" class="boton-secundario">🖨️ Imprimir tabla de promedios</button>
+          </div>
+
+          <div id="evaluacion-promedios-contenedor" class="calificacion-tabla-contenedor" aria-live="polite"></div>
+        </div>
       </section>
     </section>
   </main>

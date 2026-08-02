@@ -8870,6 +8870,11 @@ async function inicializarModuloFechas() {
 
 const estadoEvaluacion = { trimestre: null, grupo: "todos", tipo: "todos", secuencia: null };
 
+// "captura" (tabla individual, la de siempre) o "promedios" (tabla
+// concentrada nueva) — decide cuál de las dos tablas refrescan los
+// cambios de Trimestre/Grupo (ver activarVistaPromedios()).
+let vistaEvaluacionActiva = "captura";
+
 // Copia adaptada de actualizarOpcionesSecuenciaCalificacion(), apuntando
 // a estadoEvaluacion/#evaluacion-filtro-secuencia — la original está
 // acoplada a estadoCalificacion y no se toca (módulo Calificación y
@@ -8907,12 +8912,16 @@ function formatearCalificacion(valor) {
   return Number(valor).toFixed(1);
 }
 
-// "no-entrego": sin cuenta, o sin fila de progreso con completado=true —
-// nada que calificar todavía. "sin-calificar": entregó pero
-// calificacion es null. "calificada": entregó y ya tiene calificacion
-// (sin importar el origen de la entrega, formulario o manual-docente).
-function estadoCeldaEvaluacion(sinCuenta, filaProgreso) {
-  if (sinCuenta || !filaProgreso || !filaProgreso.completado) return "no-entrego";
+// "sin-cuenta"/"pendiente"/"atrasada": mismo criterio que
+// pintarBadgeCalificacion (itemEstaVencido) — nada que calificar todavía.
+// "sin-calificar": entregó pero calificacion es null. "calificada": entregó
+// y ya tiene calificacion (sin importar el origen de la entrega, formulario
+// o manual-docente).
+function estadoCeldaEvaluacion(sinCuenta, filaProgreso, item, alumno) {
+  if (sinCuenta) return "sin-cuenta";
+  if (!filaProgreso || !filaProgreso.completado) {
+    return itemEstaVencido(item.tipoEntregable, item, alumno.grupo) ? "atrasada" : "pendiente";
+  }
   return filaProgreso.calificacion == null ? "sin-calificar" : "calificada";
 }
 
@@ -8924,12 +8933,12 @@ function pintarCeldaEvaluacion(contenedor, contexto) {
   const { alumno, item, trimestre, filaProgreso, sinCuenta, mapaProgreso, claveMapaProgreso } = contexto;
   contenedor.innerHTML = "";
 
-  const estado = estadoCeldaEvaluacion(sinCuenta, filaProgreso);
+  const estado = estadoCeldaEvaluacion(sinCuenta, filaProgreso, item, alumno);
 
-  if (estado === "no-entrego") {
+  if (estado === "sin-cuenta" || estado === "pendiente" || estado === "atrasada") {
     const span = document.createElement("span");
     span.className = "evaluacion-tabla__sin-entrega";
-    span.textContent = "—";
+    span.textContent = estado === "sin-cuenta" ? "🚫" : estado === "pendiente" ? "🟡" : "🔒";
     contenedor.appendChild(span);
     return;
   }
@@ -8938,7 +8947,7 @@ function pintarCeldaEvaluacion(contenedor, contexto) {
   boton.type = "button";
   boton.className = "badge-calificacion";
   boton.dataset.estado = estado;
-  boton.textContent = estado === "calificada" ? formatearCalificacion(filaProgreso.calificacion) : "Sin calificar";
+  boton.textContent = "🟢 " + (estado === "calificada" ? formatearCalificacion(filaProgreso.calificacion) : "Sin calificar");
   boton.addEventListener("click", () => {
     abrirModalCalificar({
       alumno,
@@ -9281,6 +9290,264 @@ function activarFormularioCalificar() {
   });
 }
 
+/* ---------- Tabla de promedios (dentro de Evaluación) ----------
+   Vista alterna con la de captura individual: en vez de una fila por
+   entregable, una fila por alumno con su promedio de Tareas/Actividades/
+   Proyectos y su promedio final del trimestre (30/30/40), vía la MISMA
+   calcularPromedioTrimestre() que ya usa el modal de historial — aquí
+   se llama una vez por alumno en vez de una sola vez para uno solo.
+   Solo Trimestre/Grupo aplican (Tipo/Secuencia se ocultan mientras esta
+   vista está activa, ver activarVistaPromedios()); "todos" los grupos a
+   la vez no se soporta a propósito (ver mensaje en renderizarTablaPromedios). --------- */
+
+// Mismo patrón que obtenerMapaProgresoCalificacion, pero sin filtrar por
+// "tipo" (el promedio necesita el trimestre completo) y agrupado por
+// alumno_id: calcularPromedioTrimestre espera un Map por alumno, sin el
+// alumno_id en la llave (mismo formato que ya arma abrirModalHistorialAlumno
+// para un único alumno).
+async function obtenerMapaProgresoPorAlumno(trimestre, alumnoIds) {
+  const mapaPorAlumno = new Map();
+  if (alumnoIds.length === 0) return mapaPorAlumno;
+
+  const { data, error } = await clienteSupabase
+    .from("progreso")
+    .select("*")
+    .eq("trimestre", trimestre)
+    .in("alumno_id", alumnoIds);
+
+  if (error) return mapaPorAlumno;
+
+  data.forEach((fila) => {
+    if (!mapaPorAlumno.has(fila.alumno_id)) mapaPorAlumno.set(fila.alumno_id, new Map());
+    mapaPorAlumno.get(fila.alumno_id).set(fila.tipo + "-" + fila.item_id + "-" + String(fila.trimestre), fila);
+  });
+  return mapaPorAlumno;
+}
+
+// Alumno sin cuenta activa: "—" en las 4 columnas numéricas, sin
+// intentar promediar nada (no hay progreso real que leer para él).
+function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, trimestre) {
+  const fila = document.createElement("tr");
+  if (alumno.activo === false) fila.classList.add("fila-alumno--inactivo");
+  fila.dataset.numeroLista = String(alumno.numero_lista);
+
+  const celdaAlumno = document.createElement("td");
+  const envoltura = document.createElement("div");
+  envoltura.className = "calificacion-tabla__alumno";
+  const nombre = document.createElement("span");
+  nombre.className = "calificacion-tabla__alumno-nombre";
+  nombre.textContent = alumno.nombre;
+  const numero = document.createElement("span");
+  numero.className = "calificacion-tabla__alumno-numero";
+  numero.textContent = "N.° " + alumno.numero_lista;
+  envoltura.append(nombre, numero);
+  celdaAlumno.appendChild(envoltura);
+  fila.appendChild(celdaAlumno);
+
+  const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
+  const mapaProgresoAlumno = sinCuenta ? new Map() : mapaProgresoPorAlumno.get(alumno.auth_user_id) || new Map();
+
+  // "Sin nada que promediar" cubre dos casos con el mismo "—": sin cuenta
+  // activa, o con cuenta pero SIN NINGUNA calificación capturada en todo
+  // el trimestre (sin importar tipo/secuencia) — para no confundir un
+  // trimestre vacío con un 0.0 real. calcularPromedioTrimestre() no
+  // cambia: sigue tratando cada item sin calificar como 0 dentro de su
+  // propio cálculo, esto solo decide si se llega a llamarla.
+  const tieneAlgunaCalificacion = Array.from(mapaProgresoAlumno.values()).some(
+    (filaProgreso) => filaProgreso.calificacion != null
+  );
+
+  if (sinCuenta || !tieneAlgunaCalificacion) {
+    for (let i = 0; i < 4; i++) {
+      const celda = document.createElement("td");
+      celda.textContent = "—";
+      fila.appendChild(celda);
+    }
+    return fila;
+  }
+
+  const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAlumno);
+
+  const celdaTarea = document.createElement("td");
+  celdaTarea.textContent = promedio.promedioTarea.toFixed(1);
+  fila.appendChild(celdaTarea);
+
+  const celdaActividad = document.createElement("td");
+  celdaActividad.textContent = promedio.promedioActividad.toFixed(1);
+  fila.appendChild(celdaActividad);
+
+  const celdaProyecto = document.createElement("td");
+  celdaProyecto.textContent = promedio.promedioProyecto.toFixed(1);
+  fila.appendChild(celdaProyecto);
+
+  const celdaFinal = document.createElement("td");
+  celdaFinal.className = "tabla-promedios__promedio-final";
+  celdaFinal.textContent = promedio.promedioFinal.toFixed(1);
+  fila.appendChild(celdaFinal);
+
+  return fila;
+}
+
+// Reutiliza la clase "tabla-calificacion" (no solo "tabla-promedios")
+// para heredar gratis el mismo look (bordes, encabezado sticky) y las
+// mismas reglas @media print en blanco y negro que ya apuntan a esa
+// clase — sin sticky de columna "Alumno" (aquí solo son 5 columnas,
+// caben sin scroll horizontal, a diferencia de la tabla de captura).
+function construirTablaPromedios(alumnos, itemsPorTipo, mapaProgresoPorAlumno, trimestre) {
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-calificacion tabla-promedios";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  ["Alumno", "Tareas", "Actividades", "Proyectos", "Promedio final"].forEach((texto) => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  alumnos.forEach((alumno) => {
+    tbody.appendChild(crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, trimestre));
+  });
+  tabla.appendChild(tbody);
+
+  return tabla;
+}
+
+async function renderizarTablaPromedios() {
+  const contenedor = document.getElementById("evaluacion-promedios-contenedor");
+  if (!contenedor) return;
+
+  // "Todos" los grupos a la vez no se soporta a propósito (tabla
+  // combinada confusa) — el docente cambia el filtro de Grupo en vez de
+  // que esta vista intente resolverlo.
+  if (estadoEvaluacion.grupo === "todos") {
+    mostrarSinResultados(contenedor, "Selecciona un grupo específico (3°C o 3°E) para ver la tabla de promedios.");
+    return;
+  }
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  const [alumnos, entregablesTodos] = await Promise.all([
+    obtenerAlumnosParaCalificacion(estadoEvaluacion.grupo),
+    obtenerEntregablesPorTipo("todos", estadoEvaluacion.trimestre),
+  ]);
+
+  if (alumnos.length === 0) {
+    mostrarSinResultados(contenedor, "No hay alumnos registrados para este grupo.");
+    return;
+  }
+
+  // Mismo filtro de grupo por ítem que ya usa construirTablaEvaluacion:
+  // un ítem con grupo específico (no "todos") solo cuenta para el
+  // promedio de ese grupo.
+  const entregables = entregablesTodos.filter(
+    (item) => item.grupo === "todos" || item.grupo === estadoEvaluacion.grupo
+  );
+  const itemsPorTipo = { tarea: [], actividad: [], proyecto: [] };
+  entregables.forEach((item) => itemsPorTipo[item.tipoEntregable]?.push(item));
+
+  const idsParaProgreso = alumnos.filter((alumno) => alumno.auth_user_id != null).map((alumno) => alumno.auth_user_id);
+  const mapaProgresoPorAlumno = await obtenerMapaProgresoPorAlumno(estadoEvaluacion.trimestre, idsParaProgreso);
+
+  contenedor.innerHTML = "";
+  contenedor.appendChild(
+    construirTablaPromedios(alumnos, itemsPorTipo, mapaProgresoPorAlumno, estadoEvaluacion.trimestre)
+  );
+}
+
+// Alterna entre #evaluacion-captura-vista y #evaluacion-promedios-vista
+// (nunca ambas visibles) y oculta Tipo/Secuencia mientras la vista de
+// promedios está activa — esos dos filtros no aplican ahí (el promedio
+// siempre usa el trimestre completo, sin filtrar por secuencia/tipo).
+function activarVistaPromedios() {
+  const botonVer = document.getElementById("evaluacion-boton-vista-promedios");
+  const botonVolver = document.getElementById("evaluacion-boton-vista-captura");
+  const vistaCaptura = document.getElementById("evaluacion-captura-vista");
+  const vistaPromedios = document.getElementById("evaluacion-promedios-vista");
+  if (!botonVer || !botonVolver || !vistaCaptura || !vistaPromedios) return;
+
+  const filtroTipo = document.getElementById("evaluacion-filtro-tipo")?.closest(".calificacion-filtro");
+  const filtroSecuencia = document.getElementById("evaluacion-filtro-secuencia")?.closest(".calificacion-filtro");
+
+  botonVer.addEventListener("click", async () => {
+    vistaEvaluacionActiva = "promedios";
+    vistaCaptura.hidden = true;
+    vistaPromedios.hidden = false;
+    if (filtroTipo) filtroTipo.hidden = true;
+    if (filtroSecuencia) filtroSecuencia.hidden = true;
+    await renderizarTablaPromedios();
+  });
+
+  botonVolver.addEventListener("click", () => {
+    vistaEvaluacionActiva = "captura";
+    vistaPromedios.hidden = true;
+    vistaCaptura.hidden = false;
+    if (filtroTipo) filtroTipo.hidden = false;
+    if (filtroSecuencia) filtroSecuencia.hidden = false;
+  });
+}
+
+// Mismo patrón que exportarCSVCalificacion() (BOM UTF-8 + Blob), pero
+// leyendo la tabla de promedios ya renderizada: Alumno y N.° lista van
+// en columnas separadas (a diferencia de la otra tabla, que las junta
+// en una sola), pedido así para esta vista.
+function exportarCSVPromedios() {
+  const contenedor = document.getElementById("evaluacion-promedios-contenedor");
+  const tabla = contenedor?.querySelector(".tabla-promedios");
+  if (!tabla) return;
+
+  const encabezados = ["Alumno", "N.° lista", "Tareas", "Actividades", "Proyectos", "Promedio final"];
+  const lineas = [encabezados.map(escaparValorCSV).join(",")];
+
+  tabla.querySelectorAll("tbody tr").forEach((fila) => {
+    const celdas = Array.from(fila.querySelectorAll("td"));
+    const nombre = celdas[0].querySelector(".calificacion-tabla__alumno-nombre")?.textContent || "";
+    const valores = [
+      nombre,
+      fila.dataset.numeroLista || "",
+      celdas[1]?.textContent || "",
+      celdas[2]?.textContent || "",
+      celdas[3]?.textContent || "",
+      celdas[4]?.textContent || "",
+    ];
+    lineas.push(valores.map(escaparValorCSV).join(","));
+  });
+
+  const blob = new Blob(["﻿" + lineas.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const nombreArchivo = "promedios_" + estadoEvaluacion.grupo + "_trimestre" + estadoEvaluacion.trimestre + ".csv";
+
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = nombreArchivo;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  URL.revokeObjectURL(url);
+}
+
+function activarExportarCSVPromedios() {
+  const boton = document.getElementById("evaluacion-promedios-boton-csv");
+  if (!boton) return;
+  boton.addEventListener("click", exportarCSVPromedios);
+}
+
+// Sin división "por tipo" (a diferencia de activarImpresionTablaCalificacion):
+// esta tabla siempre tiene las mismas 5 columnas fijas, así que no hace
+// falta partirla ni forzar landscape para que quepan. El contenedor ya
+// comparte la clase "calificacion-tabla-contenedor", así que las reglas
+// @media print de "Impresión de la tabla general" (css/style.css) ya
+// saben mostrar solo esto al imprimir.
+function activarImpresionTablaPromedios() {
+  const boton = document.getElementById("evaluacion-promedios-boton-imprimir");
+  if (!boton) return;
+  boton.addEventListener("click", () => window.print());
+}
+
 async function inicializarModuloEvaluacion() {
   const selectTrimestre = document.getElementById("evaluacion-filtro-trimestre");
   if (!selectTrimestre) return; // no es admin.html
@@ -9297,17 +9564,28 @@ async function inicializarModuloEvaluacion() {
   activarNavegacionMovilTablaEvaluacion();
   activarBuscadorEvaluacion();
   activarFormularioCalificar();
+  activarVistaPromedios();
+  activarExportarCSVPromedios();
+  activarImpresionTablaPromedios();
 
   selectTrimestre.addEventListener("change", async () => {
     estadoEvaluacion.trimestre = selectTrimestre.value;
     await actualizarOpcionesSecuenciaEvaluacion();
-    await renderizarTablaEvaluacion();
+    if (vistaEvaluacionActiva === "promedios") {
+      await renderizarTablaPromedios();
+    } else {
+      await renderizarTablaEvaluacion();
+    }
   });
 
   const selectGrupo = document.getElementById("evaluacion-filtro-grupo");
   selectGrupo.addEventListener("change", async () => {
     estadoEvaluacion.grupo = selectGrupo.value;
-    await renderizarTablaEvaluacion();
+    if (vistaEvaluacionActiva === "promedios") {
+      await renderizarTablaPromedios();
+    } else {
+      await renderizarTablaEvaluacion();
+    }
   });
 
   const selectTipo = document.getElementById("evaluacion-filtro-tipo");
