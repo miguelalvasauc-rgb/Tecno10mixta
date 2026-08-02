@@ -3202,24 +3202,38 @@ function formatearFecha(fechaISO) {
   return fecha.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+// Extrae el valor CRUDO (string ISO, sin formatear) de un campo de fecha
+// para un grupo específico, soportando el formato legado (string, una
+// sola fecha para ambos grupos) y el formato por grupo ({ "3C": ...,
+// "3E": ... }, para ítems grupo:"todos" con horarios distintos por
+// grupo). Único lugar con este soporte de formato — resolverFechaItem()
+// (texto ya formateado) y fechaLimiteISO() (fecha límite para decidir
+// vencimiento) lo reutilizan en vez de repetir cada una su propia rama
+// string-vs-objeto.
+function resolverValorFechaPorGrupo(valorFecha, grupo) {
+  if (valorFecha == null) return null;
+  if (typeof valorFecha === "string") return valorFecha;
+  return valorFecha[grupo] || null;
+}
+
 // Resuelve el valor de fechaEntrega/fecha de un ítem a texto ya formateado.
-// Soporta el formato legado (string, una sola fecha para ambos grupos) y el
-// formato por grupo ({ "3C": ..., "3E": ... }, para ítems grupo:"todos" con
-// horarios distintos por grupo). Por defecto resuelve contra grupoActual
-// (el selector de grupo de la portada), pero acepta un "grupoParaResolver"
-// explícito para los casos donde el grupo relevante es otro (ej. el panel
-// de Progreso, que debe usar el grupo del alumno identificado, no el
-// selector de grupo de la página — son conceptos independientes). Con
-// "todos" se muestran las dos fechas juntas porque no hay una sola fecha
-// "correcta" que mostrar.
+// Por defecto resuelve contra grupoActual (el selector de grupo de la
+// portada), pero acepta un "grupoParaResolver" explícito para los casos
+// donde el grupo relevante es otro (ej. el panel de Progreso, que debe
+// usar el grupo del alumno identificado, no el selector de grupo de la
+// página — son conceptos independientes). Con "todos" se muestran las
+// dos fechas juntas porque no hay una sola fecha "correcta" que mostrar.
 function resolverFechaItem(valorFecha, grupoParaResolver) {
   if (typeof valorFecha === "string") return formatearFecha(valorFecha);
 
   const grupo = grupoParaResolver || grupoActual;
 
-  if (grupo === "3C" || grupo === "3E") return formatearFecha(valorFecha[grupo]);
+  if (grupo === "3C" || grupo === "3E") return formatearFecha(resolverValorFechaPorGrupo(valorFecha, grupo));
 
-  return "3°C: " + formatearFecha(valorFecha["3C"]) + " · 3°E: " + formatearFecha(valorFecha["3E"]);
+  return (
+    "3°C: " + formatearFecha(resolverValorFechaPorGrupo(valorFecha, "3C")) +
+    " · 3°E: " + formatearFecha(resolverValorFechaPorGrupo(valorFecha, "3E"))
+  );
 }
 
 function crearBadgeGrupo(grupo) {
@@ -3277,13 +3291,12 @@ function itemEstaCompletado(tipo, id, trimestre) {
 
 // Fecha límite (ISO, sin formatear) de un ítem para decidir si está
 // vencido: mismo campo por tipo que usa resolverFechaItem (item.fecha para
-// actividades, item.fechaEntrega para tareas/proyectos) y mismo soporte de
-// fecha por grupo ({3C, 3E}) para ítems "todos" con horarios distintos.
+// actividades, item.fechaEntrega para tareas/proyectos), resuelto por
+// grupo vía resolverValorFechaPorGrupo() (mismo soporte de formato que
+// esa función, sin repetirlo aquí).
 function fechaLimiteISO(tipo, item, grupo) {
   const valor = tipo === "actividad" ? item.fecha : item.fechaEntrega;
-  if (valor == null) return null;
-  if (typeof valor === "string") return valor;
-  return valor[grupo] || null;
+  return resolverValorFechaPorGrupo(valor, grupo);
 }
 
 // Vencido = ya pasó el final del día de la fecha límite. Solo tiene
@@ -4456,6 +4469,85 @@ const MENSAJES_MOTIVACIONALES = [
   "Ánimo, ya llevas buen camino recorrido.",
 ];
 
+// "Racha de puntualidad": insignia de gamificación automática (no un
+// checkbox, no manual) calculada a partir de progresoCache. Cuenta hacia
+// atrás desde la entrega más reciente del alumno (todas las entregas,
+// cronológicas, sin separar por tipo) cuántas seguidas fueron a tiempo
+// (actualizado_en <= las 23:59:59 hora local del día de la fecha límite,
+// mismo criterio que itemEstaVencido) y se detiene en la primera tarde o
+// al llegar al principio. Sin sesión iniciada, null — igual que el resto
+// del panel de Progreso sin alumno identificado.
+async function calcularRachaPuntualidad() {
+  const perfil = obtenerPerfilActivo();
+  if (!perfil) return null;
+
+  const trimestres = ["1", "2", "3"];
+  const entregablesPorTrimestre = await Promise.all(
+    trimestres.map((trimestre) => obtenerEntregablesPorTipo("todos", trimestre))
+  );
+  const itemsPorTrimestre = new Map();
+  trimestres.forEach((trimestre, indice) => itemsPorTrimestre.set(trimestre, entregablesPorTrimestre[indice]));
+
+  const entregas = [];
+  progresoCache.forEach((fila) => {
+    if (!fila.actualizado_en) return; // sin fecha real de entrega: no se puede evaluar
+
+    const items = itemsPorTrimestre.get(String(fila.trimestre));
+    const item = items?.find(
+      (candidato) => candidato.tipoEntregable === fila.tipo && String(candidato.id) === String(fila.item_id)
+    );
+    if (!item) return; // id desconocido (item borrado/cambiado por el docente): se ignora, no rompe la racha
+
+    const fechaLimite = fechaLimiteISO(fila.tipo, item, perfil.grupo);
+    if (!fechaLimite) return; // sin fecha límite resoluble: se ignora igual
+
+    const aTiempo = new Date(fila.actualizado_en) <= new Date(fechaLimite + "T23:59:59");
+    entregas.push({ actualizadoEn: fila.actualizado_en, aTiempo });
+  });
+
+  entregas.sort((a, b) => new Date(a.actualizadoEn) - new Date(b.actualizadoEn));
+
+  let racha = 0;
+  for (let i = entregas.length - 1; i >= 0; i--) {
+    if (!entregas[i].aTiempo) break;
+    racha++;
+  }
+
+  return { racha, desbloqueada: racha >= 3 };
+}
+
+// Tarjeta de la insignia dentro de #progreso-resumen-general — SOLO en
+// progreso.html: #progreso-detalle-trimestres es el mismo indicador de
+// página que ya usa renderizarProgresoDetallado() para saber si el
+// detalle itemizado aplica (ese contenedor no existe en la portada).
+// null si no corresponde (sin sesión, o fuera de progreso.html): ni
+// renderizarProgreso() ni renderizarProgresoDetallado() agregan nada al
+// resumen en ese caso.
+async function construirTarjetaRachaPuntualidad() {
+  if (!document.getElementById("progreso-detalle-trimestres")) return null;
+
+  const resultado = await calcularRachaPuntualidad();
+  if (!resultado) return null;
+
+  const tarjeta = document.createElement("div");
+  tarjeta.className = "insignia-racha";
+  tarjeta.dataset.estado = resultado.desbloqueada ? "ganada" : "bloqueada";
+
+  const icono = document.createElement("span");
+  icono.className = "insignia-racha__icono";
+  icono.setAttribute("aria-hidden", "true");
+  icono.textContent = resultado.desbloqueada ? "🔥" : "🔒";
+
+  const texto = document.createElement("span");
+  texto.className = "insignia-racha__texto";
+  texto.textContent = resultado.desbloqueada
+    ? "Racha de puntualidad"
+    : resultado.racha + " de 3 entregas a tiempo";
+
+  tarjeta.append(icono, texto);
+  return tarjeta;
+}
+
 // Panel de "Progreso" de la portada: solo existe en index.html (los
 // contenedores se buscan por id y, si no están, la función no hace
 // nada), y solo muestra datos si hay un alumno identificado (ver sección
@@ -4529,6 +4621,9 @@ async function renderizarProgreso() {
     barra.appendChild(relleno);
 
     resumen.append(texto, barra, construirListaExamenDiagnostico(perfil));
+
+    const tarjetaRacha = await construirTarjetaRachaPuntualidad();
+    if (tarjetaRacha) resumen.appendChild(tarjetaRacha);
   }
 
   const bloques = document.getElementById("progreso-por-trimestre");
@@ -4643,6 +4738,9 @@ async function renderizarProgresoDetallado() {
     barra.appendChild(relleno);
 
     resumen.append(texto, barra, construirListaExamenDiagnostico(perfil));
+
+    const tarjetaRacha = await construirTarjetaRachaPuntualidad();
+    if (tarjetaRacha) resumen.appendChild(tarjetaRacha);
   }
 
   // --- Detalle itemizado por trimestre (solo existe en progreso.html) ---
@@ -5542,7 +5640,7 @@ async function sincronizarPerfilActivo() {
 
   const { data: progreso } = await clienteSupabase
     .from("progreso")
-    .select("tipo, item_id, trimestre")
+    .select("tipo, item_id, trimestre, actualizado_en")
     .eq("alumno_id", session.user.id);
 
   progresoCache = progreso || [];

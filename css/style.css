@@ -1742,6 +1742,44 @@ summary:focus-visible {
   color: var(--color-texto-suave);
 }
 
+/* Insignia "Racha de puntualidad" (solo progreso.html, ver
+   construirTarjetaRachaPuntualidad() en js/main.js) — sin estilos
+   nuevos inventados: "ganada" reutiliza el mismo borde con color de
+   estado completado que ya usa .tarjeta--completada, y "bloqueada"
+   reutiliza la misma opacidad reducida que ya usa
+   .tarjeta-trimestre[data-estado="proximamente"] para "próximamente".
+   var(--color-texto) ya es el color de texto principal validado en
+   ambos temas, así que ninguno de los dos estados necesita un color
+   nuevo para el contraste. */
+.insignia-racha {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+}
+
+.insignia-racha__icono {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.insignia-racha__texto {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.insignia-racha[data-estado="ganada"] {
+  border-color: var(--color-estado-completado);
+}
+
+.insignia-racha[data-estado="bloqueada"] {
+  opacity: 0.7;
+}
+
 .indicador-progreso {
   display: flex;
   align-items: center;
