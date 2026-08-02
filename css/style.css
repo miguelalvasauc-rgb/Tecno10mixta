@@ -1780,6 +1780,39 @@ summary:focus-visible {
   opacity: 0.7;
 }
 
+/* Etiqueta "Nivel" (gamificación visual, ver calcularNivelAlumno() en
+   js/main.js) — mismo tratamiento que .badge-grupo (píldora en navy
+   fill, "plain group/unit tag" del sistema de badges): navy + texto
+   claro ya pasa contraste en ambos temas sin overrides por tema, y evita
+   repurposear los 4 colores de estado de progreso/entrega (Status-Color
+   Exclusivity Rule en DESIGN.md) para un concepto no relacionado. Un
+   solo tamaño por defecto (tarjeta de progreso.html) + el modificador
+   "--compacta" para el espacio reducido del botón de cuenta del
+   sidebar/barra inferior (ver actualizarUISesion()). */
+.etiqueta-nivel {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+.etiqueta-nivel--compacta {
+  margin-top: 0;
+  font-size: 0.68rem;
+  padding: 0.1rem 0.5rem;
+}
+
+/* En el sidebar colapsado (solo el ícono del botón de cuenta queda
+   visible) no hay espacio para la etiqueta — mismo criterio que ya
+   aplica .barra-lateral--colapsada a otros textos del sidebar. */
+.barra-lateral--colapsada .etiqueta-nivel--compacta {
+  display: none;
+}
+
 .indicador-progreso {
   display: flex;
   align-items: center;

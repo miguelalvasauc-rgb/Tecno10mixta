@@ -4548,6 +4548,76 @@ async function construirTarjetaRachaPuntualidad() {
   return tarjeta;
 }
 
+// "Nivel": gamificación visual sobre el % de avance general del ciclo
+// (el MISMO porcentaje que ya calculan renderizarProgreso()/
+// renderizarProgresoDetallado() para su barra de progreso — no una
+// medida nueva, no afecta calificación real). Bandas fijas, la más alta
+// que el porcentaje alcance gana.
+const NIVELES_ALUMNO = [
+  { nivel: 1, subtitulo: "Explorador Tecnológico", minimo: 0 },
+  { nivel: 2, subtitulo: "Analista de Datos", minimo: 50 },
+  { nivel: 3, subtitulo: "Creador Digital", minimo: 75 },
+];
+
+// Recibe el porcentaje YA calculado por el llamador — no vuelve a sumar
+// completadasGeneral/totalGeneral aquí, para no triplicar ese cálculo.
+function calcularNivelAlumno(porcentaje) {
+  let resultado = NIVELES_ALUMNO[0];
+  NIVELES_ALUMNO.forEach((banda) => {
+    if (porcentaje >= banda.minimo) resultado = banda;
+  });
+  return { nivel: resultado.nivel, subtitulo: resultado.subtitulo };
+}
+
+// Etiqueta de nivel dentro de #progreso-resumen-general — mismo gate de
+// página que construirTarjetaRachaPuntualidad() (#progreso-detalle-
+// trimestres: solo existe en progreso.html), junto a esa tarjeta de
+// racha. null fuera de progreso.html: ni renderizarProgreso() ni
+// renderizarProgresoDetallado() agregan nada en ese caso.
+function construirTarjetaNivel(porcentaje) {
+  if (!document.getElementById("progreso-detalle-trimestres")) return null;
+
+  const { nivel, subtitulo } = calcularNivelAlumno(porcentaje);
+  const etiqueta = document.createElement("span");
+  etiqueta.className = "etiqueta-nivel";
+  etiqueta.textContent = "Nivel " + nivel + " · " + subtitulo;
+  return etiqueta;
+}
+
+// Misma fórmula que ya usan, cada una con su propio bucle,
+// renderizarProgreso() y renderizarProgresoDetallado() (total/completadas
+// de tareas+actividades+proyectos de los 3 trimestres, filtradas por el
+// grupo del alumno) — pero SOLO para actualizarUISesion() (etiqueta de
+// Nivel del botón de cuenta), que corre en TODAS las páginas y no tiene
+// ese porcentaje a mano como sí lo tienen esas dos funciones. No se
+// tocó el cálculo de esas dos: se factorizó aparte para no copiarlo
+// literal una tercera vez dentro de actualizarUISesion().
+async function calcularAvanceGeneralAlumno(perfil) {
+  const coincideConGrupoDelAlumno = (item) => item.grupo === "todos" || item.grupo === perfil.grupo;
+
+  let totalGeneral = 0;
+  let completadasGeneral = 0;
+
+  for (const trimestre of ["1", "2", "3"]) {
+    const tareas = (await obtenerTareas(trimestre)).filter(coincideConGrupoDelAlumno);
+    const actividades = (await obtenerActividades(trimestre)).filter(coincideConGrupoDelAlumno);
+    const proyectos = (await obtenerProyectos(trimestre)).filter(coincideConGrupoDelAlumno);
+
+    const completadasTareas = tareas.filter((item) => itemEstaCompletado("tarea", item.id, trimestre)).length;
+    const completadasActividades = actividades.filter((item) =>
+      itemEstaCompletado("actividad", item.id, trimestre)
+    ).length;
+    const completadasProyectos = proyectos.filter((item) =>
+      itemEstaCompletado("proyecto", item.id, trimestre)
+    ).length;
+
+    totalGeneral += tareas.length + actividades.length + proyectos.length;
+    completadasGeneral += completadasTareas + completadasActividades + completadasProyectos;
+  }
+
+  return totalGeneral === 0 ? 0 : Math.round((completadasGeneral / totalGeneral) * 100);
+}
+
 // Panel de "Progreso" de la portada: solo existe en index.html (los
 // contenedores se buscan por id y, si no están, la función no hace
 // nada), y solo muestra datos si hay un alumno identificado (ver sección
@@ -4624,6 +4694,9 @@ async function renderizarProgreso() {
 
     const tarjetaRacha = await construirTarjetaRachaPuntualidad();
     if (tarjetaRacha) resumen.appendChild(tarjetaRacha);
+
+    const tarjetaNivel = construirTarjetaNivel(porcentaje);
+    if (tarjetaNivel) resumen.appendChild(tarjetaNivel);
   }
 
   const bloques = document.getElementById("progreso-por-trimestre");
@@ -4741,6 +4814,9 @@ async function renderizarProgresoDetallado() {
 
     const tarjetaRacha = await construirTarjetaRachaPuntualidad();
     if (tarjetaRacha) resumen.appendChild(tarjetaRacha);
+
+    const tarjetaNivel = construirTarjetaNivel(porcentaje);
+    if (tarjetaNivel) resumen.appendChild(tarjetaNivel);
   }
 
   // --- Detalle itemizado por trimestre (solo existe en progreso.html) ---
@@ -5671,6 +5747,22 @@ async function actualizarUISesion() {
   const perfil = obtenerPerfilActivo();
   const nombreMostrado = perfil?.nombre ? perfil.nombre.split(" ")[0] : "Mi cuenta";
 
+  // Etiqueta de Nivel (solo el número, sin subtítulo — el espacio del
+  // sidebar/barra inferior es reducido; el subtítulo completo ya vive en
+  // la tarjeta de progreso.html). calcularAvanceGeneralAlumno() resuelve
+  // ANTES de construir el contenido de abajo, para no dejar el botón
+  // parpadeando sin la etiqueta y luego con ella.
+  //
+  // Gate de página: solo dispara las 9 consultas a fechas_override en
+  // páginas que ya tienen algo relacionado con progreso a la vista —
+  // trimestre-1/2/3.html (<body data-trimestre>) e index.html/
+  // progreso.html (#progreso-resumen-general). En faq.html, padres.html,
+  // cuenta.html y admin.html ninguna de las dos señales existe, así que
+  // ni siquiera se llama a calcularAvanceGeneralAlumno().
+  const paginaConNivel = Boolean(document.body.dataset.trimestre) || Boolean(document.getElementById("progreso-resumen-general"));
+  const avanceGeneral = perfil && paginaConNivel ? await calcularAvanceGeneralAlumno(perfil) : null;
+  const nivelAlumno = avanceGeneral != null ? calcularNivelAlumno(avanceGeneral) : null;
+
   elementos.forEach((el) => {
     el.textContent = "";
     const icono = document.createElement("span");
@@ -5679,6 +5771,12 @@ async function actualizarUISesion() {
     const texto = document.createElement("span");
     texto.textContent = nombreMostrado;
     el.append(icono, texto);
+    if (nivelAlumno) {
+      const etiquetaNivel = document.createElement("span");
+      etiquetaNivel.className = "etiqueta-nivel etiqueta-nivel--compacta";
+      etiquetaNivel.textContent = "Nivel " + nivelAlumno.nivel;
+      el.appendChild(etiquetaNivel);
+    }
     el.onclick = () => { window.location.href = "cuenta.html"; };
   });
 }
