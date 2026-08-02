@@ -3230,6 +3230,7 @@ function crearBadgeGrupo(grupo) {
 }
 
 function textoPrioridad(prioridad) {
+  if (prioridad === "urgente") return "Urgente";
   if (prioridad === "importante") return "Importante";
   if (prioridad === "recordatorio") return "Recordatorio";
   return "General";
@@ -7555,6 +7556,1200 @@ async function inicializarModuloAlumnos() {
   });
 }
 
+/* ---------------------------------------------------------
+   Módulo "Avisos" (tab-avisos)
+
+   CRUD completo sobre la tabla avisos, directo desde este módulo (no
+   reutiliza obtenerAvisos(): esa función es para el sitio público y ya
+   filtra los expirados — aquí el panel necesita ver TODOS los avisos,
+   incluidos los expirados, para poder editarlos/reactivarlos). Reutiliza
+   textoGrupo()/textoPrioridad()/formatearFecha()/mostrarSinResultados(),
+   ya genéricas, del resto del archivo.
+   --------------------------------------------------------- */
+
+// { aviso, fila } del aviso actualmente en edición, o null cuando el
+// dialog está en modo "Crear" — lo usa activarFormularioAviso() para
+// decidir INSERT vs. UPDATE y, en edición, reemplazar solo esa fila.
+let avisoEditando = null;
+
+// Compara fecha_expiracion (o su ausencia) contra hoy — mismo formato
+// ISO de solo fecha ("YYYY-MM-DD") que ya usa obtenerAvisos(), así que
+// la comparación de strings es válida sin parsear a Date.
+function estadoVigenciaAviso(aviso) {
+  const fechaHoyISO = new Date().toISOString().slice(0, 10);
+  if (aviso.fecha_expiracion && aviso.fecha_expiracion < fechaHoyISO) {
+    return { estado: "expirado", texto: "Expirado" };
+  }
+  return { estado: "activo", texto: "Activo" };
+}
+
+function crearFilaAviso(aviso) {
+  const fila = document.createElement("tr");
+  const { estado, texto } = estadoVigenciaAviso(aviso);
+  // Sigue siendo editable pese a la atenuación (mismo criterio que
+  // .fila-alumno--inactivo): por si Hiram quiere extender la fecha de
+  // expiración o reactivar el aviso.
+  if (estado === "expirado") fila.classList.add("fila-aviso--expirado");
+
+  const celdaFecha = document.createElement("td");
+  celdaFecha.textContent = formatearFecha(aviso.fecha);
+  fila.appendChild(celdaFecha);
+
+  const celdaTitulo = document.createElement("td");
+  celdaTitulo.textContent = aviso.titulo;
+  fila.appendChild(celdaTitulo);
+
+  const celdaGrupo = document.createElement("td");
+  celdaGrupo.textContent = textoGrupo(aviso.grupo);
+  fila.appendChild(celdaGrupo);
+
+  const celdaPrioridad = document.createElement("td");
+  const badgePrioridad = document.createElement("span");
+  badgePrioridad.className = "badge-prioridad";
+  badgePrioridad.dataset.prioridad = aviso.prioridad;
+  badgePrioridad.textContent = textoPrioridad(aviso.prioridad);
+  celdaPrioridad.appendChild(badgePrioridad);
+  fila.appendChild(celdaPrioridad);
+
+  const celdaEstado = document.createElement("td");
+  const badgeEstado = document.createElement("span");
+  badgeEstado.className = "badge-estado";
+  badgeEstado.dataset.estadoAviso = estado;
+  badgeEstado.textContent = texto;
+  celdaEstado.appendChild(badgeEstado);
+  fila.appendChild(celdaEstado);
+
+  const celdaAcciones = document.createElement("td");
+  celdaAcciones.className = "avisos-tabla__acciones";
+
+  const botonEditar = document.createElement("button");
+  botonEditar.type = "button";
+  botonEditar.className = "boton-secundario";
+  botonEditar.textContent = "Editar";
+  botonEditar.addEventListener("click", () => abrirModalAviso(aviso, fila));
+  celdaAcciones.appendChild(botonEditar);
+
+  // Texto simple en rojo, no un botón lleno: mismo criterio que
+  // .alumnos-tabla__boton-baja — acción destructiva poco frecuente.
+  const botonEliminar = document.createElement("button");
+  botonEliminar.type = "button";
+  botonEliminar.className = "avisos-tabla__boton-eliminar";
+  botonEliminar.textContent = "Eliminar";
+  botonEliminar.addEventListener("click", () => eliminarAviso(aviso, fila));
+  celdaAcciones.appendChild(botonEliminar);
+
+  fila.appendChild(celdaAcciones);
+  return fila;
+}
+
+function construirTablaAvisos(avisos) {
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-avisos";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  ["Fecha", "Título", "Grupo", "Prioridad", "Estado", "Acciones"].forEach((texto) => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  avisos.forEach((aviso) => tbody.appendChild(crearFilaAviso(aviso)));
+  tabla.appendChild(tbody);
+
+  return tabla;
+}
+
+// A diferencia de obtenerAvisos() (sitio público), consulta TODOS los
+// avisos sin filtro de expiración y en orden descendente (más recientes
+// primero, útil para gestión en vez de para mostrar próximos eventos).
+async function renderizarTablaAvisos() {
+  const contenedor = document.getElementById("avisos-tabla-contenedor");
+  if (!contenedor) return;
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  const { data, error } = await clienteSupabase.from("avisos").select("*").order("fecha", { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    mostrarSinResultados(contenedor, "No hay avisos registrados.");
+    return;
+  }
+
+  contenedor.innerHTML = "";
+  contenedor.appendChild(construirTablaAvisos(data));
+}
+
+// Un solo dialog para ambos modos: aviso===null => "Crear" (formulario
+// vacío/default); aviso!==null => "Editar" (precargado, guarda la fila
+// en avisoEditando para poder reemplazarla sin refrescar toda la tabla).
+function abrirModalAviso(aviso, fila) {
+  const modal = document.getElementById("modal-aviso");
+  const formulario = document.getElementById("formulario-aviso");
+  if (!modal || !formulario) return;
+
+  formulario.reset();
+  document.getElementById("aviso-error").hidden = true;
+
+  if (aviso) {
+    avisoEditando = { aviso, fila };
+    document.getElementById("modal-aviso-titulo").textContent = "Editar aviso";
+    document.getElementById("aviso-confirmar").textContent = "Guardar cambios";
+    document.getElementById("aviso-titulo").value = aviso.titulo;
+    document.getElementById("aviso-descripcion").value = aviso.descripcion || "";
+    document.getElementById("aviso-fecha").value = aviso.fecha;
+    document.getElementById("aviso-grupo").value = aviso.grupo;
+    document.getElementById("aviso-prioridad").value = aviso.prioridad;
+    document.getElementById("aviso-fecha-expiracion").value = aviso.fecha_expiracion || "";
+  } else {
+    avisoEditando = null;
+    document.getElementById("modal-aviso-titulo").textContent = "Nuevo aviso";
+    document.getElementById("aviso-confirmar").textContent = "Crear aviso";
+  }
+
+  modal.showModal();
+}
+
+function activarBotonNuevoAviso() {
+  const boton = document.getElementById("avisos-boton-nuevo");
+  if (!boton) return;
+  boton.addEventListener("click", () => abrirModalAviso(null, null));
+}
+
+// Validación mínima (título y fecha no vacíos; grupo y prioridad siempre
+// tienen un valor por default en el <select>, así que no hace falta
+// validarlos). Dejar la fecha de expiración vacía se guarda como NULL
+// ("nunca expira"), tal como ya asume obtenerAvisos().
+function activarFormularioAviso() {
+  const modal = document.getElementById("modal-aviso");
+  const formulario = document.getElementById("formulario-aviso");
+  if (!modal || !formulario) return;
+
+  formulario.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+
+    const titulo = document.getElementById("aviso-titulo").value.trim();
+    const descripcion = document.getElementById("aviso-descripcion").value.trim();
+    const fecha = document.getElementById("aviso-fecha").value;
+    const grupo = document.getElementById("aviso-grupo").value;
+    const prioridad = document.getElementById("aviso-prioridad").value;
+    const fechaExpiracion = document.getElementById("aviso-fecha-expiracion").value;
+    const error = document.getElementById("aviso-error");
+    const botonConfirmar = document.getElementById("aviso-confirmar");
+
+    error.hidden = true;
+
+    if (!titulo) {
+      error.textContent = "El título no puede estar vacío.";
+      error.hidden = false;
+      return;
+    }
+    if (!fecha) {
+      error.textContent = "La fecha no puede estar vacía.";
+      error.hidden = false;
+      return;
+    }
+
+    const payload = {
+      titulo,
+      descripcion,
+      fecha,
+      grupo,
+      prioridad,
+      fecha_expiracion: fechaExpiracion || null,
+    };
+
+    botonConfirmar.disabled = true;
+    try {
+      if (avisoEditando) {
+        const { data, error: errorUpdate } = await clienteSupabase
+          .from("avisos")
+          .update(payload)
+          .eq("id", avisoEditando.aviso.id)
+          .select()
+          .single();
+        if (errorUpdate) throw errorUpdate;
+
+        modal.close();
+        formulario.reset();
+        avisoEditando.fila.replaceWith(crearFilaAviso(data));
+        avisoEditando = null;
+      } else {
+        const { error: errorInsert } = await clienteSupabase.from("avisos").insert(payload);
+        if (errorInsert) throw errorInsert;
+
+        modal.close();
+        formulario.reset();
+        await renderizarTablaAvisos();
+      }
+    } catch (err) {
+      error.textContent = "No se pudo guardar el aviso: " + (err?.message || "intenta de nuevo.");
+      error.hidden = false;
+    } finally {
+      botonConfirmar.disabled = false;
+    }
+  });
+
+  document.getElementById("aviso-cancelar").addEventListener("click", () => {
+    formulario.reset();
+    modal.close();
+  });
+
+  const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) {
+    botonCerrar.addEventListener("click", () => {
+      formulario.reset();
+      modal.close();
+    });
+  }
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.close();
+  });
+}
+
+// Elimina de forma permanente (a diferencia de dar de baja a un alumno,
+// aquí no hay soft-delete: la expiración ya cubre el caso de "ocultar
+// sin perder", esto es intencional y definitivo).
+async function eliminarAviso(aviso, fila) {
+  if (!window.confirm('¿Seguro que quieres eliminar el aviso "' + aviso.titulo + '"? Esta acción no se puede deshacer.')) return;
+
+  try {
+    const { error } = await clienteSupabase.from("avisos").delete().eq("id", aviso.id);
+    if (error) throw error;
+  } catch (error) {
+    window.alert("No se pudo eliminar el aviso: " + (error?.message || "intenta de nuevo."));
+    return;
+  }
+
+  fila.remove();
+}
+
+async function inicializarModuloAvisos() {
+  const contenedor = document.getElementById("avisos-tabla-contenedor");
+  if (!contenedor) return; // no es admin.html
+
+  // Mismo guard que Calificación/Alumnos: avisos también se administra
+  // desde el panel docente protegido por RLS.
+  await promesaGuardPanelDocente;
+
+  await renderizarTablaAvisos();
+  activarBotonNuevoAviso();
+  activarFormularioAviso();
+}
+
+/* ---------------------------------------------------------
+   Módulo "Trimestre" (tab-trimestre)
+
+   Un selector con confirmación para cambiar config_sitio (clave
+   "trimestre_desbloqueado"), la misma fila que ya lee
+   obtenerTrimestreDesbloqueado() para el sitio público. Solo 3 opciones
+   fijas, así que el <fieldset> de radios vive hardcodeado en admin.html
+   (no generado por JS como las tablas de Avisos/Alumnos) — este módulo
+   solo maneja estado (actual vs. seleccionado) y el UPDATE.
+   --------------------------------------------------------- */
+
+const TEXTOS_TRIMESTRE_DESBLOQUEADO = {
+  1: "Solo 1er Trimestre",
+  2: "1er y 2do Trimestre",
+  3: "Todos los trimestres",
+};
+
+const estadoTrimestreModulo = { actual: null };
+
+function textoTrimestreActual(valor) {
+  return valor + "° (" + (TEXTOS_TRIMESTRE_DESBLOQUEADO[valor] || "—") + ")";
+}
+
+// Marca el radio del valor actual y deja "Guardar cambio" deshabilitado
+// (ver activarSelectorTrimestre, que vuelve a llamar a esto en cada
+// "change" del fieldset para reevaluar si hay un cambio real pendiente).
+function actualizarUITrimestreModulo() {
+  const textoActual = document.getElementById("trimestre-actual-texto");
+  if (textoActual) textoActual.textContent = textoTrimestreActual(estadoTrimestreModulo.actual);
+
+  const radioActual = document.getElementById("trimestre-opcion-" + estadoTrimestreModulo.actual);
+  if (radioActual) radioActual.checked = true;
+
+  const botonGuardar = document.getElementById("trimestre-boton-guardar");
+  if (botonGuardar) botonGuardar.disabled = true;
+}
+
+// Habilita "Guardar cambio" solo si la opción marcada difiere de la
+// actual — no tiene sentido "confirmar" un no-cambio.
+function activarSelectorTrimestre() {
+  const fieldset = document.querySelector(".trimestre-opciones");
+  const botonGuardar = document.getElementById("trimestre-boton-guardar");
+  if (!fieldset || !botonGuardar) return;
+
+  fieldset.addEventListener("change", (evento) => {
+    const seleccionado = Number(evento.target.value);
+    botonGuardar.disabled = seleccionado === estadoTrimestreModulo.actual;
+  });
+}
+
+// Enumera los trimestres cuyo estado de acceso cambia (no solo el
+// límite): al bloquear (nuevo < actual) son los que quedan por encima
+// del nuevo tope, de (nuevo+1) a actual; al desbloquear (nuevo > actual)
+// son los que se suman por encima del tope anterior, de (actual+1) a
+// nuevo. "Trimestre 2 y 3" con "y" cuando son 2; un solo número si es 1.
+function trimestresAfectados(actual, nuevo) {
+  const [desde, hasta] = nuevo < actual ? [nuevo + 1, actual] : [actual + 1, nuevo];
+  const numeros = [];
+  for (let n = desde; n <= hasta; n++) numeros.push(n);
+
+  if (numeros.length === 1) return "Trimestre " + numeros[0];
+  return "Trimestre " + numeros.slice(0, -1).join(", ") + " y " + numeros[numeros.length - 1];
+}
+
+// Arma el texto de confirmación pedido, nombrando TODOS los trimestres
+// afectados (no solo el límite) cuando el cambio salta más de un paso
+// (p. ej. 3 → 1 afecta Trimestre 2 y 3, no solo el 3).
+function textoConfirmacionTrimestre(actual, nuevo) {
+  const esDesbloqueo = nuevo > actual;
+  const verbo = esDesbloqueo ? "dará acceso a" : "bloqueará el acceso a";
+  return (
+    "Vas a cambiar el trimestre desbloqueado de " +
+    actual +
+    "° a " +
+    nuevo +
+    "°. Esto " +
+    verbo +
+    " " +
+    trimestresAfectados(actual, nuevo) +
+    " para todos los alumnos de inmediato. ¿Confirmas?"
+  );
+}
+
+// UPDATE real en config_sitio. actualizado_por queda en null si por
+// alguna razón no hay sesión activa en este punto (no debería pasar:
+// el guard del panel ya la exige), en vez de fallar el guardado entero
+// por no poder resolver ese dato secundario.
+async function guardarTrimestreDesbloqueado(nuevo) {
+  const {
+    data: { session },
+  } = await clienteSupabase.auth.getSession();
+
+  const { error } = await clienteSupabase
+    .from("config_sitio")
+    .update({ valor: String(nuevo), actualizado_por: session?.user?.id ?? null })
+    .eq("clave", "trimestre_desbloqueado");
+
+  if (error) throw error;
+}
+
+function activarFormularioTrimestre() {
+  const formulario = document.getElementById("formulario-trimestre");
+  const modal = document.getElementById("modal-confirmar-trimestre");
+  const textoConfirmar = document.getElementById("trimestre-confirmar-texto");
+  const errorConfirmar = document.getElementById("trimestre-confirmar-error");
+  const botonConfirmar = document.getElementById("trimestre-confirmar-confirmar");
+  if (!formulario || !modal) return;
+
+  let nuevoPendiente = null;
+
+  formulario.addEventListener("submit", (evento) => {
+    evento.preventDefault();
+
+    const seleccionado = formulario.querySelector('input[name="trimestre-nuevo"]:checked');
+    if (!seleccionado) return;
+
+    nuevoPendiente = Number(seleccionado.value);
+    if (nuevoPendiente === estadoTrimestreModulo.actual) return;
+
+    errorConfirmar.hidden = true;
+    textoConfirmar.textContent = textoConfirmacionTrimestre(estadoTrimestreModulo.actual, nuevoPendiente);
+    modal.showModal();
+  });
+
+  botonConfirmar.addEventListener("click", async () => {
+    if (nuevoPendiente === null) return;
+
+    errorConfirmar.hidden = true;
+    botonConfirmar.disabled = true;
+    try {
+      await guardarTrimestreDesbloqueado(nuevoPendiente);
+
+      estadoTrimestreModulo.actual = nuevoPendiente;
+      modal.close();
+      actualizarUITrimestreModulo();
+    } catch (error) {
+      errorConfirmar.textContent = "No se pudo guardar el cambio: " + (error?.message || "intenta de nuevo.");
+      errorConfirmar.hidden = false;
+    } finally {
+      botonConfirmar.disabled = false;
+    }
+  });
+
+  // Si se cierra el dialog sin confirmar (Cancelar, backdrop o ✕), el
+  // radio marcado debe volver a reflejar el valor actual — se llama
+  // explícito en cada uno en vez de depender solo del evento "close"
+  // del <dialog> (Escape nativo sí lo dispara, así que ese caso también
+  // queda cubierto por el listener de abajo).
+  document.getElementById("trimestre-confirmar-cancelar").addEventListener("click", () => {
+    modal.close();
+    actualizarUITrimestreModulo();
+  });
+
+  const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) {
+    botonCerrar.addEventListener("click", () => {
+      modal.close();
+      actualizarUITrimestreModulo();
+    });
+  }
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) {
+      modal.close();
+      actualizarUITrimestreModulo();
+    }
+  });
+
+  modal.addEventListener("close", () => {
+    actualizarUITrimestreModulo();
+  });
+}
+
+async function inicializarModuloTrimestre() {
+  const formulario = document.getElementById("formulario-trimestre");
+  if (!formulario) return; // no es admin.html
+
+  // Mismo guard que Calificación/Alumnos/Avisos: config_sitio también se
+  // administra desde el panel docente protegido por RLS.
+  await promesaGuardPanelDocente;
+
+  // Consulta propia y directa (no reutiliza el trimestreDesbloqueado ya
+  // resuelto por el guard de la sección 2): este módulo quiere el valor
+  // más fresco posible al abrir el tab, tal como ya hace Avisos con su
+  // propia consulta en vez de obtenerAvisos(). Si falla, cae al valor
+  // global ya resuelto (que a su vez ya tiene su propio respaldo en
+  // localStorage) en vez de dejar el módulo sin nada que mostrar.
+  try {
+    const { data, error } = await clienteSupabase
+      .from("config_sitio")
+      .select("valor")
+      .eq("clave", "trimestre_desbloqueado")
+      .single();
+    if (error) throw error;
+    estadoTrimestreModulo.actual = Number(data.valor);
+  } catch {
+    estadoTrimestreModulo.actual = trimestreDesbloqueado ?? 1;
+  }
+
+  actualizarUITrimestreModulo();
+  activarSelectorTrimestre();
+  activarFormularioTrimestre();
+}
+
+/* ---------------------------------------------------------
+   Módulo "Fechas de entrega" (tab-fechas) — primera parte: listado,
+   filtros, editar fecha individual y quitar override. El recorrido
+   masivo es un módulo aparte (no implementado aquí).
+
+   obtenerTareas/Actividades/Proyectos() ya devuelven el valor EFECTIVO
+   (con cualquier override ya aplicado encima), pero no dicen si ese
+   valor vino de fechas_override o del original — por eso este módulo
+   consulta fechas_override directamente, en vez de solo apoyarse en esas
+   funciones, para saber qué mostrar en la columna "Origen" y cuándo
+   ofrecer "Quitar override".
+   --------------------------------------------------------- */
+
+const estadoFechas = { trimestre: null, tipo: "tarea", secuencia: null };
+
+// { items, campoFecha } de la última tabla pintada — el recorrido
+// masivo (más abajo) lo reutiliza directamente en vez de volver a
+// consultar, para operar exactamente sobre lo que el docente ve en
+// pantalla en el momento de pedir la vista previa.
+let ultimoRenderFechas = { items: [], campoFecha: null };
+
+// { dias, filas } de la vista previa actualmente mostrada en
+// #modal-recorrido-fechas, o null si no hay ninguna abierta — "filas"
+// es el array de { item, grupo, fechaActual, fechaNueva } que
+// aplicarRecorridoFechas() realmente escribe al confirmar.
+let recorridoPendiente = null;
+
+// Mismo campo por tipo que ya usan resolverFechaItem()/fechaLimiteISO()/
+// aplicarOverridesFechas() (fecha para actividades, fechaEntrega para
+// tareas y proyectos) — no se duplica esa lógica, solo se referencia.
+const CAMPO_FECHA_POR_TIPO = { tarea: "fechaEntrega", actividad: "fecha", proyecto: "fechaEntrega" };
+
+function claveSecuenciaFechas(item) {
+  return item.secuencia || "Sin secuencia";
+}
+
+async function obtenerEntregablesFechas(tipo, trimestre) {
+  if (tipo === "tarea") return obtenerTareas(trimestre);
+  if (tipo === "actividad") return obtenerActividades(trimestre);
+  return obtenerProyectos(trimestre);
+}
+
+// Recalcula las opciones del <select> de secuencia a partir de los
+// entregables del trimestre/tipo actualmente elegidos — mismo criterio
+// que actualizarOpcionesSecuenciaCalificacion() (orden de aparición en
+// los datos, no alfabético; conserva la selección previa si sigue
+// siendo válida).
+async function actualizarOpcionesSecuenciaFechas() {
+  const select = document.getElementById("fechas-filtro-secuencia");
+  if (!select) return;
+
+  const items = await obtenerEntregablesFechas(estadoFechas.tipo, estadoFechas.trimestre);
+
+  const vistas = new Set();
+  const opciones = [];
+  items.forEach((item) => {
+    const clave = claveSecuenciaFechas(item);
+    if (!vistas.has(clave)) {
+      vistas.add(clave);
+      opciones.push(clave);
+    }
+  });
+
+  const valorPrevio = estadoFechas.secuencia;
+  select.innerHTML = "";
+  opciones.forEach((clave) => {
+    const opcion = document.createElement("option");
+    opcion.value = clave;
+    opcion.textContent = clave;
+    select.appendChild(opcion);
+  });
+
+  estadoFechas.secuencia = opciones.includes(valorPrevio) ? valorPrevio : opciones[0] || null;
+  select.value = estadoFechas.secuencia || "";
+}
+
+// Consulta DIRECTA a fechas_override (no vía aplicarOverridesFechas):
+// item_id -> filas de override de ese item, para el trimestre/tipo
+// actuales. Puede haber hasta 3 filas por item (grupo "3C", "3E" y/o
+// "todos" — ver la restricción única de la tabla).
+async function obtenerOverridesPorItem(trimestre, tipo) {
+  const mapa = new Map();
+
+  const { data, error } = await clienteSupabase
+    .from("fechas_override")
+    .select("*")
+    .eq("trimestre", Number(trimestre))
+    .eq("tipo", tipo);
+
+  if (error || !data) return mapa;
+
+  data.forEach((fila) => {
+    if (!mapa.has(fila.item_id)) mapa.set(fila.item_id, []);
+    mapa.get(fila.item_id).push(fila);
+  });
+  return mapa;
+}
+
+// Texto de la columna "Grupo": para items de un grupo específico,
+// "3°C: <fecha>"; para grupo:"todos" con fecha por grupo, las dos
+// separadas por "·" — mismo formato que ya usa resolverFechaItem() para
+// "todos", extendido también al caso de un solo grupo para que la
+// columna sea autodescriptiva sin depender de otra columna aparte.
+function celdaGrupoFecha(item, campoFecha) {
+  const valor = item[campoFecha];
+  if (typeof valor === "string") return textoGrupo(item.grupo) + ": " + formatearFecha(valor);
+  return "3°C: " + formatearFecha(valor["3C"]) + " · 3°E: " + formatearFecha(valor["3E"]);
+}
+
+// Texto de la columna "Origen". Para items de grupo específico es
+// binario (Original/Override); para grupo:"todos" con fecha por grupo,
+// si SOLO uno de los 2 grupos tiene override activo se desglosa por
+// grupo ("3°C: Original · 3°E: 🖊️ Override") en vez de un genérico
+// "🖊️ Override" para todo el item — con la columna "Grupo" ya mostrando
+// dos fechas distintas, un solo badge no diría cuál de las dos es la
+// modificada. Una fila de override grupo:"todos" (si existiera, aunque
+// este módulo no la crea) cuenta como override para ambos grupos, igual
+// que ya hace aplicarOverridesFechas().
+function origenTextoItem(item, campoFecha, overridesDelItem) {
+  const filas = overridesDelItem || [];
+  const valor = item[campoFecha];
+
+  if (typeof valor === "string") {
+    const tieneOverride = filas.some((fila) => fila.grupo === item.grupo || fila.grupo === "todos");
+    return tieneOverride ? "🖊️ Override" : "Original";
+  }
+
+  const overrideEn3C = filas.some((fila) => fila.grupo === "3C" || fila.grupo === "todos");
+  const overrideEn3E = filas.some((fila) => fila.grupo === "3E" || fila.grupo === "todos");
+
+  if (overrideEn3C && overrideEn3E) return "🖊️ Override";
+  if (!overrideEn3C && !overrideEn3E) return "Original";
+  return "3°C: " + (overrideEn3C ? "🖊️ Override" : "Original") + " · 3°E: " + (overrideEn3E ? "🖊️ Override" : "Original");
+}
+
+function crearFilaFecha(item, campoFecha, overridesDelItem) {
+  const fila = document.createElement("tr");
+
+  const celdaEntregable = document.createElement("td");
+  celdaEntregable.textContent = item.titulo;
+  fila.appendChild(celdaEntregable);
+
+  const celdaGrupo = document.createElement("td");
+  celdaGrupo.textContent = celdaGrupoFecha(item, campoFecha);
+  fila.appendChild(celdaGrupo);
+
+  const celdaOrigen = document.createElement("td");
+  celdaOrigen.textContent = origenTextoItem(item, campoFecha, overridesDelItem);
+  fila.appendChild(celdaOrigen);
+
+  const celdaAcciones = document.createElement("td");
+  celdaAcciones.className = "fechas-tabla__acciones";
+
+  const botonEditar = document.createElement("button");
+  botonEditar.type = "button";
+  botonEditar.className = "boton-secundario";
+  botonEditar.textContent = "Editar";
+  botonEditar.addEventListener("click", () => abrirModalEditarFecha(item, campoFecha, fila));
+  celdaAcciones.appendChild(botonEditar);
+
+  if (overridesDelItem && overridesDelItem.length > 0) {
+    const botonQuitar = document.createElement("button");
+    botonQuitar.type = "button";
+    botonQuitar.className = "fechas-tabla__boton-quitar";
+    botonQuitar.textContent = "Quitar override";
+    botonQuitar.addEventListener("click", () => quitarOverrideFecha(item, campoFecha, fila));
+    celdaAcciones.appendChild(botonQuitar);
+  }
+
+  fila.appendChild(celdaAcciones);
+  return fila;
+}
+
+function construirTablaFechas(items, campoFecha, overridesPorItem) {
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-fechas";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  ["Entregable", "Grupo", "Origen", "Acciones"].forEach((texto) => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  items.forEach((item) => {
+    tbody.appendChild(crearFilaFecha(item, campoFecha, overridesPorItem.get(item.id)));
+  });
+  tabla.appendChild(tbody);
+
+  return tabla;
+}
+
+async function renderizarTablaFechas() {
+  const contenedor = document.getElementById("fechas-tabla-contenedor");
+  if (!contenedor) return;
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  const campoFecha = CAMPO_FECHA_POR_TIPO[estadoFechas.tipo];
+  const [items, overridesPorItem] = await Promise.all([
+    obtenerEntregablesFechas(estadoFechas.tipo, estadoFechas.trimestre),
+    obtenerOverridesPorItem(estadoFechas.trimestre, estadoFechas.tipo),
+  ]);
+
+  const itemsFiltrados = items.filter((item) => claveSecuenciaFechas(item) === estadoFechas.secuencia);
+
+  // El recorrido masivo (más abajo) opera sobre exactamente los items
+  // que están en pantalla en este momento, así que se guardan aquí en
+  // vez de que el botón "Vista previa" dispare su propia consulta —
+  // evita que la vista previa se desalinee de lo que el docente
+  // realmente está viendo al hacer clic.
+  ultimoRenderFechas = { items: itemsFiltrados, campoFecha };
+  actualizarEstadoBotonVistaPreviaRecorrido();
+
+  if (itemsFiltrados.length === 0) {
+    mostrarSinResultados(contenedor, "No hay entregables para este filtro.");
+    return;
+  }
+
+  contenedor.innerHTML = "";
+  contenedor.appendChild(construirTablaFechas(itemsFiltrados, campoFecha, overridesPorItem));
+}
+
+// Vuelve a leer SOLO este item (con aplicarOverridesFechas ya aplicado
+// vía obtenerEntregablesFechas, más su estado de override fresco) y
+// reemplaza su fila, sin recargar el resto de la tabla. Relee el item
+// completo desde obtenerTareas/Actividades/Proyectos en vez de partir
+// de la fila ya pintada: tras "Quitar override" ya no hay ninguna fila
+// en fechas_override, y aplicarOverridesFechas() devuelve el array tal
+// cual cuando no encuentra overrides — si se partiera del valor ya
+// pintado (posiblemente ya con override aplicado antes), no habría
+// forma de "restar" ese override para volver al original.
+async function refrescarFilaFecha(itemId, campoFecha, filaAnterior) {
+  const [items, overridesPorItem] = await Promise.all([
+    obtenerEntregablesFechas(estadoFechas.tipo, estadoFechas.trimestre),
+    obtenerOverridesPorItem(estadoFechas.trimestre, estadoFechas.tipo),
+  ]);
+
+  const itemFresco = items.find((item) => String(item.id) === String(itemId));
+  if (!itemFresco) {
+    filaAnterior.remove();
+    return;
+  }
+
+  filaAnterior.replaceWith(crearFilaFecha(itemFresco, campoFecha, overridesPorItem.get(itemId)));
+
+  // ultimoRenderFechas.items también debe quedar al día: si no se
+  // actualizara aquí, el recorrido masivo (que reutiliza ese array tal
+  // cual, sin volver a consultar) partiría del valor viejo de este item
+  // hasta el próximo cambio de filtro — justo el caso que debe evitar
+  // ("el recorrido calcula desde el valor efectivo, considerando
+  // overrides ya existentes").
+  const indice = ultimoRenderFechas.items.findIndex((item) => String(item.id) === String(itemId));
+  if (indice !== -1) ultimoRenderFechas.items[indice] = itemFresco;
+}
+
+// { item, campoFecha, fila, camposIniciales, cambios } del item
+// actualmente en edición, o null cuando no hay ningún dialog de Fechas
+// abierto — camposIniciales guarda el valor ISO con el que se abrió el
+// dialog por grupo, para poder detectar cuáles campos cambiaron de
+// verdad al guardar.
+let fechaEditando = null;
+
+// Arma #fechas-editar-campos: 1 campo de fecha si el item es de un
+// grupo específico, 2 (uno por grupo) si es grupo:"todos" con fecha por
+// grupo. Devuelve el valor inicial por grupo para poder diffear en el
+// submit.
+function construirCamposEditarFecha(item, campoFecha) {
+  const contenedor = document.getElementById("fechas-editar-campos");
+  contenedor.innerHTML = "";
+
+  const valor = item[campoFecha];
+  const camposIniciales = {};
+  const grupos = typeof valor === "string" ? [item.grupo] : ["3C", "3E"];
+
+  grupos.forEach((grupo) => {
+    const valorGrupo = typeof valor === "string" ? valor : valor[grupo];
+    camposIniciales[grupo] = valorGrupo;
+
+    const label = document.createElement("label");
+    label.setAttribute("for", "fechas-editar-fecha-" + grupo);
+    label.textContent = grupos.length > 1 ? "Fecha de entrega — " + textoGrupo(grupo) : "Fecha de entrega";
+    contenedor.appendChild(label);
+
+    const input = document.createElement("input");
+    input.type = "date";
+    input.id = "fechas-editar-fecha-" + grupo;
+    input.dataset.grupo = grupo;
+    input.value = valorGrupo;
+    input.required = true;
+    contenedor.appendChild(input);
+  });
+
+  return camposIniciales;
+}
+
+function abrirModalEditarFecha(item, campoFecha, fila) {
+  const modal = document.getElementById("modal-editar-fecha");
+  if (!modal) return;
+
+  document.getElementById("modal-editar-fecha-contexto").textContent = item.titulo;
+  const camposIniciales = construirCamposEditarFecha(item, campoFecha);
+  document.getElementById("fechas-editar-error").hidden = true;
+
+  fechaEditando = { item, campoFecha, fila, camposIniciales, cambios: null };
+  modal.showModal();
+}
+
+// "Guardar cambios" no guarda directo: arma el diff (solo los campos que
+// de verdad cambiaron respecto a camposIniciales) y abre
+// #modal-confirmar-fecha con el mensaje pedido — mismo patrón de doble
+// confirmación que el módulo Trimestre. Si no hay ningún campo
+// modificado, cierra sin abrir nada (no tiene sentido "confirmar" un
+// no-cambio).
+function activarFormularioEditarFecha() {
+  const modal = document.getElementById("modal-editar-fecha");
+  const formulario = document.getElementById("formulario-editar-fecha");
+  if (!modal || !formulario) return;
+
+  formulario.addEventListener("submit", (evento) => {
+    evento.preventDefault();
+    if (!fechaEditando) return;
+
+    const cambios = [];
+    formulario.querySelectorAll("input[type=date]").forEach((input) => {
+      const grupo = input.dataset.grupo;
+      const valorNuevo = input.value;
+      if (valorNuevo && valorNuevo !== fechaEditando.camposIniciales[grupo]) {
+        cambios.push({ grupo, fecha: valorNuevo });
+      }
+    });
+
+    if (cambios.length === 0) {
+      modal.close();
+      fechaEditando = null;
+      return;
+    }
+
+    fechaEditando.cambios = cambios;
+
+    const grupos = cambios.map((cambio) => textoGrupo(cambio.grupo)).join(" y ");
+    document.getElementById("fechas-confirmar-texto").textContent =
+      'Vas a modificar la fecha de "' + fechaEditando.item.titulo + '" para ' + grupos + ". ¿Confirmas?";
+    document.getElementById("fechas-confirmar-error").hidden = true;
+    document.getElementById("modal-confirmar-fecha").showModal();
+  });
+
+  document.getElementById("fechas-editar-cancelar").addEventListener("click", () => {
+    formulario.reset();
+    modal.close();
+    fechaEditando = null;
+  });
+
+  const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) {
+    botonCerrar.addEventListener("click", () => {
+      formulario.reset();
+      modal.close();
+      fechaEditando = null;
+    });
+  }
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) {
+      formulario.reset();
+      modal.close();
+      fechaEditando = null;
+    }
+  });
+}
+
+// Upsert real en fechas_override, uno por cada campo cambiado (clave
+// única trimestre+tipo+item_id+grupo: Supabase decide insert vs. update
+// según si ya existe fila para esa combinación). creado_por va en
+// ambos casos, tal como se pidió.
+async function guardarCambiosFecha() {
+  const { trimestre, tipo } = estadoFechas;
+  const { item, cambios } = fechaEditando;
+
+  const {
+    data: { session },
+  } = await clienteSupabase.auth.getSession();
+
+  for (const cambio of cambios) {
+    const { error } = await clienteSupabase.from("fechas_override").upsert(
+      {
+        trimestre: Number(trimestre),
+        tipo,
+        item_id: item.id,
+        grupo: cambio.grupo,
+        fecha: cambio.fecha,
+        creado_por: session?.user?.id ?? null,
+      },
+      { onConflict: "trimestre,tipo,item_id,grupo" }
+    );
+    if (error) throw error;
+  }
+}
+
+function activarConfirmarFecha() {
+  const modalConfirmar = document.getElementById("modal-confirmar-fecha");
+  const modalEditar = document.getElementById("modal-editar-fecha");
+  const errorConfirmar = document.getElementById("fechas-confirmar-error");
+  const botonConfirmar = document.getElementById("fechas-confirmar-confirmar");
+  if (!modalConfirmar || !modalEditar || !botonConfirmar) return;
+
+  botonConfirmar.addEventListener("click", async () => {
+    if (!fechaEditando || !fechaEditando.cambios) return;
+
+    errorConfirmar.hidden = true;
+    botonConfirmar.disabled = true;
+    try {
+      await guardarCambiosFecha();
+
+      const { item, campoFecha, fila } = fechaEditando;
+      modalConfirmar.close();
+      modalEditar.close();
+      document.getElementById("formulario-editar-fecha").reset();
+      await refrescarFilaFecha(item.id, campoFecha, fila);
+      fechaEditando = null;
+    } catch (error) {
+      errorConfirmar.textContent = "No se pudo guardar el cambio: " + (error?.message || "intenta de nuevo.");
+      errorConfirmar.hidden = false;
+    } finally {
+      botonConfirmar.disabled = false;
+    }
+  });
+
+  document.getElementById("fechas-confirmar-cancelar").addEventListener("click", () => modalConfirmar.close());
+
+  const botonCerrar = modalConfirmar.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) botonCerrar.addEventListener("click", () => modalConfirmar.close());
+
+  modalConfirmar.addEventListener("click", (evento) => {
+    if (evento.target === modalConfirmar) modalConfirmar.close();
+  });
+}
+
+// DELETE de TODAS las filas de fechas_override de este item (los 2
+// grupos si aplica, no solo uno visible en pantalla): "quitar override"
+// es una reversión completa al dato original de main.js, no una
+// reversión parcial.
+async function quitarOverrideFecha(item, campoFecha, fila) {
+  if (!window.confirm('Esto regresará la fecha de "' + item.titulo + '" a su valor original. ¿Confirmas?')) return;
+
+  try {
+    const { error } = await clienteSupabase
+      .from("fechas_override")
+      .delete()
+      .eq("trimestre", Number(estadoFechas.trimestre))
+      .eq("tipo", estadoFechas.tipo)
+      .eq("item_id", item.id);
+    if (error) throw error;
+  } catch (error) {
+    window.alert("No se pudo quitar el override: " + (error?.message || "intenta de nuevo."));
+    return;
+  }
+
+  await refrescarFilaFecha(item.id, campoFecha, fila);
+}
+
+/* ---------------------------------------------------------
+   Recorrido masivo: mueve TODAS las fechas de ultimoRenderFechas.items
+   (los items visibles en la tabla actual, ya con overrides existentes
+   aplicados) ±X días de una sola vez, con vista previa obligatoria.
+   --------------------------------------------------------- */
+
+function sumarDiasISO(fechaISO, dias) {
+  const fecha = new Date(fechaISO + "T00:00:00");
+  fecha.setDate(fecha.getDate() + dias);
+  return fecha.toISOString().slice(0, 10);
+}
+
+// Una fila por cada fecha afectada (1 por item de grupo específico, 2
+// por item grupo:"todos" con fecha por grupo) — parte de la fecha
+// EFECTIVA ya en pantalla (items ya trae cualquier override existente
+// aplicado vía obtenerEntregablesFechas), no del original de main.js.
+function construirFilasRecorrido(items, campoFecha, dias) {
+  const filas = [];
+  items.forEach((item) => {
+    const valor = item[campoFecha];
+    const grupos = typeof valor === "string" ? [item.grupo] : ["3C", "3E"];
+    grupos.forEach((grupo) => {
+      const fechaActual = typeof valor === "string" ? valor : valor[grupo];
+      filas.push({ item, grupo, fechaActual, fechaNueva: sumarDiasISO(fechaActual, dias) });
+    });
+  });
+  return filas;
+}
+
+function construirTablaRecorrido(filas) {
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-fechas";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  ["Entregable", "Grupo", "Fecha actual → Fecha nueva"].forEach((texto) => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  filas.forEach((fila) => {
+    const tr = document.createElement("tr");
+
+    const celdaEntregable = document.createElement("td");
+    celdaEntregable.textContent = fila.item.titulo;
+    tr.appendChild(celdaEntregable);
+
+    const celdaGrupo = document.createElement("td");
+    celdaGrupo.textContent = textoGrupo(fila.grupo);
+    tr.appendChild(celdaGrupo);
+
+    const celdaTransicion = document.createElement("td");
+    celdaTransicion.textContent = formatearFecha(fila.fechaActual) + " → " + formatearFecha(fila.fechaNueva);
+    tr.appendChild(celdaTransicion);
+
+    tbody.appendChild(tr);
+  });
+  tabla.appendChild(tbody);
+
+  return tabla;
+}
+
+// "Vista previa" deshabilitado si el campo está vacío, en 0, o si la
+// tabla actual no tiene ningún item que mover (filtro sin resultados).
+function actualizarEstadoBotonVistaPreviaRecorrido() {
+  const input = document.getElementById("fechas-recorrido-dias");
+  const boton = document.getElementById("fechas-recorrido-vista-previa");
+  if (!input || !boton) return;
+
+  const dias = Number(input.value);
+  boton.disabled = input.value === "" || dias === 0 || Number.isNaN(dias) || ultimoRenderFechas.items.length === 0;
+}
+
+function activarRecorridoFechas() {
+  const input = document.getElementById("fechas-recorrido-dias");
+  const botonVistaPrevia = document.getElementById("fechas-recorrido-vista-previa");
+  const modal = document.getElementById("modal-recorrido-fechas");
+  if (!input || !botonVistaPrevia || !modal) return;
+
+  input.addEventListener("input", actualizarEstadoBotonVistaPreviaRecorrido);
+
+  botonVistaPrevia.addEventListener("click", () => {
+    const dias = Number(input.value);
+    if (!dias) return;
+
+    const filas = construirFilasRecorrido(ultimoRenderFechas.items, ultimoRenderFechas.campoFecha, dias);
+    recorridoPendiente = { dias, filas };
+
+    document.getElementById("modal-recorrido-fechas-contexto").textContent =
+      (dias > 0 ? "+" : "") + dias + " día(s) — " + filas.length + " fecha(s) afectada(s) en esta secuencia.";
+
+    const contenedorTabla = document.getElementById("fechas-recorrido-tabla-contenedor");
+    contenedorTabla.innerHTML = "";
+    contenedorTabla.appendChild(construirTablaRecorrido(filas));
+
+    document.getElementById("fechas-recorrido-error").hidden = true;
+    modal.showModal();
+  });
+
+  document.getElementById("fechas-recorrido-cancelar").addEventListener("click", () => {
+    modal.close();
+    recorridoPendiente = null;
+  });
+
+  const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) {
+    botonCerrar.addEventListener("click", () => {
+      modal.close();
+      recorridoPendiente = null;
+    });
+  }
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) {
+      modal.close();
+      recorridoPendiente = null;
+    }
+  });
+}
+
+// Upsert uno por uno (mismo criterio de fechas_override que
+// guardarCambiosFecha: clave única trimestre+tipo+item_id+grupo decide
+// insert vs. update) — sin transacción: si alguno falla, los anteriores
+// ya quedaron aplicados de verdad en la base, así que se sigue con el
+// resto en vez de abortar, y se reporta al final cuáles fallaron.
+async function aplicarRecorridoFechas() {
+  const errorEl = document.getElementById("fechas-recorrido-error");
+  const botonConfirmar = document.getElementById("fechas-recorrido-confirmar");
+  if (!recorridoPendiente) return;
+
+  errorEl.hidden = true;
+  botonConfirmar.disabled = true;
+
+  const { trimestre, tipo } = estadoFechas;
+  const { dias, filas } = recorridoPendiente;
+  const nota = "Movido por recorrido masivo (" + (dias > 0 ? "+" : "") + dias + " días)";
+
+  const {
+    data: { session },
+  } = await clienteSupabase.auth.getSession();
+
+  const fallidas = [];
+  for (const fila of filas) {
+    try {
+      const { error } = await clienteSupabase.from("fechas_override").upsert(
+        {
+          trimestre: Number(trimestre),
+          tipo,
+          item_id: fila.item.id,
+          grupo: fila.grupo,
+          fecha: fila.fechaNueva,
+          nota,
+          creado_por: session?.user?.id ?? null,
+        },
+        { onConflict: "trimestre,tipo,item_id,grupo" }
+      );
+      if (error) throw error;
+    } catch (error) {
+      fallidas.push({ titulo: fila.item.titulo, grupo: fila.grupo, mensaje: error?.message || "error desconocido" });
+    }
+  }
+
+  botonConfirmar.disabled = false;
+
+  // Éxito total: cierra, limpia el campo y refresca TODA la tabla (a
+  // diferencia de refrescarFilaFecha en la edición individual, aquí
+  // cambiaron todos los items visibles, no solo uno).
+  if (fallidas.length === 0) {
+    document.getElementById("modal-recorrido-fechas").close();
+    document.getElementById("fechas-recorrido-dias").value = "";
+    recorridoPendiente = null;
+    await renderizarTablaFechas();
+    return;
+  }
+
+  // Falla total o parcial: el dialog se queda abierto con el detalle de
+  // qué sí y qué no se aplicó (los que sí ya quedaron escritos, por
+  // eso se refresca la tabla igual) — no hay rollback, solo un mensaje
+  // claro del estado real.
+  const totalOk = filas.length - fallidas.length;
+  errorEl.textContent =
+    "Se aplicaron " +
+    totalOk +
+    " de " +
+    filas.length +
+    " fecha(s). Fallaron: " +
+    fallidas.map((f) => f.titulo + " (" + textoGrupo(f.grupo) + "): " + f.mensaje).join("; ");
+  errorEl.hidden = false;
+  await renderizarTablaFechas();
+}
+
+function activarConfirmarRecorridoFechas() {
+  const boton = document.getElementById("fechas-recorrido-confirmar");
+  if (!boton) return;
+  boton.addEventListener("click", aplicarRecorridoFechas);
+}
+
+async function inicializarModuloFechas() {
+  const contenedor = document.getElementById("fechas-tabla-contenedor");
+  if (!contenedor) return; // no es admin.html
+
+  // Mismo guard que el resto de módulos del panel: fechas_override
+  // también se administra protegido por RLS.
+  await promesaGuardPanelDocente;
+
+  const selectTrimestre = document.getElementById("fechas-filtro-trimestre");
+  estadoFechas.trimestre = String(trimestreDesbloqueado);
+  selectTrimestre.value = estadoFechas.trimestre;
+
+  await actualizarOpcionesSecuenciaFechas();
+  await renderizarTablaFechas();
+  activarFormularioEditarFecha();
+  activarConfirmarFecha();
+  activarRecorridoFechas();
+  activarConfirmarRecorridoFechas();
+
+  selectTrimestre.addEventListener("change", async () => {
+    estadoFechas.trimestre = selectTrimestre.value;
+    await actualizarOpcionesSecuenciaFechas();
+    await renderizarTablaFechas();
+  });
+
+  const selectTipo = document.getElementById("fechas-filtro-tipo");
+  selectTipo.addEventListener("change", async () => {
+    estadoFechas.tipo = selectTipo.value;
+    await actualizarOpcionesSecuenciaFechas();
+    await renderizarTablaFechas();
+  });
+
+  const selectSecuencia = document.getElementById("fechas-filtro-secuencia");
+  selectSecuencia.addEventListener("change", async () => {
+    estadoFechas.secuencia = selectSecuencia.value;
+    await renderizarTablaFechas();
+  });
+}
+
 /* =========================================================
    10. INICIALIZACIÓN
    ========================================================= */
@@ -7600,6 +8795,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarCierreSesionAdmin();
   await inicializarModuloCalificacion();
   await inicializarModuloAlumnos();
+  await inicializarModuloAvisos();
+  await inicializarModuloTrimestre();
+  await inicializarModuloFechas();
 
   const botonMesAnterior = document.getElementById("calendario-mes-anterior");
   if (botonMesAnterior) botonMesAnterior.addEventListener("click", () => avanzarMesCalendario(-1));

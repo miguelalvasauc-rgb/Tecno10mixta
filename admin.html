@@ -249,15 +249,86 @@
       </section>
 
       <section id="panel-avisos" class="admin-panel" role="tabpanel" aria-labelledby="tab-avisos" hidden>
-        <p class="admin-panel__placeholder">Módulo en construcción.</p>
+        <div class="calificacion-acciones">
+          <button type="button" id="avisos-boton-nuevo" class="boton-secundario">+ Nuevo aviso</button>
+        </div>
+
+        <div id="avisos-tabla-contenedor" aria-live="polite"></div>
       </section>
 
       <section id="panel-trimestre" class="admin-panel" role="tabpanel" aria-labelledby="tab-trimestre" hidden>
-        <p class="admin-panel__placeholder">Módulo en construcción.</p>
+        <p class="trimestre-modulo__actual">
+          Trimestre desbloqueado actualmente: <strong id="trimestre-actual-texto">Cargando…</strong>
+        </p>
+
+        <form id="formulario-trimestre">
+          <fieldset class="trimestre-opciones">
+            <legend class="sr-only">Selecciona el nuevo trimestre desbloqueado</legend>
+
+            <label class="trimestre-opcion">
+              <input type="radio" name="trimestre-nuevo" id="trimestre-opcion-1" value="1">
+              <span class="trimestre-opcion__titulo">1° Trimestre</span>
+              <span class="trimestre-opcion__descripcion">Solo Trimestre 1 accesible; Trimestre 2 y 3 muestran &ldquo;próximamente&rdquo; a los alumnos.</span>
+            </label>
+
+            <label class="trimestre-opcion">
+              <input type="radio" name="trimestre-nuevo" id="trimestre-opcion-2" value="2">
+              <span class="trimestre-opcion__titulo">2° Trimestre</span>
+              <span class="trimestre-opcion__descripcion">Trimestre 1 y 2 accesibles; Trimestre 3 bloqueado.</span>
+            </label>
+
+            <label class="trimestre-opcion">
+              <input type="radio" name="trimestre-nuevo" id="trimestre-opcion-3" value="3">
+              <span class="trimestre-opcion__titulo">3° Trimestre</span>
+              <span class="trimestre-opcion__descripcion">Los tres trimestres accesibles.</span>
+            </label>
+          </fieldset>
+
+          <div class="calificacion-acciones">
+            <button type="submit" id="trimestre-boton-guardar" class="modal-editar-entrega__confirmar" disabled>Guardar cambio</button>
+          </div>
+        </form>
       </section>
 
       <section id="panel-fechas" class="admin-panel" role="tabpanel" aria-labelledby="tab-fechas" hidden>
-        <p class="admin-panel__placeholder">Módulo en construcción.</p>
+        <div class="calificacion-filtros">
+          <div class="calificacion-filtro">
+            <label for="fechas-filtro-trimestre">Trimestre</label>
+            <select id="fechas-filtro-trimestre">
+              <option value="1">1° Trimestre</option>
+              <option value="2">2° Trimestre</option>
+              <option value="3">3° Trimestre</option>
+            </select>
+          </div>
+          <div class="calificacion-filtro">
+            <label for="fechas-filtro-tipo">Tipo</label>
+            <select id="fechas-filtro-tipo">
+              <option value="tarea">Tareas</option>
+              <option value="actividad">Actividades</option>
+              <option value="proyecto">Proyectos</option>
+            </select>
+          </div>
+          <div class="calificacion-filtro">
+            <label for="fechas-filtro-secuencia">Secuencia</label>
+            <select id="fechas-filtro-secuencia"></select>
+          </div>
+        </div>
+
+        <!-- Recorrido masivo: mueve TODOS los items visibles en la tabla
+             actual (según los filtros de arriba) ±X días de una sola vez
+             — ver activarRecorridoFechas()/aplicarRecorridoFechas() en
+             js/main.js. Siempre pasa por la vista previa de
+             #modal-recorrido-fechas antes de escribir nada. -->
+        <div class="fechas-recorrido">
+          <label for="fechas-recorrido-dias">Mover fechas (días)</label>
+          <div class="fechas-recorrido__campo">
+            <input type="number" id="fechas-recorrido-dias" step="1" placeholder="± días">
+            <button type="button" id="fechas-recorrido-vista-previa" class="boton-secundario" disabled>Vista previa</button>
+          </div>
+          <p class="fechas-recorrido__ayuda">Ej: 3 para retrasar 3 días, -2 para adelantar 2 días.</p>
+        </div>
+
+        <div id="fechas-tabla-contenedor" aria-live="polite"></div>
       </section>
     </section>
   </main>
@@ -351,6 +422,122 @@
     <p id="modal-codigo-invitacion-contexto" class="modal-historial__subtitulo"></p>
     <p id="modal-codigo-invitacion-valor" class="alumnos-codigo__valor"></p>
     <button type="button" id="boton-copiar-codigo" class="boton-secundario">📋 Copiar código</button>
+  </dialog>
+
+  <!-- Crear/editar aviso — un solo dialog reutilizado para ambos modos
+       (mismo patrón que #modal-nuevo-alumno): en modo "Editar" se
+       precarga con los valores de la fila y el formulario guarda el id
+       del aviso en formulario.dataset.avisoId — ver
+       abrirModalAviso()/activarFormularioAviso() en js/main.js. -->
+  <dialog id="modal-aviso" aria-labelledby="modal-aviso-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-aviso-titulo">Nuevo aviso</h3>
+    <form id="formulario-aviso" novalidate>
+      <label for="aviso-titulo">Título</label>
+      <input type="text" id="aviso-titulo" name="titulo" autocomplete="off" required>
+
+      <label for="aviso-descripcion">Descripción</label>
+      <textarea id="aviso-descripcion" name="descripcion" rows="3"></textarea>
+
+      <label for="aviso-fecha">Fecha</label>
+      <input type="date" id="aviso-fecha" name="fecha" required>
+
+      <label for="aviso-grupo">Grupo destino</label>
+      <select id="aviso-grupo" name="grupo" required>
+        <option value="todos">Todos</option>
+        <option value="3C">3°C</option>
+        <option value="3E">3°E</option>
+      </select>
+
+      <label for="aviso-prioridad">Prioridad</label>
+      <select id="aviso-prioridad" name="prioridad" required>
+        <option value="urgente">Urgente</option>
+        <option value="importante">Importante</option>
+        <option value="recordatorio">Recordatorio</option>
+      </select>
+
+      <label for="aviso-fecha-expiracion">Fecha de expiración (opcional)</label>
+      <input type="date" id="aviso-fecha-expiracion" name="fecha_expiracion">
+
+      <p id="aviso-error" class="cuenta-error" role="alert" hidden></p>
+
+      <div class="modal-editar-entrega__acciones">
+        <button type="submit" class="modal-editar-entrega__confirmar" id="aviso-confirmar">Crear aviso</button>
+        <button type="button" class="boton-secundario" id="aviso-cancelar">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Confirmación antes de cambiar config_sitio.trimestre_desbloqueado
+       (afecta el acceso de TODOS los alumnos de inmediato) — ver
+       activarFormularioTrimestre()/abrirModalConfirmarTrimestre() en
+       js/main.js. Mismo patrón de accesibilidad que el resto de dialogs
+       del panel. -->
+  <dialog id="modal-confirmar-trimestre" aria-labelledby="modal-confirmar-trimestre-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-confirmar-trimestre-titulo">Confirmar cambio de trimestre</h3>
+    <p id="trimestre-confirmar-texto"></p>
+    <p id="trimestre-confirmar-error" class="cuenta-error" role="alert" hidden></p>
+    <div class="modal-editar-entrega__acciones">
+      <button type="button" class="modal-editar-entrega__confirmar" id="trimestre-confirmar-confirmar">Confirmar</button>
+      <button type="button" class="boton-secundario" id="trimestre-confirmar-cancelar">Cancelar</button>
+    </div>
+  </dialog>
+
+  <!-- Editar fecha de entrega (módulo "Fechas de entrega"): 1 o 2 campos
+       de fecha según el item sea de un grupo específico o grupo:"todos"
+       con fecha por grupo — los campos se arman por JS en
+       #fechas-editar-campos según el item (ver
+       construirCamposEditarFecha() en js/main.js). "Guardar cambios"
+       abre #modal-confirmar-fecha en vez de guardar directo, mismo
+       patrón de doble confirmación ya usado en el módulo Trimestre. -->
+  <dialog id="modal-editar-fecha" aria-labelledby="modal-editar-fecha-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-editar-fecha-titulo">Editar fecha de entrega</h3>
+    <p id="modal-editar-fecha-contexto" class="modal-historial__subtitulo"></p>
+    <form id="formulario-editar-fecha" novalidate>
+      <div id="fechas-editar-campos"></div>
+
+      <p id="fechas-editar-error" class="cuenta-error" role="alert" hidden></p>
+
+      <div class="modal-editar-entrega__acciones">
+        <button type="submit" class="modal-editar-entrega__confirmar" id="fechas-editar-confirmar">Guardar cambios</button>
+        <button type="button" class="boton-secundario" id="fechas-editar-cancelar">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Confirmación antes de escribir en fechas_override — ver
+       activarConfirmarFecha() en js/main.js. Mismo patrón que
+       #modal-confirmar-trimestre: el dialog de arriba solo arma el
+       cambio pendiente, este es el que realmente lo guarda. -->
+  <dialog id="modal-confirmar-fecha" aria-labelledby="modal-confirmar-fecha-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-confirmar-fecha-titulo">Confirmar cambio de fecha</h3>
+    <p id="fechas-confirmar-texto"></p>
+    <p id="fechas-confirmar-error" class="cuenta-error" role="alert" hidden></p>
+    <div class="modal-editar-entrega__acciones">
+      <button type="button" class="modal-editar-entrega__confirmar" id="fechas-confirmar-confirmar">Confirmar</button>
+      <button type="button" class="boton-secundario" id="fechas-confirmar-cancelar">Cancelar</button>
+    </div>
+  </dialog>
+
+  <!-- Vista previa obligatoria del recorrido masivo — ver
+       activarRecorridoFechas()/aplicarRecorridoFechas() en js/main.js.
+       Más ancho que el resto de dialogs del panel porque contiene una
+       tabla (Entregable/Grupo/Fecha actual → Fecha nueva), una fila por
+       cada fecha afectada (1 o 2 por item, según tenga grupo específico
+       o fecha por grupo). -->
+  <dialog id="modal-recorrido-fechas" aria-labelledby="modal-recorrido-fechas-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-recorrido-fechas-titulo">Vista previa del recorrido</h3>
+    <p id="modal-recorrido-fechas-contexto" class="modal-historial__subtitulo"></p>
+    <div id="fechas-recorrido-tabla-contenedor" class="fechas-recorrido__tabla-contenedor"></div>
+    <p id="fechas-recorrido-error" class="cuenta-error" role="alert" hidden></p>
+    <div class="modal-editar-entrega__acciones">
+      <button type="button" class="modal-editar-entrega__confirmar" id="fechas-recorrido-confirmar">Confirmar</button>
+      <button type="button" class="boton-secundario" id="fechas-recorrido-cancelar">Cancelar</button>
+    </div>
   </dialog>
 
   <script src="js/main.js"></script>

@@ -53,6 +53,16 @@
      del tema porque esas superficies no cambian de color entre temas. */
   --color-claro-sobre-navy: #E8EEF4;
   --color-claro-sobre-navy-suave: #C7D4E4;
+
+  /* Prioridad "urgente" del módulo Avisos (panel docente): matiz ~339°
+     (magenta-rojo), deliberadamente distinto de los otros dos rojos ya
+     en uso — "importante" (#D64545, ~0°) y --color-estado-vencido
+     (#BA1A1A, ~0°) — misma Regla de Exclusividad de Colores de Estado
+     que --color-estado-codigo-sin-usar/registro-incompleto/cuenta-activa
+     de arriba. Valor fijo (no varía por tema), con texto blanco: 7.2:1
+     de contraste, AA en ambos temas. */
+  --color-estado-avisos-urgente: #A61E4D;
+
   --fuente-base: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   /* Fuente de títulos: solo fuentes de sistema (sin @font-face ni Google
      Fonts) para no depender de red — el sitio debe verse igual sin
@@ -877,6 +887,16 @@ summary:focus-visible {
   font-weight: 700;
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
+}
+
+/* Prioridad más alta del módulo Avisos: matiz distinto (~339°) al rojo
+   de "importante" de abajo (~0°) para que no se confundan a simple
+   vista pese a compartir familia de color — ver
+   --color-estado-avisos-urgente en la sección de variables. Texto
+   blanco fijo (no cambia por tema): 7.2:1 de contraste. */
+.badge-prioridad[data-prioridad="urgente"] {
+  background-color: var(--color-estado-avisos-urgente);
+  color: #FFFFFF;
 }
 
 /* Mismo rojo que el resto de indicadores de urgencia del sitio
@@ -4412,6 +4432,25 @@ summary:focus-visible {
   color: #12202E;
 }
 
+/* Estado de VIGENCIA de un aviso (módulo Avisos) — atributo
+   "data-estado-aviso", tercer eje semántico independiente que comparte
+   la misma píldora .badge-estado. No son tokens nuevos: "expirado" es
+   el mismo concepto que --color-estado-vencido ya usa para "atrasada"
+   arriba (una fecha ya pasada), y "activo" es el mismo concepto que
+   --color-estado-cuenta-activa ya usa para cuenta activa (vigente/
+   utilizable ahora mismo) — mismo criterio ya documentado para
+   data-estado-cuenta="baja" reutilizando --color-estado-sin-cuenta:
+   mismo significado visto desde otra tabla, no un repurposeo real. */
+.badge-estado[data-estado-aviso="expirado"] {
+  background-color: var(--color-estado-vencido);
+  color: var(--color-claro-sobre-navy);
+}
+
+.badge-estado[data-estado-aviso="activo"] {
+  background-color: var(--color-estado-cuenta-activa);
+  color: #12202E;
+}
+
 /* ---------- Navegación de scroll horizontal (solo mobile <1024px) ----------
    Mismo breakpoint que .barra-lateral/.barra-inferior en el resto del
    sitio: visibles por defecto (mobile), ocultos en desktop porque ahí el
@@ -5083,4 +5122,410 @@ button.badge-estado {
   font-weight: 700;
   letter-spacing: 0.05em;
   color: var(--color-texto);
+}
+
+/* ---------- Módulo "Avisos" (tab-avisos) ----------
+   Mismo patrón de tabla que .tabla-alumnos (misma forma: filas + acciones
+   a la derecha), con su propia clase porque las columnas son distintas
+   (Fecha/Título/Grupo/Prioridad/Estado en vez de Nombre/N.° de lista/
+   Estado de cuenta). Reutiliza .calificacion-acciones para el botón
+   "+ Nuevo aviso", igual que "+ Nuevo alumno". */
+.tabla-avisos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabla-avisos th,
+.tabla-avisos td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.tabla-avisos thead th {
+  color: var(--color-texto-suave);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+}
+
+.tabla-avisos tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.avisos-tabla__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Aviso expirado (fecha_expiracion < hoy): toda la fila se atenúa, mismo
+   patrón visual que .fila-alumno--inactivo — sigue siendo editable (para
+   extender la fecha de expiración o reactivar el aviso), por eso no lleva
+   line-through como el nombre de un alumno dado de baja. */
+.fila-aviso--expirado {
+  opacity: 0.55;
+}
+
+/* Texto simple en rojo, no un botón lleno: mismo criterio que
+   .alumnos-tabla__boton-baja/.modal-editar-entrega__deshacer — eliminar
+   es una acción destructiva poco frecuente que no debe competir
+   visualmente con "Editar". */
+.avisos-tabla__boton-eliminar {
+  background: none;
+  border: none;
+  color: var(--color-estado-vencido);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+/* ---------- Crear/editar aviso (#modal-aviso) ----------
+   Mismo patrón visual que #modal-editar-entrega/#modal-nuevo-alumno, un
+   poco más ancho porque combina más campos (incluye textarea + 2 fechas +
+   2 selects) que cualquiera de esos dos formularios. Un solo dialog
+   reutilizado en modo "Crear" y "Editar" — ver
+   activarFormularioAviso()/abrirModalAviso() en js/main.js. */
+#modal-aviso {
+  width: 92%;
+  max-width: 460px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-aviso::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-aviso-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+#formulario-aviso {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+#formulario-aviso label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+}
+
+#formulario-aviso input,
+#formulario-aviso select,
+#formulario-aviso textarea {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--font-cuerpo);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  resize: vertical;
+}
+
+/* ---------- Módulo "Trimestre" (tab-trimestre) ----------
+   3 opciones fijas (no una tabla ni una lista de tamaño variable como
+   Avisos/Alumnos), así que van hardcodeadas en admin.html en vez de
+   generarse por JS — ver activarFormularioTrimestre() en js/main.js
+   para el resto de la lógica (habilitar/deshabilitar "Guardar cambio",
+   armar el dialog de confirmación). */
+.trimestre-modulo__actual {
+  margin: 0 0 1.25rem;
+  color: var(--color-texto);
+}
+
+.trimestre-opciones {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Tarjeta completa clickeable (el <input> vive dentro del <label>, así
+   que no hace falta for/id explícito para la asociación accesible) —
+   mismo lenguaje visual que .tarjeta-trimestre (borde + radio-lg +
+   sombra), adaptado a fila angosta en vez de cuadrícula. */
+.trimestre-opcion {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.75rem;
+  align-items: start;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: 0.9rem 1.1rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.trimestre-opcion:hover {
+  border-color: var(--color-turquesa);
+}
+
+.trimestre-opcion:has(input:checked) {
+  border-color: var(--color-turquesa);
+  background-color: var(--color-superficie-alterna);
+}
+
+.trimestre-opcion:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus-outline);
+  outline-offset: 2px;
+}
+
+.trimestre-opcion input[type="radio"] {
+  grid-row: 1 / 3;
+  margin-top: 0.2rem;
+  accent-color: var(--color-turquesa);
+}
+
+.trimestre-opcion__titulo {
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.trimestre-opcion__descripcion {
+  grid-column: 2;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+/* ---------- Confirmar cambio de trimestre (#modal-confirmar-trimestre) ----------
+   Mismo patrón visual angosto que #modal-editar-entrega, sin formulario
+   propio (solo el texto de confirmación + acciones). */
+#modal-confirmar-trimestre {
+  width: 92%;
+  max-width: 420px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-confirmar-trimestre::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-confirmar-trimestre-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+#trimestre-confirmar-texto {
+  margin: 1rem 0;
+  color: var(--color-texto);
+}
+
+/* ---------- Módulo "Fechas de entrega" (tab-fechas) ---------- */
+.tabla-fechas {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabla-fechas th,
+.tabla-fechas td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.tabla-fechas thead th {
+  color: var(--color-texto-suave);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+}
+
+.tabla-fechas tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.fechas-tabla__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Texto simple en rojo, no un botón lleno: mismo criterio que
+   .avisos-tabla__boton-eliminar/.alumnos-tabla__boton-baja — acción
+   poco frecuente que no debe competir visualmente con "Editar". */
+.fechas-tabla__boton-quitar {
+  background: none;
+  border: none;
+  color: var(--color-estado-vencido);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+/* ---------- Editar fecha de entrega (#modal-editar-fecha) ----------
+   Mismo patrón visual que #modal-aviso; #fechas-editar-campos recibe 1
+   o 2 grupos label+input armados por JS según el item (ver
+   construirCamposEditarFecha() en js/main.js). */
+#modal-editar-fecha {
+  width: 92%;
+  max-width: 420px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-editar-fecha::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-editar-fecha-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+#formulario-editar-fecha {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+#formulario-editar-fecha label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+}
+
+#formulario-editar-fecha input {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--font-cuerpo);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ---------- Confirmar cambio de fecha (#modal-confirmar-fecha) ----------
+   Mismo patrón angosto que #modal-confirmar-trimestre. */
+#modal-confirmar-fecha {
+  width: 92%;
+  max-width: 420px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-confirmar-fecha::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-confirmar-fecha-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+#fechas-confirmar-texto {
+  margin: 1rem 0;
+  color: var(--color-texto);
+}
+
+/* ---------- Recorrido masivo (mover ±X días) ---------- */
+.fechas-recorrido {
+  margin: 1rem 0 1.25rem;
+}
+
+.fechas-recorrido label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+  margin-bottom: 0.4rem;
+}
+
+.fechas-recorrido__campo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.fechas-recorrido__campo input[type="number"] {
+  width: 7rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--font-cuerpo);
+  font-size: 0.9rem;
+}
+
+.fechas-recorrido__ayuda {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+}
+
+/* ---------- Vista previa del recorrido (#modal-recorrido-fechas) ----------
+   Más ancho que el resto de dialogs del panel (contiene una tabla) y con
+   scroll propio si hay muchas filas, en vez de estirar el dialog fuera
+   del viewport. */
+#modal-recorrido-fechas {
+  width: 92%;
+  max-width: 640px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-recorrido-fechas::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-recorrido-fechas-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+.fechas-recorrido__tabla-contenedor {
+  margin: 1rem 0;
+  max-height: 45vh;
+  overflow-y: auto;
 }
