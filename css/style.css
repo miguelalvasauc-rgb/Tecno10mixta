@@ -54,6 +54,21 @@
   --color-claro-sobre-navy: #E8EEF4;
   --color-claro-sobre-navy-suave: #C7D4E4;
 
+  /* Paleta EXCLUSIVA de estados del toast (ver mostrarToast* en
+     js/main.js) — deliberadamente separada de --color-estado-* (esos
+     son solo para progreso/completado/rúbricas, Status-Color Exclusivity
+     Rule) y de los rojos ya en uso (--color-estado-vencido #BA1A1A,
+     --color-estado-avisos-urgente #A61E4D): un toast de error es "la
+     acción falló ahora mismo", no "una entrega vencida" ni "un aviso
+     urgente", así que no repurpasa esos tokens aunque el matiz sea
+     parecido. Contraste AA verificado con el texto real de cada
+     variante (ver reglas .toast[data-tipo] más abajo), en ambos temas
+     donde aplica. */
+  --color-toast-exito: var(--color-turquesa);
+  --color-toast-error: #A93A48;
+  --color-toast-advertencia: #E8A33D;
+  --color-toast-carga: var(--color-primario);
+
   /* Prioridad "urgente" del módulo Avisos (panel docente): matiz ~339°
      (magenta-rojo), deliberadamente distinto de los otros dos rojos ya
      en uso — "importante" (#D64545, ~0°) y --color-estado-vencido
@@ -3559,21 +3574,39 @@ summary:focus-visible {
   }
 }
 
-/* ---------- Toast de confirmación (ver mostrarToast() en js/main.js) ----------
-   Genérico y reutilizable, cableado por ahora solo a tema/grupo. Arriba
-   a la derecha, mismo espaciado que .fab-menu (right: 1.25rem, 1rem en
-   pantallas muy chicas) para mantener consistencia entre los elementos
-   fixed del sitio. El "top" es un valor fijo, no medido en JS: el sitio
-   no tiene header ni nav sticky en el HTML actual — .encabezado/
-   .nav-principal son CSS sin uso desde que la navegación pasó a
-   .barra-lateral/.barra-inferior (ver la nota en "BARRA LATERAL" más
-   abajo en este archivo) — así que no hay nada arriba de lo que esquivar
-   en ninguna página ni breakpoint. Mismos opacity+translateY a 0.2s ease
-   que ya usa .fab-menu__panel — no se inventa timing nuevo. Fondo navy
-   (--color-primario) + texto claro fijo: mismo tratamiento ya usado en
-   .badge-grupo/.etiqueta-nivel, que ya pasa contraste AA en ambos temas
-   sin necesitar el override de la Light-Mode Turquoise Rule (turquesa de
-   fondo + texto claro falla AA en modo claro). */
+/* ---------- Toast de confirmación (ver mostrarToast* en js/main.js) ----------
+   Genérico y reutilizable. Arriba a la derecha, mismo espaciado que
+   .fab-menu (right: 1.25rem, 1rem en pantallas muy chicas) para
+   mantener consistencia entre los elementos fixed del sitio. El "top"
+   es un valor fijo, no medido en JS: el sitio no tiene header ni nav
+   sticky en el HTML actual — .encabezado/.nav-principal son CSS sin uso
+   desde que la navegación pasó a .barra-lateral/.barra-inferior (ver la
+   nota en "BARRA LATERAL" más abajo en este archivo) — así que no hay
+   nada arriba de lo que esquivar en ninguna página ni breakpoint.
+   Mismos opacity+translateY a 0.2s ease que ya usa .fab-menu__panel —
+   no se inventa timing nuevo.
+
+   4 variantes por color vía [data-tipo] (mismo patrón que .badge-estado
+   [data-estado]/[data-estado-cuenta]/[data-estado-aviso]): "carga" y
+   "error" usan texto claro fijo en ambos temas (fondos suficientemente
+   oscuros, sin necesitar swap); "advertencia" usa el mismo texto oscuro
+   fijo que ya usa --color-estado-pendiente, incluida aquí literal (no
+   como variable) porque es un token de otro eje semántico — mismo
+   criterio ya documentado para --color-estado-sin-cuenta/badge-estado-
+   cuenta. "éxito" es la única con override de tema: turquesa + texto
+   oscuro en modo oscuro, pero la Light-Mode Turquoise Rule ya
+   documentada en el sitio (turquesa + texto claro falla AA en modo
+   claro) obliga a swapear a navy + texto claro en modo claro — mismo
+   override que ya usa .badge-estado:not([data-estado]). Contraste
+   verificado (fórmula WCAG 2.x) antes de fijar estos valores:
+     - éxito oscuro  (#14B8A6 + #04211D): 6.80:1
+     - éxito claro   (navy + --color-claro-sobre-navy): ~9.6:1 (mismo
+       par ya validado en el resto del sitio)
+     - carga         (navy + --color-claro-sobre-navy): mismo par de arriba
+     - error         (#A93A48 + --color-claro-sobre-navy): 5.31:1
+     - advertencia   (#E8A33D + #2A1D02): 7.64:1
+   Los 5 pasan AA (4.5:1); ninguno se tomó del set --color-estado-* ni
+   se asumió "ya funcionaba en oscuro, debe funcionar en claro". */
 .contenedor-toast {
   position: fixed;
   top: 1.25rem;
@@ -3596,16 +3629,81 @@ summary:focus-visible {
   max-width: min(90vw, 360px);
   padding: 0.65rem 1rem;
   border-radius: var(--radio-full);
-  background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
   font-family: var(--font-cuerpo);
   font-size: 0.85rem;
   font-weight: 600;
-  text-align: center;
+  text-align: left;
   box-shadow: var(--sombra);
   opacity: 1;
   transform: translateY(0);
   transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast[data-tipo="exito"] {
+  background-color: var(--color-toast-exito);
+  color: #04211d;
+}
+
+:root[data-theme="claro"] .toast[data-tipo="exito"] {
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+.toast[data-tipo="carga"] {
+  background-color: var(--color-toast-carga);
+  color: var(--color-claro-sobre-navy);
+}
+
+.toast[data-tipo="error"] {
+  background-color: var(--color-toast-error);
+  color: var(--color-claro-sobre-navy);
+}
+
+.toast[data-tipo="advertencia"] {
+  background-color: var(--color-toast-advertencia);
+  color: #2a1d02;
+}
+
+.toast__icono {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Mismo anillo giratorio que ya usa .overlay-carga-trimestre__anillo
+   (misma @keyframes, ver más abajo en este archivo) — solo el tamaño y
+   los colores del borde cambian para verse bien sobre el fondo navy del
+   toast en vez del fondo de página. */
+.toast__spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(232, 238, 244, 0.35);
+  border-top-color: var(--color-claro-sobre-navy);
+  border-radius: 50%;
+  animation: overlay-carga-trimestre-girar 0.8s linear infinite;
+}
+
+/* pointer-events:auto porque .contenedor-toast (el padre) tiene
+   pointer-events:none — el toast en sí no debe bloquear clics en el
+   contenido de abajo, pero este botón sí necesita recibirlos. */
+.toast__reintentar {
+  pointer-events: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 0.25rem;
+  color: inherit;
+  font-family: var(--font-cuerpo);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.toast__reintentar:hover,
+.toast__reintentar:focus-visible {
+  opacity: 0.8;
 }
 
 /* translateY negativo (antes positivo): el toast vive arriba ahora, así
@@ -4309,7 +4407,8 @@ a.boton-secundario {
     transition: none;
   }
 
-  .overlay-carga-trimestre__anillo {
+  .overlay-carga-trimestre__anillo,
+  .toast__spinner {
     animation-duration: 1.6s;
   }
 }

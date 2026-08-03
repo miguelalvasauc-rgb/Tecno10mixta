@@ -5135,12 +5135,15 @@ async function renderizarCalendario() {
 /* ---------------------------------------------------------
    Toast de confirmación visual — genérico y reutilizable: no es un
    modal (no bloquea nada, no roba el foco), solo confirma que una
-   acción sin resultado visible en pantalla sí surtió efecto (cambiar de
-   tema/grupo). Un solo toast a la vez; #contenedor-toast vive en las 8
-   páginas del sitio (ver admin.html, index.html, etc.), pero por ahora
-   solo se llama desde alternarTema() y alCambiarGrupo() — queda listo
-   para que el panel docente lo reutilice más adelante sin tocar esta
-   función.
+   acción sin resultado visible en pantalla sí surtió efecto. Un solo
+   toast a la vez; #contenedor-toast vive en las 9 páginas del sitio.
+   4 variantes por color (ver --color-toast-* en css/style.css):
+   "exito" (mostrarToast, usado en tema/grupo), "carga" (mostrarToastCarga,
+   persistente hasta que actualizarToastCarga lo cambie), "error" (solo
+   vía actualizarToastCarga, con botón "Reintentar" opcional) y
+   "advertencia" (mostrarToastAdvertencia, aún sin conectar a nada).
+   Todas comparten crearYMostrarToast()/agendarAutodesaparicion() para no
+   repetir la mecánica de reemplazo-inmediato/entrada/salida.
    --------------------------------------------------------- */
 
 // Temporizador de autodesaparición del toast actual: se cancela si otro
@@ -5148,17 +5151,17 @@ async function renderizarCalendario() {
 // viejo intentando animar/quitar un toast que ya no es el vigente.
 let temporizadorToastActual = null;
 
-// mensaje: texto corto de una sola línea. opciones.icono: string, por
-// defecto "✅". Misma sensación de animación que .fab-menu__panel
-// (opacity + translateY, 0.2s ease, ver css/style.css) — mismo timing
-// ya usado en el sitio, no uno nuevo.
-function mostrarToast(mensaje, opciones = {}) {
+// Arma e inserta el <div class="toast"> dentro de #contenedor-toast,
+// reemplazando de inmediato cualquier toast anterior (uno solo a la
+// vez, sin cola) y disparando la animación de entrada. Compartido por
+// todas las funciones mostrarToast*/actualizarToastCarga — el único
+// lugar que toca el DOM del toast, para no duplicar esa mecánica.
+// "spinner: true" pinta el anillo animado de carga en vez de un ícono
+// de texto (ver mostrarToastCarga).
+function crearYMostrarToast(tipo, mensaje, { icono = "", spinner = false } = {}) {
   const contenedor = document.getElementById("contenedor-toast");
-  if (!contenedor) return;
+  if (!contenedor) return null;
 
-  const { icono = "✅" } = opciones;
-
-  // Reemplazo inmediato: sin cola, un solo toast a la vez.
   if (temporizadorToastActual) {
     clearTimeout(temporizadorToastActual);
     temporizadorToastActual = null;
@@ -5167,11 +5170,16 @@ function mostrarToast(mensaje, opciones = {}) {
 
   const toast = document.createElement("div");
   toast.className = "toast toast--oculto";
+  toast.dataset.tipo = tipo;
 
   const iconoEl = document.createElement("span");
-  iconoEl.className = "toast__icono";
   iconoEl.setAttribute("aria-hidden", "true");
-  iconoEl.textContent = icono;
+  if (spinner) {
+    iconoEl.className = "toast__icono toast__spinner";
+  } else {
+    iconoEl.className = "toast__icono";
+    iconoEl.textContent = icono;
+  }
 
   const textoEl = document.createElement("span");
   textoEl.className = "toast__texto";
@@ -5189,12 +5197,17 @@ function mostrarToast(mensaje, opciones = {}) {
   void toast.offsetWidth;
   toast.classList.remove("toast--oculto");
 
+  return toast;
+}
+
+// Programa la salida (fade-out) y el retiro del DOM de "toast" a los
+// "ms" indicados. "transitionend" cubre el caso normal; el setTimeout
+// de respaldo (250ms, más que los 200ms de la transición) asegura que
+// el toast se quite del DOM aunque ese evento no llegue a disparar
+// (pestaña en segundo plano, ver crearYMostrarToast).
+function agendarAutodesaparicion(toast, ms) {
   temporizadorToastActual = setTimeout(() => {
     toast.classList.add("toast--oculto");
-    // "transitionend" cubre el caso normal; el setTimeout de respaldo
-    // (250ms, más que los 200ms de la transición) asegura que el toast
-    // se quite del DOM aunque ese evento no llegue a disparar (misma
-    // situación de pestaña en segundo plano de arriba).
     let yaQuitado = false;
     const quitarToast = () => {
       if (yaQuitado) return;
@@ -5204,7 +5217,81 @@ function mostrarToast(mensaje, opciones = {}) {
     toast.addEventListener("transitionend", quitarToast, { once: true });
     setTimeout(quitarToast, 250);
     temporizadorToastActual = null;
-  }, 2500);
+  }, ms);
+}
+
+// mensaje: texto corto de una sola línea. opciones.icono: string, por
+// defecto "✅". Misma sensación de animación que .fab-menu__panel
+// (opacity + translateY, 0.2s ease, ver css/style.css) — mismo timing
+// ya usado en el sitio, no uno nuevo. Se autodesaparece a los 2.5s.
+function mostrarToast(mensaje, opciones = {}) {
+  const { icono = "✅" } = opciones;
+  const toast = crearYMostrarToast("exito", mensaje, { icono });
+  if (toast) agendarAutodesaparicion(toast, 2500);
+}
+
+// Toast persistente (sin temporizador propio) para operaciones en
+// curso: se queda en pantalla hasta que actualizarToastCarga() lo
+// cambie a "éxito" o "error". Retorna el elemento del toast — el
+// llamador debe guardarlo y pasarlo tal cual a actualizarToastCarga().
+function mostrarToastCarga(mensaje) {
+  return crearYMostrarToast("carga", mensaje, { spinner: true });
+}
+
+// Actualiza un toast de carga ya visible a su resultado final.
+// "referencia" es el elemento que devolvió mostrarToastCarga(): si ya
+// no es el toast actualmente visible (el usuario disparó otra acción
+// mientras tanto y ya se reemplazó), no hace nada — nunca "resucita" un
+// toast viejo. opciones: { tipo: "exito" | "error", mensaje,
+// onReintentar } — onReintentar solo aplica con tipo "error" y es
+// opcional; si se pasa, agrega un botón "Reintentar" con su propio
+// pointer-events:auto (el contenedor entero tiene pointer-events:none).
+// "éxito" se autodesaparece a los 2.5s, igual que mostrarToast(); "error"
+// a los 7s, para dar tiempo a leer y decidir si reintentar.
+function actualizarToastCarga(referencia, opciones) {
+  const contenedor = document.getElementById("contenedor-toast");
+  if (!contenedor || !referencia || referencia !== contenedor.querySelector(".toast")) return;
+
+  const { tipo, mensaje, onReintentar } = opciones;
+
+  referencia.dataset.tipo = tipo;
+
+  const iconoEl = referencia.querySelector(".toast__icono");
+  if (iconoEl) {
+    iconoEl.classList.remove("toast__spinner");
+    iconoEl.textContent = tipo === "exito" ? "✅" : "❌";
+  }
+
+  const textoEl = referencia.querySelector(".toast__texto");
+  if (textoEl) textoEl.textContent = mensaje;
+
+  if (tipo === "error" && onReintentar) {
+    const botonReintentar = document.createElement("button");
+    botonReintentar.type = "button";
+    botonReintentar.className = "toast__reintentar";
+    botonReintentar.textContent = "Reintentar";
+    botonReintentar.addEventListener("click", () => {
+      // Cancela la autodesaparición pendiente: el resultado del
+      // reintento (otro mostrarToastCarga/actualizarToastCarga) decide
+      // qué pasa después, no este temporizador viejo.
+      if (temporizadorToastActual) {
+        clearTimeout(temporizadorToastActual);
+        temporizadorToastActual = null;
+      }
+      onReintentar();
+    });
+    referencia.appendChild(botonReintentar);
+  }
+
+  agendarAutodesaparicion(referencia, tipo === "error" ? 7000 : 2500);
+}
+
+// Simple, mensaje + ícono, mismo autodesaparecer de 2.5s que el éxito.
+// Sin conectar a nada todavía.
+function mostrarToastAdvertencia(mensaje, opciones = {}) {
+  const { icono = "⚠️" } = opciones;
+  const toast = crearYMostrarToast("advertencia", mensaje, { icono });
+  if (toast) agendarAutodesaparicion(toast, 2500);
 }
 
 /* =========================================================
@@ -8319,6 +8406,39 @@ async function guardarTrimestreDesbloqueado(nuevo) {
   if (error) throw error;
 }
 
+// Guarda el nuevo trimestre desbloqueado con feedback por toast: carga
+// mientras se guarda, éxito o error+Reintentar al terminar (ver
+// mostrarToastCarga()/actualizarToastCarga()). "Reintentar" vuelve a
+// llamar a esta misma función con el mismo "nuevo" — cada intento es
+// independiente, no importa cuántas veces falle.
+async function ejecutarCambioTrimestre(nuevo) {
+  const referenciaToast = mostrarToastCarga("Guardando cambio de trimestre…");
+  try {
+    await guardarTrimestreDesbloqueado(nuevo);
+
+    estadoTrimestreModulo.actual = nuevo;
+    actualizarUITrimestreModulo();
+
+    // Sincroniza el resto del sitio con el nuevo valor de inmediato, sin
+    // esperar a que otra pestaña/recarga vuelva a consultar
+    // config_sitio — mismo caché que ya usa obtenerTrimestreDesbloqueado()
+    // (sección 2), sin modificar esa función.
+    localStorage.setItem(CLAVE_CACHE_TRIMESTRE_DESBLOQUEADO, String(nuevo));
+    trimestreDesbloqueado = nuevo;
+
+    actualizarToastCarga(referenciaToast, {
+      tipo: "exito",
+      mensaje: "Trimestre actualizado a " + nuevo + "°",
+    });
+  } catch (error) {
+    actualizarToastCarga(referenciaToast, {
+      tipo: "error",
+      mensaje: "No se pudo guardar. Revisa tu conexión.",
+      onReintentar: () => ejecutarCambioTrimestre(nuevo),
+    });
+  }
+}
+
 function activarFormularioTrimestre() {
   const formulario = document.getElementById("formulario-trimestre");
   const modal = document.getElementById("modal-confirmar-trimestre");
@@ -8343,23 +8463,15 @@ function activarFormularioTrimestre() {
     modal.showModal();
   });
 
+  // El modal solo confirma la intención; en cuanto se confirma se
+  // cierra y el resto del feedback (carga/éxito/error) sigue por toast
+  // — un solo lugar para eso en vez de repetirlo dentro del modal.
   botonConfirmar.addEventListener("click", async () => {
     if (nuevoPendiente === null) return;
 
-    errorConfirmar.hidden = true;
-    botonConfirmar.disabled = true;
-    try {
-      await guardarTrimestreDesbloqueado(nuevoPendiente);
-
-      estadoTrimestreModulo.actual = nuevoPendiente;
-      modal.close();
-      actualizarUITrimestreModulo();
-    } catch (error) {
-      errorConfirmar.textContent = "No se pudo guardar el cambio: " + (error?.message || "intenta de nuevo.");
-      errorConfirmar.hidden = false;
-    } finally {
-      botonConfirmar.disabled = false;
-    }
+    const nuevoTrimestre = nuevoPendiente;
+    modal.close();
+    await ejecutarCambioTrimestre(nuevoTrimestre);
   });
 
   // Si se cierra el dialog sin confirmar (Cancelar, backdrop o ✕), el
