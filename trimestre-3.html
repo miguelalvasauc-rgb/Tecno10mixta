@@ -11,6 +11,11 @@
 <body data-trimestre="3">
   <a href="#main-content" class="enlace-saltar">Saltar al contenido principal</a>
 
+  <!-- Barra de progreso de lectura: mejora progresiva solo-CSS
+       (animation-timeline: scroll(root), ver css/style.css), sin JS.
+       aria-hidden porque es puramente decorativa. -->
+  <div class="barra-progreso-lectura" aria-hidden="true"></div>
+
   <!-- ===================== BARRA LATERAL (desktop ≥1024px) ===================== -->
   <aside class="barra-lateral" aria-label="Navegación principal">
     <a href="index.html" class="barra-lateral__logo" aria-label="Ir a la portada">
