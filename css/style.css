@@ -6214,7 +6214,7 @@ button.badge-estado {
       transform-origin: left center;
       animation: llenarBarra ease-out backwards;
       animation-timeline: view();
-      animation-range: entry 10% entry 90%;
+      animation-range: entry 50% entry 100%;
     }
   }
 }
