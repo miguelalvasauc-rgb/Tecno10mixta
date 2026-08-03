@@ -651,6 +651,12 @@
     </form>
   </dialog>
 
+  <!-- Toast de confirmación visual genérico (no modal, no bloquea nada,
+       se autodesaparece solo) — ver mostrarToast() en js/main.js. Aquí
+       solo el contenedor: sin ninguna acción de admin.html cableada
+       todavía a mostrarToast(). -->
+  <div id="contenedor-toast" class="contenedor-toast" aria-live="polite" aria-atomic="true"></div>
+
   <script src="js/main.js"></script>
 </body>
 </html>

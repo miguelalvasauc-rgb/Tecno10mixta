@@ -3540,6 +3540,10 @@ summary:focus-visible {
   body {
     transition: background-color 0.25s ease, color 0.25s ease;
   }
+
+  .toast {
+    transition: opacity 0.01ms linear, transform 0.01ms linear;
+  }
 }
 
 @media (max-width: 480px) {
@@ -3553,6 +3557,64 @@ summary:focus-visible {
     height: 44px;
     font-size: 1.2rem;
   }
+}
+
+/* ---------- Toast de confirmación (ver mostrarToast() en js/main.js) ----------
+   Genérico y reutilizable, cableado por ahora solo a tema/grupo. Arriba
+   a la derecha, mismo espaciado que .fab-menu (right: 1.25rem, 1rem en
+   pantallas muy chicas) para mantener consistencia entre los elementos
+   fixed del sitio. El "top" es un valor fijo, no medido en JS: el sitio
+   no tiene header ni nav sticky en el HTML actual — .encabezado/
+   .nav-principal son CSS sin uso desde que la navegación pasó a
+   .barra-lateral/.barra-inferior (ver la nota en "BARRA LATERAL" más
+   abajo en este archivo) — así que no hay nada arriba de lo que esquivar
+   en ninguna página ni breakpoint. Mismos opacity+translateY a 0.2s ease
+   que ya usa .fab-menu__panel — no se inventa timing nuevo. Fondo navy
+   (--color-primario) + texto claro fijo: mismo tratamiento ya usado en
+   .badge-grupo/.etiqueta-nivel, que ya pasa contraste AA en ambos temas
+   sin necesitar el override de la Light-Mode Turquoise Rule (turquesa de
+   fondo + texto claro falla AA en modo claro). */
+.contenedor-toast {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 95;
+  display: flex;
+  pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .contenedor-toast {
+    right: 1rem;
+  }
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: min(90vw, 360px);
+  padding: 0.65rem 1rem;
+  border-radius: var(--radio-full);
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+  font-family: var(--font-cuerpo);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: var(--sombra);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* translateY negativo (antes positivo): el toast vive arriba ahora, así
+   que entra/sale "cayendo" ligeramente desde arriba en vez de "subiendo"
+   desde abajo — mismo desplazamiento de 8px, mismo timing, solo el
+   signo cambia con la nueva posición. */
+.toast--oculto {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 /* ---------- Mensaje "sin resultados" ---------- */

@@ -5132,6 +5132,81 @@ async function renderizarCalendario() {
   });
 }
 
+/* ---------------------------------------------------------
+   Toast de confirmación visual — genérico y reutilizable: no es un
+   modal (no bloquea nada, no roba el foco), solo confirma que una
+   acción sin resultado visible en pantalla sí surtió efecto (cambiar de
+   tema/grupo). Un solo toast a la vez; #contenedor-toast vive en las 8
+   páginas del sitio (ver admin.html, index.html, etc.), pero por ahora
+   solo se llama desde alternarTema() y alCambiarGrupo() — queda listo
+   para que el panel docente lo reutilice más adelante sin tocar esta
+   función.
+   --------------------------------------------------------- */
+
+// Temporizador de autodesaparición del toast actual: se cancela si otro
+// toast lo reemplaza antes de que termine, para no dejar un timeout
+// viejo intentando animar/quitar un toast que ya no es el vigente.
+let temporizadorToastActual = null;
+
+// mensaje: texto corto de una sola línea. opciones.icono: string, por
+// defecto "✅". Misma sensación de animación que .fab-menu__panel
+// (opacity + translateY, 0.2s ease, ver css/style.css) — mismo timing
+// ya usado en el sitio, no uno nuevo.
+function mostrarToast(mensaje, opciones = {}) {
+  const contenedor = document.getElementById("contenedor-toast");
+  if (!contenedor) return;
+
+  const { icono = "✅" } = opciones;
+
+  // Reemplazo inmediato: sin cola, un solo toast a la vez.
+  if (temporizadorToastActual) {
+    clearTimeout(temporizadorToastActual);
+    temporizadorToastActual = null;
+  }
+  contenedor.innerHTML = "";
+
+  const toast = document.createElement("div");
+  toast.className = "toast toast--oculto";
+
+  const iconoEl = document.createElement("span");
+  iconoEl.className = "toast__icono";
+  iconoEl.setAttribute("aria-hidden", "true");
+  iconoEl.textContent = icono;
+
+  const textoEl = document.createElement("span");
+  textoEl.className = "toast__texto";
+  textoEl.textContent = mensaje;
+
+  toast.append(iconoEl, textoEl);
+  contenedor.appendChild(toast);
+
+  // Fuerza un reflow antes de quitar "toast--oculto": si se agrega y se
+  // quita la clase en el mismo tick, el navegador nunca pinta el estado
+  // inicial y la transición de entrada no se ve (salta directo al
+  // final). Síncrono a propósito (no requestAnimationFrame): en una
+  // pestaña en segundo plano el navegador puede suspender rAF
+  // indefinidamente, y con eso la clase nunca llegaría a quitarse.
+  void toast.offsetWidth;
+  toast.classList.remove("toast--oculto");
+
+  temporizadorToastActual = setTimeout(() => {
+    toast.classList.add("toast--oculto");
+    // "transitionend" cubre el caso normal; el setTimeout de respaldo
+    // (250ms, más que los 200ms de la transición) asegura que el toast
+    // se quite del DOM aunque ese evento no llegue a disparar (misma
+    // situación de pestaña en segundo plano de arriba).
+    let yaQuitado = false;
+    const quitarToast = () => {
+      if (yaQuitado) return;
+      yaQuitado = true;
+      toast.remove();
+    };
+    toast.addEventListener("transitionend", quitarToast, { once: true });
+    setTimeout(quitarToast, 250);
+    temporizadorToastActual = null;
+  }, 2500);
+}
+
 /* =========================================================
    7. TEMA CLARO / OSCURO
    ========================================================= */
@@ -5157,6 +5232,12 @@ function alternarTema() {
   temaActual = temaActual === "oscuro" ? "claro" : "oscuro";
   localStorage.setItem(CLAVE_TEMA, temaActual);
   aplicarTema(temaActual);
+  // Mismo ícono que ya usa .boton-tema__icono para cada tema (ver
+  // aplicarTema arriba): luna/sol en vez del ✅ genérico, más específico
+  // para esta confirmación.
+  mostrarToast(temaActual === "oscuro" ? "Modo oscuro activado" : "Modo claro activado", {
+    icono: temaActual === "oscuro" ? "🌙" : "☀️",
+  });
 }
 
 /* =========================================================
@@ -5604,6 +5685,7 @@ async function alCambiarGrupo(evento) {
   grupoActual = evento.target.value;
   localStorage.setItem(CLAVE_GRUPO, grupoActual);
   sincronizarSelectorGrupo(grupoActual);
+  mostrarToast("Mostrando contenido de " + textoGrupo(grupoActual));
   await renderizarTodo();
 }
 
