@@ -3021,6 +3021,15 @@ let grupoActual = localStorage.getItem(CLAVE_GRUPO) || "todos";
 // localStorage por la misma razón que el grupo.
 let temaActual = localStorage.getItem(CLAVE_TEMA) || "oscuro";
 
+// Preferencia de vista para Tareas/Actividades/Proyectos — piloto SOLO
+// en trimestre-1.html (ver TRIMESTRE_ACTUAL más abajo, sección 2): una
+// sola clave global, no una por sección, para que las 3 secciones
+// siempre coincidan. Se lee una sola vez aquí (no se arranca en
+// "acordeon" y se cambia después) para que el primer render ya salga en
+// el modo correcto, sin parpadeo.
+const CLAVE_VISTA_SECUENCIAS = "vistaSecuenciasTrimestre1";
+let vistaSecuenciasActual = localStorage.getItem(CLAVE_VISTA_SECUENCIAS) || "acordeon";
+
 const CLAVE_SIDEBAR_COLAPSADA = "sidebarColapsada";
 const CLAVE_SUBMENU_INICIO = "submenuInicioExpandido";
 const CLAVE_SUBMENU_TRIMESTRE = "submenuTrimestreExpandido";
@@ -3793,9 +3802,225 @@ function crearChecklistProgreso(tipo, item, tarjeta) {
   return indicador;
 }
 
+/* ---------------------------------------------------------
+   Vista "Acordeón / Pestañas" de Tareas/Actividades/Proyectos — piloto
+   SOLO en trimestre-1.html (TRIMESTRE_ACTUAL === "1"), no toca
+   Temario/Rúbricas ni trimestre-2/3.html. Nunca recalcula
+   completadas/total/porcentaje: solo reordena/oculta el DOM que
+   renderizarTareas()/Actividades()/Proyectos() ya construyeron (los
+   <details class="X-grupo"> con su .X-grupo__titulo/.X-grupo__conteo/
+   .barra-progreso ya calculados) — ver aplicarModoVistaSecuencia(), que
+   cada una de esas 3 funciones llama al final de su propio render.
+   --------------------------------------------------------- */
+
+// Arma el control segmentado de 2 botones (aria-pressed, no es un
+// role="tablist": no controla paneles propios, es una preferencia de
+// presentación — distinto del tablist real de TASK 2 que sí cambia qué
+// grupo se ve). "idControl" identifica cuál de las 3 instancias es (una
+// por sección), pero las 3 reflejan y cambian la MISMA preferencia.
+function crearControlVistaSecuencias(idControl) {
+  const control = document.createElement("div");
+  control.className = "control-vista-secuencias";
+  control.id = idControl;
+
+  [
+    { vista: "acordeon", texto: "🪗 Acordeón" },
+    { vista: "pestanas", texto: "📑 Pestañas" },
+  ].forEach(({ vista, texto }) => {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "control-vista-secuencias__boton";
+    boton.dataset.vista = vista;
+    boton.textContent = texto;
+    boton.addEventListener("click", () => {
+      if (vistaSecuenciasActual === vista) return;
+      vistaSecuenciasActual = vista;
+      localStorage.setItem(CLAVE_VISTA_SECUENCIAS, vista);
+      actualizarControlesVistaSecuencias();
+      ["contenedor-tareas", "contenedor-actividades", "contenedor-proyectos"].forEach(
+        aplicarModoVistaSecuencia
+      );
+    });
+    control.appendChild(boton);
+  });
+
+  return control;
+}
+
+// Sincroniza aria-pressed/estado visual de LAS 3 instancias del control
+// (aunque el alumno no haya scrolleado hasta las otras 2 todavía) con
+// vistaSecuenciasActual — se llama al crear cada control y cada vez que
+// cambia la preferencia desde cualquiera de los 3.
+function actualizarControlesVistaSecuencias() {
+  document.querySelectorAll(".control-vista-secuencias__boton").forEach((boton) => {
+    const activo = boton.dataset.vista === vistaSecuenciasActual;
+    boton.setAttribute("aria-pressed", String(activo));
+    boton.classList.toggle("control-vista-secuencias__boton--activo", activo);
+  });
+}
+
+// Muestra el grupo "indiceSeleccionado" y oculta el resto (clase
+// "grupo--oculto-por-tab"); actualiza aria-selected + tabIndex (roving
+// tabindex: solo la pestaña activa es alcanzable con Tab, el resto se
+// alcanza con flecha izq/der, ver el listener "keydown" más abajo).
+function seleccionarGrupoEnModoPestanas(contenedor, tablist, indiceSeleccionado) {
+  Array.from(contenedor.children)
+    .filter((hijo) => hijo.tagName === "DETAILS")
+    .forEach((grupo, indice) => {
+      grupo.classList.toggle("grupo--oculto-por-tab", indice !== indiceSeleccionado);
+    });
+
+  Array.from(tablist.children).forEach((tab, indice) => {
+    const seleccionado = indice === indiceSeleccionado;
+    tab.setAttribute("aria-selected", String(seleccionado));
+    tab.classList.toggle("tablist-secuencias__tab--activo", seleccionado);
+    tab.tabIndex = seleccionado ? 0 : -1;
+  });
+}
+
+// Aplica vistaSecuenciasActual al contenido YA renderizado de
+// "idContenedor" (los <details class="X-grupo"> hijos directos). Se
+// llama al final de renderizarTareas()/Actividades()/Proyectos(), cada
+// vez que alguna vuelve a renderizar (cambio de grupo, etc.) y cada vez
+// que cambia la preferencia — siempre parte de limpiar cualquier
+// tablist anterior antes de reconstruir, así que es seguro llamarla
+// varias veces seguidas.
+function aplicarModoVistaSecuencia(idContenedor) {
+  const contenedor = document.getElementById(idContenedor);
+  if (!contenedor) return;
+
+  const grupos = Array.from(contenedor.children).filter((hijo) => hijo.tagName === "DETAILS");
+  if (grupos.length === 0) return;
+
+  const tablistPrevio = contenedor.querySelector(':scope > [role="tablist"]');
+  if (tablistPrevio) tablistPrevio.remove();
+
+  if (vistaSecuenciasActual === "acordeon") {
+    grupos.forEach((grupo, indice) => {
+      grupo.classList.remove("grupo--oculto-por-tab");
+      const resumen = grupo.querySelector(":scope > summary");
+      if (resumen) resumen.hidden = false;
+      // Mismo comportamiento que ya existe hoy: primer grupo abierto,
+      // resto cerrado — no se recuerda cuál estaba abierto antes de
+      // pasar a "pestañas".
+      grupo.open = indice === 0;
+    });
+    return;
+  }
+
+  // Modo "pestañas": todos los <details> de grupo quedan open=true (su
+  // contenido debe existir en el DOM para ser accesible/imprimible),
+  // su <summary> propio se oculta (la pestaña reemplaza esa función), y
+  // solo el grupo seleccionado queda visible.
+  const tablist = document.createElement("div");
+  tablist.className = "tablist-secuencias";
+  tablist.setAttribute("role", "tablist");
+
+  grupos.forEach((grupo, indice) => {
+    grupo.open = true;
+    // id estable para aria-controls; los <details class="X-grupo"> no
+    // traen id propio de renderizarTareas/Actividades/Proyectos (esa
+    // parte no se tocó), así que se asigna aquí si hace falta.
+    if (!grupo.id) grupo.id = idContenedor + "-grupo-" + indice;
+
+    const resumen = grupo.querySelector(":scope > summary");
+    if (resumen) resumen.hidden = true;
+
+    const titulo = grupo.querySelector('[class$="__titulo"]');
+    const conteo = grupo.querySelector('[data-rol="conteo-grupo"]');
+
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "tablist-secuencias__tab";
+    tab.setAttribute("role", "tab");
+    tab.id = idContenedor + "-tab-" + indice;
+    tab.setAttribute("aria-controls", grupo.id);
+    tab.dataset.indice = String(indice);
+
+    const tituloTab = document.createElement("span");
+    tituloTab.className = "tablist-secuencias__tab-titulo";
+    tituloTab.textContent = titulo ? titulo.textContent : "";
+
+    const conteoTab = document.createElement("span");
+    conteoTab.className = "tablist-secuencias__tab-conteo";
+    conteoTab.textContent = conteo ? conteo.textContent : "";
+
+    tab.append(tituloTab, conteoTab);
+    tab.addEventListener("click", () => {
+      seleccionarGrupoEnModoPestanas(contenedor, tablist, Number(tab.dataset.indice));
+    });
+
+    tablist.appendChild(tab);
+  });
+
+  // Navegación por flechas izq/der entre pestañas (patrón ARIA APG para
+  // role="tablist" — "Tab" simple no bastaría, por el roving tabindex
+  // de arriba: solo la pestaña activa es alcanzable con Tab, así que
+  // sin flechas el resto sería inalcanzable por teclado).
+  tablist.addEventListener("keydown", (evento) => {
+    if (evento.key !== "ArrowLeft" && evento.key !== "ArrowRight") return;
+    const tabs = Array.from(tablist.children);
+    const indiceActual = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
+    if (indiceActual === -1) return;
+    const delta = evento.key === "ArrowRight" ? 1 : -1;
+    const siguiente = (indiceActual + delta + tabs.length) % tabs.length;
+    evento.preventDefault();
+    seleccionarGrupoEnModoPestanas(contenedor, tablist, siguiente);
+    tabs[siguiente].focus();
+  });
+
+  contenedor.insertBefore(tablist, grupos[0]);
+  seleccionarGrupoEnModoPestanas(contenedor, tablist, 0);
+}
+
+// Deep-link desde progreso.html (anclas "#tarea-{id}"/"#actividad-{id}"/
+// "#proyecto-{id}", mismos ids que ya usan las tarjetas). En modo
+// "pestañas" el navegador solo sabe revelar un <details> CERRADO
+// ancestro de la URL; no sabe quitar la clase "grupo--oculto-por-tab"
+// (CSS arbitrario, no semántica nativa de <details>), así que sin esto
+// el elemento existe pero queda invisible. En modo "acordeón" no hace
+// falta nada — ese comportamiento nativo ya funciona solo, no se toca.
+function activarPestanaDesdeHash() {
+  if (vistaSecuenciasActual !== "pestanas") return;
+
+  const hash = window.location.hash;
+  if (!hash || hash.length < 2) return;
+
+  const objetivo = document.getElementById(hash.slice(1));
+  if (!objetivo) return;
+
+  const grupo = objetivo.closest(".tareas-grupo, .actividades-grupo, .proyectos-grupo");
+  if (!grupo) return;
+
+  const contenedor = grupo.parentElement;
+  const tablist = contenedor?.querySelector(':scope > [role="tablist"]');
+  if (!tablist) return;
+
+  const grupos = Array.from(contenedor.children).filter((hijo) => hijo.tagName === "DETAILS");
+  const indice = grupos.indexOf(grupo);
+  if (indice === -1) return;
+
+  seleccionarGrupoEnModoPestanas(contenedor, tablist, indice);
+
+  // El intento nativo del navegador de hacer scroll a este elemento ya
+  // pasó (y probablemente falló: el elemento no existía todavía, o
+  // existía pero seguía oculto por la clase de arriba); ahora que ya es
+  // visible, se repite el scroll a mano.
+  objetivo.scrollIntoView({ block: "start" });
+}
+
 async function renderizarTareas() {
   const contenedor = document.getElementById("contenedor-tareas");
   if (!contenedor) return;
+
+  // Piloto de vista Acordeón/Pestañas: SOLO trimestre-1.html. El control
+  // se inserta una sola vez (persiste entre re-renders, ej. cambio de
+  // grupo) porque vive FUERA de "contenedor" — el innerHTML de abajo no
+  // lo toca.
+  if (TRIMESTRE_ACTUAL === "1" && !document.getElementById("control-vista-tareas")) {
+    contenedor.insertAdjacentElement("beforebegin", crearControlVistaSecuencias("control-vista-tareas"));
+    actualizarControlesVistaSecuencias();
+  }
 
   const datos = (await obtenerTareas(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
@@ -3923,11 +4148,22 @@ async function renderizarTareas() {
   });
 
   actualizarResumenProgreso("resumen-progreso-tareas", datos, "tarea", "tareas");
+  if (TRIMESTRE_ACTUAL === "1") aplicarModoVistaSecuencia("contenedor-tareas");
 }
 
 async function renderizarActividades() {
   const contenedor = document.getElementById("contenedor-actividades");
   if (!contenedor) return;
+
+  // Piloto de vista Acordeón/Pestañas: SOLO trimestre-1.html (ver la
+  // misma nota en renderizarTareas()).
+  if (TRIMESTRE_ACTUAL === "1" && !document.getElementById("control-vista-actividades")) {
+    contenedor.insertAdjacentElement(
+      "beforebegin",
+      crearControlVistaSecuencias("control-vista-actividades")
+    );
+    actualizarControlesVistaSecuencias();
+  }
 
   const datos = (await obtenerActividades(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
@@ -4050,11 +4286,22 @@ async function renderizarActividades() {
   });
 
   actualizarResumenProgreso("resumen-progreso-actividades", datos, "actividad", "actividades");
+  if (TRIMESTRE_ACTUAL === "1") aplicarModoVistaSecuencia("contenedor-actividades");
 }
 
 async function renderizarProyectos() {
   const contenedor = document.getElementById("contenedor-proyectos");
   if (!contenedor) return;
+
+  // Piloto de vista Acordeón/Pestañas: SOLO trimestre-1.html (ver la
+  // misma nota en renderizarTareas()).
+  if (TRIMESTRE_ACTUAL === "1" && !document.getElementById("control-vista-proyectos")) {
+    contenedor.insertAdjacentElement(
+      "beforebegin",
+      crearControlVistaSecuencias("control-vista-proyectos")
+    );
+    actualizarControlesVistaSecuencias();
+  }
 
   const datos = (await obtenerProyectos(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
@@ -4217,6 +4464,7 @@ async function renderizarProyectos() {
   });
 
   actualizarResumenProgreso("resumen-progreso-proyectos", datos, "proyecto", "proyectos");
+  if (TRIMESTRE_ACTUAL === "1") aplicarModoVistaSecuencia("contenedor-proyectos");
 }
 
 async function renderizarVideos() {
@@ -6114,11 +6362,21 @@ function activarAccionesPerfilProgreso() {
 // La sincronización inicial (antes del primer renderizarTodo) corre por
 // separado en DOMContentLoaded para no depender del orden de disparo del
 // evento "INITIAL_SESSION" de Supabase.
-clienteSupabase.auth.onAuthStateChange(async () => {
+clienteSupabase.auth.onAuthStateChange(async (evento) => {
   await sincronizarPerfilActivo();
   await actualizarUISesion();
   await renderizarTodo();
   actualizarVisibilidadBannerExamenDiagnostico();
+  // Mismo caso que el comentario de arriba: "INITIAL_SESSION" puede
+  // disparar este renderizarTodo() DESPUÉS del de DOMContentLoaded (por
+  // eso ese comentario existe), pisando la pestaña que
+  // activarPestanaDesdeHash() ya había activado ahí — sin esto, el
+  // deep-link desde progreso.html queda en la pestaña por defecto en
+  // vez de la correcta. Solo para ese evento puntual: en SIGNED_IN/
+  // SIGNED_OUT reales (ya con la página en uso) forzar de vuelta la
+  // pestaña deep-linkeada sí sorprendería al alumno si ya había
+  // cambiado de pestaña él mismo.
+  if (evento === "INITIAL_SESSION" && TRIMESTRE_ACTUAL === "1") activarPestanaDesdeHash();
 });
 
 /* =========================================================
@@ -10020,6 +10278,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   // cachés ya pobladas (ver sección 11).
   await sincronizarPerfilActivo();
   await renderizarTodo();
+
+  // Deep-link desde progreso.html (#tarea-{id}/#actividad-{id}/
+  // #proyecto-{id}): solo hace algo en trimestre-1.html y en modo
+  // "pestañas" — ver activarPestanaDesdeHash(). Se llama UNA sola vez,
+  // aquí en la carga inicial, no en los otros renderizarTodo() (cambio
+  // de grupo/sesión): el hash no cambia ahí, y forzar la pestaña de
+  // vuelta en cada re-render sería sorprender al alumno si ya había
+  // cambiado de pestaña él mismo.
+  if (TRIMESTRE_ACTUAL === "1") activarPestanaDesdeHash();
 
   document.querySelectorAll(".boton-tema").forEach((boton) => boton.addEventListener("click", alternarTema));
   document.getElementById("boton-colapsar-sidebar").addEventListener("click", alternarSidebarColapsada);

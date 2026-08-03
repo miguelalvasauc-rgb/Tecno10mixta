@@ -1386,6 +1386,124 @@ summary:focus-visible {
   border-left-color: var(--color-primario);
 }
 
+/* ---------- Vista "Acordeón / Pestañas" (piloto trimestre-1.html, ver
+   aplicarModoVistaSecuencia() en js/main.js) ----------
+   .control-vista-secuencias: segmentado de 2 opciones (aria-pressed, no
+   es un tablist real — es una preferencia de presentación, no un cambio
+   de panel). Misma forma de píldora que .boton-tema (fondo turquesa +
+   texto oscuro en el segmento activo) con el mismo swap a navy en modo
+   claro (Light-Mode Turquoise Rule: turquesa + texto claro falla AA ahí
+   — el inactivo nunca usa turquesa de fondo, así que no necesita swap). */
+.control-vista-secuencias {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  margin-bottom: 1.25rem;
+  background-color: var(--color-superficie-baja);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-full);
+}
+
+.control-vista-secuencias__boton {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--radio-full);
+  padding: 0.4rem 0.85rem;
+  font-family: var(--font-cuerpo);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.control-vista-secuencias__boton:hover {
+  color: var(--color-texto);
+}
+
+.control-vista-secuencias__boton:focus-visible {
+  outline: 3px solid var(--color-focus-outline);
+  outline-offset: 2px;
+}
+
+.control-vista-secuencias__boton--activo {
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+}
+
+:root[data-theme="claro"] .control-vista-secuencias__boton--activo {
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+/* .tablist-secuencias: role="tablist" real (TASK 2) — reemplaza los
+   <summary> de cada .X-grupo cuando el modo activo es "pestañas". Hasta
+   7 secuencias con nombres largos por sección (ver DATOS_TAREAS etc. en
+   js/main.js): scroll horizontal en vez de ancho igual por pestaña —
+   .calificacion-tabla__nav-movil ya resuelve el mismo problema así en
+   el panel docente. */
+.tablist-secuencias {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.tablist-secuencias__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-shrink: 0;
+  gap: 0.15rem;
+  max-width: 220px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  white-space: normal;
+  cursor: pointer;
+}
+
+.tablist-secuencias__tab:focus-visible {
+  outline: 3px solid var(--color-focus-outline);
+  outline-offset: 2px;
+}
+
+.tablist-secuencias__tab-titulo {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.tablist-secuencias__tab-conteo {
+  font-size: 0.72rem;
+  color: var(--color-texto-suave);
+}
+
+.tablist-secuencias__tab--activo {
+  border-bottom-color: var(--color-turquesa);
+}
+
+.tablist-secuencias__tab--activo .tablist-secuencias__tab-titulo {
+  color: var(--color-turquesa);
+}
+
+:root[data-theme="claro"] .tablist-secuencias__tab--activo .tablist-secuencias__tab-titulo {
+  color: var(--color-primario);
+}
+
+/* Grupo no seleccionado en modo "pestañas" — el <details> sigue
+   open=true (contenido en el DOM, accesible/imprimible), solo se oculta
+   visualmente. */
+.grupo--oculto-por-tab {
+  display: none;
+}
+
 /* ---------- Tarjetas de tarea expandibles (acordeón con <details>/<summary>,
    mismo patrón que .tarjeta-rubrica) ---------- */
 .tarjeta-tarea {
