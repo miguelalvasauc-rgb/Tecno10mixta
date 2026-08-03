@@ -3501,6 +3501,117 @@ summary:focus-visible {
   text-decoration: underline;
 }
 
+/* Mismo tratamiento que .pie__privacidad (enlace turquesa sobre la
+   superficie siempre-navy del pie, sin override de modo claro por la
+   misma razón). Clase aparte porque es un contenido distinto, no un
+   repurposeo de la de privacidad. */
+.pie__mapa {
+  color: var(--color-claro-sobre-navy-suave);
+}
+
+.pie__mapa a {
+  color: var(--color-turquesa);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* ---------- Mapa del sitio (sitemap.html) ----------
+   Árbol accesible con <ul>/<li> anidadas (nav aria-label="Mapa del
+   sitio"): nivel 1 = páginas completas (tarjeta con borde, ícono +
+   nombre en negritas), nivel 2 = anclas/secciones dentro de esa página
+   (texto más chico, atenuado, con la etiqueta ".mapa-sitio__etiqueta"
+   para distinguirlas de una página completa sin depender solo del
+   tamaño de fuente). Mobile-first por construcción: son listas
+   verticales normales (nunca en fila), así que no hace falta un
+   acordeón aparte para que quepan sin scroll horizontal en pantallas
+   chicas — el mismo layout de columna sirve en cualquier ancho.
+   focus-visible ya lo cubre la regla global de enlaces (ver "Enfoque
+   accesible" arriba), no se repite aquí. */
+.mapa-sitio {
+  max-width: 720px;
+}
+
+.mapa-sitio__nivel-1 {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.mapa-sitio__pagina-item {
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  padding: 1rem 1.25rem;
+  background-color: var(--color-superficie);
+}
+
+.mapa-sitio__pagina {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-texto);
+  text-decoration: none;
+}
+
+.mapa-sitio__pagina:hover {
+  color: var(--color-turquesa);
+  text-decoration: underline;
+}
+
+:root[data-theme="claro"] .mapa-sitio__pagina:hover {
+  color: var(--color-primario);
+}
+
+.mapa-sitio__nivel-2 {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0 0 0 1.5rem;
+  border-left: 2px solid var(--color-borde);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.mapa-sitio__nivel-2 a {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  color: var(--color-texto-suave);
+  text-decoration: none;
+  font-size: 0.88rem;
+}
+
+.mapa-sitio__nivel-2 a:hover {
+  color: var(--color-texto);
+  text-decoration: underline;
+}
+
+.mapa-sitio__etiqueta {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radio-full);
+  background-color: var(--color-superficie-baja);
+  color: var(--color-texto-suave);
+}
+
+@media (max-width: 480px) {
+  .mapa-sitio__pagina-item {
+    padding: 0.85rem 1rem;
+  }
+
+  .mapa-sitio__nivel-2 {
+    padding-left: 1rem;
+  }
+}
+
 /* ---------- Botón flotante "Volver arriba" ---------- */
 /* ---------- FAB de accesos rápidos ----------
    Reemplaza los antiguos #boton-volver-arriba y #boton-tema-flotante por
