@@ -29,7 +29,7 @@
 
     <div class="campo-grupo barra-lateral__grupo">
       <label for="selector-grupo">Grupo</label>
-      <select id="selector-grupo" aria-label="Filtrar contenido por grupo">
+      <select id="selector-grupo" class="selector-grupo-control" aria-label="Filtrar contenido por grupo">
         <option value="todos">Todos los grupos</option>
         <option value="3C">3°C</option>
         <option value="3E">3°E</option>
@@ -406,15 +406,9 @@
        tema y volver arriba. El panel se rellena en runtime por
        activarFabMenu() en js/main.js, con contenido distinto según la
        página (ver esa función). -->
-  <div class="fab-menu" data-fab>
-    <div class="fab-menu__panel" id="fab-menu-panel" hidden>
-      <!-- el contenido se genera/rellena en JS: volver arriba, tema,
-           selector de trimestre (si aplica), "ir a..." (si aplica) -->
-    </div>
-    <button type="button" class="fab-menu__boton" id="fab-menu-boton" aria-expanded="false" aria-controls="fab-menu-panel" aria-label="Abrir menú de accesos rápidos">
-      <span aria-hidden="true">☰</span>
-    </button>
-  </div>
+  <button type="button" id="boton-volver-arriba" class="fab-volver-arriba" aria-label="Volver arriba" hidden>
+    <span aria-hidden="true">🔝</span>
+  </button>
 
   <!-- Toast de confirmación visual genérico (no modal, no bloquea nada,
        se autodesaparece solo) — ver mostrarToast() en js/main.js. -->

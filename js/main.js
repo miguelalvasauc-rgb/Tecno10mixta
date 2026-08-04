@@ -3030,6 +3030,9 @@ let temaActual = localStorage.getItem(CLAVE_TEMA) || "oscuro";
 const CLAVE_VISTA_SECUENCIAS = "vistaSecuenciasTrimestre1";
 let vistaSecuenciasActual = localStorage.getItem(CLAVE_VISTA_SECUENCIAS) || "acordeon";
 
+// ---- Barra lateral legada de una sola columna (admin.html y
+// sitemap.html; las 8 páginas de alumno ya usan el riel de 2 columnas —
+// ver activarFlyoutsRiel en la sección 8) ----
 const CLAVE_SIDEBAR_COLAPSADA = "sidebarColapsada";
 const CLAVE_SUBMENU_INICIO = "submenuInicioExpandido";
 const CLAVE_SUBMENU_TRIMESTRE = "submenuTrimestreExpandido";
@@ -3039,8 +3042,9 @@ const CLAVE_SUBMENU_TRIMESTRE = "submenuTrimestreExpandido";
 // de DOMContentLoaded: el <aside> y el botón ya existen en el DOM en
 // este punto porque el <script> va al final del <body>, así que no hay
 // que esperar al evento para evitar un "flash" de sidebar expandida
-// que luego se colapsa. aplicarEstadoSidebarColapsada está definida
-// más abajo (sección 8) pero se puede llamar aquí por hoisting.
+// que luego se colapsa. aplicarEstadoSidebarColapsada está definida más
+// abajo (sección 8) pero se puede llamar aquí por hoisting; es un no-op
+// seguro en las 7 páginas migradas (no tienen .barra-lateral).
 let sidebarColapsada = localStorage.getItem(CLAVE_SIDEBAR_COLAPSADA) === "true";
 aplicarEstadoSidebarColapsada(sidebarColapsada);
 
@@ -5475,7 +5479,7 @@ function agendarAutodesaparicion(toast, ms) {
 }
 
 // mensaje: texto corto de una sola línea. opciones.icono: string, por
-// defecto "✅". Misma sensación de animación que .fab-menu__panel
+// defecto "✅". Misma sensación de animación que los flyouts/sheets
 // (opacity + translateY, 0.2s ease, ver css/style.css) — mismo timing
 // ya usado en el sitio, no uno nuevo. Se autodesaparece a los 2.5s.
 function mostrarToast(mensaje, opciones = {}) {
@@ -5585,11 +5589,14 @@ function alternarTema() {
    8. BARRA LATERAL / BARRA INFERIOR Y FILTRO DE GRUPO
    ========================================================= */
 
-// Colapsa/expande la barra lateral de escritorio a un riel de solo
-// íconos (ver .barra-lateral--colapsada en css/style.css). El estado
-// se refleja en dos clases porque son dos elementos distintos que
-// necesitan animarse juntos: una en el <aside> (para su ancho) y otra
-// en <body> (para el padding-left que le hace espacio al contenido).
+// ---- Barra lateral legada de una sola columna (SOLO admin.html) ----
+// Colapsa/expande la barra lateral a un riel de solo íconos (ver
+// .barra-lateral--colapsada en css/style.css). El estado se refleja en
+// dos clases porque son dos elementos distintos que necesitan animarse
+// juntos: una en el <aside> (para su ancho) y otra en <body> (para el
+// padding-left que le hace espacio al contenido). Es un no-op seguro en
+// las 7 páginas migradas al riel: ni .barra-lateral ni
+// #boton-colapsar-sidebar existen ahí.
 function aplicarEstadoSidebarColapsada(colapsada) {
   document.body.classList.toggle("body--sidebar-colapsada", colapsada);
 
@@ -5621,6 +5628,8 @@ function aplicarEstadoSubmenu(grupo, expandido) {
   submenu.hidden = !expandido;
 }
 
+// Solo actúa sobre botones con clase .barra-lateral__nav-toggle (admin.html);
+// en las 7 páginas migradas ese selector no encuentra nada y no hace nada.
 function activarSubmenusSidebar() {
   ["inicio", "trimestre"].forEach((grupo) => {
     const clave = grupo === "inicio" ? CLAVE_SUBMENU_INICIO : CLAVE_SUBMENU_TRIMESTRE;
@@ -5633,6 +5642,139 @@ function activarSubmenusSidebar() {
       localStorage.setItem(clave, String(nuevoEstado));
       aplicarEstadoSubmenu(grupo, nuevoEstado);
     });
+  });
+}
+
+// ---- Motor genérico de paneles con disparador (flyouts del riel y
+// bottom sheets de la barra inferior comparten esta misma mecánica) ----
+// Cada botón con aria-haspopup="true" dentro de selectorDisparadores abre
+// su panel asociado, indicado por aria-controls. Reglas de cierre: clic
+// fuera del panel Y de su botón trigger, tecla Escape, o clic de nuevo en
+// el mismo botón trigger (toggle) — solo un panel abierto a la vez. No se
+// usa <dialog> (no cubre el patrón trigger/panel ni "clic afuera"), así
+// que el retorno de foco al trigger se implementa a mano en cada cierre.
+// opciones.alAbrir/alCerrar son ganchos opcionales para efectos extra
+// (bloqueo de scroll, backdrop) que solo necesitan los sheets móviles.
+// Devuelve un controlador con cerrarPanel() para que el llamador pueda
+// cerrar el panel abierto desde fuera (ej. gesto de swipe).
+function activarPanelesConDisparador(selectorDisparadores, claseVisible, opciones = {}) {
+  const disparadores = Array.from(document.querySelectorAll(selectorDisparadores));
+  if (disparadores.length === 0) return null;
+
+  const prefiereMovimientoReducido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const DURACION_MS = prefiereMovimientoReducido ? 0 : (opciones.duracionMs ?? 180);
+
+  let panelAbierto = null; // { boton, panel }
+
+  function cerrarPanel(devolverFoco) {
+    if (!panelAbierto) return;
+    const { boton, panel } = panelAbierto;
+    panel.classList.remove(claseVisible);
+    boton.setAttribute("aria-expanded", "false");
+    setTimeout(() => { panel.hidden = true; }, DURACION_MS);
+    panelAbierto = null;
+    opciones.alCerrar?.(panel);
+    if (devolverFoco) boton.focus();
+  }
+
+  function abrirPanel(boton, panel) {
+    if (panelAbierto) cerrarPanel(false);
+    panel.hidden = false;
+    // Fuerza un reflow para que el cambio de "hidden" a visible no se
+    // funda con la transición de entrada (si no, el navegador nunca ve
+    // el estado inicial opacity:0 y no anima nada).
+    void panel.offsetWidth;
+    panel.classList.add(claseVisible);
+    boton.setAttribute("aria-expanded", "true");
+    panelAbierto = { boton, panel };
+    opciones.alAbrir?.(panel);
+  }
+
+  disparadores.forEach((boton) => {
+    const panel = document.getElementById(boton.getAttribute("aria-controls"));
+    if (!panel) return;
+
+    boton.addEventListener("click", () => {
+      if (panelAbierto?.panel === panel) cerrarPanel(true);
+      else abrirPanel(boton, panel);
+    });
+
+    // Los enlaces dentro del panel navegan (anclas locales o a otra
+    // página); cerrarlo al hacer clic en uno evita dejarlo superpuesto
+    // sobre el contenido después de saltar de sección.
+    panel.querySelectorAll("a").forEach((enlace) => {
+      enlace.addEventListener("click", () => cerrarPanel(false));
+    });
+  });
+
+  document.addEventListener("click", (evento) => {
+    if (!panelAbierto) return;
+    const { boton, panel } = panelAbierto;
+    if (panel.contains(evento.target) || boton.contains(evento.target)) return;
+    cerrarPanel(true);
+  });
+
+  document.addEventListener("keydown", (evento) => {
+    if (evento.key === "Escape" && panelAbierto) cerrarPanel(true);
+  });
+
+  return { cerrarPanel: () => cerrarPanel(true) };
+}
+
+// Riel de navegación (Discord/Notion-style, desktop ≥1024px).
+function activarFlyoutsRiel() {
+  activarPanelesConDisparador('.riel [aria-haspopup="true"]', "riel-flyout--visible");
+}
+
+// Barra inferior + bottom sheets (móvil <1024px): mismo motor que el
+// riel, con dos extras propios de un sheet — backdrop semitransparente
+// detrás y bloqueo de scroll del body mientras está abierto — y cierre
+// adicional por swipe hacia abajo sobre el propio sheet.
+function activarSheetsMovil() {
+  const backdrop = document.getElementById("sheet-backdrop");
+  const prefiereMovimientoReducido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const DURACION_MS = prefiereMovimientoReducido ? 0 : 220;
+
+  const controlador = activarPanelesConDisparador(
+    '.barra-inferior [aria-haspopup="true"]',
+    "bottom-sheet--visible",
+    {
+      duracionMs: DURACION_MS,
+      alAbrir: () => {
+        document.body.classList.add("body--sheet-abierto");
+        if (!backdrop) return;
+        backdrop.hidden = false;
+        void backdrop.offsetWidth;
+        backdrop.classList.add("sheet-backdrop--visible");
+      },
+      alCerrar: () => {
+        document.body.classList.remove("body--sheet-abierto");
+        if (!backdrop) return;
+        backdrop.classList.remove("sheet-backdrop--visible");
+        setTimeout(() => { backdrop.hidden = true; }, DURACION_MS);
+      },
+    }
+  );
+  if (!controlador) return;
+
+  // Cierre por swipe hacia abajo: umbral simple de distancia vertical
+  // entre touchstart y touchend, sin inercia ni seguimiento visual del
+  // dedo (el sheet ya anima su salida vía CSS al recibir la clase
+  // "visible" — ver activarPanelesConDisparador).
+  const UMBRAL_SWIPE_PX = 60;
+  document.querySelectorAll(".bottom-sheet").forEach((sheet) => {
+    let inicioY = null;
+
+    sheet.addEventListener("touchstart", (evento) => {
+      inicioY = evento.touches[0].clientY;
+    }, { passive: true });
+
+    sheet.addEventListener("touchend", (evento) => {
+      if (inicioY == null) return;
+      const distancia = evento.changedTouches[0].clientY - inicioY;
+      inicioY = null;
+      if (distancia > UMBRAL_SWIPE_PX) controlador.cerrarPanel();
+    }, { passive: true });
   });
 }
 
@@ -5652,33 +5794,73 @@ const ANCLAS_DE_TRIMESTRE = [
   "entrega",
 ];
 
+// Puebla a la vez el flyout de Trimestre del riel (desktop) y el sheet de
+// Trimestre de la barra inferior (móvil): mismo dato (badge, píldora
+// "Activo", candados, anclas, tab activa), dos contenedores según
+// breakpoint — por eso todas las consultas de abajo son de página
+// completa (querySelectorAll/[data-*]), no escopeadas a un único flyout.
 function actualizarEnlacesTrimestreEnSidebar() {
-  if (TRIMESTRE_ACTUAL) return;
-
-  const nav = document.getElementById("nav-principal");
-  if (!nav) return;
-
-  ANCLAS_DE_TRIMESTRE.forEach((id) => {
-    const enlace = nav.querySelector('[data-enlace="' + id + '"]');
-    if (enlace) enlace.href = "trimestre-" + ultimoTrimestreVisto + ".html#" + id;
+  // El badge del ícono "Trimestre" (riel y barra inferior) refleja
+  // ultimoTrimestreVisto en cualquier página (incluidas las de trimestre,
+  // donde ya coincide con TRIMESTRE_ACTUAL — ver la sincronización en la
+  // sección 2).
+  document.querySelectorAll(".trimestre-badge").forEach((badge) => {
+    badge.textContent = ultimoTrimestreVisto;
   });
 
-  const textoTrimestre = nav.querySelector("[data-texto-trimestre]");
-  if (textoTrimestre) {
-    textoTrimestre.textContent = "Trimestre " + ultimoTrimestreVisto;
-    const enlacePadre = textoTrimestre.closest("a");
-    if (enlacePadre) enlacePadre.href = "trimestre-" + ultimoTrimestreVisto + ".html";
-  }
+  // Píldora "Activo" junto al título del flyout/sheet: solo si el
+  // trimestre que se está mostrando ahí (TRIMESTRE_ACTUAL en páginas de
+  // trimestre, ultimoTrimestreVisto en el resto) es el mismo que
+  // trimestreDesbloqueado — no simplemente "el que se visitó por última
+  // vez". Corre en las 7 páginas, antes del early-return de abajo (ese
+  // early-return es solo para el reescrito de anclas/tabs, que no aplica
+  // en páginas de trimestre).
+  const numeroMostrado = Number(TRIMESTRE_ACTUAL || ultimoTrimestreVisto);
+  const estadoMostrado = calcularEstadoTrimestre(numeroMostrado);
+  document.querySelectorAll(".pill-activo-trimestre").forEach((pill) => {
+    pill.hidden = estadoMostrado !== "actual";
+  });
+
+  // Candado 🔒 en las mini-tabs 1°/2°/3° que todavía no se desbloquean —
+  // también corre en las 7 páginas (incluidas las de trimestre: p. ej.
+  // trimestre-1.html debe poder mostrar "3°" bloqueado). Es solo un
+  // indicador visual: no intercepta el clic ni reemplaza la guarda real
+  // de acceso (ver guardTrimestreDesbloqueado(), sección 2).
+  document.querySelectorAll(".riel-flyout__trimestre-tab[data-trimestre-tab]").forEach((tab) => {
+    const numero = Number(tab.dataset.trimestreTab);
+    const bloqueada = calcularEstadoTrimestre(numero) === "proximamente";
+    tab.classList.toggle("riel-flyout__trimestre-tab--bloqueada", bloqueada);
+    const numeroTexto = numero + "°";
+    tab.textContent = bloqueada ? "🔒 " + numeroTexto : numeroTexto;
+  });
+
+  if (TRIMESTRE_ACTUAL) return;
+
+  ANCLAS_DE_TRIMESTRE.forEach((id) => {
+    document.querySelectorAll('[data-enlace="' + id + '"]').forEach((enlace) => {
+      enlace.href = "trimestre-" + ultimoTrimestreVisto + ".html#" + id;
+    });
+  });
+
+  document.querySelectorAll("[data-texto-trimestre]").forEach((texto) => {
+    texto.textContent = "Trimestre " + ultimoTrimestreVisto;
+  });
+
+  document.querySelectorAll(".riel-flyout__trimestre-tab[data-trimestre-tab]").forEach((tab) => {
+    const activo = tab.dataset.trimestreTab === ultimoTrimestreVisto;
+    tab.classList.toggle("riel-flyout__trimestre-tab--activo", activo);
+    tab.setAttribute("aria-selected", String(activo));
+  });
 }
 
 // Compara `numero` contra trimestreDesbloqueado (el control real de
 // acceso; ultimoTrimestreVisto solo sirve para los enlaces del sidebar,
 // no para esto) y devuelve su estado: "finalizado", "actual" o
-// "proximamente". Usado tanto por actualizarEstadoTarjetasTrimestre()
-// (tarjetas de la portada) como por activarFabMenu() (píldoras del FAB),
-// para no duplicar el cálculo en dos lugares. Ambos llamadores esperan
-// primero promesaTrimestreDesbloqueado (ver sección 10), así que
-// trimestreDesbloqueado ya está resuelto cuando esta función corre.
+// "proximamente". Usado por actualizarEstadoTarjetasTrimestre() (tarjetas
+// de la portada) y por actualizarEnlacesTrimestreEnSidebar() (píldora
+// "Activo" y candados 🔒 de las mini-tabs), para no duplicar el cálculo.
+// Todos los llamadores esperan primero promesaTrimestreDesbloqueado (ver
+// sección 10), así que trimestreDesbloqueado ya está resuelto aquí.
 function calcularEstadoTrimestre(numero) {
   if (numero < trimestreDesbloqueado) return "finalizado";
   if (numero === trimestreDesbloqueado) return "actual";
@@ -5746,62 +5928,20 @@ function actualizarMigaDeSeccion(enlaceActivo) {
   item.hidden = false;
 }
 
-// FAB de accesos rápidos (reemplaza los antiguos #boton-volver-arriba y
-// #boton-tema-flotante): un único botón que despliega, hacia arriba,
-// "Volver arriba", el toggle de tema y, según la página, el selector de
-// trimestre y "Ir a...". El panel completo se genera aquí en vez de
-// escribirse en el HTML de las 8 páginas, para no duplicar el contenido
-// del sidebar (los ítems de "Ir a..." se clonan en vivo desde él) ni el
-// cálculo de estado de los trimestres (ver calcularEstadoTrimestre()).
-function activarFabMenu() {
-  const contenedor = document.querySelector("[data-fab]");
-  const boton = document.getElementById("fab-menu-boton");
-  const panel = document.getElementById("fab-menu-panel");
-  if (!contenedor || !boton || !panel) return;
-
-  const iconoBoton = boton.querySelector("span");
-
-  function cerrarFab() {
-    panel.hidden = true;
-    boton.setAttribute("aria-expanded", "false");
-    if (iconoBoton) iconoBoton.textContent = "☰";
-  }
-
-  function abrirFab() {
-    panel.hidden = false;
-    boton.setAttribute("aria-expanded", "true");
-    if (iconoBoton) iconoBoton.textContent = "✕";
-  }
-
-  boton.addEventListener("click", () => {
-    if (panel.hidden) abrirFab();
-    else cerrarFab();
-  });
-
-  document.addEventListener("click", (evento) => {
-    if (!panel.hidden && !contenedor.contains(evento.target)) cerrarFab();
-  });
-
-  document.addEventListener("keydown", (evento) => {
-    if (evento.key === "Escape" && !panel.hidden) {
-      cerrarFab();
-      boton.focus();
-    }
-  });
-
-  // ---- 1. Volver arriba (mismo umbral y comportamiento que antes) ----
-  const itemVolverArriba = document.createElement("button");
-  itemVolverArriba.type = "button";
-  itemVolverArriba.className = "fab-menu__item";
-  itemVolverArriba.innerHTML =
-    '<span aria-hidden="true">🔝</span><span>Volver arriba</span>';
-  panel.appendChild(itemVolverArriba);
+// Botón flotante simple "Volver arriba" (desktop y móvil). Antes era un
+// FAB expandible con tema/trimestre-pills/"Ir a..." además de esto; esas
+// tres cosas ya tienen equivalente propio (Ajustes del riel/sheet Perfil,
+// mini-tabs de Trimestre, contenido de los flyouts/sheets) y se quitaron
+// de aquí para no duplicar la misma función en dos lugares de la interfaz.
+function activarBotonVolverArriba() {
+  const boton = document.getElementById("boton-volver-arriba");
+  if (!boton) return;
 
   const UMBRAL_PX = 400;
   let actualizacionPendiente = false;
 
-  function actualizarEstadoVolverArriba() {
-    itemVolverArriba.disabled = window.scrollY <= UMBRAL_PX;
+  function actualizarEstado() {
+    boton.hidden = window.scrollY <= UMBRAL_PX;
     actualizacionPendiente = false;
   }
 
@@ -5813,104 +5953,19 @@ function activarFabMenu() {
     () => {
       if (actualizacionPendiente) return;
       actualizacionPendiente = true;
-      window.requestAnimationFrame(actualizarEstadoVolverArriba);
+      window.requestAnimationFrame(actualizarEstado);
     },
     { passive: true }
   );
 
-  actualizarEstadoVolverArriba(); // por si la página carga con scroll ya restaurado
+  actualizarEstado(); // por si la página carga con scroll ya restaurado
 
-  itemVolverArriba.addEventListener("click", () => {
+  boton.addEventListener("click", () => {
     const prefiereMovimientoReducido = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
     window.scrollTo({ top: 0, behavior: prefiereMovimientoReducido ? "auto" : "smooth" });
-    cerrarFab();
   });
-
-  // ---- 2. Tema (misma clase .boton-tema para heredar ícono/texto/
-  // aria-pressed vía aplicarTema(), igual que hacían los botones viejos) ----
-  const itemTema = document.createElement("button");
-  itemTema.type = "button";
-  itemTema.className = "fab-menu__item boton-tema";
-  itemTema.innerHTML =
-    '<span class="boton-tema__icono" aria-hidden="true"></span><span class="boton-tema__texto"></span>';
-  panel.appendChild(itemTema);
-  itemTema.addEventListener("click", alternarTema);
-  aplicarTema(temaActual); // rellena ícono/texto/aria-pressed del botón recién creado
-
-  // ---- 3-4. Selector de trimestre (en las 8 páginas; el resaltado de
-  // "actual" depende solo de TRIMESTRE_DESBLOQUEADO, no de en qué página
-  // estás. Una píldora no navega si está bloqueada o si ya estás en esa
-  // página (TRIMESTRE_ACTUAL); la píldora "actual" vista desde otra
-  // página sí navega normalmente). ----
-  const divisorTrimestre = document.createElement("div");
-  divisorTrimestre.className = "fab-menu__divisor";
-  panel.appendChild(divisorTrimestre);
-
-  const fila = document.createElement("div");
-  fila.className = "fab-menu__trimestres";
-  fila.setAttribute("role", "group");
-  fila.setAttribute("aria-label", "Cambiar de trimestre");
-
-  for (let numero = 1; numero <= 3; numero++) {
-    const estado = calcularEstadoTrimestre(numero);
-    const enEstaPagina = TRIMESTRE_ACTUAL !== null && Number(TRIMESTRE_ACTUAL) === numero;
-    const bloqueada = estado === "proximamente";
-    const pildora = document.createElement("a");
-    pildora.href = "trimestre-" + numero + ".html";
-    pildora.className = "fab-menu__trimestre-pildora";
-    pildora.dataset.estado = estado;
-    pildora.textContent = (bloqueada ? "🔒 " : "") + numero + "°";
-
-    if (enEstaPagina) {
-      pildora.setAttribute("aria-current", "page");
-      pildora.setAttribute("aria-label", "Trimestre " + numero + " (página actual)");
-    } else if (bloqueada) {
-      pildora.setAttribute("aria-label", "Trimestre " + numero + " (bloqueado)");
-    } else {
-      pildora.setAttribute("aria-label", "Ir al Trimestre " + numero);
-    }
-
-    pildora.addEventListener("click", (evento) => {
-      cerrarFab();
-      if (bloqueada || enEstaPagina) {
-        evento.preventDefault();
-        if (bloqueada) mostrarMensajeTrimestreBloqueado();
-      }
-    });
-
-    fila.appendChild(pildora);
-  }
-
-  panel.appendChild(fila);
-
-  // ---- 5-6. "Ir a...": clonado en vivo desde el submenu del sidebar que
-  // corresponda (#submenu-trimestre en páginas de trimestre, #submenu-inicio
-  // en la portada). Solo se toman los <a> con ancla local ("#..."); en
-  // faq/padres/progreso/cuenta esos mismos enlaces apuntan a
-  // "index.html#..." o "trimestre-N.html#...", así que el filtro los
-  // excluye automáticamente y la sección "Ir a..." no aparece ahí. ----
-  const idSubmenuOrigen = TRIMESTRE_ACTUAL ? "submenu-trimestre" : "submenu-inicio";
-  const submenuOrigen = document.getElementById(idSubmenuOrigen);
-  const enlacesOrigen = submenuOrigen
-    ? Array.from(submenuOrigen.querySelectorAll('a[href^="#"]'))
-    : [];
-
-  if (enlacesOrigen.length > 0) {
-    const divisorIrA = document.createElement("div");
-    divisorIrA.className = "fab-menu__divisor";
-    panel.appendChild(divisorIrA);
-
-    enlacesOrigen.forEach((enlaceOriginal) => {
-      const enlace = document.createElement("a");
-      enlace.href = enlaceOriginal.getAttribute("href");
-      enlace.className = "fab-menu__item";
-      enlace.innerHTML = enlaceOriginal.innerHTML;
-      enlace.addEventListener("click", cerrarFab);
-      panel.appendChild(enlace);
-    });
-  }
 }
 
 // Resalta en el menú el enlace de la sección que se está viendo mientras
@@ -5922,18 +5977,23 @@ function activarFabMenu() {
 function activarResaltadoDeNavegacion() {
   if (typeof IntersectionObserver === "undefined") return;
 
-  const nav = document.getElementById("nav-principal");
-  if (!nav) return;
-
-  const enlaces = Array.from(nav.querySelectorAll('a[href^="#"]'));
+  // .nav-anclas marca las listas de enlaces de Inicio/Trimestre tanto en
+  // los flyouts del riel (desktop) como en los sheets de la barra
+  // inferior (móvil) — el resaltado debe marcar el enlace activo en
+  // ambos contenedores a la vez, aunque solo uno sea visible según el
+  // breakpoint.
+  const enlaces = Array.from(document.querySelectorAll('.nav-anclas a[href^="#"]'));
   if (enlaces.length === 0) return;
 
+  // seccionPorEnlace guarda un enlace representativo por sección (da igual
+  // cuál de las dos copias, marcarActivo() ya resalta ambas por href) y
+  // secciones deduplica para no observar el mismo elemento dos veces.
   const seccionPorEnlace = new Map();
   const secciones = [];
   enlaces.forEach((enlace) => {
     const id = enlace.getAttribute("href").slice(1);
     const seccion = document.getElementById(id);
-    if (seccion) {
+    if (seccion && !seccionPorEnlace.has(seccion)) {
       seccionPorEnlace.set(seccion, enlace);
       secciones.push(seccion);
     }
@@ -5941,8 +6001,12 @@ function activarResaltadoDeNavegacion() {
   if (secciones.length === 0) return;
 
   function marcarActivo(enlaceActivo) {
+    // Comparación por href (no por referencia): el mismo destino existe
+    // dos veces en el DOM (flyout de escritorio + sheet móvil) y ambas
+    // copias deben resaltarse juntas, no solo la que disparó el cálculo.
+    const hrefActivo = enlaceActivo.getAttribute("href");
     enlaces.forEach((enlace) => {
-      enlace.classList.toggle("nav-link--activo", enlace === enlaceActivo);
+      enlace.classList.toggle("nav-link--activo", enlace.getAttribute("href") === hrefActivo);
     });
     actualizarMigaDeSeccion(enlaceActivo);
   }
@@ -6015,9 +6079,35 @@ async function renderizarTodo() {
   activarBotonEncuadreAnual();
 }
 
+// .selector-grupo-control: hay dos <select> físicos en el DOM (uno en el
+// flyout Ajustes del riel, otro en el sheet Perfil de la barra inferior —
+// no pueden compartir id), sincronizados por esta misma función en vez de
+// duplicarla. Mismo patrón que ya usa aplicarTema() con .boton-tema.
 function sincronizarSelectorGrupo(valor) {
-  const desktop = document.getElementById("selector-grupo");
-  if (desktop) desktop.value = valor;
+  document.querySelectorAll(".selector-grupo-control").forEach((select) => { select.value = valor; });
+}
+
+// Ajustes → Grupo: un alumno con sesión iniciada ve el grupo al que
+// pertenece como texto fijo (no lo puede cambiar); el <select> manual
+// solo aplica a visitantes sin sesión y a docentes (perfil.grupo es
+// null). Se llama junto con sincronizarPerfilActivo(), que es quien deja
+// perfilActivoCache/grupoActual ya resueltos antes de esto. Actualiza a
+// la vez el flyout de escritorio y el sheet Perfil de móvil (selectores
+// .campo-grupo-selector-slot/.texto-grupo-alumno-slot, uno de cada por
+// contenedor) — mismo dato, dos contenedores según breakpoint.
+function actualizarFlyoutAjustesGrupo() {
+  const camposSelector = document.querySelectorAll(".campo-grupo-selector-slot");
+  const textosFijos = document.querySelectorAll(".texto-grupo-alumno-slot");
+  if (camposSelector.length === 0 && textosFijos.length === 0) return;
+
+  const perfil = obtenerPerfilActivo();
+  const esAlumnoConGrupo = Boolean(perfil?.grupo);
+
+  camposSelector.forEach((campo) => { campo.hidden = esAlumnoConGrupo; });
+  textosFijos.forEach((texto) => {
+    texto.hidden = !esAlumnoConGrupo;
+    if (esAlumnoConGrupo) texto.textContent = "Viendo contenido de " + textoGrupo(perfil.grupo);
+  });
 }
 
 async function alCambiarGrupo(evento) {
@@ -6126,6 +6216,9 @@ async function sincronizarPerfilActivo() {
   if (!session) {
     perfilActivoCache = null;
     progresoCache = [];
+    grupoActual = localStorage.getItem(CLAVE_GRUPO) || "todos";
+    sincronizarSelectorGrupo(grupoActual);
+    actualizarFlyoutAjustesGrupo();
     return;
   }
 
@@ -6137,6 +6230,14 @@ async function sincronizarPerfilActivo() {
 
   perfilActivoCache = perfil ? { nombre: perfil.nombre, grupo: perfil.grupo } : null;
 
+  // El grupo del alumno con sesión iniciada gana sobre el <select>/
+  // localStorage (ver actualizarFlyoutAjustesGrupo): un alumno siempre ve
+  // el contenido de su propio grupo. Docentes y visitantes sin sesión
+  // (perfil.grupo null) siguen controlando el grupo a mano.
+  grupoActual = perfilActivoCache?.grupo || localStorage.getItem(CLAVE_GRUPO) || "todos";
+  sincronizarSelectorGrupo(grupoActual);
+  actualizarFlyoutAjustesGrupo();
+
   const { data: progreso } = await clienteSupabase
     .from("progreso")
     .select("tipo, item_id, trimestre, actualizado_en")
@@ -6145,13 +6246,42 @@ async function sincronizarPerfilActivo() {
   progresoCache = progreso || [];
 }
 
+// Avatar con inicial: con nombre conocido (alumno o docente, cualquiera
+// con sesión iniciada) reemplaza el emoji 👤 genérico por un círculo con
+// la inicial, en los tres lugares donde vive un ícono de Perfil — el
+// disparador del riel (desktop), el disparador de la barra inferior y la
+// cabecera del propio sheet (ambos móvil). Sin nombre (visitante sin
+// sesión) los tres vuelven al emoji. sitemap.html no se toca aquí: sigue
+// usando el patrón viejo de data-boton-cuenta más abajo en
+// actualizarUISesion().
+function actualizarAvatarPerfil(nombre) {
+  document.querySelectorAll("#riel-boton-perfil, #boton-inferior-perfil, #sheet-perfil-avatar").forEach((destino) => {
+    destino.textContent = "";
+    const contenido = document.createElement("span");
+    contenido.setAttribute("aria-hidden", "true");
+    if (nombre) {
+      contenido.className = "riel__avatar";
+      contenido.textContent = nombre.trim().charAt(0).toUpperCase();
+    } else {
+      contenido.textContent = "👤";
+    }
+    destino.appendChild(contenido);
+  });
+}
+
 // Botón "Perfil" de la barra lateral (desktop) y de la barra inferior
 // (móvil), marcados con data-boton-cuenta: antes alternaban el modal de
 // identificación, ahora reflejan la sesión de Supabase y llevan a
 // cuenta.html o cierran sesión según el caso.
 async function actualizarUISesion() {
   const { data: { session } } = await clienteSupabase.auth.getSession();
+  // [data-boton-cuenta] es el patrón viejo (sitemap.html, sin migrar al
+  // riel): botón único con ícono+nombre+nivel compacto, se mantiene tal
+  // cual para esa página. .perfil-nivel-pill es el patrón nuevo: la
+  // píldora vive aparte del disparador, una copia por contenedor
+  // (flyout de escritorio y sheet Perfil de la barra inferior).
   const elementos = document.querySelectorAll("[data-boton-cuenta]");
+  const etiquetasNivel = document.querySelectorAll(".perfil-nivel-pill");
 
   if (!session) {
     elementos.forEach((el) => {
@@ -6164,11 +6294,14 @@ async function actualizarUISesion() {
       el.append(icono, texto);
       el.onclick = () => { window.location.href = "cuenta.html"; };
     });
+    etiquetasNivel.forEach((etiqueta) => { etiqueta.hidden = true; });
+    actualizarAvatarPerfil(null);
     return;
   }
 
   const perfil = obtenerPerfilActivo();
   const nombreMostrado = perfil?.nombre ? perfil.nombre.split(" ")[0] : "Mi cuenta";
+  actualizarAvatarPerfil(perfil?.nombre || null);
 
   // Etiqueta de Nivel (solo el número, sin subtítulo — el espacio del
   // sidebar/barra inferior es reducido; el subtítulo completo ya vive en
@@ -6185,6 +6318,16 @@ async function actualizarUISesion() {
   const paginaConNivel = Boolean(document.body.dataset.trimestre) || Boolean(document.getElementById("progreso-resumen-general"));
   const avanceGeneral = perfil && paginaConNivel ? await calcularAvanceGeneralAlumno(perfil) : null;
   const nivelAlumno = avanceGeneral != null ? calcularNivelAlumno(avanceGeneral) : null;
+
+  // Pill de Nivel del flyout Perfil (riel) y del sheet Perfil (barra
+  // inferior) — misma etiqueta que ya arma construirTarjetaNivel() en
+  // progreso.html, no un cálculo nuevo. Se oculta fuera de las páginas
+  // con gate de nivel (paginaConNivel) o si el alumno aún no tiene avance
+  // calculable.
+  etiquetasNivel.forEach((etiqueta) => {
+    etiqueta.hidden = !nivelAlumno;
+    if (nivelAlumno) etiqueta.textContent = "Nivel " + nivelAlumno.nivel + " · " + nivelAlumno.subtitulo;
+  });
 
   elementos.forEach((el) => {
     el.textContent = "";
@@ -11285,12 +11428,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // recuperado de localStorage (por defecto "todos").
   sincronizarSelectorGrupo(grupoActual);
 
-  // calcularEstadoTrimestre() (usado por las dos llamadas de abajo y por
-  // activarFabMenu() más adelante en este mismo listener) necesita
-  // trimestreDesbloqueado ya resuelto. La consulta arrancó al cargar el
-  // script (ver sección 2), así que normalmente esta espera es instantánea;
-  // solo tarda de verdad si el guard de arriba todavía no había resuelto
-  // (por ejemplo en index.html, donde no hay overlay que lo cubra).
+  // calcularEstadoTrimestre() (usado por las dos llamadas de abajo)
+  // necesita trimestreDesbloqueado ya resuelto. La consulta arrancó al
+  // cargar el script (ver sección 2), así que normalmente esta espera es
+  // instantánea; solo tarda de verdad si el guard de arriba todavía no
+  // había resuelto (por ejemplo en index.html, donde no hay overlay que
+  // lo cubra).
   trimestreDesbloqueado = await promesaTrimestreDesbloqueado;
 
   actualizarEnlacesTrimestreEnSidebar();
@@ -11313,16 +11456,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (TRIMESTRE_ACTUAL === "1") activarPestanaDesdeHash();
 
   document.querySelectorAll(".boton-tema").forEach((boton) => boton.addEventListener("click", alternarTema));
-  document.getElementById("boton-colapsar-sidebar").addEventListener("click", alternarSidebarColapsada);
-  const selectorGrupo = document.getElementById("selector-grupo");
-  if (selectorGrupo) selectorGrupo.addEventListener("change", alCambiarGrupo);
+  // #boton-colapsar-sidebar solo existe en admin.html (barra lateral
+  // legada); en las 7 páginas migradas al riel ya no está en el HTML.
+  const botonColapsarSidebar = document.getElementById("boton-colapsar-sidebar");
+  if (botonColapsarSidebar) botonColapsarSidebar.addEventListener("click", alternarSidebarColapsada);
+  document.querySelectorAll(".selector-grupo-control").forEach((select) => {
+    select.addEventListener("change", alCambiarGrupo);
+  });
   activarFormulariosCuenta();
   activarPanelSesionCuenta();
   activarAccionesPerfilProgreso();
   actualizarUISesion();
   activarSubmenusSidebar();
+  activarFlyoutsRiel();
+  activarSheetsMovil();
   activarResaltadoDeNavegacion();
-  activarFabMenu();
+  activarBotonVolverArriba();
   activarBannerExamenDiagnostico();
   activarTabsAdmin();
   activarCierreSesionAdmin();

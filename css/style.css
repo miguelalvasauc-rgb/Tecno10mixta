@@ -1957,13 +1957,6 @@ summary:focus-visible {
   padding: 0.1rem 0.5rem;
 }
 
-/* En el sidebar colapsado (solo el ícono del botón de cuenta queda
-   visible) no hay espacio para la etiqueta — mismo criterio que ya
-   aplica .barra-lateral--colapsada a otros textos del sidebar. */
-.barra-lateral--colapsada .etiqueta-nivel--compacta {
-  display: none;
-}
-
 .indicador-progreso {
   display: flex;
   align-items: center;
@@ -3630,22 +3623,16 @@ summary:focus-visible {
   }
 }
 
-/* ---------- Botón flotante "Volver arriba" ---------- */
-/* ---------- FAB de accesos rápidos ----------
-   Reemplaza los antiguos #boton-volver-arriba y #boton-tema-flotante por
-   un único botón expandible. .fab-menu conserva la posición/z-index que
-   tenía #boton-volver-arriba (bottom-right); .fab-menu__panel se abre
-   hacia arriba, posicionado absolute respecto a .fab-menu, así que no
-   afecta el tamaño en flujo del contenedor (solo el botón lo hace). */
-.fab-menu {
+/* ---------- Botón flotante "Volver arriba" ----------
+   Antes era un FAB expandible (tema, trimestre-pills, "Ir a..." además de
+   esto); las tres se retiraron por tener ya equivalente propio en el
+   riel/sheets — ver activarBotonVolverArriba() en js/main.js. Conserva la
+   posición/z-index/paleta que ya tenía el FAB. */
+.fab-volver-arriba {
   position: fixed;
   right: 1.25rem;
   bottom: 1.25rem;
   z-index: 90;
-}
-
-.fab-menu__boton {
-  position: relative;
   width: 48px;
   height: 48px;
   border: none;
@@ -3659,7 +3646,20 @@ summary:focus-visible {
   justify-content: center;
   cursor: pointer;
   box-shadow: var(--sombra);
-  transition: filter 0.2s ease;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+}
+
+/* [hidden] normalmente aplica display:none vía la hoja de estilos del
+   navegador; se sobreescribe aquí a display:flex (una regla de autor
+   siempre gana sobre la del user-agent, sin importar especificidad) para
+   poder animar opacity/transform en vez de cortar abruptamente. */
+.fab-volver-arriba[hidden] {
+  display: flex;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
 }
 
 /* En modo claro el turquesa no da suficiente contraste para un ícono
@@ -3672,127 +3672,26 @@ summary:focus-visible {
    ~10.5:1 ahí), pero sobre el footer navy ese borde da ~9.6:1 y
    rompe el camuflaje. Se probó reemplazar el relleno por turquesa,
    pero eso falla contra el fondo normal de la página (~2.3:1). */
-:root[data-theme="claro"] .fab-menu__boton {
+:root[data-theme="claro"] .fab-volver-arriba {
   background-color: var(--color-primario);
   color: var(--color-claro-sobre-navy);
   border: 3px solid var(--color-claro-sobre-navy);
 }
 
-.fab-menu__boton:hover,
-.fab-menu__boton:focus-visible {
+.fab-volver-arriba:hover,
+.fab-volver-arriba:focus-visible {
   filter: brightness(1.1);
 }
 
-.fab-menu__panel {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 0.75rem);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.5rem;
-  min-width: 200px;
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-/* [hidden] normalmente aplica display:none vía la hoja de estilos del
-   navegador; se sobreescribe aquí a display:flex (una regla de autor
-   siempre gana sobre la del user-agent, sin importar especificidad) para
-   poder animar opacity/transform en vez de cortar abruptamente. */
-.fab-menu__panel[hidden] {
-  display: flex;
-  opacity: 0;
-  transform: translateY(8px);
-  pointer-events: none;
-}
-
-.fab-menu__item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-cuerpo);
-  white-space: nowrap;
-  text-decoration: none;
-  cursor: pointer;
-  box-shadow: var(--sombra);
-}
-
-/* Tipografía/colores reutilizados de .barra-inferior__item (texto suave,
-   resalta a --md-secondary en hover/focus); a diferencia de esa barra,
-   cada ítem del FAB flota solo en el aire, así que necesita su propio
-   fondo/borde de tarjeta para poder leerse sobre cualquier contenido. */
-.fab-menu__item:not(.boton-tema) {
-  background-color: var(--color-superficie);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-full);
-  padding: 0.5rem 1rem;
-  color: var(--color-texto-suave);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.fab-menu__item:not(.boton-tema):hover,
-.fab-menu__item:not(.boton-tema):focus-visible {
-  color: var(--md-secondary);
-  border-color: var(--color-turquesa);
-}
-
-.fab-menu__item:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.fab-menu__divisor {
-  height: 1px;
-  background-color: var(--color-borde);
-  margin: 0.15rem 0.5rem;
-}
-
-/* Selector de trimestre del FAB: mismos colores de estado que
-   .tarjeta-trimestre[data-estado="…"] en la portada, calculados por la
-   misma función (calcularEstadoTrimestre() en js/main.js). */
-.fab-menu__trimestres {
-  display: flex;
-  gap: 0.4rem;
-  background-color: var(--color-superficie);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-full);
-  padding: 0.4rem;
-  box-shadow: var(--sombra);
-}
-
-.fab-menu__trimestre-pildora {
-  flex: 1;
-  text-align: center;
-  padding: 0.35rem 0;
-  border-radius: var(--radio-full);
-  background-color: var(--color-superficie-baja);
-  color: var(--color-texto-suave);
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.fab-menu__trimestre-pildora[data-estado="actual"] {
-  background-color: var(--color-estado-progreso);
-  color: #2a1400;
-}
-
-.fab-menu__trimestre-pildora[data-estado="finalizado"] {
-  background-color: var(--color-estado-completado);
-  color: #04211d;
-}
-
-.fab-menu__trimestre-pildora[data-estado="proximamente"] {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .fab-menu__panel {
-    transition: opacity 0.01ms linear, transform 0.01ms linear;
+  .fab-volver-arriba {
+    transition: none;
+  }
+
+  .riel-flyout,
+  .bottom-sheet,
+  .sheet-backdrop {
+    transition: none;
   }
 
   .barra-lateral {
@@ -3809,12 +3708,9 @@ summary:focus-visible {
 }
 
 @media (max-width: 480px) {
-  .fab-menu {
+  .fab-volver-arriba {
     right: 1rem;
     bottom: 1rem;
-  }
-
-  .fab-menu__boton {
     width: 44px;
     height: 44px;
     font-size: 1.2rem;
@@ -3823,14 +3719,14 @@ summary:focus-visible {
 
 /* ---------- Toast de confirmación (ver mostrarToast* en js/main.js) ----------
    Genérico y reutilizable. Arriba a la derecha, mismo espaciado que
-   .fab-menu (right: 1.25rem, 1rem en pantallas muy chicas) para
+   .fab-volver-arriba (right: 1.25rem, 1rem en pantallas muy chicas) para
    mantener consistencia entre los elementos fixed del sitio. El "top"
    es un valor fijo, no medido en JS: el sitio no tiene header ni nav
    sticky en el HTML actual — .encabezado/.nav-principal son CSS sin uso
-   desde que la navegación pasó a .barra-lateral/.barra-inferior (ver la
-   nota en "BARRA LATERAL" más abajo en este archivo) — así que no hay
+   desde que la navegación pasó a .riel/.barra-inferior (ver la
+   nota en "RIEL DE NAVEGACIÓN" más abajo en este archivo) — así que no hay
    nada arriba de lo que esquivar en ninguna página ni breakpoint.
-   Mismos opacity+translateY a 0.2s ease que ya usa .fab-menu__panel —
+   Mismos opacity+translateY a 0.2s ease que ya usan los flyouts/sheets —
    no se inventa timing nuevo.
 
    4 variantes por color vía [data-tipo] (mismo patrón que .badge-estado
@@ -4033,14 +3929,362 @@ summary:focus-visible {
 }
 
 /* =========================================================
-   BARRA LATERAL (desktop ≥1024px) / BARRA INFERIOR (móvil <1024px)
-   Reemplaza el header + nav superior. .encabezado/.nav-principal/
-   .boton-menu de arriba quedan sin uso en el HTML nuevo (se conservan en
-   este archivo por si alguna página aún no se migra), y se reutilizan
-   tal cual .boton-tema, .campo-grupo, #selector-grupo, .selector-trimestre,
-   .migas-de-pan y .banner-trimestre, que no dependían del header navy.
+   RIEL DE NAVEGACIÓN (desktop ≥1024px) / BARRA INFERIOR (móvil <1024px)
+   Riel de 2 columnas estilo Discord/Notion: .riel es el carril fijo de
+   60px con solo íconos (ya no colapsable); cada ícono con flyout abre su
+   panel correspondiente en .riel-flyout (columna 2, ~220px, position:
+   fixed superpuesto sobre el contenido — no reserva espacio en el body,
+   ver activarFlyoutsRiel() en js/main.js). Reemplaza el header + nav
+   superior y la barra lateral de una sola columna que existía antes.
+   .encabezado/.nav-principal/.boton-menu de arriba quedan sin uso en el
+   HTML nuevo (se conservan en este archivo por si alguna página aún no
+   se migra), y se reutilizan tal cual .boton-tema, .campo-grupo,
+   #selector-grupo, .etiqueta-nivel, .migas-de-pan y .banner-trimestre,
+   que no dependían del header navy.
    ========================================================= */
 
+.riel {
+  display: none; /* visible solo ≥1024px, ver media query abajo */
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 60px;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: var(--color-superficie-baja);
+  border-right: 1px solid var(--md-outline-variant);
+  padding: 0.75rem 0;
+  overflow-y: auto;
+  z-index: 80;
+}
+
+.riel__logo {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+}
+
+.riel__logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: var(--radio-full);
+  /* Sello monocromático: la foto del logo se desatura para que se lea
+     como un sello institucional de la "Bitácora", no como una foto a
+     color dentro de la navegación. */
+  filter: grayscale(1) contrast(1.05);
+}
+
+:root[data-theme="oscuro"] .riel__logo-img {
+  filter: grayscale(1) contrast(1.05) brightness(0.85);
+}
+
+.riel__nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.riel__boton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  border-radius: var(--radio-md);
+  color: var(--color-texto-suave);
+  font-size: 1.2rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Glow turquesa (modo oscuro) al pasar el cursor o mientras el flyout de
+   ese ícono está abierto (aria-expanded="true" lo deja encendido incluso
+   sin hover). El emoji en sí no cambia de tono — los navegadores ignoran
+   "color" en glifos de emoji a todo color — pero el fondo+color sí queda
+   listo para cuando el ícono lo respete (ej. lectores que caen a texto). */
+.riel__boton:hover,
+.riel__boton:focus-visible,
+.riel__boton[aria-expanded="true"] {
+  background-color: rgba(20, 184, 166, 0.15);
+  color: var(--color-turquesa);
+}
+
+/* Mismo bug de contraste documentado en el resto del sitio: turquesa
+   sobre superficies claras falla AA (~2.5:1). En modo claro el glow usa
+   navy, igual que el resto de los overrides de esta regla. */
+:root[data-theme="claro"] .riel__boton:hover,
+:root[data-theme="claro"] .riel__boton:focus-visible,
+:root[data-theme="claro"] .riel__boton[aria-expanded="true"] {
+  background-color: rgba(27, 58, 107, 0.12);
+  color: var(--color-primario);
+}
+
+.riel__badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.riel__divisor {
+  width: 60%;
+  height: 1px;
+  margin: 0.5rem auto auto;
+  background-color: var(--color-borde);
+}
+
+.riel__boton--perfil {
+  margin-bottom: 0.5rem;
+}
+
+/* Avatar con inicial (ver actualizarAvatarPerfil() en js/main.js):
+   reemplaza el emoji 👤 del botón de Perfil cuando hay sesión iniciada
+   (alumno o docente) y se conoce el nombre. Fondo turquesa + texto oscuro
+   en modo oscuro (par ya validado en el sitio, ~6.8:1); en modo claro se
+   sustituye por el override navy + texto claro de siempre — turquesa +
+   texto blanco falla AA (~2.5:1) en cualquier tema, así que nunca se usa
+   ese par literal pese a lo que sugiere el nombre de la variable. */
+.riel__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+  font-family: var(--font-cuerpo);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+:root[data-theme="claro"] .riel__avatar {
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+/* ---------- Flyout (columna 2): un panel por ícono del riel, superpuesto
+   sobre el contenido con position:fixed — no cambia el padding-left del
+   body. Entra/sale con opacity+transform; el atributo "hidden" real
+   (fuera del árbol de accesibilidad) se aplica/quita con un pequeño
+   retraso vía JS (ver activarFlyoutsRiel en js/main.js) para que la
+   transición de salida sí se alcance a ver. ---------- */
+.riel-flyout {
+  position: fixed;
+  top: 0;
+  left: 60px;
+  bottom: 0;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  background-color: var(--color-superficie);
+  border-right: 1px solid var(--color-borde);
+  box-shadow: var(--sombra);
+  padding: 1rem var(--espacio-base);
+  overflow-y: auto;
+  z-index: 85;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  pointer-events: none;
+}
+
+.riel-flyout--visible {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.riel-flyout__titulo {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-encabezados);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+/* Fila del encabezado del flyout de Trimestre: título + píldora "Activo"
+   (ver #flyout-trimestre-activo, poblada por actualizarEnlacesTrimestreEnSidebar
+   en js/main.js). Los demás flyouts (Inicio/Ajustes/Perfil) siguen usando
+   .riel-flyout__titulo suelto, sin este contenedor. */
+.riel-flyout__titulo-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.25rem;
+}
+
+.riel-flyout__titulo-fila .riel-flyout__titulo {
+  margin: 0;
+}
+
+/* Solo borde + texto en el color de acento (sin relleno): turquesa sobre
+   las superficies oscuras del flyout ya pasa AA (~6.3:1) sin necesitar el
+   override de siempre; en modo claro sí hace falta — turquesa sobre
+   blanco falla (~2.5:1) — así que se cambia a navy, igual que el resto
+   de los usos de texto en turquesa del sitio. */
+.riel-flyout__pill-activo {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--color-turquesa);
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--color-turquesa);
+  white-space: nowrap;
+}
+
+:root[data-theme="claro"] .riel-flyout__pill-activo {
+  border-color: var(--color-primario);
+  color: var(--color-primario);
+}
+
+/* Mini-tab bloqueada (ver el candado 🔒 que antepone
+   actualizarEnlacesTrimestreEnSidebar()): mismo tratamiento visual
+   discreto que el resto de los estados "bloqueado" del sitio — opacidad
+   reducida, sin cambiar el layout ni impedir el clic (la guarda real de
+   acceso vive en guardTrimestreDesbloqueado(), no aquí). */
+.riel-flyout__trimestre-tab--bloqueada {
+  opacity: 0.6;
+}
+
+.riel-flyout__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.riel-flyout__enlace {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  text-decoration: none;
+  font-family: var(--font-cuerpo);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+  padding: 0.55rem 0.6rem;
+  border-radius: var(--radio-md);
+  border-left: 3px solid transparent;
+}
+
+.riel-flyout__enlace:hover {
+  background-color: var(--color-superficie-baja);
+  color: var(--color-texto);
+}
+
+.riel-flyout__enlace.nav-link--activo {
+  background-color: var(--color-superficie-baja);
+  color: var(--md-secondary);
+  border-left-color: var(--md-secondary);
+}
+
+.riel-flyout__trimestre-tabs {
+  display: flex;
+  gap: 0.2rem;
+  background-color: var(--color-superficie-baja);
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  padding: 0.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.riel-flyout__trimestre-tab {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-texto-suave);
+  padding: 0.35rem 0;
+  border-radius: 999px;
+}
+
+.riel-flyout__trimestre-tab:hover {
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+}
+
+.riel-flyout__trimestre-tab--activo,
+.riel-flyout__trimestre-tab--activo:hover {
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+}
+
+/* Mismo bug de contraste documentado en el resto del sitio: turquesa +
+   texto claro falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
+:root[data-theme="claro"] .riel-flyout__trimestre-tab--activo,
+:root[data-theme="claro"] .riel-flyout__trimestre-tab--activo:hover {
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+.riel-flyout__campo {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.riel-flyout__campo label {
+  color: var(--color-texto-suave);
+  font-weight: 600;
+}
+
+.riel-flyout #selector-grupo {
+  background-color: var(--color-superficie-baja);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: 0.5rem 0.6rem;
+}
+
+.riel-flyout__texto-grupo {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.riel-flyout__tema {
+  justify-content: center;
+}
+
+.riel-flyout__nivel {
+  align-self: flex-start;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+/* =========================================================
+   BARRA LATERAL LEGADA — SOLO admin.html
+   admin.html no se migró al riel de 2 columnas (queda pendiente para un
+   prompt aparte); conserva su <aside class="barra-lateral"> original de
+   una sola columna, así que estas reglas se quedan solo para esa página.
+   No colisionan con .riel/.riel-flyout de arriba: ninguna de las 7
+   páginas migradas tiene ya elementos .barra-lateral en su HTML.
+   ========================================================= */
 .barra-lateral {
   display: none; /* visible solo ≥1024px, ver media query abajo */
   position: fixed;
@@ -4069,9 +4313,6 @@ summary:focus-visible {
   height: 72px;
   object-fit: cover;
   border-radius: var(--radio-full);
-  /* Sello monocromático: la foto del logo se desatura para que se lea
-     como un sello institucional de la "Bitácora", no como una foto a
-     color dentro de la navegación. */
   filter: grayscale(1) contrast(1.05);
 }
 
@@ -4109,24 +4350,6 @@ summary:focus-visible {
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-md);
   padding: 0.5rem 0.6rem;
-}
-
-.barra-lateral .selector-trimestre {
-  flex-direction: column;
-  background-color: var(--color-superficie);
-  border-color: var(--color-borde);
-  border-radius: var(--radio-md);
-  margin: 0 var(--espacio-base);
-}
-
-.barra-lateral .selector-trimestre__tab {
-  color: var(--color-texto-suave);
-  text-align: center;
-  border-radius: var(--radio-sm);
-}
-
-.barra-lateral .selector-trimestre__tab:hover {
-  background-color: var(--color-superficie-baja);
 }
 
 .barra-lateral__nav {
@@ -4221,11 +4444,6 @@ summary:focus-visible {
   display: none;
 }
 
-.barra-lateral__tema {
-  margin: auto var(--espacio-base) 0;
-  justify-content: center;
-}
-
 .barra-lateral__toggle {
   align-self: flex-end;
   width: 32px;
@@ -4247,19 +4465,33 @@ summary:focus-visible {
   color: var(--color-texto);
 }
 
-/* ---------- Barra lateral colapsada (ver #boton-colapsar-sidebar en
-   js/main.js) ----------
-   El ancho anima porque .barra-lateral ya trae "transition: width".
-   Los enlaces del nav sí tienen ícono propio (.barra-lateral__nav-icono,
-   ver HTML), así que en colapsado se oculta por completo el span de
-   texto (.barra-lateral__nav-texto) y queda centrado solo el ícono. El
-   botón de perfil y el de tema también tienen su ícono (emoji), así
-   que solo se encoge su span de texto a 0 de ancho. El eyebrow y el
-   selector de grupo no tienen ningún ícono que conservar, así que esos
-   sí se ocultan por completo con "visibility" (no display:none, para
-   no romper la animación de ancho del aside) — visibility además saca
-   el <select> del orden de tabulación mientras está invisible, para no
-   dejar un control fantasma alcanzable con Tab. */
+.barra-lateral__tema {
+  margin: auto var(--espacio-base) 0;
+  justify-content: center;
+}
+
+/* Disparador de perfil (ver data-boton-cuenta en actualizarUISesion()) */
+.barra-lateral__perfil {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 var(--espacio-base);
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: 0.55rem 0.75rem;
+  font-family: var(--font-cuerpo);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.barra-lateral__perfil:hover {
+  background-color: var(--color-superficie-baja);
+}
+
 .barra-lateral--colapsada {
   width: 64px;
   overflow-x: hidden;
@@ -4269,12 +4501,6 @@ summary:focus-visible {
   align-self: center;
 }
 
-/* NOTA: min-width:0/overflow/white-space aquí eran, antes de que el
-   nav tuviera ícono propio, la manera de recortar el texto en vez de
-   ocultarlo (para que el ancho se viera fluido). Ahora que el texto se
-   oculta con display:none más abajo (.barra-lateral__nav-texto), es
-   posible que ya no hagan falta — se dejan tal cual hasta confirmar
-   que se pueden quitar sin romper nada. */
 .barra-lateral--colapsada .barra-lateral__nav {
   min-width: 0;
 }
@@ -4296,19 +4522,6 @@ summary:focus-visible {
   width: auto;
 }
 
-.barra-lateral--colapsada .selector-trimestre__texto {
-  display: none;
-}
-
-.barra-lateral--colapsada .selector-trimestre {
-  padding: 0;
-}
-
-.barra-lateral--colapsada .selector-trimestre__tab {
-  padding-left: 0;
-  padding-right: 0;
-}
-
 .barra-lateral--colapsada .barra-lateral__eyebrow,
 .barra-lateral--colapsada .barra-lateral__grupo {
   visibility: hidden;
@@ -4318,13 +4531,6 @@ summary:focus-visible {
   padding: 0;
 }
 
-.barra-lateral--colapsada #texto-perfil-sidebar,
-.barra-lateral--colapsada .boton-tema__texto {
-  width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
 .barra-lateral--colapsada .barra-lateral__perfil,
 .barra-lateral--colapsada .barra-lateral__tema {
   margin-left: auto;
@@ -4332,6 +4538,12 @@ summary:focus-visible {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
   justify-content: center;
+}
+
+.barra-lateral a:focus-visible,
+.barra-lateral button:focus-visible {
+  outline: 3px solid var(--color-focus-outline);
+  outline-offset: 2px;
 }
 
 /* ---------- Barra inferior (móvil) ---------- */
@@ -4373,23 +4585,146 @@ summary:focus-visible {
   font-weight: 600;
 }
 
+/* .barra-inferior__item[aria-expanded="true"]: mismo resaltado que
+   :hover/--activo mientras el sheet de ese ícono está abierto (Inicio,
+   Trimestre, Perfil son <button> con aria-expanded; FAQ/Padres son <a>
+   simples y nunca lo tienen). */
 .barra-inferior__item:hover,
-.barra-inferior__item--activo {
+.barra-inferior__item--activo,
+.barra-inferior__item[aria-expanded="true"] {
   color: var(--md-secondary);
 }
 
+/* Envoltura relativa para el badge del ícono "Trimestre" (.trimestre-badge,
+   reutiliza el posicionamiento absoluto de .riel__badge) — sin esto el
+   badge se ubicaría respecto a todo el botón (icono+texto) en vez de solo
+   el icono. */
+.barra-inferior__icono-envoltura {
+  position: relative;
+  display: inline-flex;
+}
+
+/* ---------- Bottom sheet (barra inferior, móvil): mismo contenido que
+   los flyouts del riel — reutiliza tal cual .riel-flyout__titulo/
+   __titulo-fila/__pill-activo/__lista/__enlace/__trimestre-tabs/__campo/
+   __texto-grupo/__tema/__nivel dentro de .bottom-sheet — solo cambia el
+   contenedor exterior: se desliza desde abajo con esquinas redondeadas
+   arriba y un backdrop detrás, en vez de aparecer pegado a una columna
+   lateral. Ver activarSheetsMovil() en js/main.js. ---------- */
+.bottom-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: min(75vh, 520px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  background-color: var(--color-superficie);
+  border-top: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg) var(--radio-lg) 0 0;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.25);
+  padding: 0.5rem var(--espacio-base) calc(1rem + env(safe-area-inset-bottom, 0));
+  overflow-y: auto;
+  z-index: 95;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  pointer-events: none;
+}
+
+.bottom-sheet--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Manija visual (decorativa, aria-hidden): indica que el panel es
+   arrastrable, mismo criterio del cierre por swipe hacia abajo. */
+.bottom-sheet__manija {
+  align-self: center;
+  width: 36px;
+  height: 4px;
+  border-radius: var(--radio-full);
+  background-color: var(--color-borde);
+  margin-bottom: 0.4rem;
+  flex-shrink: 0;
+}
+
+/* Subtítulo "Ajustes" dentro del sheet Perfil, separando la sección
+   plegada (grupo + tema) del resto del contenido de perfil. */
+.bottom-sheet__subtitulo {
+  margin-top: 0.75rem;
+}
+
+/* Cabecera del sheet Perfil: avatar + píldora de Nivel lado a lado. El
+   avatar por defecto (emoji, sin sesión) se ve más grande que el ícono
+   normal de riel/barra inferior para que la cabecera no se vea vacía. */
+.sheet-perfil__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.sheet-perfil__cabecera .riel__avatar {
+  width: 44px;
+  height: 44px;
+  font-size: 1.05rem;
+}
+
+.sheet-perfil__cabecera span[aria-hidden="true"]:not(.riel__avatar) {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+/* ---------- Backdrop semitransparente detrás del sheet abierto ---------- */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 94;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.sheet-backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---------- Bloqueo de scroll del body con un sheet abierto ---------- */
+.body--sheet-abierto {
+  overflow: hidden;
+}
+
 /* ---------- Foco accesible en los componentes nuevos ---------- */
-.barra-lateral a:focus-visible,
-.barra-lateral button:focus-visible,
-.barra-lateral select:focus-visible,
+.riel a:focus-visible,
+.riel button:focus-visible,
+.riel-flyout a:focus-visible,
+.riel-flyout button:focus-visible,
+.riel-flyout select:focus-visible,
 .barra-inferior a:focus-visible,
-.barra-inferior button:focus-visible {
+.barra-inferior button:focus-visible,
+.bottom-sheet a:focus-visible,
+.bottom-sheet button:focus-visible,
+.bottom-sheet select:focus-visible {
   outline: 3px solid var(--color-focus-outline);
   outline-offset: 2px;
 }
 
-/* ---------- Distribución general según ancho de pantalla ---------- */
+/* ---------- Distribución general según ancho de pantalla ----------
+   body:has(.riel)/body:has(.barra-lateral) distinguen el padding-left
+   correcto según qué estructura de navegación tenga cada página: las 8
+   de alumno migradas al riel (60px fijos) contra admin.html/sitemap.html,
+   que aún usan la barra lateral de una sola columna (256px, 64px
+   colapsada) — ver la nota "BARRA LATERAL LEGADA" más arriba. */
 @media (min-width: 1024px) {
+  .riel {
+    display: flex;
+  }
+
   .barra-lateral {
     display: flex;
   }
@@ -4398,11 +4733,24 @@ summary:focus-visible {
     display: none;
   }
 
-  body {
+  /* Cinturón de seguridad: si un sheet quedó abierto en móvil y la
+     ventana cruza a escritorio (resize, no solo carga inicial), no debe
+     seguir flotando sobre el riel — activarSheetsMovil() no escucha
+     cambios de breakpoint, así que esto se resuelve solo con CSS. */
+  .bottom-sheet,
+  .sheet-backdrop {
+    display: none !important;
+  }
+
+  body:has(.riel) {
+    padding-left: 60px;
+  }
+
+  body:has(.barra-lateral) {
     padding-left: 256px;
   }
 
-  body.body--sidebar-colapsada {
+  body:has(.barra-lateral--colapsada) {
     padding-left: 64px;
   }
 
@@ -4418,34 +4766,18 @@ summary:focus-visible {
     padding-bottom: 64px;
   }
 
-  /* Deja aire para que el FAB no quede tapado por la barra inferior fija;
-     gana sobre la regla de la media query de 480px de arriba porque
-     aparece después en el archivo. */
-  .fab-menu {
+  /* Mismo cinturón de seguridad que arriba, pero al revés: un flyout del
+     riel no debe seguir flotando si la ventana cruza a móvil. */
+  .riel-flyout {
+    display: none !important;
+  }
+
+  /* Deja aire para que el botón "Volver arriba" no quede tapado por la
+     barra inferior fija; gana sobre la regla de la media query de 480px
+     de arriba porque aparece después en el archivo. */
+  .fab-volver-arriba {
     bottom: calc(64px + 1rem);
   }
-}
-
-/* ---------- Disparador de perfil en la barra lateral (desktop) ---------- */
-.barra-lateral__perfil {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0 var(--espacio-base);
-  background-color: var(--color-superficie);
-  color: var(--color-texto);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-md);
-  padding: 0.55rem 0.75rem;
-  font-family: var(--font-cuerpo);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: left;
-}
-
-.barra-lateral__perfil:hover {
-  background-color: var(--color-superficie-baja);
 }
 
 .boton-secundario {
@@ -4946,7 +5278,7 @@ a.boton-secundario {
 }
 
 /* ---------- Navegación de scroll horizontal (solo mobile <1024px) ----------
-   Mismo breakpoint que .barra-lateral/.barra-inferior en el resto del
+   Mismo breakpoint que .riel/.barra-inferior en el resto del
    sitio: visibles por defecto (mobile), ocultos en desktop porque ahí el
    scroll libre con mouse/trackpad ya se siente bien. */
 .calificacion-tabla__nav-movil {
