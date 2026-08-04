@@ -5492,6 +5492,218 @@ button.badge-estado {
   }
 }
 
+/* ---------- Cambio 1: columnas compactas (encabezado + celdas) ----------
+   Propia de este módulo — NO se toca .tabla-calificacion__col-item base
+   porque construirTablaEvaluacion() también la usa para columnas de
+   calificación numérica, que necesitan más ancho que un badge de ícono. */
+.tabla-calificacion__col-item--compacto {
+  max-width: 64px;
+  min-width: 64px;
+  text-align: center;
+}
+
+@media (max-width: 1023.98px) {
+  .tabla-calificacion__col-item--compacto {
+    min-width: 56px;
+  }
+}
+
+@media print {
+  /* La regla general de impresión ya quita max-width/overflow de
+     .tabla-calificacion__col-item (ver arriba, "Títulos completos, sin
+     truncar"); esta solo evita que el text-align:center de pantalla
+     quede aplicado también en la hoja impresa, donde el texto vuelve a
+     ser el título completo (ver restaurarTitulosParaImpresion en
+     js/main.js) y se lee mejor alineado a la izquierda como el resto. */
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .tabla-calificacion__col-item--compacto {
+    text-align: left;
+  }
+}
+
+/* ---------- Cambio 2: badge compacto (solo ícono) ---------- */
+.badge-estado--compacto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  padding: 0;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* ---------- Cambio 3: tabs de Tipo (reemplaza el <select> anterior) ----------
+   Mismo criterio visual que .admin-tabs, a menor escala (sub-filtro
+   dentro del panel, no pestañas de módulo). */
+.calificacion-tabs-tipo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.calificacion-tabs-tipo__boton {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  color: var(--color-texto-suave);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+}
+
+.calificacion-tabs-tipo__boton:hover {
+  border-color: var(--color-turquesa);
+}
+
+.calificacion-tabs-tipo__boton--activo {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+.calificacion-tabs-tipo__contador {
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+/* "Avance por Tipo" se distingue un poco del resto (no es un tipo real,
+   activa una vista distinta) con un borde punteado propio. */
+.calificacion-tabs-tipo__boton--avance {
+  border-style: dashed;
+}
+
+.calificacion-tabs-tipo__boton--avance.calificacion-tabs-tipo__boton--activo {
+  border-style: solid;
+}
+
+/* ---------- Cambio 4: tabla "Avance por Tipo" ----------
+   Mismo acento navy (--color-primario) que ya usan las tabs activas de
+   arriba, pero DISTINTO del turquesa de .tabla-promedios__promedio-final
+   (Evaluación) a propósito: son datos diferentes (% de entrega vs.
+   calificación numérica) y no deben confundirse a simple vista. */
+.tabla-avance-tipo thead th {
+  color: var(--color-primario);
+}
+
+:root[data-theme="oscuro"] .tabla-avance-tipo thead th {
+  color: var(--color-claro-sobre-navy);
+  background-color: var(--color-primario);
+}
+
+.tabla-avance-tipo .calificacion-tabla__avance {
+  color: var(--color-primario);
+}
+
+:root[data-theme="oscuro"] .tabla-avance-tipo .calificacion-tabla__avance {
+  color: var(--color-claro-sobre-navy);
+}
+
+/* ---------- Cambio 5: toggle Vista Tabla / Vista Tarjetas ---------- */
+.calificacion-vista-toggle {
+  display: inline-flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.calificacion-vista-toggle__boton {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  color: var(--color-texto);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+}
+
+.calificacion-vista-toggle__boton[aria-pressed="true"] {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+/* ---------- Cambio 5: Vista Tarjetas (accordion por alumno) ----------
+   Sin scroll horizontal a propósito: pensada para mobile/tablet, pero
+   disponible también en desktop. Reutiliza .fila-alumno--inactivo tal
+   cual (mismo atenuado que la tabla) y .calificacion-tabla__boton-historial
+   (misma delegación de eventos ya registrada sobre el contenedor). */
+.calificacion-fichas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.calificacion-ficha {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  padding: 0.25rem 0.9rem;
+}
+
+.calificacion-ficha[open] {
+  padding-bottom: 0.75rem;
+}
+
+.calificacion-ficha__resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.calificacion-ficha__resumen::-webkit-details-marker {
+  display: none;
+}
+
+.calificacion-ficha__resumen::before {
+  content: "▶";
+  display: inline-block;
+  margin-right: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--color-texto-suave);
+  transition: transform 0.15s ease;
+}
+
+.calificacion-ficha[open] > .calificacion-ficha__resumen::before {
+  transform: rotate(90deg);
+}
+
+.calificacion-ficha__resumen-texto {
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.calificacion-ficha__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-borde);
+}
+
+.calificacion-ficha__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--color-borde);
+  font-size: 0.88rem;
+}
+
+.calificacion-ficha__item:last-child {
+  border-bottom: none;
+}
+
+.calificacion-ficha__item-titulo {
+  color: var(--color-texto);
+}
+
 /* =========================================================
    MÓDULO "ALUMNOS" (admin.html)
 
@@ -6265,4 +6477,149 @@ button.badge-estado {
       animation-timeline: scroll(root);
     }
   }
+}
+
+/* =========================================================
+   MÓDULO "DASHBOARD" (panel docente, tab-dashboard)
+
+   Gráficas SVG puro (skill dataviz): sin canvas, sin librerías. Reutiliza
+   .criterios-contenedor/.criterio-tarjeta (KPIs), .barra-progreso
+   (cronograma) y .tabla-calificacion (vista de tabla de cada gráfica) tal
+   cual, para no duplicar estilos ya existentes.
+   ========================================================= */
+
+/* Ficha de análisis del grupo: mismo grid mobile-first que
+   .cuadricula-temario (1 columna en mobile, 2 desde 640px) — el único
+   grid de 2 columnas ya establecido en el sitio para tarjetas
+   compuestas, reutilizado aquí en vez de definir uno nuevo. */
+.dashboard-ficha {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.2rem;
+  margin: 1rem 0 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .dashboard-ficha {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.dashboard-ficha__celda {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  padding: 1rem 1.1rem;
+}
+
+.dashboard-ficha__titulo-celda {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.dashboard-grafica {
+  margin: 0;
+}
+
+.dashboard-grafica__titulo {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-grafica__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.dashboard-grafica__leyenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dashboard-grafica__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.dashboard-grafica__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.dashboard-grafica__track {
+  fill: var(--color-borde);
+}
+
+.dashboard-grafica__texto {
+  font-size: 13px;
+  fill: var(--color-texto);
+}
+
+/* Ink oscuro/claro fijos (no varían por tema, igual que
+   --color-estado-*): mismos dos tokens ya validados AA en
+   .badge-estado[data-estado="completada"] (#04211D) y
+   [data-estado="atrasada"] (--color-claro-sobre-navy), reutilizados aquí
+   en vez de calcular un tercer par de contraste para el mismo verde/rojo. */
+.dashboard-grafica__texto-segmento {
+  font-size: 13px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.dashboard-grafica__texto-segmento--oscuro {
+  fill: #04211D;
+}
+
+.dashboard-grafica__texto-segmento--claro {
+  fill: var(--color-claro-sobre-navy);
+}
+
+.dashboard-grafica__boton-tabla {
+  margin-top: 0.5rem;
+}
+
+.dashboard-grafica__tabla {
+  margin-top: 0.75rem;
+}
+
+.dashboard-riesgo-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.dashboard-riesgo-lista__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  background-color: var(--color-superficie);
+}
+
+.dashboard-riesgo-lista__item--zona-roja {
+  border-color: var(--color-estado-vencido);
+}
+
+.dashboard-riesgo-lista__info {
+  font-weight: 600;
+}
+
+.dashboard-cronograma__etiqueta {
+  margin: 0 0 0.5rem;
+  color: var(--color-texto-suave);
 }

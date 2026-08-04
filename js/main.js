@@ -4835,12 +4835,18 @@ function construirTarjetaNivel(porcentaje) {
 // Misma fórmula que ya usan, cada una con su propio bucle,
 // renderizarProgreso() y renderizarProgresoDetallado() (total/completadas
 // de tareas+actividades+proyectos de los 3 trimestres, filtradas por el
-// grupo del alumno) — pero SOLO para actualizarUISesion() (etiqueta de
-// Nivel del botón de cuenta), que corre en TODAS las páginas y no tiene
-// ese porcentaje a mano como sí lo tienen esas dos funciones. No se
-// tocó el cálculo de esas dos: se factorizó aparte para no copiarlo
-// literal una tercera vez dentro de actualizarUISesion().
-async function calcularAvanceGeneralAlumno(perfil) {
+// grupo del alumno) — para actualizarUISesion() (etiqueta de Nivel del
+// botón de cuenta) y para el módulo Dashboard del panel docente
+// (semáforo/KPI de avance de CUALQUIER alumno, no solo el de la sesión).
+// No se tocó el cálculo de esas dos: se factorizó aparte para no
+// copiarlo literal una tercera vez.
+//
+// "estaCompletado" es inyectable (por defecto lee progresoCache vía
+// itemEstaCompletado, igual que antes) porque ese caché solo tiene el
+// progreso del alumno de la sesión activa: el Dashboard, que evalúa
+// alumnos arbitrarios, pasa su propio checker respaldado por un mapa de
+// progreso ya consultado para ese alumno en vez de progresoCache.
+async function calcularAvanceGeneralAlumno(perfil, estaCompletado = itemEstaCompletado) {
   const coincideConGrupoDelAlumno = (item) => item.grupo === "todos" || item.grupo === perfil.grupo;
 
   let totalGeneral = 0;
@@ -4851,12 +4857,12 @@ async function calcularAvanceGeneralAlumno(perfil) {
     const actividades = (await obtenerActividades(trimestre)).filter(coincideConGrupoDelAlumno);
     const proyectos = (await obtenerProyectos(trimestre)).filter(coincideConGrupoDelAlumno);
 
-    const completadasTareas = tareas.filter((item) => itemEstaCompletado("tarea", item.id, trimestre)).length;
+    const completadasTareas = tareas.filter((item) => estaCompletado("tarea", item.id, trimestre)).length;
     const completadasActividades = actividades.filter((item) =>
-      itemEstaCompletado("actividad", item.id, trimestre)
+      estaCompletado("actividad", item.id, trimestre)
     ).length;
     const completadasProyectos = proyectos.filter((item) =>
-      itemEstaCompletado("proyecto", item.id, trimestre)
+      estaCompletado("proyecto", item.id, trimestre)
     ).length;
 
     totalGeneral += tareas.length + actividades.length + proyectos.length;
@@ -6490,6 +6496,24 @@ function activarCierreSesionAdmin() {
 
 const ICONO_TIPO_ENTREGABLE = { tarea: "📝", actividad: "🎯", proyecto: "🚀" };
 
+// Código corto del encabezado compacto de columna (Cambio 1: "T1"/"A2"/
+// "P1" según su posición dentro de su propio tipo en la secuencia
+// seleccionada) — el título completo sigue disponible vía el atributo
+// title nativo del <th>, no se pierde información, solo se comprime.
+const LETRA_TIPO_ENTREGABLE = { tarea: "T", actividad: "A", proyecto: "P" };
+
+// Texto/ícono de cada estado de badge, en un solo lugar para que la
+// variante compacta (Cambio 2: solo ícono + aria-label/title) y la
+// variante verbosa (icono + palabra, la que ya usa el modal de
+// historial) lean del mismo diccionario en vez de tener cada una el suyo.
+const ICONO_ESTADO_CALIFICACION = { completada: "🟢", atrasada: "🔒", pendiente: "🟡", "sin-cuenta": "🚫" };
+const TEXTO_ESTADO_CALIFICACION = {
+  completada: "Entregado",
+  atrasada: "Atrasada",
+  pendiente: "Pendiente",
+  "sin-cuenta": "Sin cuenta activa",
+};
+
 // Título de cada bloque de la impresión "por tipo" (ver
 // prepararImpresionTablaPorTipo): plural, para el <h3> de cada tabla
 // separada.
@@ -6512,12 +6536,18 @@ function claveSecuenciaDeEntregable(item) {
 // Filtro actual del módulo. trimestre/secuencia empiezan en null: se
 // resuelven en inicializarModuloCalificacion() antes del primer render
 // (trimestre = el trimestre desbloqueado; secuencia = la primera
-// disponible para ese trimestre/tipo).
+// disponible para ese trimestre/tipo). "tipo" ahora también puede ser
+// "avance-por-tipo" (Cambio 4: no es un tipo real, activa la tabla
+// resumen en vez de columnas de entregables — ver
+// renderizarPanelCalificacion()). "vista" es "tabla" o "tarjetas"
+// (Cambio 5), recordada en localStorage.
+const CLAVE_VISTA_CALIFICACION = "calificacion_vista";
 const estadoCalificacion = {
   trimestre: null,
   grupo: "todos",
   tipo: "todos",
   secuencia: null,
+  vista: localStorage.getItem(CLAVE_VISTA_CALIFICACION) || "tabla",
 };
 
 // alumnos_registro.id (fila) -> objeto alumno completo, para que la
@@ -6664,31 +6694,46 @@ async function actualizarOpcionesSecuenciaCalificacion() {
 // mantener en sincronía sin que esta función genérica necesite saber que
 // existe.
 function pintarBadgeCalificacion(contenedor, contexto) {
-  const { alumno, item, trimestre, filaProgreso, sinCuenta, mapaProgreso, claveMapaProgreso } = contexto;
+  const { alumno, item, trimestre, filaProgreso, sinCuenta, mapaProgreso, claveMapaProgreso, compacto } = contexto;
   contenedor.innerHTML = "";
 
   const editable = !sinCuenta && (!filaProgreso || filaProgreso.origen === "manual-docente");
   const badge = document.createElement(editable ? "button" : "span");
   if (editable) badge.type = "button";
   badge.className = "badge-estado";
+  if (compacto) badge.classList.add("badge-estado--compacto");
+
+  // Compacto (Cambio 2, solo la tabla matriz): únicamente el ícono, con
+  // aria-label + title nativos para no perder accesibilidad. Verboso
+  // (comportamiento original, el que sigue usando el modal de
+  // historial): ícono + palabra, sin title propio salvo los casos
+  // especiales de abajo (sin-cuenta/origen formulario) — mismo
+  // comportamiento que antes de este cambio.
+  function pintarContenido(estado) {
+    badge.dataset.estado = estado;
+    const etiqueta = TEXTO_ESTADO_CALIFICACION[estado];
+    if (compacto) {
+      badge.textContent = ICONO_ESTADO_CALIFICACION[estado];
+      badge.setAttribute("aria-label", etiqueta);
+      badge.title = etiqueta;
+    } else {
+      badge.textContent = ICONO_ESTADO_CALIFICACION[estado] + " " + etiqueta;
+    }
+  }
 
   if (sinCuenta) {
-    badge.dataset.estado = "sin-cuenta";
-    badge.textContent = "🚫 Sin cuenta activa";
+    pintarContenido("sin-cuenta");
     badge.title = "Este alumno no tiene cuenta activa todavía";
     contenedor.appendChild(badge);
     return;
   }
 
   if (filaProgreso && filaProgreso.completado) {
-    badge.dataset.estado = "completada";
-    badge.textContent = "🟢 Entregado";
+    pintarContenido("completada");
   } else if (itemEstaVencido(item.tipoEntregable, item, alumno.grupo)) {
-    badge.dataset.estado = "atrasada";
-    badge.textContent = "🔒 Atrasada";
+    pintarContenido("atrasada");
   } else {
-    badge.dataset.estado = "pendiente";
-    badge.textContent = "🟡 Pendiente";
+    pintarContenido("pendiente");
   }
 
   if (editable) {
@@ -6738,13 +6783,42 @@ function crearBadgeCalificacion(alumno, item, filaProgreso, sinCuenta, trimestre
   // "tabla-calificacion__col-item" es la misma clase del <th> de esta
   // columna: comparte min-width y scroll-snap-align en mobile (ver
   // css/style.css) para que el punto de snap quede en el mismo eje tanto
-  // en el encabezado como en cada celda de datos.
-  celda.className = "calificacion-tabla__celda tabla-calificacion__col-item";
+  // en el encabezado como en cada celda de datos. "--compacto" es propia
+  // de este módulo (Cambio 1): NO se agrega a .tabla-calificacion__col-item
+  // base porque esa clase también la usa construirTablaEvaluacion() con
+  // columnas de calificación numérica, que necesitan más ancho.
+  celda.className = "calificacion-tabla__celda tabla-calificacion__col-item tabla-calificacion__col-item--compacto";
 
   const claveMapaProgreso = alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id;
-  pintarBadgeCalificacion(celda, { alumno, item, trimestre, filaProgreso, sinCuenta, mapaProgreso, claveMapaProgreso });
+  pintarBadgeCalificacion(celda, {
+    alumno,
+    item,
+    trimestre,
+    filaProgreso,
+    sinCuenta,
+    mapaProgreso,
+    claveMapaProgreso,
+    compacto: true,
+  });
 
   return celda;
+}
+
+// "completados/total" de un alumno sobre un set de entregables ya
+// filtrado (por tipo/secuencia/grupo, según lo necesite el llamador) —
+// extraído de crearFilaAlumnoCalificacion (antes vivía inline en su
+// forEach) para reutilizarlo también en la ficha por alumno (Vista
+// Tarjetas, Cambio 5) y en la tabla "Avance por Tipo" (Cambio 4), sin
+// triplicar el mismo conteo. porcentaje null cuando no aplica (sin
+// cuenta o sin entregables) para que cada llamador decida cómo mostrar
+// ese caso ("—", por convención ya usada en el resto del módulo).
+function calcularPorcentajeEntrega(items, alumno, mapaProgreso, sinCuenta) {
+  if (sinCuenta || items.length === 0) return { completados: 0, porcentaje: null };
+  const completados = items.filter((item) => {
+    const fila = mapaProgreso.get(alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id);
+    return fila && fila.completado;
+  }).length;
+  return { completados, porcentaje: Math.round((completados / items.length) * 100) };
 }
 
 function crearFilaAlumnoCalificacion(alumno, entregables, mapaProgreso, trimestre) {
@@ -6779,20 +6853,18 @@ function crearFilaAlumnoCalificacion(alumno, entregables, mapaProgreso, trimestr
   fila.appendChild(celdaAlumno);
 
   const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
-  let completados = 0;
 
   entregables.forEach((item) => {
     const filaProgreso = sinCuenta
       ? null
       : mapaProgreso.get(alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id);
-    if (filaProgreso && filaProgreso.completado) completados++;
     fila.appendChild(crearBadgeCalificacion(alumno, item, filaProgreso, sinCuenta, trimestre, mapaProgreso));
   });
 
+  const { porcentaje } = calcularPorcentajeEntrega(entregables, alumno, mapaProgreso, sinCuenta);
   const celdaAvance = document.createElement("td");
   celdaAvance.className = "calificacion-tabla__avance";
-  celdaAvance.textContent =
-    sinCuenta || entregables.length === 0 ? "—" : Math.round((completados / entregables.length) * 100) + "%";
+  celdaAvance.textContent = porcentaje == null ? "—" : porcentaje + "%";
   fila.appendChild(celdaAvance);
 
   return fila;
@@ -6846,14 +6918,21 @@ function construirTablaCalificacion(alumnos, entregables, mapaProgreso, trimestr
   thAlumno.textContent = "Alumno";
   filaEncabezado.appendChild(thAlumno);
 
-  // El ícono de tipo solo se antepone al título cuando la vista mezcla
-  // los 3 tipos ("Todos"): con un tipo único ya es redundante.
-  const mostrarIconoTipo = estadoCalificacion.tipo === "todos";
+  // Cambio 1: encabezado compacto — ícono de tipo + código corto ("T1",
+  // "A2", "P1"...) según la posición del ítem dentro de su propio tipo
+  // en la secuencia ya filtrada (entregables ya viene acotado a una sola
+  // secuencia, ver renderizarTablaCalificacion). El título completo NO
+  // se pierde: sigue en el atributo title nativo (tooltip del navegador,
+  // sin componente nuevo) — ya estaba ahí, solo se dejó de repetir como
+  // textContent.
+  const contadorPorTipo = { tarea: 0, actividad: 0, proyecto: 0 };
   entregables.forEach((item) => {
+    contadorPorTipo[item.tipoEntregable]++;
     const th = document.createElement("th");
-    th.className = "tabla-calificacion__col-item";
+    th.className = "tabla-calificacion__col-item tabla-calificacion__col-item--compacto";
     th.title = item.titulo;
-    th.textContent = (mostrarIconoTipo ? ICONO_TIPO_ENTREGABLE[item.tipoEntregable] + " " : "") + item.titulo;
+    th.textContent =
+      ICONO_TIPO_ENTREGABLE[item.tipoEntregable] + " " + LETRA_TIPO_ENTREGABLE[item.tipoEntregable] + contadorPorTipo[item.tipoEntregable];
     // Permite identificar a qué tipo pertenece cada columna leyendo solo
     // el DOM ya renderizado (ver prepararImpresionTablaPorTipo), sin
     // tener que volver a consultar "entregables" fuera de esta función.
@@ -6889,11 +6968,17 @@ function filtrarFilasTablaCalificacion() {
   const contenedor = document.getElementById("calificacion-tabla-contenedor");
   if (!input || !contenedor) return;
 
-  const tabla = contenedor.querySelector(".tabla-calificacion");
-  const filas = contenedor.querySelectorAll("tbody tr");
+  // "[data-nombre-busqueda]" en vez de "tbody tr" (Cambio 5): ese mismo
+  // dataset ya lo trae cada <tr> de la tabla matriz Y cada <details> de
+  // la Vista Tarjetas (ver crearFichaAlumnoCalificacion), así que una
+  // sola función filtra ambas vistas sin necesitar saber cuál está
+  // activa. hayContenido detecta cuál de las dos hay en el DOM para el
+  // mensaje de "sin coincidencias".
+  const hayContenido = Boolean(contenedor.querySelector(".tabla-calificacion, .calificacion-fichas"));
+  const filas = contenedor.querySelectorAll("[data-nombre-busqueda]");
   let mensajeSinCoincidencias = contenedor.querySelector(".calificacion-tabla__sin-coincidencias");
 
-  if (!tabla || filas.length === 0) {
+  if (!hayContenido || filas.length === 0) {
     if (mensajeSinCoincidencias) mensajeSinCoincidencias.remove();
     return;
   }
@@ -6916,7 +7001,11 @@ function filtrarFilasTablaCalificacion() {
       mensajeSinCoincidencias.className = "sin-resultados calificacion-tabla__sin-coincidencias";
       mensajeSinCoincidencias.textContent =
         "No se encontró en esta vista — prueba cambiar el filtro de Trimestre/Secuencia.";
-      tabla.after(mensajeSinCoincidencias);
+      // appendChild (no .after()): a diferencia de la tabla original, el
+      // contenedor ahora puede tener un <table> o un <div class=
+      // "calificacion-fichas">, así que se agrega al final del
+      // contenedor en vez de anclarse a un elemento "tabla" específico.
+      contenedor.appendChild(mensajeSinCoincidencias);
     }
   } else if (mensajeSinCoincidencias) {
     mensajeSinCoincidencias.remove();
@@ -7473,9 +7562,17 @@ function exportarCSVCalificacion() {
     const numero = celdas[0].querySelector(".calificacion-tabla__alumno-numero")?.textContent || "";
     const valores = [(nombre + " " + numero).trim()];
 
-    celdas.slice(1, -1).forEach((celda) => {
-      const estado = celda.querySelector(".badge-estado")?.dataset.estado;
-      valores.push(TEXTO_ESTADO_CALIFICACION_CSV[estado] || "");
+    // celdas.slice(1): antes cortaba también la última celda (slice(1,-1))
+    // aunque "encabezados" arriba SÍ incluye el <th> de esa columna
+    // ("Avance") — desfase preexistente que dejaba esa columna sin datos
+    // en el CSV. Se corrige de paso porque la nueva tabla "Avance por
+    // Tipo" (Cambio 4) sí necesita exportar su última columna
+    // ("Avance Total"). Fallback a textContent cuando la celda no trae
+    // .badge-estado (las celdas de "Avance por Tipo" son texto plano,
+    // no badges de estado).
+    celdas.slice(1).forEach((celda) => {
+      const badge = celda.querySelector(".badge-estado");
+      valores.push(badge ? TEXTO_ESTADO_CALIFICACION_CSV[badge.dataset.estado] || "" : celda.textContent.trim());
     });
 
     lineas.push(valores.map(escaparValorCSV).join(","));
@@ -7603,11 +7700,37 @@ function prepararImpresionTablaPorTipo() {
 // prepararImpresionTablaPorTipo() y activa
 // ".calificacion--imprimiendo-por-tipo" para que el CSS muestre esas en
 // vez de la tabla en pantalla.
+// El Cambio 1 volvió compacto el textContent de cada <th> de entregable
+// ("T1"/"A2"/...); el título completo solo vive en el atributo title
+// nativo (tooltip, no imprime). Antes de imprimir se restaura
+// temporalmente el título completo como textContent — mismo patrón de
+// "inyectar antes, revertir en afterprint" que ya usa el <style> de
+// landscape más abajo — para no perder ese detalle en la versión
+// impresa. prepararImpresionTablaPorTipo() CLONA estos mismos <th> del
+// DOM en pantalla, así que restaurar aquí también cubre esa ruta sin
+// tocar esa función.
+function restaurarTitulosParaImpresion(contenedor) {
+  contenedor.querySelectorAll(".tabla-calificacion__col-item--compacto[title]").forEach((celda) => {
+    celda.dataset.textoCompacto = celda.textContent;
+    celda.textContent = celda.title;
+  });
+}
+
+function restaurarTitulosCompactos(contenedor) {
+  contenedor.querySelectorAll(".tabla-calificacion__col-item--compacto[data-texto-compacto]").forEach((celda) => {
+    celda.textContent = celda.dataset.textoCompacto;
+    delete celda.dataset.textoCompacto;
+  });
+}
+
 function activarImpresionTablaCalificacion() {
   const boton = document.getElementById("calificacion-boton-imprimir-tabla");
   if (!boton) return;
 
   boton.addEventListener("click", () => {
+    const contenedorTabla = document.getElementById("calificacion-tabla-contenedor");
+    if (contenedorTabla) restaurarTitulosParaImpresion(contenedorTabla);
+
     if (estadoCalificacion.tipo === "todos") {
       prepararImpresionTablaPorTipo();
       document.body.classList.add("calificacion--imprimiendo-por-tipo");
@@ -7631,7 +7754,34 @@ function activarImpresionTablaCalificacion() {
   window.addEventListener("afterprint", () => {
     document.body.classList.remove("calificacion--imprimiendo-por-tipo");
     document.getElementById("estilo-impresion-landscape-calificacion")?.remove();
+    const contenedorTabla = document.getElementById("calificacion-tabla-contenedor");
+    if (contenedorTabla) restaurarTitulosCompactos(contenedorTabla);
   });
+}
+
+// Filtra entregables YA de un solo trimestre/tipo (según lo que haya
+// pedido el llamador a obtenerEntregablesPorTipo) por la secuencia y el
+// grupo actualmente elegidos en el panel — extraído de
+// renderizarTablaCalificacion (antes vivía inline ahí) para que
+// renderizarTablaAvancePorTipo() y actualizarConteosTabsTipo() lo
+// reutilicen sin repetir esta misma cadena de dos filtros. Mismo
+// criterio que elementoCoincideConGrupo() (sección 4), pero sin
+// reutilizar esa función tal cual: en el resto del archivo se le pasa
+// directo a Array.filter (`.filter(elementoCoincideConGrupo)`), así que
+// agregarle un segundo parámetro capturaría silenciosamente el índice
+// del array que Array.filter también le pasa a su callback, no
+// "undefined" — eso rompería el filtro por grupo en avisos/horario/
+// tareas/etc. de todo el sitio público para cualquier ítem que no sea
+// el primero del array.
+function entregablesFiltradosPorSecuenciaYGrupo(entregablesTodos) {
+  return entregablesTodos
+    .filter((item) => claveSecuenciaDeEntregable(item) === estadoCalificacion.secuencia)
+    .filter(
+      (item) =>
+        estadoCalificacion.grupo === "todos" ||
+        item.grupo === "todos" ||
+        item.grupo === estadoCalificacion.grupo
+    );
 }
 
 async function renderizarTablaCalificacion() {
@@ -7654,25 +7804,7 @@ async function renderizarTablaCalificacion() {
     obtenerEntregablesPorTipo(estadoCalificacion.tipo, estadoCalificacion.trimestre),
   ]);
 
-  // Tras filtrar por secuencia, las columnas también se filtran por el
-  // Grupo elegido en este panel (estadoCalificacion.grupo) — NO por
-  // grupoActual (el selector de grupo del sitio público, un estado
-  // independiente de este panel). Mismo criterio que
-  // elementoCoincideConGrupo() (sección 4), pero sin reutilizar esa
-  // función tal cual: en el resto del archivo se le pasa directo a
-  // Array.filter (`.filter(elementoCoincideConGrupo)`), así que agregarle
-  // un segundo parámetro capturaría silenciosamente el índice del array
-  // que Array.filter también le pasa a su callback, no "undefined" — eso
-  // rompería el filtro por grupo en avisos/horario/tareas/etc. de todo el
-  // sitio público para cualquier ítem que no sea el primero del array.
-  const entregables = entregablesTodos
-    .filter((item) => claveSecuenciaDeEntregable(item) === estadoCalificacion.secuencia)
-    .filter(
-      (item) =>
-        estadoCalificacion.grupo === "todos" ||
-        item.grupo === "todos" ||
-        item.grupo === estadoCalificacion.grupo
-    );
+  const entregables = entregablesFiltradosPorSecuenciaYGrupo(entregablesTodos);
 
   if (alumnos.length === 0) {
     mostrarSinResultados(contenedor, "No hay alumnos registrados para este grupo.");
@@ -7700,6 +7832,365 @@ async function renderizarTablaCalificacion() {
   // Grupo/Tipo/Secuencia genera una tabla nueva), así que hay que
   // reaplicarlo sobre las filas recién creadas para que siga vigente.
   filtrarFilasTablaCalificacion();
+}
+
+/* ---------- Cambio 5: Vista Tarjetas (accordion por alumno) ----------
+   Alternativa a la tabla matriz, sin scroll horizontal: un <details>
+   nativo por alumno con la lista de sus entregables (respeta el mismo
+   filtro de Tipo/Secuencia activo). Reutiliza pintarBadgeCalificacion()
+   sin "compacto" (mismo formato verboso que ya usa el modal de
+   historial: hay espacio de sobra en una lista vertical) y
+   calcularPorcentajeEntrega() para el resumen del <summary>. --------- */
+function crearFichaAlumnoCalificacion(alumno, entregables, mapaProgreso, trimestre) {
+  const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
+
+  const detalles = document.createElement("details");
+  detalles.className = "calificacion-ficha";
+  if (alumno.activo === false) detalles.classList.add("fila-alumno--inactivo");
+  // Mismo dataset que crearFilaAlumnoCalificacion (ver
+  // filtrarFilasTablaCalificacion, generalizada para leerlo de
+  // cualquiera de las dos vistas).
+  detalles.dataset.nombreBusqueda = normalizarParaBusqueda(alumno.nombre);
+  detalles.dataset.numeroLista = String(alumno.numero_lista);
+
+  mapaAlumnosCalificacionPorId.set(String(alumno.id), alumno);
+
+  const { completados, porcentaje } = calcularPorcentajeEntrega(entregables, alumno, mapaProgreso, sinCuenta);
+
+  const resumen = document.createElement("summary");
+  resumen.className = "calificacion-ficha__resumen";
+
+  const textoResumen = document.createElement("span");
+  textoResumen.className = "calificacion-ficha__resumen-texto";
+  textoResumen.textContent =
+    alumno.nombre +
+    " — " +
+    (sinCuenta
+      ? "Sin cuenta activa"
+      : porcentaje + "% — " + completados + "/" + entregables.length + " entregas");
+  resumen.appendChild(textoResumen);
+
+  const botonHistorial = document.createElement("button");
+  botonHistorial.type = "button";
+  botonHistorial.className = "calificacion-tabla__boton-historial";
+  botonHistorial.dataset.alumnoId = alumno.id;
+  botonHistorial.textContent = "👁️ Ver historial completo";
+  // Sin esto, el clic en el botón también dispara la activación por
+  // defecto de <summary> (abrir/cerrar el accordion) porque el botón
+  // vive dentro de él.
+  botonHistorial.addEventListener("click", (evento) => evento.preventDefault());
+  resumen.appendChild(botonHistorial);
+
+  detalles.appendChild(resumen);
+
+  const lista = document.createElement("ul");
+  lista.className = "calificacion-ficha__lista";
+
+  entregables.forEach((item) => {
+    const li = document.createElement("li");
+    li.className = "calificacion-ficha__item";
+
+    const tituloItem = document.createElement("span");
+    tituloItem.className = "calificacion-ficha__item-titulo";
+    tituloItem.textContent = ICONO_TIPO_ENTREGABLE[item.tipoEntregable] + " " + item.titulo;
+    li.appendChild(tituloItem);
+
+    const filaProgreso = sinCuenta
+      ? null
+      : mapaProgreso.get(alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id);
+    const contenedorBadge = document.createElement("span");
+    const claveMapaProgreso = alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id;
+    pintarBadgeCalificacion(contenedorBadge, {
+      alumno,
+      item,
+      trimestre,
+      filaProgreso,
+      sinCuenta,
+      mapaProgreso,
+      claveMapaProgreso,
+    });
+    li.appendChild(contenedorBadge);
+
+    lista.appendChild(li);
+  });
+
+  detalles.appendChild(lista);
+  return detalles;
+}
+
+async function renderizarTarjetasCalificacion() {
+  const contenedor = document.getElementById("calificacion-tabla-contenedor");
+  if (!contenedor) return;
+
+  if (!estadoCalificacion.secuencia) {
+    mostrarSinResultados(contenedor, "No hay entregables para este trimestre y tipo.");
+    return;
+  }
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  const tipos =
+    estadoCalificacion.tipo === "todos" ? ["tarea", "actividad", "proyecto"] : [estadoCalificacion.tipo];
+
+  const [alumnos, entregablesTodos] = await Promise.all([
+    obtenerAlumnosParaCalificacion(estadoCalificacion.grupo),
+    obtenerEntregablesPorTipo(estadoCalificacion.tipo, estadoCalificacion.trimestre),
+  ]);
+
+  const entregables = entregablesFiltradosPorSecuenciaYGrupo(entregablesTodos);
+
+  if (alumnos.length === 0) {
+    mostrarSinResultados(contenedor, "No hay alumnos registrados para este grupo.");
+    return;
+  }
+  if (entregables.length === 0) {
+    mostrarSinResultados(contenedor, "No hay entregables para esta secuencia.");
+    return;
+  }
+
+  const idsParaProgreso = alumnos.filter((alumno) => alumno.auth_user_id != null).map((alumno) => alumno.auth_user_id);
+  const mapaProgreso = await obtenerMapaProgresoCalificacion(estadoCalificacion.trimestre, tipos, idsParaProgreso);
+
+  contenedor.innerHTML = "";
+  const lista = document.createElement("div");
+  lista.className = "calificacion-fichas";
+  alumnos.forEach((alumno) => {
+    lista.appendChild(crearFichaAlumnoCalificacion(alumno, entregables, mapaProgreso, estadoCalificacion.trimestre));
+  });
+  contenedor.appendChild(lista);
+
+  filtrarFilasTablaCalificacion();
+}
+
+/* ---------- Cambio 4: panel "📊 Avance por Tipo" ----------
+   Tabla resumen (no columnas por entregable): % de entrega por tipo +
+   Avance Total, para la secuencia/grupo/trimestre ya filtrados. Usa
+   SIEMPRE obtenerEntregablesPorTipo("todos", ...) sin importar qué tab
+   de Tipo estaba activa antes (necesita los 3 tipos a la vez para
+   calcular sus 3 porcentajes) — misma función que ya usa la vista
+   "Tipo: Todos" de la tabla matriz, ninguna consulta nueva. ---------- */
+function crearFilaAlumnoAvanceTipo(alumno, itemsPorTipo, mapaProgreso) {
+  const fila = document.createElement("tr");
+  if (alumno.activo === false) fila.classList.add("fila-alumno--inactivo");
+  fila.dataset.nombreBusqueda = normalizarParaBusqueda(alumno.nombre);
+  fila.dataset.numeroLista = String(alumno.numero_lista);
+
+  mapaAlumnosCalificacionPorId.set(String(alumno.id), alumno);
+
+  const celdaAlumno = document.createElement("td");
+  celdaAlumno.className = "tabla-calificacion__col-fija";
+  const envoltura = document.createElement("div");
+  envoltura.className = "calificacion-tabla__alumno";
+  const nombre = document.createElement("span");
+  nombre.className = "calificacion-tabla__alumno-nombre";
+  nombre.textContent = alumno.nombre;
+  const numero = document.createElement("span");
+  numero.className = "calificacion-tabla__alumno-numero";
+  numero.textContent = "N.° " + alumno.numero_lista;
+  const botonHistorial = document.createElement("button");
+  botonHistorial.type = "button";
+  botonHistorial.className = "calificacion-tabla__boton-historial";
+  botonHistorial.dataset.alumnoId = alumno.id;
+  botonHistorial.textContent = "👁️ Ver historial completo";
+  envoltura.append(nombre, numero, botonHistorial);
+  celdaAlumno.appendChild(envoltura);
+  fila.appendChild(celdaAlumno);
+
+  const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
+
+  ["tarea", "actividad", "proyecto"].forEach((tipo) => {
+    const { porcentaje } = calcularPorcentajeEntrega(itemsPorTipo[tipo] || [], alumno, mapaProgreso, sinCuenta);
+    const celda = document.createElement("td");
+    celda.textContent = porcentaje == null ? "—" : porcentaje + "%";
+    fila.appendChild(celda);
+  });
+
+  const todosLosItems = [...itemsPorTipo.tarea, ...itemsPorTipo.actividad, ...itemsPorTipo.proyecto];
+  const { porcentaje: avanceTotal } = calcularPorcentajeEntrega(todosLosItems, alumno, mapaProgreso, sinCuenta);
+  const celdaTotal = document.createElement("td");
+  celdaTotal.className = "calificacion-tabla__avance";
+  celdaTotal.textContent = avanceTotal == null ? "—" : avanceTotal + "%";
+  fila.appendChild(celdaTotal);
+
+  return fila;
+}
+
+function construirTablaAvanceTipo(alumnos, itemsPorTipo, mapaProgreso) {
+  const tabla = document.createElement("table");
+  // "tabla-avance-tipo" trae el acento navy propio (Cambio 4: distinto
+  // del turquesa de "Ver tabla de promedios" en Evaluación — son datos
+  // distintos, % de entrega vs. calificación numérica; ver css/style.css).
+  tabla.className = "tabla-calificacion tabla-avance-tipo";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+
+  const thAlumno = document.createElement("th");
+  thAlumno.className = "tabla-calificacion__col-fija";
+  thAlumno.textContent = "Alumno";
+  filaEncabezado.appendChild(thAlumno);
+
+  ["📝 % Tareas", "🎯 % Actividades", "🚀 % Proyecto"].forEach((etiqueta) => {
+    const th = document.createElement("th");
+    th.textContent = etiqueta;
+    filaEncabezado.appendChild(th);
+  });
+
+  const thTotal = document.createElement("th");
+  thTotal.textContent = "Avance Total";
+  filaEncabezado.appendChild(thTotal);
+
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  alumnos.forEach((alumno) => tbody.appendChild(crearFilaAlumnoAvanceTipo(alumno, itemsPorTipo, mapaProgreso)));
+  tabla.appendChild(tbody);
+
+  return tabla;
+}
+
+async function renderizarTablaAvancePorTipo() {
+  const contenedor = document.getElementById("calificacion-tabla-contenedor");
+  if (!contenedor) return;
+
+  if (!estadoCalificacion.secuencia) {
+    mostrarSinResultados(contenedor, "No hay entregables para este trimestre.");
+    return;
+  }
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  const [alumnos, entregablesTodos] = await Promise.all([
+    obtenerAlumnosParaCalificacion(estadoCalificacion.grupo),
+    obtenerEntregablesPorTipo("todos", estadoCalificacion.trimestre),
+  ]);
+
+  const entregables = entregablesFiltradosPorSecuenciaYGrupo(entregablesTodos);
+
+  if (alumnos.length === 0) {
+    mostrarSinResultados(contenedor, "No hay alumnos registrados para este grupo.");
+    return;
+  }
+  if (entregables.length === 0) {
+    mostrarSinResultados(contenedor, "No hay entregables para esta secuencia.");
+    return;
+  }
+
+  const itemsPorTipo = { tarea: [], actividad: [], proyecto: [] };
+  entregables.forEach((item) => itemsPorTipo[item.tipoEntregable]?.push(item));
+
+  const idsParaProgreso = alumnos.filter((alumno) => alumno.auth_user_id != null).map((alumno) => alumno.auth_user_id);
+  const mapaProgreso = await obtenerMapaProgresoCalificacion(
+    estadoCalificacion.trimestre,
+    ["tarea", "actividad", "proyecto"],
+    idsParaProgreso
+  );
+
+  contenedor.innerHTML = "";
+  contenedor.appendChild(construirTablaAvanceTipo(alumnos, itemsPorTipo, mapaProgreso));
+
+  filtrarFilasTablaCalificacion();
+}
+
+// Punto único de render del panel: decide entre la tabla matriz, la
+// Vista Tarjetas o el resumen "Avance por Tipo" según el estado actual
+// — todos los listeners de filtro (trimestre/grupo/secuencia/tipo/vista)
+// llaman a ESTA función en vez de llamar directo a cualquiera de las
+// tres, para no tener que repetir el mismo if/else en cada uno.
+async function renderizarPanelCalificacion() {
+  if (estadoCalificacion.tipo === "avance-por-tipo") {
+    await renderizarTablaAvancePorTipo();
+  } else if (estadoCalificacion.vista === "tarjetas") {
+    await renderizarTarjetasCalificacion();
+  } else {
+    await renderizarTablaCalificacion();
+  }
+  actualizarVisibilidadControlesCalificacion();
+}
+
+// Conteo dinámico "(N)" de cada tab de Tipo (Cambio 3): depende de la
+// secuencia/grupo/trimestre ya elegidos (NO de qué tab está activa —
+// las 3 cuentas se muestran siempre, sin importar cuál se está viendo),
+// así que se recalcula junto con cada cambio de esos 3 filtros, nunca
+// al hacer clic en una tab.
+async function actualizarConteosTabsTipo() {
+  const contadorTarea = document.getElementById("calificacion-tab-contador-tarea");
+  if (!contadorTarea || !estadoCalificacion.secuencia) return;
+
+  const entregablesTodos = await obtenerEntregablesPorTipo("todos", estadoCalificacion.trimestre);
+  const entregables = entregablesFiltradosPorSecuenciaYGrupo(entregablesTodos);
+
+  const conteos = { tarea: 0, actividad: 0, proyecto: 0 };
+  entregables.forEach((item) => conteos[item.tipoEntregable]++);
+
+  contadorTarea.textContent = "(" + conteos.tarea + ")";
+  document.getElementById("calificacion-tab-contador-actividad").textContent = "(" + conteos.actividad + ")";
+  document.getElementById("calificacion-tab-contador-proyecto").textContent = "(" + conteos.proyecto + ")";
+}
+
+// Cambio 3: reemplaza el <select> de Tipo. Mismo patrón de toggle que
+// activarTabsAdmin() (clase activa + aria-selected), pero a nivel de
+// sub-filtro de este panel — clic en una tab NO recalcula qué
+// secuencias existen (actualizarOpcionesSecuenciaCalificacion() sigue
+// sin tocarse, ver más abajo), solo cambia qué columnas/vista se
+// muestran de la secuencia ya elegida.
+function activarTabsTipoCalificacion() {
+  const tabs = Array.from(document.querySelectorAll(".calificacion-tabs-tipo__boton"));
+  if (tabs.length === 0) return;
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", async () => {
+      tabs.forEach((otro) => {
+        const activo = otro === tab;
+        otro.classList.toggle("calificacion-tabs-tipo__boton--activo", activo);
+        otro.setAttribute("aria-selected", String(activo));
+      });
+      estadoCalificacion.tipo = tab.dataset.tipo;
+      await renderizarPanelCalificacion();
+    });
+  });
+}
+
+// Cambio 5: toggle Vista Tabla/Tarjetas, con la preferencia recordada en
+// localStorage (mismo patrón que CLAVE_GRUPO/CLAVE_ULTIMO_TRIMESTRE en
+// la sección 3: leer al cargar, escribir en cada cambio).
+function activarVistaCalificacion() {
+  const botonTabla = document.getElementById("calificacion-vista-boton-tabla");
+  const botonTarjetas = document.getElementById("calificacion-vista-boton-tarjetas");
+  if (!botonTabla || !botonTarjetas) return;
+
+  async function elegirVista(vista) {
+    estadoCalificacion.vista = vista;
+    localStorage.setItem(CLAVE_VISTA_CALIFICACION, vista);
+    botonTabla.setAttribute("aria-pressed", String(vista === "tabla"));
+    botonTarjetas.setAttribute("aria-pressed", String(vista === "tarjetas"));
+    await renderizarPanelCalificacion();
+  }
+
+  botonTabla.addEventListener("click", () => elegirVista("tabla"));
+  botonTarjetas.addEventListener("click", () => elegirVista("tarjetas"));
+
+  botonTabla.setAttribute("aria-pressed", String(estadoCalificacion.vista === "tabla"));
+  botonTarjetas.setAttribute("aria-pressed", String(estadoCalificacion.vista === "tarjetas"));
+}
+
+// Oculta/muestra, según el estado actual, lo que solo tiene sentido en
+// Vista Tabla: el toggle de vista y el botón "Avance por Tipo" no
+// coexisten (esa tab siempre usa su propia tabla resumen, no hay
+// "tarjetas" para ella); exportar/imprimir y la navegación móvil ◀▶
+// necesitan un <table> real, que Vista Tarjetas no tiene.
+function actualizarVisibilidadControlesCalificacion() {
+  const toggleVista = document.getElementById("calificacion-vista-toggle");
+  const accionesExportar = document.getElementById("calificacion-acciones-exportar");
+  const navMovil = document.getElementById("calificacion-nav-movil");
+
+  const enAvancePorTipo = estadoCalificacion.tipo === "avance-por-tipo";
+  const enTarjetas = estadoCalificacion.vista === "tarjetas" && !enAvancePorTipo;
+
+  if (toggleVista) toggleVista.hidden = enAvancePorTipo;
+  if (accionesExportar) accionesExportar.hidden = enTarjetas;
+  if (navMovil) navMovil.hidden = enTarjetas;
 }
 
 // Ancho real de la primera columna de entregable (la de "Alumno" es fija
@@ -7771,7 +8262,8 @@ async function inicializarModuloCalificacion() {
   selectTrimestre.value = estadoCalificacion.trimestre;
 
   await actualizarOpcionesSecuenciaCalificacion();
-  await renderizarTablaCalificacion();
+  await actualizarConteosTabsTipo();
+  await renderizarPanelCalificacion();
   activarNavegacionMovilTablaCalificacion();
   activarBuscadorCalificacion();
   activarDelegacionHistorialCalificacion();
@@ -7780,30 +8272,31 @@ async function inicializarModuloCalificacion() {
   activarFormularioEditarEntrega();
   activarExportarCSVCalificacion();
   activarImpresionTablaCalificacion();
+  activarTabsTipoCalificacion();
+  activarVistaCalificacion();
 
   selectTrimestre.addEventListener("change", async () => {
     estadoCalificacion.trimestre = selectTrimestre.value;
     await actualizarOpcionesSecuenciaCalificacion();
-    await renderizarTablaCalificacion();
+    await actualizarConteosTabsTipo();
+    await renderizarPanelCalificacion();
   });
 
   const selectGrupo = document.getElementById("calificacion-filtro-grupo");
   selectGrupo.addEventListener("change", async () => {
     estadoCalificacion.grupo = selectGrupo.value;
-    await renderizarTablaCalificacion();
+    await actualizarConteosTabsTipo();
+    await renderizarPanelCalificacion();
   });
 
-  const selectTipo = document.getElementById("calificacion-filtro-tipo");
-  selectTipo.addEventListener("change", async () => {
-    estadoCalificacion.tipo = selectTipo.value;
-    await actualizarOpcionesSecuenciaCalificacion();
-    await renderizarTablaCalificacion();
-  });
+  // El <select> de Tipo se reemplazó por las tabs (Cambio 3, ver
+  // activarTabsTipoCalificacion) — ya no hay listener de "change" aquí.
 
   const selectSecuencia = document.getElementById("calificacion-filtro-secuencia");
   selectSecuencia.addEventListener("change", async () => {
     estadoCalificacion.secuencia = selectSecuencia.value;
-    await renderizarTablaCalificacion();
+    await actualizarConteosTabsTipo();
+    await renderizarPanelCalificacion();
   });
 }
 
@@ -10250,6 +10743,537 @@ async function inicializarModuloEvaluacion() {
   });
 }
 
+/* ---------------------------------------------------------
+   Módulo "Dashboard" (tab-dashboard)
+
+   Panel-resumen de solo lectura para el docente: NO recalcula nada que
+   ya calculen Calificación/Evaluación/Progreso — reutiliza
+   calcularPromedioTrimestre (30/30/40), calcularAvanceGeneralAlumno
+   (avance del ciclo), calcularNivelAlumno (umbrales del semáforo),
+   fechaLimiteISO/resolverValorFechaPorGrupo (fecha límite por grupo) y
+   abrirModalHistorialAlumno (modal de historial). Gráficas en SVG puro
+   (skill dataviz), cada una con su vista de tabla alternativa.
+   --------------------------------------------------------- */
+
+// Sin opción "Todos" en esta pestaña (a diferencia de Calificación/
+// Evaluación): la Ficha de análisis compara semáforo vs. tasa de entrega
+// de UN grupo a la vez, así que "todos" mezclaría dos grupos distintos
+// en una sola barra sin poder distinguirlos. 3°C es el default al cargar.
+const estadoDashboard = { trimestre: null, grupo: "3C" };
+
+const UMBRAL_RIESGO_ZONA_ROJA = 50;
+
+// riesgo_score = (100 - % avance) * 0.6 + (% entregas tarde o faltantes) * 0.4.
+// Pura: recibe los dos porcentajes ya calculados por el llamador, sin
+// volver a consultar Supabase ni repetir la resolución de fechas.
+function calcularRiesgoAlumno(avancePorcentaje, pctTardeOFaltante) {
+  return (100 - avancePorcentaje) * 0.6 + pctTardeOFaltante * 0.4;
+}
+
+// Un Map por trimestre (misma forma que ya devuelve
+// obtenerMapaProgresoCalificacion: `${alumno_id}-${tipo}-${item_id}` ->
+// fila), consultados en paralelo — mismo patrón que ya usa
+// calcularRachaPuntualidad() para los 3 trimestres de UN alumno, aquí
+// para TODOS los alumnos filtrados a la vez.
+async function obtenerMapasProgresoPorTrimestre(alumnoIds) {
+  const trimestres = ["1", "2", "3"];
+  const mapas = await Promise.all(
+    trimestres.map((trimestre) =>
+      obtenerMapaProgresoCalificacion(trimestre, ["tarea", "actividad", "proyecto"], alumnoIds)
+    )
+  );
+  const porTrimestre = new Map();
+  trimestres.forEach((trimestre, indice) => porTrimestre.set(trimestre, mapas[indice]));
+  return porTrimestre;
+}
+
+// Adaptador que cierra sobre el progreso YA consultado de un alumno
+// puntual, para poder pasarlo como "estaCompletado" a
+// calcularAvanceGeneralAlumno() sin que esa función tenga que saber que
+// aquí no existe progresoCache (ver comentario junto a su definición).
+function crearEstaCompletadoParaAlumno(mapasPorTrimestre, alumno) {
+  return (tipo, id, trimestre) =>
+    Boolean(mapasPorTrimestre.get(String(trimestre))?.get(alumno.auth_user_id + "-" + tipo + "-" + id)?.completado);
+}
+
+// calcularPromedioTrimestre() espera un mapaProgreso ya scoped a UN solo
+// alumno y con clave `${tipo}-${item_id}-${trimestre}` (así lo arma
+// abrirModalHistorialAlumno para su propio uso). Aquí el progreso ya
+// consultado viene en mapasPorTrimestre con la forma multi-alumno de
+// obtenerMapaProgresoCalificacion (`${alumno_id}-${tipo}-${item_id}`,
+// sin trimestre porque ya viene scoped a uno). Este adaptador solo
+// traduce esa forma a la otra al vuelo — no reimplementa el cálculo del
+// promedio, solo el .get() que esa función ya llama.
+function crearMapaProgresoAdaptadoParaPromedio(mapasPorTrimestre, alumno) {
+  return {
+    get(claveTipoItemTrimestre) {
+      const partes = claveTipoItemTrimestre.split("-");
+      const trimestre = partes.pop();
+      const idItem = partes.pop();
+      const tipo = partes.join("-");
+      return mapasPorTrimestre.get(trimestre)?.get(alumno.auth_user_id + "-" + tipo + "-" + idItem);
+    },
+  };
+}
+
+// % de entregables YA VENCIDOS de "entregables" (del trimestre/grupo del
+// alumno) que llegaron tarde o nunca llegaron. Reutiliza
+// fechaLimiteISO()/resolverValorFechaPorGrupo() para la fecha límite —
+// mismo criterio que calcularRachaPuntualidad(), sin reimplementarlo:
+// esa función está scoped al alumno de la sesión activa (progresoCache),
+// aquí se necesita para alumnos arbitrarios vía mapaProgresoTrimestre ya
+// consultado. Entregables aún no vencidos no cuentan ni a favor ni en
+// contra (todavía no se puede juzgar si llegarán tarde).
+function calcularPctTardeOFaltante(entregables, mapaProgresoTrimestre, alumno) {
+  let evaluables = 0;
+  let tardeOFaltante = 0;
+
+  entregables.forEach((item) => {
+    const fechaLimite = fechaLimiteISO(item.tipoEntregable, item, alumno.grupo);
+    if (!fechaLimite) return;
+    if (new Date(fechaLimite + "T23:59:59") >= new Date()) return;
+
+    evaluables++;
+    const fila = mapaProgresoTrimestre.get(alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id);
+    if (!fila || !fila.completado) {
+      tardeOFaltante++;
+      return;
+    }
+    if (fila.actualizado_en && new Date(fila.actualizado_en) > new Date(fechaLimite + "T23:59:59")) {
+      tardeOFaltante++;
+    }
+  });
+
+  return evaluables === 0 ? 0 : Math.round((tardeOFaltante / evaluables) * 100);
+}
+
+// Núcleo del módulo: UNA sola consulta de alumnos + progreso (3
+// trimestres en paralelo) para derivar todo lo que necesitan los KPIs,
+// el semáforo, la tasa de entrega y el Top 5 — evita repetir esas
+// consultas por cada pieza del dashboard.
+async function construirResumenAlumnosDashboard(trimestre, grupoFiltro) {
+  const alumnos = (await obtenerAlumnosParaCalificacion(grupoFiltro)).filter(
+    (alumno) => alumno.usado !== false && alumno.auth_user_id
+  );
+  if (alumnos.length === 0) return [];
+
+  const idsAlumnos = alumnos.map((alumno) => alumno.auth_user_id);
+  const mapasPorTrimestre = await obtenerMapasProgresoPorTrimestre(idsAlumnos);
+  const mapaProgresoTrimestre = mapasPorTrimestre.get(trimestre);
+  const entregablesDelTrimestre = await obtenerEntregablesPorTipo("todos", trimestre);
+
+  const resultados = [];
+  for (const alumno of alumnos) {
+    const coincideConGrupoDelAlumno = (item) => item.grupo === "todos" || item.grupo === alumno.grupo;
+    const entregablesDelAlumno = entregablesDelTrimestre.filter(coincideConGrupoDelAlumno);
+
+    const itemsPorTipo = { tarea: [], actividad: [], proyecto: [] };
+    entregablesDelAlumno.forEach((item) => itemsPorTipo[item.tipoEntregable]?.push(item));
+    const mapaProgresoAdaptado = crearMapaProgresoAdaptadoParaPromedio(mapasPorTrimestre, alumno);
+    const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAdaptado);
+
+    const avance = await calcularAvanceGeneralAlumno(
+      { grupo: alumno.grupo },
+      crearEstaCompletadoParaAlumno(mapasPorTrimestre, alumno)
+    );
+
+    const pctTardeOFaltante = calcularPctTardeOFaltante(entregablesDelAlumno, mapaProgresoTrimestre, alumno);
+
+    resultados.push({
+      alumno,
+      avance,
+      promedioFinal: promedio.promedioFinal,
+      pctTardeOFaltante,
+      riesgo: calcularRiesgoAlumno(avance, pctTardeOFaltante),
+    });
+  }
+  return resultados;
+}
+
+// Cuenta directa sobre "progreso" (completado=true, calificacion nula):
+// no hay una función previa que cuente esto, así que es consulta nueva,
+// pero sigue el mismo patrón de las demás (Supabase + IDs ya filtrados).
+async function contarPendientesPorCalificar(trimestre, idsAlumnos) {
+  if (idsAlumnos.length === 0) return 0;
+
+  const { count, error } = await clienteSupabase
+    .from("progreso")
+    .select("*", { count: "exact", head: true })
+    .eq("trimestre", trimestre)
+    .eq("completado", true)
+    .is("calificacion", null)
+    .in("alumno_id", idsAlumnos);
+
+  return error ? 0 : count || 0;
+}
+
+function renderizarKPIsDashboard(resumenAlumnos, pendientes) {
+  const contenedor = document.getElementById("dashboard-kpis");
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  const total = resumenAlumnos.length;
+  const promedioGeneral =
+    total === 0 ? 0 : resumenAlumnos.reduce((suma, r) => suma + r.promedioFinal, 0) / total;
+  const avancePromedio =
+    total === 0 ? 0 : Math.round(resumenAlumnos.reduce((suma, r) => suma + r.avance, 0) / total);
+  const enRiesgo = resumenAlumnos.filter((r) => r.riesgo >= UMBRAL_RIESGO_ZONA_ROJA).length;
+
+  const tarjetas = [
+    { icono: "📈", titulo: "Promedio general", valor: promedioGeneral.toFixed(1) },
+    { icono: "✅", titulo: "Pendientes por calificar", valor: String(pendientes) },
+    { icono: "🎯", titulo: "Avance del ciclo", valor: avancePromedio + "%" },
+    { icono: "🚨", titulo: "Alumnos en riesgo", valor: String(enRiesgo) },
+  ];
+
+  tarjetas.forEach((datos) => {
+    const tarjeta = document.createElement("div");
+    tarjeta.className = "criterio-tarjeta";
+
+    const valor = document.createElement("div");
+    valor.className = "criterio-tarjeta__porcentaje";
+    valor.textContent = datos.icono + " " + datos.valor;
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = datos.titulo;
+
+    tarjeta.append(valor, titulo);
+    contenedor.appendChild(tarjeta);
+  });
+}
+
+// Construye una gráfica de barra horizontal 100%-apilada de UNA sola
+// fila (SVG puro, skill dataviz) para el grupo actualmente seleccionado
+// en el filtro de la pestaña — ya no hay vista "ambos grupos lado a
+// lado" (ver estadoDashboard: esta pestaña no tiene opción "Todos").
+// Leyenda + vista de tabla alternativa siempre presente (toggle, mismo
+// patrón ya usado en "Ver tabla de promedios" del módulo Evaluación).
+// Reutilizada por el semáforo (3 categorías) y la tasa de entrega (2
+// categorías): misma pieza visual, distintas categorías/colores. El
+// título ya lo pone el <h4> de la celda de la Ficha en el HTML, así que
+// aquí no se repite como figcaption visible.
+let contadorFigurasDashboard = 0;
+function construirFiguraBarraApilada({ tituloAccesible, categorias, valores, colores, inkPorCategoria }) {
+  contadorFigurasDashboard++;
+  const idTabla = "dashboard-tabla-" + contadorFigurasDashboard;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const figura = document.createElement("figure");
+  figura.className = "dashboard-grafica";
+
+  const leyenda = document.createElement("div");
+  leyenda.className = "dashboard-grafica__leyenda";
+  categorias.forEach((categoria) => {
+    const item = document.createElement("span");
+    item.className = "dashboard-grafica__leyenda-item";
+    const swatch = document.createElement("span");
+    swatch.className = "dashboard-grafica__swatch";
+    swatch.style.backgroundColor = colores[categoria];
+    swatch.setAttribute("aria-hidden", "true");
+    item.append(swatch, document.createTextNode(categoria));
+    leyenda.appendChild(item);
+  });
+  figura.appendChild(leyenda);
+
+  const ANCHO = 320;
+  const ALTO_BARRA = 28;
+  const ALTO = ALTO_BARRA + 12;
+  const GAP = 2;
+  const Y = 6;
+
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 " + ANCHO + " " + ALTO);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", tituloAccesible + " — ver la tabla de abajo para el detalle exacto");
+  svg.classList.add("dashboard-grafica__svg");
+
+  const track = document.createElementNS(svgNS, "rect");
+  track.setAttribute("x", "0");
+  track.setAttribute("y", String(Y));
+  track.setAttribute("width", String(ANCHO));
+  track.setAttribute("height", String(ALTO_BARRA));
+  track.setAttribute("rx", "4");
+  track.setAttribute("class", "dashboard-grafica__track");
+  svg.appendChild(track);
+
+  let xActual = 0;
+  categorias.forEach((categoria) => {
+    const valor = valores[categoria] || 0;
+    const anchoSegmento = Math.max(0, (valor / 100) * ANCHO - GAP);
+    if (anchoSegmento <= 0) return;
+
+    const segmento = document.createElementNS(svgNS, "rect");
+    segmento.setAttribute("x", String(xActual));
+    segmento.setAttribute("y", String(Y));
+    segmento.setAttribute("width", String(anchoSegmento));
+    segmento.setAttribute("height", String(ALTO_BARRA));
+    segmento.setAttribute("fill", colores[categoria]);
+    const tituloSegmento = document.createElementNS(svgNS, "title");
+    tituloSegmento.textContent = categoria + ": " + valor + "%";
+    segmento.appendChild(tituloSegmento);
+    svg.appendChild(segmento);
+
+    // Etiqueta directa solo si el segmento mide lo suficiente para el
+    // texto sin recortarlo (ver marks-and-anatomy.md de la skill
+    // dataviz): si no cabe, el valor sigue disponible en la leyenda +
+    // la tabla, nunca se recorta con overflow.
+    if (anchoSegmento >= 30) {
+      const texto = document.createElementNS(svgNS, "text");
+      texto.setAttribute("x", String(xActual + anchoSegmento / 2));
+      texto.setAttribute("y", String(Y + ALTO_BARRA / 2 + 4));
+      texto.setAttribute(
+        "class",
+        "dashboard-grafica__texto-segmento dashboard-grafica__texto-segmento--" + inkPorCategoria[categoria]
+      );
+      texto.textContent = valor + "%";
+      svg.appendChild(texto);
+    }
+
+    xActual += anchoSegmento + GAP;
+  });
+
+  figura.appendChild(svg);
+
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "boton-secundario dashboard-grafica__boton-tabla";
+  boton.textContent = "📊 Ver como tabla";
+  boton.setAttribute("aria-expanded", "false");
+  boton.setAttribute("aria-controls", idTabla);
+  figura.appendChild(boton);
+
+  const contenedorTabla = document.createElement("div");
+  contenedorTabla.id = idTabla;
+  contenedorTabla.className = "dashboard-grafica__tabla";
+  contenedorTabla.hidden = true;
+
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-calificacion";
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  categorias.forEach((categoria) => {
+    const th = document.createElement("th");
+    th.textContent = categoria;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  const filaValores = document.createElement("tr");
+  categorias.forEach((categoria) => {
+    const td = document.createElement("td");
+    td.textContent = (valores[categoria] || 0) + "%";
+    filaValores.appendChild(td);
+  });
+  tbody.appendChild(filaValores);
+  tabla.appendChild(tbody);
+  contenedorTabla.appendChild(tabla);
+  figura.appendChild(contenedorTabla);
+
+  boton.addEventListener("click", () => {
+    const seVaAAbrir = contenedorTabla.hidden;
+    contenedorTabla.hidden = !seVaAAbrir;
+    boton.setAttribute("aria-expanded", String(seVaAAbrir));
+  });
+
+  return figura;
+}
+
+// Umbrales EXACTOS de calcularNivelAlumno() (0/50/75): Rojo <50, Amarillo
+// 50-74, Verde >=75 — no se inventa una escala nueva. Colores: los 3
+// tokens de estado ya existentes y validados AA en el sitio
+// (--color-estado-cuenta-activa/registro-incompleto/vencido), reutilizados
+// en vez de definir un tercer trío nuevo.
+const COLORES_SEMAFORO = {
+  Verde: "var(--color-estado-cuenta-activa)",
+  Amarillo: "var(--color-estado-registro-incompleto)",
+  Rojo: "var(--color-estado-vencido)",
+};
+const INK_SEMAFORO = { Verde: "oscuro", Amarillo: "oscuro", Rojo: "claro" };
+
+function renderizarSemaforoDashboard(resumenAlumnos) {
+  const contenedor = document.getElementById("dashboard-semaforo");
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  const total = resumenAlumnos.length;
+  const pct = (predicado) => (total === 0 ? 0 : Math.round((resumenAlumnos.filter(predicado).length / total) * 100));
+  const valores = {
+    Verde: pct((r) => r.avance >= 75),
+    Amarillo: pct((r) => r.avance >= 50 && r.avance < 75),
+    Rojo: pct((r) => r.avance < 50),
+  };
+
+  contenedor.appendChild(
+    construirFiguraBarraApilada({
+      tituloAccesible: "Distribución de alumnos por nivel de avance",
+      categorias: ["Verde", "Amarillo", "Rojo"],
+      valores,
+      colores: COLORES_SEMAFORO,
+      inkPorCategoria: INK_SEMAFORO,
+    })
+  );
+}
+
+// Mismos 2 de los 3 tokens del semáforo (cuenta-activa/vencido): "a
+// tiempo" y "atrasado" son, en espíritu, los mismos dos estados que ya
+// usa el badge "atrasada" en el resto del sitio.
+const COLORES_ENTREGA = {
+  "A tiempo": "var(--color-estado-cuenta-activa)",
+  "Tarde o faltante": "var(--color-estado-vencido)",
+};
+const INK_ENTREGA = { "A tiempo": "oscuro", "Tarde o faltante": "claro" };
+
+function renderizarTasaEntregaDashboard(resumenAlumnos) {
+  const contenedor = document.getElementById("dashboard-entrega");
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  const total = resumenAlumnos.length;
+  const promedioTarde =
+    total === 0 ? 0 : Math.round(resumenAlumnos.reduce((suma, r) => suma + r.pctTardeOFaltante, 0) / total);
+  const valores = { "A tiempo": 100 - promedioTarde, "Tarde o faltante": promedioTarde };
+
+  contenedor.appendChild(
+    construirFiguraBarraApilada({
+      tituloAccesible: "Tasa de entregas a tiempo vs. tarde o faltantes",
+      categorias: ["A tiempo", "Tarde o faltante"],
+      valores,
+      colores: COLORES_ENTREGA,
+      inkPorCategoria: INK_ENTREGA,
+    })
+  );
+}
+
+// "Ver historial" reutiliza abrirModalHistorialAlumno() TAL CUAL (mismo
+// modal que Calificación): closure directa sobre el alumno, sin
+// necesitar el mapa id->alumno que sí hace falta en la tabla matriz
+// (ahí la delegación solo tiene el data-alumno-id del botón; aquí el
+// botón se construye ya con el alumno completo a mano).
+function renderizarTop5RiesgoDashboard(resumenAlumnos) {
+  const contenedor = document.getElementById("dashboard-top-riesgo");
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  const top5 = [...resumenAlumnos].sort((a, b) => b.riesgo - a.riesgo).slice(0, 5);
+
+  if (top5.length === 0) {
+    const vacio = document.createElement("p");
+    vacio.className = "sin-resultados";
+    vacio.textContent = "Sin alumnos con cuenta activa para este filtro.";
+    contenedor.appendChild(vacio);
+    return;
+  }
+
+  const lista = document.createElement("ul");
+  lista.className = "dashboard-riesgo-lista";
+
+  top5.forEach(({ alumno, riesgo }) => {
+    const li = document.createElement("li");
+    li.className = "dashboard-riesgo-lista__item";
+    if (riesgo >= UMBRAL_RIESGO_ZONA_ROJA) li.classList.add("dashboard-riesgo-lista__item--zona-roja");
+
+    const info = document.createElement("span");
+    info.className = "dashboard-riesgo-lista__info";
+    info.textContent = alumno.nombre + " · " + textoGrupo(alumno.grupo) + " · N.° " + alumno.numero_lista;
+    li.appendChild(info);
+
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "boton-secundario";
+    boton.setAttribute("aria-label", "Ver historial completo de " + alumno.nombre);
+    boton.textContent = "👁️ Ver historial";
+    boton.addEventListener("click", () => abrirModalHistorialAlumno(alumno));
+    li.appendChild(boton);
+
+    lista.appendChild(li);
+  });
+
+  contenedor.appendChild(lista);
+}
+
+// Barra de progreso simple (misma .barra-progreso ya usada en Progreso):
+// config_sitio SOLO guarda trimestre_desbloqueado (1/2/3) — las 9
+// "secuencias" de proyectos NO están bloqueadas por trimestre (las 9
+// aparecen completas dentro de cada trimestre, son una taxonomía
+// transversal, no un candado progresivo), así que el cronograma se
+// queda en el único nivel de granularidad real: el trimestre.
+// No depende de los filtros de trimestre/grupo del módulo (usa
+// trimestreDesbloqueado directo, ya resuelto antes de renderizarTodo()).
+function renderizarCronogramaDashboard() {
+  const contenedor = document.getElementById("dashboard-cronograma");
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  const TOTAL_TRIMESTRES = 3;
+  const porcentaje = Math.round((trimestreDesbloqueado / TOTAL_TRIMESTRES) * 100);
+
+  const etiqueta = document.createElement("p");
+  etiqueta.className = "dashboard-cronograma__etiqueta";
+  etiqueta.textContent = "Bloque " + trimestreDesbloqueado + " de " + TOTAL_TRIMESTRES + " — Trimestre " + trimestreDesbloqueado + " desbloqueado";
+  contenedor.appendChild(etiqueta);
+
+  const barra = document.createElement("div");
+  barra.className = "barra-progreso";
+  barra.setAttribute("role", "progressbar");
+  barra.setAttribute("aria-valuenow", String(trimestreDesbloqueado));
+  barra.setAttribute("aria-valuemin", "0");
+  barra.setAttribute("aria-valuemax", String(TOTAL_TRIMESTRES));
+  barra.setAttribute("aria-label", "Bloques del ciclo escolar desbloqueados");
+  const relleno = document.createElement("div");
+  relleno.className = "barra-progreso__relleno";
+  relleno.style.width = porcentaje + "%";
+  barra.appendChild(relleno);
+  contenedor.appendChild(barra);
+}
+
+async function renderizarDashboard() {
+  const contenedorKpis = document.getElementById("dashboard-kpis");
+  if (!contenedorKpis) return;
+
+  const { trimestre, grupo } = estadoDashboard;
+  const resumenAlumnos = await construirResumenAlumnosDashboard(trimestre, grupo);
+  const idsAlumnos = resumenAlumnos.map((r) => r.alumno.auth_user_id);
+  const pendientes = await contarPendientesPorCalificar(trimestre, idsAlumnos);
+
+  renderizarKPIsDashboard(resumenAlumnos, pendientes);
+  renderizarSemaforoDashboard(resumenAlumnos);
+  renderizarTasaEntregaDashboard(resumenAlumnos);
+  renderizarTop5RiesgoDashboard(resumenAlumnos);
+}
+
+async function inicializarModuloDashboard() {
+  const selectTrimestre = document.getElementById("dashboard-filtro-trimestre");
+  if (!selectTrimestre) return; // no es admin.html
+
+  // Mismo guard que el resto de módulos del panel: progreso/alumnos_registro
+  // están protegidos por RLS para el rol docente.
+  await promesaGuardPanelDocente;
+
+  estadoDashboard.trimestre = String(trimestreDesbloqueado);
+  selectTrimestre.value = estadoDashboard.trimestre;
+
+  // Sin opción "Todos" en esta pestaña: 3°C es el valor por defecto al
+  // cargar (ver comentario junto a la declaración de estadoDashboard).
+  const selectGrupo = document.getElementById("dashboard-filtro-grupo");
+  estadoDashboard.grupo = "3C";
+  selectGrupo.value = estadoDashboard.grupo;
+
+  renderizarCronogramaDashboard();
+  await renderizarDashboard();
+
+  selectTrimestre.addEventListener("change", async () => {
+    estadoDashboard.trimestre = selectTrimestre.value;
+    await renderizarDashboard();
+  });
+
+  selectGrupo.addEventListener("change", async () => {
+    estadoDashboard.grupo = selectGrupo.value;
+    await renderizarDashboard();
+  });
+}
+
 /* =========================================================
    10. INICIALIZACIÓN
    ========================================================= */
@@ -10308,6 +11332,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await inicializarModuloTrimestre();
   await inicializarModuloFechas();
   await inicializarModuloEvaluacion();
+  await inicializarModuloDashboard();
 
   const botonMesAnterior = document.getElementById("calendario-mes-anterior");
   if (botonMesAnterior) botonMesAnterior.addEventListener("click", () => avanzarMesCalendario(-1));

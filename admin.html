@@ -151,6 +151,10 @@
                 id="tab-evaluacion" role="tab" aria-selected="false" aria-controls="panel-evaluacion">
           Evaluación
         </button>
+        <button type="button" class="admin-tabs__boton"
+                id="tab-dashboard" role="tab" aria-selected="false" aria-controls="panel-dashboard">
+          Dashboard
+        </button>
       </div>
 
       <section id="panel-calificacion" class="admin-panel" role="tabpanel" aria-labelledby="tab-calificacion">
@@ -171,35 +175,75 @@
               <option value="3E">3°E</option>
             </select>
           </div>
-          <div class="calificacion-filtro">
-            <label for="calificacion-filtro-tipo">Tipo</label>
-            <select id="calificacion-filtro-tipo">
-              <option value="todos">Todos</option>
-              <option value="tarea">Tareas</option>
-              <option value="actividad">Actividades</option>
-              <option value="proyecto">Proyectos</option>
-            </select>
-          </div>
+        </div>
+
+        <!-- Sub-filtro de Tipo, como tabs en vez del <select> anterior:
+             clic en una tab solo cambia qué columnas se muestran de la
+             secuencia YA seleccionada abajo (no recalcula qué secuencias
+             existen) — ver activarTabsTipoCalificacion() en js/main.js.
+             "📊 Avance por Tipo" no es un tipo real: activa una tabla
+             resumen distinta (ver renderizarTablaAvancePorTipo()). -->
+        <div class="calificacion-tabs-tipo" role="tablist" aria-label="Filtrar por tipo de entregable">
+          <button type="button" class="calificacion-tabs-tipo__boton calificacion-tabs-tipo__boton--activo"
+                  id="calificacion-tab-tipo-todos" role="tab" aria-selected="true" data-tipo="todos">
+            Todos
+          </button>
+          <button type="button" class="calificacion-tabs-tipo__boton"
+                  id="calificacion-tab-tipo-tarea" role="tab" aria-selected="false" data-tipo="tarea">
+            📝 Tareas <span class="calificacion-tabs-tipo__contador" id="calificacion-tab-contador-tarea">(0)</span>
+          </button>
+          <button type="button" class="calificacion-tabs-tipo__boton"
+                  id="calificacion-tab-tipo-actividad" role="tab" aria-selected="false" data-tipo="actividad">
+            🎯 Actividades <span class="calificacion-tabs-tipo__contador" id="calificacion-tab-contador-actividad">(0)</span>
+          </button>
+          <button type="button" class="calificacion-tabs-tipo__boton"
+                  id="calificacion-tab-tipo-proyecto" role="tab" aria-selected="false" data-tipo="proyecto">
+            🚀 Proyectos <span class="calificacion-tabs-tipo__contador" id="calificacion-tab-contador-proyecto">(0)</span>
+          </button>
+          <button type="button" class="calificacion-tabs-tipo__boton calificacion-tabs-tipo__boton--avance"
+                  id="calificacion-tab-tipo-avance" role="tab" aria-selected="false" data-tipo="avance-por-tipo">
+            📊 Avance por Tipo
+          </button>
+        </div>
+
+        <div class="calificacion-filtros">
           <div class="calificacion-filtro">
             <label for="calificacion-filtro-secuencia">Secuencia</label>
             <select id="calificacion-filtro-secuencia"></select>
           </div>
         </div>
 
-        <!-- Buscador en vivo: filtra las FILAS ya renderizadas de la tabla
+        <!-- Buscador en vivo: filtra las FILAS/fichas ya renderizadas
              (nombre/número de lista), no dispara una nueva consulta a
-             Supabase — ver activarBuscadorCalificacion() en js/main.js. -->
+             Supabase — ver filtrarFilasTablaCalificacion() en js/main.js.
+             Funciona igual en Vista Tabla y Vista Tarjetas. -->
         <div class="calificacion-buscador">
           <label for="calificacion-buscador-input" class="sr-only">Buscar alumno por nombre o número de lista</label>
           <input type="search" id="calificacion-buscador-input" class="calificacion-buscador__input"
                  placeholder="🔍 Buscar por nombre o número de lista…" autocomplete="off">
         </div>
 
+        <!-- Vista: Tabla (matriz con scroll horizontal) o Tarjetas (accordion
+             por alumno, sin scroll horizontal) — preferencia recordada en
+             localStorage, ver activarVistaCalificacion() en js/main.js. No
+             aplica a "📊 Avance por Tipo" (esa tab siempre usa su propia
+             tabla resumen), por eso se oculta cuando esa tab está activa. -->
+        <div class="calificacion-vista-toggle" role="group" aria-label="Vista de la tabla" id="calificacion-vista-toggle">
+          <button type="button" id="calificacion-vista-boton-tabla" class="calificacion-vista-toggle__boton" aria-pressed="false">
+            📋 Vista: Tabla
+          </button>
+          <button type="button" id="calificacion-vista-boton-tarjetas" class="calificacion-vista-toggle__boton" aria-pressed="false">
+            🗂️ Vista: Tarjetas
+          </button>
+        </div>
+
         <!-- Exportar/imprimir la vista actual (mismo filtro Trimestre/Grupo/
              Tipo/Secuencia/búsqueda ya aplicado en la tabla) — ver
              exportarCSVCalificacion()/activarImpresionTablaCalificacion()
-             en js/main.js. -->
-        <div class="calificacion-acciones">
+             en js/main.js. Solo tienen datos que leer en Vista Tabla y en
+             "Avance por Tipo" (ambas usan un <table>); se ocultan en Vista
+             Tarjetas. -->
+        <div class="calificacion-acciones" id="calificacion-acciones-exportar">
           <button type="button" id="calificacion-boton-csv" class="boton-secundario">⬇️ Exportar CSV</button>
           <button type="button" id="calificacion-boton-imprimir-tabla" class="boton-secundario">🖨️ Imprimir tabla</button>
         </div>
@@ -207,8 +251,9 @@
         <!-- Navegación de scroll horizontal, solo visible en mobile (<1024px,
              mismo breakpoint que .barra-lateral/.barra-inferior): en
              desktop el scroll libre ya se ve bien y estos botones se
-             ocultan por CSS (ver @media (min-width: 1024px) en style.css). -->
-        <div class="calificacion-tabla__nav-movil">
+             ocultan por CSS (ver @media (min-width: 1024px) en style.css).
+             Se ocultan también en Vista Tarjetas (sin scroll horizontal). -->
+        <div class="calificacion-tabla__nav-movil" id="calificacion-nav-movil">
           <button type="button" id="calificacion-scroll-izq" class="calificacion-tabla__nav-boton" aria-label="Desplazar la tabla hacia la izquierda">◀</button>
           <button type="button" id="calificacion-scroll-der" class="calificacion-tabla__nav-boton" aria-label="Desplazar la tabla hacia la derecha">▶</button>
         </div>
@@ -414,6 +459,57 @@
           </div>
 
           <div id="evaluacion-promedios-contenedor" class="calificacion-tabla-contenedor" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="panel-dashboard" class="admin-panel" role="tabpanel" aria-labelledby="tab-dashboard" hidden>
+        <div class="calificacion-filtros">
+          <div class="calificacion-filtro">
+            <label for="dashboard-filtro-trimestre">Trimestre</label>
+            <select id="dashboard-filtro-trimestre">
+              <option value="1">1° Trimestre</option>
+              <option value="2">2° Trimestre</option>
+              <option value="3">3° Trimestre</option>
+            </select>
+          </div>
+          <div class="calificacion-filtro">
+            <label for="dashboard-filtro-grupo">Grupo</label>
+            <select id="dashboard-filtro-grupo">
+              <option value="3C">3°C</option>
+              <option value="3E">3°E</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- KPIs: reutiliza .criterios-contenedor/.criterio-tarjeta tal
+             cual (ver css/style.css), poblados por renderizarKPIsDashboard()
+             en js/main.js. Se recalculan sobre el grupo seleccionado
+             arriba (sin opción "Todos" en esta pestaña). -->
+        <div id="dashboard-kpis" class="criterios-contenedor" aria-live="polite"></div>
+
+        <h3>📋 Ficha de análisis del grupo</h3>
+        <!-- Grid 2×2 (misma técnica que .cuadricula-temario: 1 columna en
+             mobile, 2 desde 640px, ver css/style.css) para que semáforo y
+             tasa de entrega queden lado a lado y se puedan correlacionar
+             visualmente. Cada celda la puebla su propia función de
+             render en js/main.js; todas leen el mismo grupo seleccionado. -->
+        <div class="dashboard-ficha">
+          <div class="dashboard-ficha__celda">
+            <h4 class="dashboard-ficha__titulo-celda">🚦 Distribución</h4>
+            <div id="dashboard-semaforo" aria-live="polite"></div>
+          </div>
+          <div class="dashboard-ficha__celda">
+            <h4 class="dashboard-ficha__titulo-celda">📤 Tasa de entregas</h4>
+            <div id="dashboard-entrega" aria-live="polite"></div>
+          </div>
+          <div class="dashboard-ficha__celda">
+            <h4 class="dashboard-ficha__titulo-celda">🔻 Top 5 alumnos en riesgo</h4>
+            <div id="dashboard-top-riesgo" aria-live="polite"></div>
+          </div>
+          <div class="dashboard-ficha__celda">
+            <h4 class="dashboard-ficha__titulo-celda">📆 Cronograma de temario</h4>
+            <div id="dashboard-cronograma" aria-live="polite"></div>
+          </div>
         </div>
       </section>
     </section>
