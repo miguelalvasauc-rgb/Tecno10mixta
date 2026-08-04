@@ -3030,9 +3030,9 @@ let temaActual = localStorage.getItem(CLAVE_TEMA) || "oscuro";
 const CLAVE_VISTA_SECUENCIAS = "vistaSecuenciasTrimestre1";
 let vistaSecuenciasActual = localStorage.getItem(CLAVE_VISTA_SECUENCIAS) || "acordeon";
 
-// ---- Barra lateral legada de una sola columna (admin.html y
-// sitemap.html; las 8 páginas de alumno ya usan el riel de 2 columnas —
-// ver activarFlyoutsRiel en la sección 8) ----
+// ---- Barra lateral legada de una sola columna (código muerto: las 10
+// páginas del sitio ya usan el riel de 2 columnas — ver activarFlyoutsRiel
+// en la sección 8) ----
 const CLAVE_SIDEBAR_COLAPSADA = "sidebarColapsada";
 const CLAVE_SUBMENU_INICIO = "submenuInicioExpandido";
 const CLAVE_SUBMENU_TRIMESTRE = "submenuTrimestreExpandido";
@@ -3044,7 +3044,8 @@ const CLAVE_SUBMENU_TRIMESTRE = "submenuTrimestreExpandido";
 // que esperar al evento para evitar un "flash" de sidebar expandida
 // que luego se colapsa. aplicarEstadoSidebarColapsada está definida más
 // abajo (sección 8) pero se puede llamar aquí por hoisting; es un no-op
-// seguro en las 7 páginas migradas (no tienen .barra-lateral).
+// seguro en las 10 páginas del sitio — ya ninguna tiene .barra-lateral
+// (sitemap.html y admin.html fueron las últimas en migrar al riel).
 let sidebarColapsada = localStorage.getItem(CLAVE_SIDEBAR_COLAPSADA) === "true";
 aplicarEstadoSidebarColapsada(sidebarColapsada);
 
@@ -5589,14 +5590,13 @@ function alternarTema() {
    8. BARRA LATERAL / BARRA INFERIOR Y FILTRO DE GRUPO
    ========================================================= */
 
-// ---- Barra lateral legada de una sola columna (SOLO admin.html) ----
+// ---- Barra lateral legada de una sola columna (código muerto) ----
 // Colapsa/expande la barra lateral a un riel de solo íconos (ver
-// .barra-lateral--colapsada en css/style.css). El estado se refleja en
-// dos clases porque son dos elementos distintos que necesitan animarse
-// juntos: una en el <aside> (para su ancho) y otra en <body> (para el
-// padding-left que le hace espacio al contenido). Es un no-op seguro en
-// las 7 páginas migradas al riel: ni .barra-lateral ni
-// #boton-colapsar-sidebar existen ahí.
+// .barra-lateral--colapsada en css/style.css). Quedó sin ningún <aside
+// class="barra-lateral"> que la use tras migrar sitemap.html y
+// admin.html (las dos últimas) al riel de navegación — se deja tal cual
+// (no-op seguro en toda página) en vez de borrarla en ese mismo cambio;
+// candidata a limpieza en un pase aparte.
 function aplicarEstadoSidebarColapsada(colapsada) {
   document.body.classList.toggle("body--sidebar-colapsada", colapsada);
 
@@ -5628,8 +5628,8 @@ function aplicarEstadoSubmenu(grupo, expandido) {
   submenu.hidden = !expandido;
 }
 
-// Solo actúa sobre botones con clase .barra-lateral__nav-toggle (admin.html);
-// en las 7 páginas migradas ese selector no encuentra nada y no hace nada.
+// Código muerto (ver nota de aplicarEstadoSidebarColapsada arriba): ese
+// selector .barra-lateral__nav-toggle ya no existe en ninguna página.
 function activarSubmenusSidebar() {
   ["inicio", "trimestre"].forEach((grupo) => {
     const clave = grupo === "inicio" ? CLAVE_SUBMENU_INICIO : CLAVE_SUBMENU_TRIMESTRE;
@@ -6251,9 +6251,10 @@ async function sincronizarPerfilActivo() {
 // la inicial, en los tres lugares donde vive un ícono de Perfil — el
 // disparador del riel (desktop), el disparador de la barra inferior y la
 // cabecera del propio sheet (ambos móvil). Sin nombre (visitante sin
-// sesión) los tres vuelven al emoji. sitemap.html no se toca aquí: sigue
-// usando el patrón viejo de data-boton-cuenta más abajo en
-// actualizarUISesion().
+// sesión) los tres vuelven al emoji. En admin.html #riel-boton-perfil es
+// un <span> decorativo (sin flyout ni comportamiento de clic, ver
+// admin.html) — esta función solo le pinta la inicial, igual que a los
+// disparadores reales de las demás páginas.
 function actualizarAvatarPerfil(nombre) {
   document.querySelectorAll("#riel-boton-perfil, #boton-inferior-perfil, #sheet-perfil-avatar").forEach((destino) => {
     destino.textContent = "";
@@ -6275,11 +6276,13 @@ function actualizarAvatarPerfil(nombre) {
 // cuenta.html o cierran sesión según el caso.
 async function actualizarUISesion() {
   const { data: { session } } = await clienteSupabase.auth.getSession();
-  // [data-boton-cuenta] es el patrón viejo (sitemap.html, sin migrar al
-  // riel): botón único con ícono+nombre+nivel compacto, se mantiene tal
-  // cual para esa página. .perfil-nivel-pill es el patrón nuevo: la
-  // píldora vive aparte del disparador, una copia por contenedor
-  // (flyout de escritorio y sheet Perfil de la barra inferior).
+  // [data-boton-cuenta] es el patrón viejo: ya ninguna página lo usa
+  // (sitemap.html migró al riel), así que este querySelectorAll no
+  // encuentra nada — se deja tal cual en vez de borrarlo en este mismo
+  // cambio; candidata a limpieza en un pase aparte junto con la barra
+  // lateral legada. .perfil-nivel-pill es el patrón vigente: la píldora
+  // vive aparte del disparador, una copia por contenedor (flyout de
+  // escritorio y sheet Perfil de la barra inferior).
   const elementos = document.querySelectorAll("[data-boton-cuenta]");
   const etiquetasNivel = document.querySelectorAll(".perfil-nivel-pill");
 
@@ -11418,6 +11421,132 @@ async function inicializarModuloDashboard() {
 }
 
 /* =========================================================
+   13. GUÍA DEL ALUMNO (guia.html)
+   ========================================================= */
+
+// Guarda el paso actual del wizard ("1".."7" o "cierre"; bienvenida no se
+// guarda — sin valor en localStorage siempre se arranca ahí, mismo
+// criterio que CLAVE_ULTIMO_TRIMESTRE de la sección 3). Solo actúa en
+// guia.html: #guia-wizard no existe en el resto de páginas.
+const CLAVE_GUIA_PASO = "guiaAlumnoPasoActual";
+const GUIA_TOTAL_PASOS = 7;
+
+function activarGuiaAlumno() {
+  const wizard = document.getElementById("guia-wizard");
+  if (!wizard) return;
+
+  const pantallas = Array.from(wizard.querySelectorAll(".guia-pantalla"));
+  const indicador = document.getElementById("guia-wizard-indicador");
+  const barraRelleno = document.getElementById("guia-wizard-barra-relleno");
+  const progresoContenedor = document.getElementById("guia-wizard-progreso");
+  const controlesContenedor = document.getElementById("guia-wizard-controles");
+  const stepperBotones = Array.from(wizard.querySelectorAll("[data-ir-a-paso]"));
+  const botonAnterior = document.getElementById("guia-boton-anterior");
+  const botonSiguiente = document.getElementById("guia-boton-siguiente");
+  const botonComenzar = document.getElementById("guia-boton-comenzar");
+  const botonReiniciar = document.getElementById("guia-boton-reiniciar");
+  const botonVistaCompleta = document.getElementById("guia-boton-vista-completa");
+  const enlaceVistaCompletaCierre = document.getElementById("guia-enlace-ver-completa-cierre");
+  const botonDescargarPdf = document.getElementById("guia-boton-descargar-pdf");
+
+  function idDePantalla(pantalla) {
+    if (pantalla === "bienvenida") return "guia-pantalla-bienvenida";
+    if (pantalla === "cierre") return "guia-pantalla-cierre";
+    return "guia-pantalla-paso-" + pantalla;
+  }
+
+  function pantallaGuardadaValida(valor) {
+    return valor === "cierre" || (Number(valor) >= 1 && Number(valor) <= GUIA_TOTAL_PASOS);
+  }
+
+  let pantallaActual = localStorage.getItem(CLAVE_GUIA_PASO);
+  if (!pantallaGuardadaValida(pantallaActual)) pantallaActual = "bienvenida";
+
+  // moverFoco es false solo en la carga inicial (retomar el paso guardado
+  // no debe robarle el foco a la página); en cualquier transición
+  // disparada por el alumno (Anterior/Siguiente/stepper/Comenzar/
+  // Reiniciar) sí se mueve, y #guia-wizard-indicador (aria-live="polite")
+  // ya hace de anuncio del cambio — no se duplica con una región aparte.
+  function mostrarPantalla(pantalla, { moverFoco = true } = {}) {
+    pantallaActual = pantalla;
+    if (pantalla === "bienvenida") localStorage.removeItem(CLAVE_GUIA_PASO);
+    else localStorage.setItem(CLAVE_GUIA_PASO, String(pantalla));
+
+    const idActivo = idDePantalla(pantalla);
+    pantallas.forEach((el) => {
+      el.classList.toggle("guia-pantalla--activa", el.id === idActivo);
+    });
+
+    const esPaso = pantalla !== "bienvenida" && pantalla !== "cierre";
+    progresoContenedor.hidden = !esPaso;
+    controlesContenedor.hidden = !esPaso;
+    botonReiniciar.hidden = pantalla === "bienvenida";
+
+    if (esPaso) {
+      const numero = Number(pantalla);
+      indicador.textContent = "Paso " + numero + " de " + GUIA_TOTAL_PASOS;
+      barraRelleno.style.width = (numero / GUIA_TOTAL_PASOS) * 100 + "%";
+      stepperBotones.forEach((boton) => {
+        const activo = Number(boton.dataset.irAPaso) === numero;
+        boton.classList.toggle("guia-wizard__stepper-numero--activo", activo);
+        boton.setAttribute("aria-selected", String(activo));
+      });
+      botonSiguiente.textContent = numero === GUIA_TOTAL_PASOS ? "Finalizar ✅" : "Siguiente →";
+    }
+
+    if (moverFoco) document.getElementById(idActivo)?.querySelector("h2")?.focus();
+  }
+
+  botonComenzar.addEventListener("click", () => mostrarPantalla(1));
+
+  botonAnterior.addEventListener("click", () => {
+    const numero = Number(pantallaActual);
+    mostrarPantalla(numero <= 1 ? "bienvenida" : numero - 1);
+  });
+
+  botonSiguiente.addEventListener("click", () => {
+    const numero = Number(pantallaActual);
+    mostrarPantalla(numero >= GUIA_TOTAL_PASOS ? "cierre" : numero + 1);
+  });
+
+  stepperBotones.forEach((boton) => {
+    boton.addEventListener("click", () => mostrarPantalla(Number(boton.dataset.irAPaso)));
+  });
+
+  botonReiniciar.addEventListener("click", () => mostrarPantalla("bienvenida"));
+
+  // Único de los dos enlaces de "ver guía completa" que alterna
+  // (el de la pantalla de Cierre solo activa la vista, sin volver): este
+  // vive fijo arriba del wizard en todo momento, así que necesita poder
+  // revertirse sin recargar la página.
+  botonVistaCompleta.addEventListener("click", () => {
+    const activar = !wizard.classList.contains("guia-wizard--vista-completa");
+    wizard.classList.toggle("guia-wizard--vista-completa", activar);
+    botonVistaCompleta.textContent = activar
+      ? "🧭 Volver a la vista de pasos"
+      : "📄 Ver guía completa en una sola página";
+  });
+
+  enlaceVistaCompletaCierre.addEventListener("click", (evento) => {
+    evento.preventDefault();
+    wizard.classList.add("guia-wizard--vista-completa");
+    botonVistaCompleta.textContent = "🧭 Volver a la vista de pasos";
+  });
+
+  // La vista expandida también se fuerza por CSS en @media print
+  // (ver css/style.css) sin importar esta clase — se agrega aquí además
+  // para que la vista en pantalla ya quede correcta si el alumno vuelve
+  // de la vista previa de impresión sin haber impreso.
+  botonDescargarPdf.addEventListener("click", () => {
+    wizard.classList.add("guia-wizard--vista-completa");
+    botonVistaCompleta.textContent = "🧭 Volver a la vista de pasos";
+    window.print();
+  });
+
+  mostrarPantalla(pantallaActual, { moverFoco: false });
+}
+
+/* =========================================================
    10. INICIALIZACIÓN
    ========================================================= */
 
@@ -11456,8 +11585,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (TRIMESTRE_ACTUAL === "1") activarPestanaDesdeHash();
 
   document.querySelectorAll(".boton-tema").forEach((boton) => boton.addEventListener("click", alternarTema));
-  // #boton-colapsar-sidebar solo existe en admin.html (barra lateral
-  // legada); en las 7 páginas migradas al riel ya no está en el HTML.
+  // Código muerto (ver nota de aplicarEstadoSidebarColapsada arriba):
+  // #boton-colapsar-sidebar ya no existe en ninguna página.
   const botonColapsarSidebar = document.getElementById("boton-colapsar-sidebar");
   if (botonColapsarSidebar) botonColapsarSidebar.addEventListener("click", alternarSidebarColapsada);
   document.querySelectorAll(".selector-grupo-control").forEach((select) => {
@@ -11475,6 +11604,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarBannerExamenDiagnostico();
   activarTabsAdmin();
   activarCierreSesionAdmin();
+  activarGuiaAlumno();
   await inicializarModuloCalificacion();
   await inicializarModuloAlumnos();
   await inicializarModuloAvisos();

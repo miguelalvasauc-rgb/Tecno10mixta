@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tu progreso · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
-  <meta name="description" content="Progreso personal detallado por trimestre — Educación Tecnológica 3°C y 3°E, Esc. Sec. No. 10 Mixta 'Fernando Hernández Alcalá'.">
+  <title>Guía del Alumno · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
+  <meta name="description" content="Guía paso a paso para usar la plataforma de Educación Tecnológica: tu cuenta, navegación, tu trimestre, cómo entregar trabajos y consultar tu progreso — Esc. Sec. No. 10 Mixta 'Fernando Hernández Alcalá'.">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -290,49 +290,205 @@
     </button>
   </div>
 
-<!-- ===================== MIGAS DE PAN ===================== -->
+  <!-- ===================== MIGAS DE PAN ===================== -->
   <nav aria-label="breadcrumb" class="migas-de-pan">
     <ol>
       <li><a href="index.html">Inicio</a></li>
       <li class="migas-de-pan__separador" aria-hidden="true">/</li>
-      <li><span class="migas-de-pan__actual" aria-current="page">Progreso</span></li>
+      <li><span class="migas-de-pan__actual" aria-current="page">Guía del Alumno</span></li>
     </ol>
   </nav>
 
   <main id="main-content">
-    <!-- ===================== INTRODUCCIÓN ===================== -->
-    <section id="progreso-intro" class="seccion">
+    <section id="guia-intro" class="seccion">
       <div class="seccion__encabezado">
-        <h2>Tu progreso</h2>
-        <p>Consulta el detalle de qué tareas, actividades y proyectos ya marcaste como completados en cada trimestre.</p>
-        <div id="leyenda-estados" class="leyenda-estados">
-          <h3>¿Qué significan los íconos de tu progreso?</h3>
-          <ul class="leyenda-estados__lista">
-            <li><span class="badge-estado" data-estado="completada">🟢 Entregado</span><span class="leyenda-estados__texto">Tu entrega quedó registrada correctamente.</span></li>
-            <li><span class="badge-estado" data-estado="pendiente">🟡 Pendiente</span><span class="leyenda-estados__texto">Aún no has entregado esta actividad; todavía estás a tiempo.</span></li>
-            <li><span class="badge-estado" data-estado="atrasada">🔒 Vencido sin entregar</span><span class="leyenda-estados__texto">Pasó la fecha límite, pero aún puedes entregar tarde (tu calificación se reduce a la mitad).</span></li>
-            <li><span class="indicador-progreso__aviso-sesion">🔑 Inicia sesión</span><span class="leyenda-estados__texto">Necesitas iniciar sesión con tu cuenta para ver tu progreso real.</span></li>
-          </ul>
-        </div>
+        <h2>📖 Guía del alumno</h2>
+        <p>Todo lo que necesitas saber para usar la plataforma, paso a paso.</p>
       </div>
     </section>
 
-    <!-- ===================== PROGRESO DETALLADO ===================== -->
-    <section id="progreso-detalle" class="seccion seccion--alterna">
-      <div id="progreso-sin-perfil" class="panel-progreso__invitacion">
-        <p>Aún no te has identificado en este dispositivo.</p>
-        <button type="button" id="boton-identificarme-progreso" class="boton-secundario">Identificarme</button>
+    <section id="guia-wizard" class="seccion seccion--alterna guia-wizard">
+      <div class="guia-wizard__utilidades">
+        <button type="button" id="guia-boton-vista-completa" class="boton-secundario">📄 Ver guía completa en una sola página</button>
+        <button type="button" id="guia-boton-reiniciar" class="guia-wizard__reiniciar" hidden>🔄 Reiniciar guía desde el paso 1</button>
       </div>
 
-      <div id="progreso-con-perfil" class="panel-progreso" hidden>
-        <p id="progreso-alumno-info" class="panel-progreso__alumno">
-          Viendo el progreso de: <strong id="progreso-alumno-nombre"></strong> (<span id="progreso-alumno-grupo"></span>)
+      <!-- Indicador + stepper: solo tienen sentido dentro de los 7 pasos
+           numerados (no en Bienvenida ni en Cierre) — activarGuiaAlumno()
+           en js/main.js los oculta fuera de esas pantallas. -->
+      <div id="guia-wizard-progreso" class="guia-wizard__progreso" hidden>
+        <p id="guia-wizard-indicador" class="guia-wizard__indicador" aria-live="polite">Paso 1 de 7</p>
+        <div class="barra-progreso">
+          <div id="guia-wizard-barra-relleno" class="barra-progreso__relleno" style="width: 14.2857%;"></div>
+        </div>
+        <div id="guia-wizard-stepper" class="guia-wizard__stepper" role="tablist" aria-label="Ir a un paso específico">
+          <button type="button" class="guia-wizard__stepper-numero guia-wizard__stepper-numero--activo" data-ir-a-paso="1" role="tab" aria-selected="true">1</button>
+          <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="2" role="tab" aria-selected="false">2</button>
+          <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="3" role="tab" aria-selected="false">3</button>
+          <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="4" role="tab" aria-selected="false">4</button>
+          <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="5" role="tab" aria-selected="false">5</button>
+          <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="6" role="tab" aria-selected="false">6</button>
+          <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="7" role="tab" aria-selected="false">7</button>
+        </div>
+      </div>
+
+      <!-- ===================== BIENVENIDA ===================== -->
+      <div id="guia-pantalla-bienvenida" class="guia-pantalla guia-pantalla--activa" data-pantalla="bienvenida">
+        <h2 tabindex="-1">¡Bienvenido a Tecno10mixta! 🎓</h2>
+        <p>Esta es tu plataforma para la materia de Educación Tecnológica. Aquí vas a consultar tus temas, entregar tus trabajos y ver tu propio avance — todo en un solo lugar, sin depender de WhatsApp o Google Classroom.</p>
+        <p>Esta guía te lleva paso a paso por todo lo que puedes hacer. Tómate 5 minutos la primera vez — después la tendrás dominada.</p>
+        <div class="guia-bienvenida__acciones">
+          <button type="button" id="guia-boton-comenzar" class="boton-enviar">Comenzar →</button>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 1 — Tu cuenta ===================== -->
+      <div id="guia-pantalla-paso-1" class="guia-pantalla" data-pantalla="paso" data-paso="1">
+        <h2 tabindex="-1">🔑 Tu cuenta</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso1-cuenta.png" alt="Formulario de crear cuenta en Tecno10mixta" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Tu cuenta es lo que conecta todo tu trabajo contigo. Sin ella, el sitio no sabe quién eres ni puede guardar tu progreso — no importa si entregaste 20 tareas, si no iniciaste sesión, el sistema no las relaciona contigo.</p>
+        <ol class="guia-paso__lista">
+          <li>Ve a la sección "Mi cuenta" (ícono de perfil en la barra lateral, o botón "Perfil" en la barra inferior si usas celular).</li>
+          <li>En la pestaña "Crear cuenta", ingresa: tu código de invitación (te lo dio tu profesor, formato XXXX-XXXX-XXXX), un correo (no tiene que ser tu correo institucional), y una contraseña que puedas recordar.</li>
+          <li>Si ya creaste tu cuenta antes, usa la pestaña "Iniciar sesión" con ese mismo correo y contraseña.</li>
+          <li>Ya dentro, verás tu nombre en la parte superior — eso confirma que tu sesión está activa.</li>
+        </ol>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> Entregaste tu tarea desde la computadora del taller el lunes. El martes en la noche quieres revisar tu progreso desde tu celular en casa. Como iniciaste sesión con tu cuenta (no solo escribiendo tu nombre), tu progreso te sigue a cualquier dispositivo donde vuelvas a iniciar sesión.</p>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 2 — Cómo moverte por el sitio ===================== -->
+      <div id="guia-pantalla-paso-2" class="guia-pantalla" data-pantalla="paso" data-paso="2">
+        <h2 tabindex="-1">🧭 Cómo moverte por el sitio</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso2-navegacion.png" alt="Barra lateral con selector de grupo y tema" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> El sitio tiene bastante contenido (3 trimestres, cada uno con 7 secciones), así que conocer el mapa te ahorra tiempo cada vez que entras.</p>
+        <ol class="guia-paso__lista">
+          <li>La barra lateral (o el menú ☰ en celular) es tu punto de partida: Inicio, tu Trimestre actual, FAQ, Para Padres.</li>
+          <li>El selector de Grupo (3°C / 3°E), dentro de Ajustes, filtra el contenido para que veas solo lo que aplica a tu grupo — algunas fechas o tareas pueden variar entre grupos.</li>
+          <li>El botón ☀️ / 🌙 cambia entre modo claro y oscuro. Tu elección se queda guardada, no tienes que repetirla cada vez.</li>
+          <li>En celular, la barra inferior (Inicio, Trimestre, FAQ, Para Padres, Perfil) te lleva directo a lo más usado.</li>
+        </ol>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> Ves que tu compañero de 3°C tiene una fecha de entrega distinta a la tuya en 3°E para la misma actividad. No es un error del sitio — simplemente cada grupo puede tener su propio calendario según el avance visto en clase.</p>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 3 — Tu Trimestre ===================== -->
+      <div id="guia-pantalla-paso-3" class="guia-pantalla" data-pantalla="paso" data-paso="3">
+        <h2 tabindex="-1">📚 Tu Trimestre</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso3-trimestre.png" alt="Rúbrica desplegada mostrando niveles de evaluación" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Aquí vive todo el contenido del curso: lo que vas a aprender, cómo te van a evaluar, y qué tienes que entregar.</p>
+        <p>Cada trimestre tiene 7 secciones:</p>
+        <ul class="guia-paso__lista guia-paso__lista--sin-numerar">
+          <li><strong>Temario:</strong> los temas de cada secuencia. Toca "Ver más" en cualquier tema para ver qué vas a aprender, por qué importa, y un dato curioso.</li>
+          <li><strong>Presentaciones:</strong> diapositivas de apoyo de cada secuencia, por si quieres repasar.</li>
+          <li><strong>Rúbricas:</strong> toca una para desplegarla y ver los niveles (Excelente / Bueno / Regular / Deficiente) y cuántos puntos vale cada uno.</li>
+          <li><strong>Tareas / Actividades / Proyectos:</strong> tarjetas con la descripción y la fecha límite de cada entregable.</li>
+          <li><strong>Videos:</strong> material audiovisual corto para repasar dudas puntuales.</li>
+        </ul>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> Antes de entregar tu proyecto integrador, abres su rúbrica y ves que "Excelente" pide incluir una conclusión — y tú no la tenías. La agregas antes de entregar y así aseguras más puntos, en vez de enterarte hasta que ya te calificaron.</p>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 4 — Cómo entregar tus trabajos ===================== -->
+      <div id="guia-pantalla-paso-4" class="guia-pantalla" data-pantalla="paso" data-paso="4">
+        <h2 tabindex="-1">📤 Cómo entregar tus trabajos</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso4-entrega.png" alt="Sección de entrega de trabajos con botón del formulario" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> La entrega real siempre es por el formulario de Google — no existe un botón de "marcar como entregado" dentro del sitio, así que este paso es el que de verdad cuenta para tu calificación.</p>
+        <ol class="guia-paso__lista">
+          <li>Asegúrate de tener sesión iniciada (Paso 1) — así tu progreso se actualiza solo, sin que hagas nada más.</li>
+          <li>Revisa que tu archivo esté en PDF, Word, Excel, PowerPoint, o una foto bien iluminada de tu cuaderno (solo si tu profesor lo indicó para esa actividad).</li>
+          <li>Toca "Abrir formulario de entrega" — se abre en una pestaña nueva y te pedirá tu cuenta de Google para poder subir el archivo.</li>
+          <li>Llena tu Grupo, tu Número de Lista, y elige exactamente qué tarea, actividad o proyecto estás entregando.</li>
+          <li>Envía el formulario. En un par de minutos, tu progreso cambiará solo a 🟢 Entregado.</li>
+        </ol>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> Entregaste hace 10 minutos pero tu progreso sigue en 🟡 Pendiente. No vuelvas a entregar por si acaso — a veces tarda un poco más en actualizarse. Si después de un rato más sigue igual, ahí sí avísale a tu profesor.</p>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 5 — Tu Progreso ===================== -->
+      <div id="guia-pantalla-paso-5" class="guia-pantalla" data-pantalla="paso" data-paso="5">
+        <h2 tabindex="-1">📊 Tu Progreso</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso5-progreso.png" alt="Página de progreso con leyenda de estados e insignias" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Aquí ves, sin tener que preguntarle al profesor, qué llevas entregado y qué te falta — y también vas ganando reconocimientos por tu constancia.</p>
+        <p>Qué significa cada ícono:</p>
+        <ul class="guia-paso__lista guia-paso__lista--sin-numerar">
+          <li>🟢 <strong>Entregado</strong> — tu entrega quedó registrada correctamente.</li>
+          <li>🟡 <strong>Pendiente</strong> — aún no entregas, pero todavía estás a tiempo.</li>
+          <li>🔒 <strong>Vencido sin entregar</strong> — ya pasó la fecha límite, pero aún puedes entregar tarde (tu calificación se reduce a la mitad).</li>
+          <li>🔑 <strong>Inicia sesión</strong> — no hay una sesión activa en este dispositivo, por eso no se puede mostrar tu progreso real.</li>
+        </ul>
+        <p>Y también vas desbloqueando:</p>
+        <ul class="guia-paso__lista guia-paso__lista--sin-numerar">
+          <li><strong>Nivel</strong> (según tu % de avance general): Nivel 1 Explorador Tecnológico → Nivel 2 Analista de Datos (50%+) → Nivel 3 Creador Digital (75%+).</li>
+          <li>🔥 <strong>Racha de puntualidad:</strong> se desbloquea al llevar 3 entregas seguidas a tiempo. Si entregas una tarde, la racha se reinicia.</li>
+        </ul>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> Llevas 2 entregas seguidas a tiempo — te falta solo una más para desbloquear tu racha de puntualidad 🔥. Vale la pena no dejar la siguiente para el último momento.</p>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 6 — Avisos y Calendario ===================== -->
+      <div id="guia-pantalla-paso-6" class="guia-pantalla" data-pantalla="paso" data-paso="6">
+        <h2 tabindex="-1">📢 Avisos y Calendario</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso6-avisos.png" alt="Sección de avisos y calendario en la portada" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Aquí se anuncian cambios de fecha, recordatorios y días sin clases — es lo primero que deberías revisar al entrar.</p>
+        <ol class="guia-paso__lista">
+          <li>Revisa la sección Avisos en la portada; los de prioridad "Urgente" (magenta) van primero.</li>
+          <li>Consulta el Calendario para ver fechas de evaluación, entregas próximas, y suspensiones de clases por CTE (Consejo Técnico Escolar — día sin clases para alumnos).</li>
+        </ol>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> Ves en el calendario un día marcado como "CTE" la próxima semana — eso significa que ese día no hay clases, no que tengas una entrega pendiente ese día.</p>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 7 — ¿Algo no funciona o tienes dudas? ===================== -->
+      <div id="guia-pantalla-paso-7" class="guia-pantalla" data-pantalla="paso" data-paso="7">
+        <h2 tabindex="-1">❓ ¿Algo no funciona o tienes dudas?</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso7-faq.png" alt="Página de preguntas frecuentes" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Antes de preocuparte o preguntarle directo al profesor en medio de la clase, la mayoría de las dudas comunes ya están resueltas.</p>
+        <ol class="guia-paso__lista">
+          <li>Revisa primero la página ❓ FAQ — cubre entrega de trabajos, calificación, uso del sitio y privacidad.</li>
+          <li>Si tu duda es más personal o específica, usa el formulario de "Contacto" en la portada, describiendo tu duda con claridad.</li>
+        </ol>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> No estás seguro de si tu progreso ya se actualizó después de entregar. En vez de mandar un mensaje directo, revisas la FAQ y encuentras la respuesta: puede tardar un par de minutos.</p>
+        </div>
+      </div>
+
+      <div id="guia-wizard-controles" class="guia-wizard__controles" hidden>
+        <button type="button" id="guia-boton-anterior" class="boton-secundario">← Anterior</button>
+        <button type="button" id="guia-boton-siguiente" class="boton-enviar">Siguiente →</button>
+      </div>
+
+      <!-- ===================== CIERRE ===================== -->
+      <div id="guia-pantalla-cierre" class="guia-pantalla" data-pantalla="cierre">
+        <h2 tabindex="-1">¡Listo, ya conoces todo el sitio! 🎉</h2>
+        <p>Ya sabes cómo entrar, consultar tu trimestre, entregar tus trabajos y revisar tu progreso. Vuelve a esta guía cuando la necesites — siempre está disponible desde el menú de Perfil.</p>
+        <div class="guia-cierre__acciones">
+          <button type="button" id="guia-boton-descargar-pdf" class="boton-enviar">⬇️ Descargar esta guía en PDF</button>
+          <a href="index.html" class="boton-secundario">🏠 Ir al inicio del sitio</a>
+        </div>
+        <p class="guia-cierre__enlace-completa">
+          <a href="#" id="guia-enlace-ver-completa-cierre">🔄 Ver la guía completa en una sola página</a>
         </p>
-
-        <p id="progreso-mensaje" class="panel-progreso__mensaje"></p>
-        <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
-
-        <div id="progreso-detalle-trimestres" class="panel-progreso__detalle" aria-live="polite"></div>
       </div>
     </section>
   </main>
@@ -344,10 +500,6 @@
     <p class="pie__privacidad">🛡️ Privacidad: tus datos se usan solo para tu evaluación en Educación Tecnológica. <a href="faq.html#aviso-privacidad">Ver aviso de privacidad completo →</a></p>
   </footer>
 
-  <!-- FAB de accesos rápidos: reemplaza los antiguos botones flotantes de
-       tema y volver arriba. El panel se rellena en runtime por
-       activarFabMenu() en js/main.js, con contenido distinto según la
-       página (ver esa función). -->
   <button type="button" id="boton-volver-arriba" class="fab-volver-arriba" aria-label="Volver arriba" hidden>
     <span aria-hidden="true">🔝</span>
   </button>

@@ -4056,6 +4056,19 @@ summary:focus-visible {
   margin-bottom: 0.5rem;
 }
 
+/* Envoltura del avatar decorativo del docente (solo admin.html): mismo
+   tamaño/centrado que .riel__boton--perfil pero sin fondo/hover/cursor
+   de botón — no es interactivo. */
+.riel__avatar-envoltura {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
 /* Avatar con inicial (ver actualizarAvatarPerfil() en js/main.js):
    reemplaza el emoji 👤 del botón de Perfil cuando hay sesión iniciada
    (alumno o docente) y se conoce el nombre. Fondo turquesa + texto oscuro
@@ -4715,11 +4728,12 @@ summary:focus-visible {
 }
 
 /* ---------- Distribución general según ancho de pantalla ----------
-   body:has(.riel)/body:has(.barra-lateral) distinguen el padding-left
-   correcto según qué estructura de navegación tenga cada página: las 8
-   de alumno migradas al riel (60px fijos) contra admin.html/sitemap.html,
-   que aún usan la barra lateral de una sola columna (256px, 64px
-   colapsada) — ver la nota "BARRA LATERAL LEGADA" más arriba. */
+   Las 10 páginas del sitio ya usan el riel (60px fijos). Las reglas
+   body:has(.barra-lateral)/.barra-lateral--colapsada de abajo quedaron
+   sin ninguna página que las dispare tras migrar sitemap.html y
+   admin.html (las dos últimas en usar esa barra lateral de una sola
+   columna) — se dejan tal cual, candidatas a limpieza junto con el JS
+   correspondiente (ver "BARRA LATERAL LEGADA" en js/main.js). */
 @media (min-width: 1024px) {
   .riel {
     display: flex;
@@ -6954,4 +6968,244 @@ button.badge-estado {
 .dashboard-cronograma__etiqueta {
   margin: 0 0 0.5rem;
   color: var(--color-texto-suave);
+}
+
+/* =========================================================
+   GUÍA DEL ALUMNO (guia.html) — wizard de 9 pantallas
+   (bienvenida + 7 pasos + cierre)
+   ========================================================= */
+
+/* Columna de lectura más angosta que el resto de .seccion--alterna
+   (1180px normalmente): un wizard paso a paso se lee mejor corto.
+   Selector compuesto (3 clases) a propósito, para ganarle en
+   especificidad a ".seccion--alterna > *" sin tocar esa regla
+   compartida con el resto del sitio. */
+.guia-wizard.seccion--alterna > * {
+  max-width: 720px;
+}
+
+.guia-wizard__utilidades {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.guia-wizard__reiniciar {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-texto-suave);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.guia-wizard__reiniciar:hover,
+.guia-wizard__reiniciar:focus-visible {
+  color: var(--color-turquesa);
+}
+
+:root[data-theme="claro"] .guia-wizard__reiniciar:hover,
+:root[data-theme="claro"] .guia-wizard__reiniciar:focus-visible {
+  color: var(--color-primario);
+}
+
+.guia-wizard__progreso {
+  margin-bottom: 2rem;
+}
+
+.guia-wizard__indicador {
+  margin: 0 0 0.4rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-texto-suave);
+}
+
+.guia-wizard__stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+}
+
+.guia-wizard__stepper-numero {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-superficie);
+  color: var(--color-texto-suave);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.guia-wizard__stepper-numero:hover,
+.guia-wizard__stepper-numero:focus-visible {
+  border-color: var(--color-turquesa);
+}
+
+.guia-wizard__stepper-numero--activo {
+  background-color: var(--color-turquesa);
+  border-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+}
+
+:root[data-theme="claro"] .guia-wizard__stepper-numero--activo {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+/* Cada una de las 9 pantallas (bienvenida, paso-1..paso-7, cierre): solo
+   la que trae ".guia-pantalla--activa" se muestra en el modo wizard
+   normal. En vista completa (".guia-wizard--vista-completa" en el
+   contenedor) esta regla se ignora por la de más abajo, que las fuerza
+   todas visibles apiladas. */
+.guia-pantalla {
+  display: none;
+}
+
+.guia-pantalla--activa {
+  display: block;
+}
+
+.guia-pantalla h2 {
+  margin-top: 0;
+}
+
+.guia-pantalla h2:focus-visible {
+  outline: 3px solid var(--color-focus-outline);
+  outline-offset: 4px;
+}
+
+.guia-paso__imagen-marco {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radio-md);
+  overflow: hidden;
+  background-color: var(--color-superficie-baja);
+  border: 1px solid var(--color-borde);
+  margin-bottom: 1.25rem;
+}
+
+.guia-paso__imagen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.guia-paso__por-que {
+  margin: 0 0 1rem;
+}
+
+.guia-paso__lista {
+  margin: 0 0 1.25rem;
+  padding-left: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Mismo tratamiento visual (borde de acento + fondo tenue) que
+   .tarjeta-docente__mensaje, pero como componente propio: semánticamente
+   es un contexto distinto (ejemplo de uso, no una cita del docente) y no
+   vale la pena acoplar guia.html a una clase nombrada para otra página. */
+.guia-paso__ejemplo {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--color-turquesa);
+  background-color: var(--color-superficie);
+  border-radius: 0 var(--radio-md) var(--radio-md) 0;
+  font-size: 0.92rem;
+}
+
+.guia-paso__ejemplo p {
+  margin: 0;
+}
+
+.guia-wizard__controles {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.guia-bienvenida__acciones,
+.guia-cierre__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.guia-cierre__enlace-completa {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+/* ---------- Vista de una sola página (pantalla + impresión) ----------
+   Mismo botón/enlace activa esta clase en pantalla (ver
+   activarGuiaAlumno() en js/main.js) y @media print de abajo la fuerza
+   de todas formas, sin importar el estado del wizard — así imprimir con
+   Ctrl+P directo, sin haber tocado "Ver guía completa", también produce
+   las 9 pantallas completas en vez de solo el paso visible en ese
+   momento. */
+.guia-wizard--vista-completa .guia-wizard__progreso,
+.guia-wizard--vista-completa .guia-wizard__controles {
+  display: none !important;
+}
+
+.guia-wizard--vista-completa .guia-pantalla {
+  display: block !important;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.guia-wizard--vista-completa .guia-pantalla:last-child {
+  border-bottom: none;
+}
+
+@media print {
+  .riel,
+  .barra-inferior,
+  .riel-flyout,
+  .bottom-sheet,
+  .sheet-backdrop,
+  .migas-de-pan,
+  .fab-volver-arriba,
+  #contenedor-toast,
+  .guia-wizard__utilidades,
+  .guia-wizard__progreso,
+  .guia-wizard__controles,
+  .guia-bienvenida__acciones,
+  .guia-cierre__acciones,
+  .guia-cierre__enlace-completa,
+  footer.pie {
+    display: none !important;
+  }
+
+  body:has(#guia-wizard) {
+    padding: 0 !important;
+  }
+
+  .guia-wizard.seccion--alterna,
+  .guia-wizard.seccion--alterna > * {
+    max-width: none !important;
+    background: none !important;
+  }
+
+  .guia-pantalla {
+    display: block !important;
+    margin-bottom: 2rem;
+    break-inside: avoid;
+  }
 }
