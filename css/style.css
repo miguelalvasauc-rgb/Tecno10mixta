@@ -1234,6 +1234,169 @@ summary:focus-visible {
   color: var(--color-texto-suave);
 }
 
+/* ---------- Piloto: flip 3D de Temario (SOLO trimestre-1.html) ----------
+   Reemplaza el botón "Ver detalles" + modal compartido únicamente para
+   estas tarjetas — ver TRIMESTRE_ACTUAL === "1" en renderizarTemario()/
+   crearInteriorTemarioGirable() en js/main.js. trimestre-2/3.html nunca
+   crean estas clases, así que .tarjeta-temario (arriba) sigue intacta
+   para ellas.
+
+   Técnica grid-stack: frente y reverso comparten la misma celda de grid
+   (grid-area: 1 / 1), así el alto de la tarjeta se ajusta solo al
+   contenido más largo de las dos caras, sin fijar una altura arbitraria. */
+.tarjeta-temario--girable {
+  perspective: 1200px;
+}
+
+.tarjeta-temario__flip-interior {
+  position: relative;
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease;
+}
+
+.tarjeta-temario--girada .tarjeta-temario__flip-interior {
+  transform: rotateY(180deg);
+}
+
+/* backface-visibility oculta visualmente la cara que queda mirando "hacia
+   atrás", pero por sí sola NO la saca del árbol de accesibilidad ni del
+   orden de tabulación (limitación conocida de los flips en CSS) — por
+   eso además se alterna "visibility" según ".tarjeta-temario--girada".
+
+   El delay de la transición se declara en la regla de DESTINO (así
+   funciona "transition-delay": se aplica al valor hacia el que se
+   transiciona, no al que se abandona) — por eso frente y reverso
+   necesitan 2 reglas cada uno en vez de una sola con un delay fijo:
+   la cara que pasa a visible debe poder recibir foco YA (delay 0), pero
+   la que pasa a hidden debe esperar a que la rotación termine antes de
+   desaparecer del árbol de accesibilidad (delay 0.6s, igual que dura el
+   giro) — nunca de golpe como pasaría con display:none. Un solo
+   "transition: visibility 0.6s" en las dos direcciones a la vez (lo que
+   había aquí antes) deja el botón del reverso inalcanzable con teclado
+   hasta que termina de girar, porque "visibility" con timing-function
+   por defecto interpola como escalón al 50%, no al inicio. */
+.tarjeta-temario__cara {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.tarjeta-temario__cara--frente {
+  visibility: visible;
+  transition: visibility 0s linear 0s;
+}
+
+.tarjeta-temario__cara--reverso {
+  transform: rotateY(180deg);
+  visibility: hidden;
+  transition: visibility 0s linear 0.6s;
+  gap: 0.6rem;
+  padding: 0.9rem 1.1rem;
+  /* Navy institucional constante en ambos temas (mismo par ya usado sin
+     override en .tarjeta-temario__imagen--1): evita reintroducir el bug
+     de turquesa + texto claro fallando AA en modo claro. */
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+.tarjeta-temario--girada .tarjeta-temario__cara--frente {
+  visibility: hidden;
+  transition-delay: 0.6s;
+}
+
+.tarjeta-temario--girada .tarjeta-temario__cara--reverso {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.tarjeta-temario__cara--reverso h4 {
+  margin: 0;
+  color: var(--color-claro-sobre-navy);
+}
+
+.tarjeta-temario__reverso-contenido {
+  overflow-y: auto;
+}
+
+.tarjeta-temario__reverso-contenido p {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.tarjeta-temario__reverso-contenido p:last-child {
+  margin-bottom: 0;
+}
+
+/* Mismo botón visual que .boton-ver-detalle (contorno turquesa, relleno
+   al pasar el mouse), reutilizado tal cual para el frente. */
+.tarjeta-temario__boton-girar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: flex-start;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--color-turquesa);
+  background-color: transparent;
+  border: 1px solid var(--color-turquesa);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tarjeta-temario__cara--frente .tarjeta-temario__boton-girar {
+  margin: 0.2rem 1.1rem 0.9rem;
+}
+
+.tarjeta-temario__boton-girar:hover,
+.tarjeta-temario__boton-girar:focus-visible {
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+}
+
+:root[data-theme="claro"] .tarjeta-temario__boton-girar:hover,
+:root[data-theme="claro"] .tarjeta-temario__boton-girar:focus-visible {
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+/* El reverso es navy en AMBOS temas (ver .tarjeta-temario__cara--reverso
+   arriba) — mismo caso ya documentado que .encabezado (~línea 745):
+   turquesa + blanco no alcanza contraste de texto en modo claro, así que
+   ese botón usa el par claro-sobre-navy en vez del turquesa del frente. */
+.tarjeta-temario__cara--reverso .tarjeta-temario__boton-girar {
+  color: var(--color-claro-sobre-navy);
+  border-color: var(--color-claro-sobre-navy);
+}
+
+.tarjeta-temario__cara--reverso .tarjeta-temario__boton-girar:hover,
+.tarjeta-temario__cara--reverso .tarjeta-temario__boton-girar:focus-visible {
+  background-color: var(--color-claro-sobre-navy);
+  color: var(--color-primario);
+}
+
+/* Mismo criterio que la excepción de .encabezado: el navy que modo claro
+   usa por defecto para el anillo de foco sería invisible sobre este
+   reverso (también navy) — se fuerza turquesa, que sí contrasta (~4.5:1),
+   igual que en esa excepción. */
+:root[data-theme="claro"] .tarjeta-temario__cara--reverso .tarjeta-temario__boton-girar:focus-visible {
+  outline-color: var(--color-turquesa);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta-temario__flip-interior,
+  .tarjeta-temario__cara--frente,
+  .tarjeta-temario__cara--reverso {
+    transition: none;
+  }
+}
+
 .badge-unidad {
   display: inline-block;
   font-size: 0.7rem;

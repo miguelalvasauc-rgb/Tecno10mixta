@@ -3639,11 +3639,19 @@ async function renderizarTemario() {
       const descripcion = document.createElement("p");
       descripcion.textContent = item.descripcion;
       info.append(titulo, descripcion);
-      if (item.detalleTemario) {
-        info.appendChild(crearBotonVerDetalle(item));
+
+      // Piloto SOLO trimestre-1.html: flip 3D en vez del botón "Ver
+      // detalles" + modal compartido (ver crearTarjetaTemarioGirable más
+      // abajo). trimestre-2/3.html no tienen TRIMESTRE_ACTUAL === "1" y
+      // siguen exactamente con el patrón de antes.
+      if (TRIMESTRE_ACTUAL === "1" && item.detalleTemario) {
+        tarjeta.classList.add("tarjeta-temario--girable");
+        tarjeta.appendChild(crearInteriorTemarioGirable(tarjeta, item, imagen, info));
+      } else {
+        if (item.detalleTemario) info.appendChild(crearBotonVerDetalle(item));
+        tarjeta.append(imagen, info);
       }
 
-      tarjeta.append(imagen, info);
       cuadriculaGrupo.appendChild(tarjeta);
       indiceGlobal++;
     });
@@ -3651,6 +3659,84 @@ async function renderizarTemario() {
     bloqueGrupo.appendChild(cuadriculaGrupo);
     contenedor.appendChild(bloqueGrupo);
   });
+}
+
+// Interior giratorio (technique grid-stack: frente/reverso comparten la
+// misma celda de grid, así el alto de la tarjeta se ajusta solo al
+// contenido más largo de las dos caras — ver .tarjeta-temario__cara en
+// css/style.css). El reverso pinta item.detalleTemario tal cual (mismo
+// HTML de confianza que ya usaba abrirModalDetalle, ver esa función).
+function crearInteriorTemarioGirable(tarjeta, item, imagen, info) {
+  const interior = document.createElement("div");
+  interior.className = "tarjeta-temario__flip-interior";
+
+  const frente = document.createElement("div");
+  frente.className = "tarjeta-temario__cara tarjeta-temario__cara--frente";
+  frente.append(imagen, info);
+
+  const reverso = document.createElement("div");
+  reverso.className = "tarjeta-temario__cara tarjeta-temario__cara--reverso";
+  const tituloReverso = document.createElement("h4");
+  tituloReverso.textContent = item.titulo;
+  const contenidoReverso = document.createElement("div");
+  contenidoReverso.className = "tarjeta-temario__reverso-contenido";
+  contenidoReverso.innerHTML = item.detalleTemario;
+  reverso.append(tituloReverso, contenidoReverso);
+
+  const botonFrente = crearBotonGirarTemario(false);
+  const botonReverso = crearBotonGirarTemario(true);
+  frente.appendChild(botonFrente);
+  reverso.appendChild(botonReverso);
+
+  [botonFrente, botonReverso].forEach((boton) => {
+    boton.addEventListener("click", () => {
+      const girada = !tarjeta.classList.contains("tarjeta-temario--girada");
+      tarjeta.classList.toggle("tarjeta-temario--girada", girada);
+      botonFrente.setAttribute("aria-pressed", String(girada));
+      botonReverso.setAttribute("aria-pressed", String(girada));
+      // Sin esto, al ocultarse vía "visibility" (ver css/style.css) el
+      // botón que tenía el foco deja de ser enfocable y el navegador lo
+      // manda a <body> — un alumno navegando con teclado perdería su
+      // lugar y tendría que volver a tabular desde el inicio del riel
+      // para llegar al botón "Volver". El botón de la cara que ahora se
+      // ve ya tiene "transition-delay: 0s" en su regla de visibility
+      // (ver css/style.css), así que queda enfocable de inmediato — el
+      // setTimeout corto solo le da al navegador el tick que necesita
+      // para terminar de aplicar ese cambio de estilo antes de .focus().
+      setTimeout(() => {
+        (girada ? botonReverso : botonFrente).focus();
+      }, 50);
+    });
+  });
+
+  interior.append(frente, reverso);
+  return interior;
+}
+
+// "esReverso" solo cambia el texto visible: en el frente el texto queda
+// visualmente oculto (.sr-only, el ícono 🔄 ya comunica la acción a
+// simple vista); en el reverso "Volver" sí se muestra porque ahí ya no
+// hay una imagen/ícono grande que lo sugiera por sí solo.
+function crearBotonGirarTemario(esReverso) {
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "tarjeta-temario__boton-girar";
+  boton.setAttribute("aria-pressed", "false");
+
+  const icono = document.createElement("span");
+  icono.setAttribute("aria-hidden", "true");
+  icono.textContent = "🔄";
+
+  const texto = document.createElement("span");
+  if (esReverso) {
+    texto.textContent = "Volver";
+  } else {
+    texto.className = "sr-only";
+    texto.textContent = "Girar tarjeta para ver detalles";
+  }
+
+  boton.append(icono, texto);
+  return boton;
 }
 
 async function renderizarRubricas() {
