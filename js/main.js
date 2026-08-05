@@ -7050,6 +7050,66 @@ async function obtenerMapaProgresoCalificacion(trimestre, tipos, alumnoIds) {
   return mapa;
 }
 
+// Calcula y persiste la columna "a_tiempo" de la tabla "progreso" (ya
+// existe, hasta ahora siempre en null) para las entregas que ya están
+// completadas pero todavía no tienen ese valor calculado. Mismo criterio
+// que ya usa calcularRachaPuntualidad() (actualizado_en vs. la fecha
+// límite del ítem), pero persistido: una vez calculado queda congelado
+// — el filtro "a_tiempo === null" de abajo excluye automáticamente las
+// filas ya procesadas, así que si después se mueve la fecha límite desde
+// "Fechas de entrega" esta función YA NO las vuelve a tocar.
+//
+// Excluye origen === "manual-docente" a propósito: esas entregas las
+// marca el profesor por decisión propia (ver guardarEntregaManual), no
+// hay un "a tiempo/tarde" real que calcular ahí — se quedan en null para
+// siempre, sin problema (ver pintarBadgeCalificacion, que solo pinta el
+// ícono ⏰ cuando a_tiempo === false).
+async function calcularYGuardarATiempo(mapaProgreso, trimestre) {
+  const pendientes = [...mapaProgreso.values()].filter(
+    (fila) => fila.completado === true && fila.a_tiempo === null && fila.origen !== "manual-docente"
+  );
+  if (pendientes.length === 0) return;
+
+  const idsAlumnos = [...new Set(pendientes.map((fila) => fila.alumno_id))];
+  const { data: alumnosRegistro } = await clienteSupabase
+    .from("alumnos_registro")
+    .select("auth_user_id, grupo")
+    .in("auth_user_id", idsAlumnos);
+  const grupoPorAlumno = new Map((alumnosRegistro || []).map((alumno) => [alumno.auth_user_id, alumno.grupo]));
+
+  const items = await obtenerEntregablesPorTipo("todos", trimestre);
+
+  for (const fila of pendientes) {
+    if (!fila.actualizado_en) continue; // sin fecha real de entrega: no se puede evaluar
+
+    const item = items.find(
+      (candidato) => candidato.tipoEntregable === fila.tipo && String(candidato.id) === String(fila.item_id)
+    );
+    if (!item) continue; // id desconocido (item borrado/cambiado): se reintenta en la próxima carga
+
+    const grupo = grupoPorAlumno.get(fila.alumno_id);
+    if (!grupo) continue;
+
+    const fechaLimite = fechaLimiteISO(fila.tipo, item, grupo);
+    if (!fechaLimite) continue; // sin fecha límite resoluble: se reintenta en la próxima carga
+
+    const aTiempo = new Date(fila.actualizado_en) <= new Date(fechaLimite + "T23:59:59");
+
+    try {
+      const { error } = await clienteSupabase.from("progreso").update({ a_tiempo: aTiempo }).eq("id", fila.id);
+      if (error) throw error;
+      // Mismo objeto que ya vive dentro de mapaProgreso (Map de
+      // referencias, no de copias): mutarlo aquí ya deja el render de
+      // esta misma carga con el valor correcto, sin recargar la página.
+      fila.a_tiempo = aTiempo;
+    } catch {
+      // No detiene el resto (mismo patrón que aplicarRecorridoFechas):
+      // esta fila se reintenta en la próxima carga de la tabla, a_tiempo
+      // sigue en null hasta entonces.
+    }
+  }
+}
+
 // Recalcula las opciones del <select> de secuencia a partir de los
 // entregables del trimestre/tipo actualmente elegidos, en el orden en que
 // aparecen en los datos (no alfabético). Conserva la selección previa si
@@ -7187,6 +7247,18 @@ function pintarBadgeCalificacion(contenedor, contexto) {
     marcaManual.title = "Marcado manualmente por el docente";
     marcaManual.textContent = "🖊️";
     contenedor.appendChild(marcaManual);
+  }
+
+  // a_tiempo === false: entrega completada pero registrada después de la
+  // fecha límite (ver calcularYGuardarATiempo). true o null (no
+  // calculado todavía, o entrega manual-docente que nunca se calcula) no
+  // agregan nada — comportamiento actual sin cambios.
+  if (filaProgreso?.completado && filaProgreso.a_tiempo === false) {
+    const marcaTardia = document.createElement("span");
+    marcaTardia.className = "calificacion-tabla__entrega-tardia";
+    marcaTardia.title = "Esta entrega se registró después de la fecha límite";
+    marcaTardia.textContent = "⏰";
+    contenedor.appendChild(marcaTardia);
   }
 }
 
@@ -8238,6 +8310,7 @@ async function renderizarTablaCalificacion() {
 
   const idsParaProgreso = alumnos.filter((alumno) => alumno.auth_user_id != null).map((alumno) => alumno.auth_user_id);
   const mapaProgreso = await obtenerMapaProgresoCalificacion(estadoCalificacion.trimestre, tipos, idsParaProgreso);
+  await calcularYGuardarATiempo(mapaProgreso, estadoCalificacion.trimestre);
 
   contenedor.innerHTML = "";
   contenedor.appendChild(construirTablaCalificacion(alumnos, entregables, mapaProgreso, estadoCalificacion.trimestre));
@@ -8318,6 +8391,11 @@ function crearFichaAlumnoCalificacion(alumno, entregables, mapaProgreso, trimest
       ? null
       : mapaProgreso.get(alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id);
     const contenedorBadge = document.createElement("span");
+    // Mismo "position: relative" que .calificacion-historial__badge-
+    // contenedor: sin esto, el ícono superpuesto de 🖊️/⏰ (position:
+    // absolute con top/right) no tiene contra qué anclarse y termina
+    // flotando en la esquina de la ventana en vez de junto al badge.
+    contenedorBadge.className = "calificacion-ficha__badge-contenedor";
     const claveMapaProgreso = alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id;
     pintarBadgeCalificacion(contenedorBadge, {
       alumno,
@@ -8369,6 +8447,7 @@ async function renderizarTarjetasCalificacion() {
 
   const idsParaProgreso = alumnos.filter((alumno) => alumno.auth_user_id != null).map((alumno) => alumno.auth_user_id);
   const mapaProgreso = await obtenerMapaProgresoCalificacion(estadoCalificacion.trimestre, tipos, idsParaProgreso);
+  await calcularYGuardarATiempo(mapaProgreso, estadoCalificacion.trimestre);
 
   contenedor.innerHTML = "";
   const lista = document.createElement("div");

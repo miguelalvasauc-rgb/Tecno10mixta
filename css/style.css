@@ -5490,6 +5490,19 @@ a.boton-secundario {
   font-size: 0.75rem;
 }
 
+/* Ícono superpuesto que marca una entrega completada pero registrada
+   después de la fecha límite (a_tiempo === false, ver
+   calcularYGuardarATiempo() en main.js) — mismo patrón visual que
+   .calificacion-tabla__origen-manual de arriba. Nunca coexisten en la
+   misma celda: las entregas manual-docente (las únicas con ese ícono)
+   quedan fuera del cálculo de a_tiempo a propósito. */
+.calificacion-tabla__entrega-tardia {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.15rem;
+  font-size: 0.75rem;
+}
+
 .calificacion-tabla__avance {
   font-weight: 700;
   text-align: center;
@@ -6093,7 +6106,8 @@ button.badge-estado {
   }
 
   body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla__boton-historial,
-  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla__origen-manual {
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla__origen-manual,
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial) .calificacion-tabla__entrega-tardia {
     display: none !important;
   }
 }
@@ -6300,6 +6314,15 @@ button.badge-estado {
   padding: 0.55rem 0;
   border-bottom: 1px solid var(--color-borde);
   font-size: 0.88rem;
+}
+
+/* Mismo rol que .calificacion-historial__badge-contenedor: da contexto
+   de posicionamiento para el ícono superpuesto de 🖊️/⏰ (position:
+   absolute) que pintarBadgeCalificacion() agrega junto al badge. */
+.calificacion-ficha__badge-contenedor {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
 .calificacion-ficha__item:last-child {
