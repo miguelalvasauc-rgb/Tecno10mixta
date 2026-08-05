@@ -1,0 +1,282 @@
+{
+  ".codex/hooks.json": {
+    "mtime": 1784742949.8689253,
+    "ast_hash": "2052d0de46490e1217e72f6d10fccbfe",
+    "semantic_hash": "2052d0de46490e1217e72f6d10fccbfe"
+  },
+  ".impeccable/config.json": {
+    "mtime": 1785221315.011127,
+    "ast_hash": "9b6ccca9356c9b1bb3455cf9e6c7e45e",
+    "semantic_hash": "9b6ccca9356c9b1bb3455cf9e6c7e45e"
+  },
+  ".impeccable/design.json": {
+    "mtime": 1784745913.8156664,
+    "ast_hash": "fc3f9e4e1ee681ef9809dc456c492b55",
+    "semantic_hash": "fc3f9e4e1ee681ef9809dc456c492b55"
+  },
+  ".impeccable/live/config.json": {
+    "mtime": 1784744027.593486,
+    "ast_hash": "1ce46b5a7016847f906f38fb461c6940",
+    "semantic_hash": "1ce46b5a7016847f906f38fb461c6940"
+  },
+  "js/main.js": {
+    "mtime": 1785905805.3273573,
+    "ast_hash": "997c755e5ce2b65f3bc80814e1de4733",
+    "semantic_hash": "997c755e5ce2b65f3bc80814e1de4733"
+  },
+  "skills-lock.json": {
+    "mtime": 1784742624.4320061,
+    "ast_hash": "aba0a09734a721835f7c8eafcefd11d1",
+    "semantic_hash": "aba0a09734a721835f7c8eafcefd11d1"
+  },
+  "Bloque1_Detalle_Tareas_Actividades_Proyectos.md": {
+    "mtime": 1783383511.7001402,
+    "ast_hash": "61d1f8ea050f6d7f9ca51a52d2f15e95",
+    "semantic_hash": "61d1f8ea050f6d7f9ca51a52d2f15e95"
+  },
+  "Bloque_2_Datos_Diseno_Ciberseguridad.md": {
+    "mtime": 1784863033.4654024,
+    "ast_hash": "38d94f9f5c3978b33ff1def5e70c6cd5",
+    "semantic_hash": "38d94f9f5c3978b33ff1def5e70c6cd5"
+  },
+  "Bloque_3_Creando_el_Futuro.md": {
+    "mtime": 1784863053.6578996,
+    "ast_hash": "b7fb800055952fa5798602b10715e13b",
+    "semantic_hash": "b7fb800055952fa5798602b10715e13b"
+  },
+  "CLAUDE.md": {
+    "mtime": 1785907147.3042226,
+    "ast_hash": "0999228cd7bfc7f44d9d0dfaf8e1954b",
+    "semantic_hash": "0999228cd7bfc7f44d9d0dfaf8e1954b"
+  },
+  "DESIGN.md": {
+    "mtime": 1784745811.7262497,
+    "ast_hash": "698ed7c174702c66089eab7a812687f2",
+    "semantic_hash": "698ed7c174702c66089eab7a812687f2"
+  },
+  "PRODUCT.md": {
+    "mtime": 1784743879.3938687,
+    "ast_hash": "32af664d28e76b04c85c7f1d344ae091",
+    "semantic_hash": "32af664d28e76b04c85c7f1d344ae091"
+  },
+  "README.md": {
+    "mtime": 1783123967.7424226,
+    "ast_hash": "6a6e26b55134496b45bacd54754f2a4a",
+    "semantic_hash": "6a6e26b55134496b45bacd54754f2a4a"
+  },
+  "admin.html": {
+    "mtime": 1785876348.9997475,
+    "ast_hash": "13934e3507c11ff1dbbd6ee5abbe66c3",
+    "semantic_hash": "13934e3507c11ff1dbbd6ee5abbe66c3"
+  },
+  "cuenta.html": {
+    "mtime": 1785886542.607311,
+    "ast_hash": "2a68553d77312aa495abdb9bb9d2011c",
+    "semantic_hash": "2a68553d77312aa495abdb9bb9d2011c"
+  },
+  "faq.html": {
+    "mtime": 1785886534.7221935,
+    "ast_hash": "23942e4eff6707168503ec80d60f40a0",
+    "semantic_hash": "23942e4eff6707168503ec80d60f40a0"
+  },
+  "guia.html": {
+    "mtime": 1785886676.561449,
+    "ast_hash": "eae7cf61b353507daf620d63fd36e332",
+    "semantic_hash": "eae7cf61b353507daf620d63fd36e332"
+  },
+  "index.html": {
+    "mtime": 1785905759.1166155,
+    "ast_hash": "d0f930ced80ad29339a75159d6cc3025",
+    "semantic_hash": "d0f930ced80ad29339a75159d6cc3025"
+  },
+  "padres.html": {
+    "mtime": 1785905521.5521543,
+    "ast_hash": "0229eed84086d2a9792e68381f969077",
+    "semantic_hash": "0229eed84086d2a9792e68381f969077"
+  },
+  "progreso.html": {
+    "mtime": 1785886546.6200306,
+    "ast_hash": "d957aa148dcd8b270c3fd79eac5f4731",
+    "semantic_hash": "d957aa148dcd8b270c3fd79eac5f4731"
+  },
+  "sitemap.html": {
+    "mtime": 1785886580.4980843,
+    "ast_hash": "25317a82c4b96204fc6a832e87defb0e",
+    "semantic_hash": "25317a82c4b96204fc6a832e87defb0e"
+  },
+  "trimestre-1.html": {
+    "mtime": 1785886522.5755298,
+    "ast_hash": "c670de7950c1dc7fb602c5e385646ccd",
+    "semantic_hash": "c670de7950c1dc7fb602c5e385646ccd"
+  },
+  "trimestre-2.html": {
+    "mtime": 1785886526.5977058,
+    "ast_hash": "6315c8e56efb5ba01736835a91fcc8e7",
+    "semantic_hash": "6315c8e56efb5ba01736835a91fcc8e7"
+  },
+  "trimestre-3.html": {
+    "mtime": 1785886530.8051996,
+    "ast_hash": "7a4c4ae96cb0acc83c558fd0af701390",
+    "semantic_hash": "7a4c4ae96cb0acc83c558fd0af701390"
+  },
+  "assets/faq/ejemplo-foto-cuaderno.png": {
+    "mtime": 1785478595.4200191,
+    "ast_hash": "dbc8c0624f7d3105faab93adcf506f4e",
+    "semantic_hash": "dbc8c0624f7d3105faab93adcf506f4e"
+  },
+  "assets/logo-10mixta.jpg": {
+    "mtime": 1783127881.9208267,
+    "ast_hash": "c4c388a957999df1501043b5959e07f0",
+    "semantic_hash": "c4c388a957999df1501043b5959e07f0"
+  },
+  "assets/temario/t1-seq1-tema1.png": {
+    "mtime": 1784966487.200997,
+    "ast_hash": "d405d43be29d4dc84586a190fc1ddf3b",
+    "semantic_hash": "d405d43be29d4dc84586a190fc1ddf3b"
+  },
+  "assets/temario/t1-seq1-tema2.png": {
+    "mtime": 1784966509.2696476,
+    "ast_hash": "9988fd86c9332ada42cc9764df05105e",
+    "semantic_hash": "9988fd86c9332ada42cc9764df05105e"
+  },
+  "assets/temario/t1-seq1-tema3.png": {
+    "mtime": 1784966518.7399974,
+    "ast_hash": "49f3e7e48f23bef4f71313db621ce640",
+    "semantic_hash": "49f3e7e48f23bef4f71313db621ce640"
+  },
+  "assets/temario/t1-seq1-tema4.png": {
+    "mtime": 1784966526.6285763,
+    "ast_hash": "46370030bd4bd357381a9232924376f9",
+    "semantic_hash": "46370030bd4bd357381a9232924376f9"
+  },
+  "assets/temario/t1-seq2-tema1.png": {
+    "mtime": 1784966702.1626735,
+    "ast_hash": "12e6587795892383fc813e8b8613347f",
+    "semantic_hash": "12e6587795892383fc813e8b8613347f"
+  },
+  "assets/temario/t1-seq2-tema2.png": {
+    "mtime": 1784966709.8146312,
+    "ast_hash": "ca5f0a2b0eb661d4dd98e75a23c7763c",
+    "semantic_hash": "ca5f0a2b0eb661d4dd98e75a23c7763c"
+  },
+  "assets/temario/t1-seq2-tema3.png": {
+    "mtime": 1784966718.1724508,
+    "ast_hash": "7b223105b34d6ede9bfde7069de43a2e",
+    "semantic_hash": "7b223105b34d6ede9bfde7069de43a2e"
+  },
+  "assets/temario/t1-seq3-tema1.png": {
+    "mtime": 1784967040.5991764,
+    "ast_hash": "2d91c7ef04bcacef13ecd3913b94dd91",
+    "semantic_hash": "2d91c7ef04bcacef13ecd3913b94dd91"
+  },
+  "assets/temario/t1-seq3-tema2.png": {
+    "mtime": 1784967048.925645,
+    "ast_hash": "7ddec3ba5bf8d066df645f400c00074c",
+    "semantic_hash": "7ddec3ba5bf8d066df645f400c00074c"
+  },
+  "assets/temario/t1-seq3-tema3.png": {
+    "mtime": 1784967056.7682142,
+    "ast_hash": "ebd19eba91eddf5c9d5bc9385ef64175",
+    "semantic_hash": "ebd19eba91eddf5c9d5bc9385ef64175"
+  },
+  "assets/temario/t1-seq3-tema4.png": {
+    "mtime": 1784967064.3007572,
+    "ast_hash": "aa743b5958aa5f9cb09d6ca73370c9aa",
+    "semantic_hash": "aa743b5958aa5f9cb09d6ca73370c9aa"
+  },
+  "assets/temario/t1-seq3-tema5.png": {
+    "mtime": 1784967070.7661855,
+    "ast_hash": "fddc344a7c141c71ceda7a5148c94812",
+    "semantic_hash": "fddc344a7c141c71ceda7a5148c94812"
+  },
+  "assets/temario/t2-seq4-tema1.png": {
+    "mtime": 1785005275.8470805,
+    "ast_hash": "199a0e57f144166f0e828d2f50bbad98",
+    "semantic_hash": "199a0e57f144166f0e828d2f50bbad98"
+  },
+  "assets/temario/t2-seq4-tema2.png": {
+    "mtime": 1785005287.5276208,
+    "ast_hash": "bacf467a5971e060740cb9946e93cda0",
+    "semantic_hash": "bacf467a5971e060740cb9946e93cda0"
+  },
+  "assets/temario/t2-seq4-tema3.png": {
+    "mtime": 1785005301.831987,
+    "ast_hash": "d4cd43c7763fa56f481b96fb07a20482",
+    "semantic_hash": "d4cd43c7763fa56f481b96fb07a20482"
+  },
+  "assets/temario/t2-seq5-tema1.png": {
+    "mtime": 1785005809.0367162,
+    "ast_hash": "8ba52f3286009dac63facbdc6202ae4b",
+    "semantic_hash": "8ba52f3286009dac63facbdc6202ae4b"
+  },
+  "assets/temario/t2-seq5-tema2.png": {
+    "mtime": 1785005821.8344204,
+    "ast_hash": "d1184f1735ba62bc9516d7e8068ff42d",
+    "semantic_hash": "d1184f1735ba62bc9516d7e8068ff42d"
+  },
+  "assets/temario/t2-seq5-tema3.png": {
+    "mtime": 1785005875.560765,
+    "ast_hash": "5c2f498b5d28f082837e31aed25c0af5",
+    "semantic_hash": "5c2f498b5d28f082837e31aed25c0af5"
+  },
+  "assets/temario/t2-seq6-tema1.png": {
+    "mtime": 1785006075.503832,
+    "ast_hash": "d06b749fff26c190802a8a4985d1f503",
+    "semantic_hash": "d06b749fff26c190802a8a4985d1f503"
+  },
+  "assets/temario/t2-seq6-tema2.png": {
+    "mtime": 1785006082.351766,
+    "ast_hash": "f6fb26a92a47549172ee57e3ce422ed5",
+    "semantic_hash": "f6fb26a92a47549172ee57e3ce422ed5"
+  },
+  "assets/temario/t2-seq6-tema3.png": {
+    "mtime": 1785006089.0096607,
+    "ast_hash": "3b1158715fdafeccc6fe5620bcfb0f6f",
+    "semantic_hash": "3b1158715fdafeccc6fe5620bcfb0f6f"
+  },
+  "assets/temario/t3-seq7-tema1.png": {
+    "mtime": 1785006809.6190493,
+    "ast_hash": "ea32a20f2be7e0c942cd3d1c461a0a08",
+    "semantic_hash": "ea32a20f2be7e0c942cd3d1c461a0a08"
+  },
+  "assets/temario/t3-seq7-tema2.png": {
+    "mtime": 1785006819.143437,
+    "ast_hash": "5610fbee3c58d19e4912598d039f33b0",
+    "semantic_hash": "5610fbee3c58d19e4912598d039f33b0"
+  },
+  "assets/temario/t3-seq7-tema3.png": {
+    "mtime": 1785006826.6662548,
+    "ast_hash": "c000d1dabc70bf35d9e51e764b7446ec",
+    "semantic_hash": "c000d1dabc70bf35d9e51e764b7446ec"
+  },
+  "assets/temario/t3-seq8-tema1.png": {
+    "mtime": 1785007039.5334103,
+    "ast_hash": "543130f370c961c9a9265ebef9e19f6b",
+    "semantic_hash": "543130f370c961c9a9265ebef9e19f6b"
+  },
+  "assets/temario/t3-seq8-tema2.png": {
+    "mtime": 1785007046.2060282,
+    "ast_hash": "6cd760d3fc8def8a8b2798fd67166ce8",
+    "semantic_hash": "6cd760d3fc8def8a8b2798fd67166ce8"
+  },
+  "assets/temario/t3-seq8-tema3.png": {
+    "mtime": 1785007052.602376,
+    "ast_hash": "13c4c2ed441a832b24f409e3598596fe",
+    "semantic_hash": "13c4c2ed441a832b24f409e3598596fe"
+  },
+  "assets/temario/t3-seq9-tema1.png": {
+    "mtime": 1785007205.6596813,
+    "ast_hash": "845f6c9dd1a25571205eb3c9e6b0b899",
+    "semantic_hash": "845f6c9dd1a25571205eb3c9e6b0b899"
+  },
+  "assets/temario/t3-seq9-tema2.png": {
+    "mtime": 1785007211.4566162,
+    "ast_hash": "822701f4ee842edf2e3c240dd62b08d8",
+    "semantic_hash": "822701f4ee842edf2e3c240dd62b08d8"
+  },
+  "assets/temario/t3-seq9-tema3.png": {
+    "mtime": 1785007218.9684052,
+    "ast_hash": "7dba972e1b92c8f85602b17a6ee8f6b3",
+    "semantic_hash": "7dba972e1b92c8f85602b17a6ee8f6b3"
+  }
+}

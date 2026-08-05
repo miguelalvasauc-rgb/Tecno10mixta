@@ -1,0 +1,47 @@
+# Documentos fuente pesados — no aportan a la implementación de código
+*.docx
+*.xlsx
+*.pptx
+
+# Contenido curricular ya migrado al sitio — NO se vuelven a consultar
+# (toda la info ya vive en trimestre-1/2/3.html y main.js)
+SECUENCIA_*.docx
+Bloque*_actividades.docx
+BLOQUE_*_actividades.docx
+Bloque_*_Creando_el_Futuro.md
+Bloque_*_Datos_Diseno_Ciberseguridad.md
+Bloque*_Detalle_Tareas_Actividades_Proyectos.md
+
+# Imágenes — Claude no necesita leer binarios de imagen para código
+assets/temario/*.png
+assets/temario/*.jpg
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+
+# Prompts de trabajo temporales (ya en .gitignore, pero por si acaso)
+Prompt_ClaudeCode_*.md
+outputs/
+
+# Node / tooling de skills (si algún skill instala dependencias)
+node_modules/
+package-lock.json
+.npm-global/
+
+# Sistema / control de versiones
+.git/
+.DS_Store
+
+# Diseño ya cerrado (referencia histórica, no se tocan)
+diseno-panel-control-docente.md
+oportunidades_mejora_ux_ui.md
+checklist-*.md
+
+# Sesiones y logs
+Changelog_Sesion_*.md
+
+#para no invalidar el caché de Claude Code en cada extracción futura
+graph.json
+graphify-out/
