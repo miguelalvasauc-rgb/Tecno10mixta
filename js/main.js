@@ -5084,21 +5084,12 @@ const ETIQUETAS_ENLACE_ITEM = {
 // con encontrarlos en el DOM; aquí se recalculan con la misma lógica
 // porque de todos modos hace falta la misma data (tareas/actividades/
 // proyectos por trimestre) para armar el detalle de abajo.
-async function renderizarProgresoDetallado() {
-  const sinPerfil = document.getElementById("progreso-sin-perfil");
-  const conPerfil = document.getElementById("progreso-con-perfil");
-  if (!sinPerfil || !conPerfil) return;
-
-  const perfil = obtenerPerfilActivo();
-  sinPerfil.hidden = Boolean(perfil);
-  conPerfil.hidden = !perfil;
-  if (!perfil) return;
-
-  const nombreEl = document.getElementById("progreso-alumno-nombre");
-  const grupoEl = document.getElementById("progreso-alumno-grupo");
-  if (nombreEl) nombreEl.textContent = perfil.nombre;
-  if (grupoEl) grupoEl.textContent = textoGrupo(perfil.grupo);
-
+// Misma data que arma renderizarProgresoDetallado() (tareas/actividades/
+// proyectos por trimestre, filtrados por el grupo del alumno, con sus
+// contadores de completadas) — extraída aquí para que
+// generarVistaImpresionProgreso() (vista de impresión) la reutilice sin
+// duplicar el bucle.
+async function calcularProgresoDetalladoPorTrimestre(perfil) {
   const coincideConGrupoDelAlumno = (item) => item.grupo === "todos" || item.grupo === perfil.grupo;
 
   let totalGeneral = 0;
@@ -5127,6 +5118,26 @@ async function renderizarProgresoDetallado() {
     completadasGeneral += completadas;
     porTrimestre.push({ trimestre, tareas, actividades, proyectos, total, completadas });
   }
+
+  return { porTrimestre, totalGeneral, completadasGeneral };
+}
+
+async function renderizarProgresoDetallado() {
+  const sinPerfil = document.getElementById("progreso-sin-perfil");
+  const conPerfil = document.getElementById("progreso-con-perfil");
+  if (!sinPerfil || !conPerfil) return;
+
+  const perfil = obtenerPerfilActivo();
+  sinPerfil.hidden = Boolean(perfil);
+  conPerfil.hidden = !perfil;
+  if (!perfil) return;
+
+  const nombreEl = document.getElementById("progreso-alumno-nombre");
+  const grupoEl = document.getElementById("progreso-alumno-grupo");
+  if (nombreEl) nombreEl.textContent = perfil.nombre;
+  if (grupoEl) grupoEl.textContent = textoGrupo(perfil.grupo);
+
+  const { porTrimestre, totalGeneral, completadasGeneral } = await calcularProgresoDetalladoPorTrimestre(perfil);
 
   const porcentaje = totalGeneral === 0 ? 0 : Math.round((completadasGeneral / totalGeneral) * 100);
 
@@ -5266,6 +5277,126 @@ async function renderizarProgresoDetallado() {
 
     detalle.appendChild(panel);
   });
+}
+
+// Texto de estado para la vista de impresión: mismo criterio de 3 estados
+// que crearChecklistProgreso() (🟢 Entregado / 🟡 Pendiente / 🔒 Vencido),
+// pero como texto plano sin badge de color — una impresora en blanco y
+// negro no distingue el color de fondo del badge.
+function textoEstadoImpresion(tipo, item, trimestre, perfil) {
+  if (itemEstaCompletado(tipo, item.id, trimestre)) return "🟢 Entregado";
+  if (itemEstaVencido(tipo, item, perfil.grupo)) return "🔒 Vencido";
+  return "🟡 Pendiente";
+}
+
+// Vista de impresión del progreso personal (botón "🖨️ Imprimir mi
+// resumen" en progreso.html): reutiliza calcularProgresoDetalladoPor
+// Trimestre() (misma data que ya arma renderizarProgresoDetallado()) para
+// llenar el contenedor estático #plantilla-impresion-progreso con una
+// tabla plana por trimestre — sin barras de progreso animadas ni badges
+// de nivel/racha de gamificación, que no aportan nada en papel — y
+// dispara window.print(). La plantilla solo se muestra en @media print
+// (ver css/style.css); en pantalla normal permanece oculta, igual que
+// #calificacion-impresion-por-tipo en el panel docente.
+async function generarVistaImpresionProgreso() {
+  const perfil = obtenerPerfilActivo();
+  if (!perfil) return;
+
+  const contenedor = document.getElementById("plantilla-impresion-progreso");
+  if (!contenedor) return;
+
+  const { porTrimestre } = await calcularProgresoDetalladoPorTrimestre(perfil);
+
+  contenedor.innerHTML = "";
+
+  const encabezado = document.createElement("div");
+  encabezado.className = "impresion-progreso__encabezado";
+
+  const titulo = document.createElement("h2");
+  titulo.textContent = perfil.nombre + " — " + textoGrupo(perfil.grupo);
+
+  const fecha = document.createElement("p");
+  fecha.textContent =
+    "Generado el " +
+    new Date().toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" });
+
+  encabezado.append(titulo, fecha);
+  contenedor.appendChild(encabezado);
+
+  const SECCIONES_POR_TIPO = [
+    { tipo: "tarea", etiqueta: "Tareas" },
+    { tipo: "actividad", etiqueta: "Actividades" },
+    { tipo: "proyecto", etiqueta: "Proyectos" },
+  ];
+
+  porTrimestre.forEach(({ trimestre, tareas, actividades, proyectos, total, completadas }) => {
+    const bloque = document.createElement("section");
+    bloque.className = "impresion-progreso__trimestre";
+
+    const tituloTrimestre = document.createElement("h3");
+    tituloTrimestre.textContent = "Trimestre " + trimestre;
+    bloque.appendChild(tituloTrimestre);
+
+    const itemsPorTipo = { tarea: tareas, actividad: actividades, proyecto: proyectos };
+
+    SECCIONES_POR_TIPO.forEach(({ tipo, etiqueta }) => {
+      const items = itemsPorTipo[tipo];
+      if (items.length === 0) return;
+
+      const subtitulo = document.createElement("h4");
+      subtitulo.textContent = etiqueta;
+      bloque.appendChild(subtitulo);
+
+      const tabla = document.createElement("table");
+      tabla.className = "impresion-progreso__tabla";
+
+      const encabezadoTabla = document.createElement("thead");
+      const filaEncabezado = document.createElement("tr");
+      ["Título", "Fecha límite", "Estado"].forEach((texto) => {
+        const celda = document.createElement("th");
+        celda.textContent = texto;
+        filaEncabezado.appendChild(celda);
+      });
+      encabezadoTabla.appendChild(filaEncabezado);
+      tabla.appendChild(encabezadoTabla);
+
+      const cuerpo = document.createElement("tbody");
+      items.forEach((item) => {
+        const fila = document.createElement("tr");
+
+        const celdaTitulo = document.createElement("td");
+        celdaTitulo.textContent = item.titulo;
+
+        const valorFecha = tipo === "actividad" ? item.fecha : item.fechaEntrega;
+        const celdaFecha = document.createElement("td");
+        celdaFecha.textContent = resolverFechaItem(valorFecha, perfil.grupo);
+
+        const celdaEstado = document.createElement("td");
+        celdaEstado.textContent = textoEstadoImpresion(tipo, item, trimestre, perfil);
+
+        fila.append(celdaTitulo, celdaFecha, celdaEstado);
+        cuerpo.appendChild(fila);
+      });
+      tabla.appendChild(cuerpo);
+      bloque.appendChild(tabla);
+    });
+
+    const resumen = document.createElement("p");
+    resumen.className = "impresion-progreso__resumen";
+    resumen.textContent = completadas + " de " + total + " completadas";
+    bloque.appendChild(resumen);
+
+    contenedor.appendChild(bloque);
+  });
+
+  window.print();
+}
+
+// Engancha el botón "🖨️ Imprimir mi resumen" de progreso.html — no hace
+// nada en el resto de páginas (el botón no existe ahí).
+function activarBotonImprimirProgreso() {
+  const boton = document.getElementById("boton-imprimir-progreso");
+  if (boton) boton.addEventListener("click", generarVistaImpresionProgreso);
 }
 
 // Filtro "Todos / Bloque 1/2/3" de la tabla de materiales de manualidades
@@ -11737,6 +11868,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarFormulariosCuenta();
   activarPanelSesionCuenta();
   activarAccionesPerfilProgreso();
+  activarBotonImprimirProgreso();
   actualizarUISesion();
   activarSubmenusSidebar();
   activarFlyoutsRiel();

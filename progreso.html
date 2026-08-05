@@ -329,12 +329,19 @@
           Viendo el progreso de: <strong id="progreso-alumno-nombre"></strong> (<span id="progreso-alumno-grupo"></span>)
         </p>
 
+        <button type="button" id="boton-imprimir-progreso" class="boton-secundario">🖨️ Imprimir mi resumen</button>
+
         <p id="progreso-mensaje" class="panel-progreso__mensaje"></p>
         <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
 
         <div id="progreso-detalle-trimestres" class="panel-progreso__detalle" aria-live="polite"></div>
       </div>
     </section>
+
+    <!-- Vista de impresión: nunca se ve en pantalla, solo se llena y se
+         muestra (@media print) cuando generarVistaImpresionProgreso() en
+         js/main.js la activa desde el botón "🖨️ Imprimir mi resumen". -->
+    <div id="plantilla-impresion-progreso"></div>
   </main>
 
   <!-- ===================== PIE DE PÁGINA ===================== -->

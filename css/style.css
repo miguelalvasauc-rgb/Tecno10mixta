@@ -5201,6 +5201,15 @@ a.boton-secundario {
   gap: 1rem;
 }
 
+/* ---------- Vista de impresión del progreso (botón "🖨️ Imprimir mi
+   resumen") ----------
+   Nunca se ve en pantalla (mismo patrón que #calificacion-impresion-por-
+   tipo en el panel docente): generarVistaImpresionProgreso() en main.js
+   la llena y la regla dentro de @media print de más abajo la muestra. */
+#plantilla-impresion-progreso {
+  display: none;
+}
+
 /* ---------- Overlay de carga del guard de trimestre (trimestre-1/2/3) ----------
    Insertado dinámicamente por mostrarOverlayCargaTrimestre() en main.js
    solo si la consulta a config_sitio tarda más de 150ms. Fondo sólido
@@ -7434,6 +7443,8 @@ button.badge-estado {
   .migas-de-pan,
   .fab-volver-arriba,
   #contenedor-toast,
+  #boton-imprimir-progreso,
+  #progreso-detalle-trimestres,
   .guia-wizard__utilidades,
   .guia-wizard__progreso,
   .guia-wizard__controles,
@@ -7458,5 +7469,81 @@ button.badge-estado {
     display: block !important;
     margin-bottom: 2rem;
     break-inside: avoid;
+  }
+
+  /* ---------- Vista de impresión del progreso (progreso.html) ----------
+     #progreso-intro (leyenda de íconos) y #progreso-detalle (que engloba
+     tanto la invitación a identificarse como el resumen con barra
+     animada + tarjetas de racha/nivel + el detalle interactivo) se
+     reemplazan enteros por #plantilla-impresion-progreso. Se ocultan
+     scoped a "body:has(#progreso-detalle-trimestres)" (solo existe en
+     progreso.html: #progreso-mensaje y #progreso-resumen-general
+     reutilizan esos mismos ids en el panel de Progreso de la portada —
+     ver renderizarProgreso() en main.js — así que un id suelto también
+     afectaría la impresión de index.html). */
+  body:has(#progreso-detalle-trimestres) #progreso-intro,
+  body:has(#progreso-detalle-trimestres) #progreso-detalle {
+    display: none !important;
+  }
+
+  /* Texto negro sobre blanco a propósito, sin importar el tema claro/
+     oscuro elegido en pantalla: en papel eso no aplica. */
+  #plantilla-impresion-progreso {
+    display: block;
+    color: #000;
+    background: #fff;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  #plantilla-impresion-progreso * {
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  .impresion-progreso__encabezado h2 {
+    margin: 0 0 0.25rem;
+    font-size: 1.4rem;
+  }
+
+  .impresion-progreso__encabezado p {
+    margin: 0 0 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .impresion-progreso__trimestre {
+    page-break-inside: avoid;
+    margin-bottom: 1.5rem;
+  }
+
+  .impresion-progreso__trimestre h3 {
+    font-size: 1.15rem;
+    margin: 0 0 0.5rem;
+    border-bottom: 2px solid #000;
+    padding-bottom: 0.25rem;
+  }
+
+  .impresion-progreso__trimestre h4 {
+    font-size: 1rem;
+    margin: 0.75rem 0 0.25rem;
+  }
+
+  .impresion-progreso__tabla {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .impresion-progreso__tabla th,
+  .impresion-progreso__tabla td {
+    border: 1px solid #000;
+    padding: 0.35rem 0.5rem;
+    text-align: left;
+  }
+
+  .impresion-progreso__resumen {
+    font-weight: 700;
+    margin: 0.5rem 0 0;
   }
 }
