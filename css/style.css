@@ -3439,6 +3439,56 @@ summary:focus-visible {
   font-size: 1rem;
 }
 
+/* Ícono ⓘ discreto: tooltip nativo vía "title" (hover en desktop, tap
+   sostenido en móvil, sin JS de posicionamiento) + aria-describedby al
+   .sr-only de al lado para lectores de pantalla, que no dependen de que
+   el navegador decida mostrar el title visualmente.
+   Color de reposo/hover sigue el mismo criterio ya usado en
+   .criterio-tarjeta__porcentaje (arriba): turquesa sobre el fondo claro
+   de la tarjeta en modo claro falla AA (~2.5:1), así que el default es
+   navy y el turquesa queda solo para modo oscuro. */
+.criterio-tarjeta__info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+  border: 1px solid var(--color-borde);
+  border-radius: 50%;
+  font-size: 0.72rem;
+  color: var(--color-texto-suave);
+  cursor: help;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.criterio-tarjeta__info:hover,
+.criterio-tarjeta__info:focus-visible {
+  color: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+:root[data-theme="oscuro"] .criterio-tarjeta__info:hover,
+:root[data-theme="oscuro"] .criterio-tarjeta__info:focus-visible {
+  color: var(--color-turquesa);
+  border-color: var(--color-turquesa);
+}
+
+/* La regla global de foco (arriba, "Enfoque accesible") solo cubre
+   a/button/select/input/textarea/summary por nombre de etiqueta — este
+   ícono es un <span tabindex="0"> (no hay acción que ejecutar, solo
+   mostrar el tooltip), así que sin esto se quedaría sin anillo de foco
+   visible al tabular. Mismo color que ya usa esa regla global. */
+.criterio-tarjeta__info:focus-visible {
+  outline: 3px solid var(--color-turquesa);
+  outline-offset: 2px;
+}
+
+:root[data-theme="claro"] .criterio-tarjeta__info:focus-visible {
+  outline-color: var(--color-primario);
+}
+
 .criterio-tarjeta__barra {
   width: 100%;
   height: 8px;
@@ -3591,6 +3641,44 @@ summary:focus-visible {
   gap: 0.5rem;
   font-size: 0.92rem;
   line-height: 1.5;
+}
+
+/* ---------- Filtro Bloque/Trimestre de la tabla de materiales ----------
+   Mismo criterio visual y de comportamiento que .calificacion-tabs-tipo
+   (admin.html): tabs con conteo dinámico "(N)", oculta/muestra filas de
+   la tabla en vez de quitarlas del DOM — ver activarTabsMateriales() en
+   js/main.js. */
+.materiales-tabs-bloque {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.materiales-tabs-bloque__boton {
+  background-color: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  color: var(--color-texto-suave);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+}
+
+.materiales-tabs-bloque__boton:hover {
+  border-color: var(--color-turquesa);
+}
+
+.materiales-tabs-bloque__boton--activo {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+.materiales-tabs-bloque__contador {
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
 }
 
 .tabla-scroll {

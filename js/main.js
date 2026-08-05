@@ -5268,6 +5268,62 @@ async function renderizarProgresoDetallado() {
   });
 }
 
+// Filtro "Todos / Bloque 1/2/3" de la tabla de materiales de manualidades
+// (index.html, #lista-materiales). Mismo patrón visual y de comportamiento
+// que .calificacion-tabs-tipo en admin.html (ver activarTabsTipoCalificacion(),
+// sección 12): tabs con conteo dinámico "(N)" y oculta/muestra <tr> en vez
+// de quitarlas del DOM, para no romper accesibilidad. Las filas con más de
+// un bloque en su "Uso principal" (ej. Cartulinas de colores: B1+B2+B3)
+// llevan varios valores en data-bloque separados por coma y aparecen bajo
+// cada uno de esos tabs, no solo el primero.
+function activarTabsMateriales() {
+  const contenedorTabs = document.getElementById("materiales-tabs-bloque");
+  if (!contenedorTabs) return;
+
+  const tabs = Array.from(contenedorTabs.querySelectorAll(".materiales-tabs-bloque__boton"));
+  const filas = Array.from(document.querySelectorAll("#tabla-materiales-manualidades tbody tr"));
+
+  function bloquesDeFila(fila) {
+    return (fila.dataset.bloque || "").split(",").map((valor) => valor.trim()).filter(Boolean);
+  }
+
+  // Se recalcula desde las filas reales (no un número fijo) para que, si
+  // el contenido de la tabla cambia más adelante, los conteos sigan
+  // correctos sin tener que tocar esta función — mismo criterio que
+  // actualizarConteosTabsTipo() en el panel de calificación.
+  function actualizarConteos() {
+    const conteos = { todos: filas.length };
+    filas.forEach((fila) => {
+      bloquesDeFila(fila).forEach((bloque) => {
+        conteos[bloque] = (conteos[bloque] || 0) + 1;
+      });
+    });
+    tabs.forEach((tab) => {
+      const contador = tab.querySelector(".materiales-tabs-bloque__contador");
+      if (contador) contador.textContent = "(" + (conteos[tab.dataset.bloque] || 0) + ")";
+    });
+  }
+
+  function aplicarFiltro(bloque) {
+    filas.forEach((fila) => {
+      fila.hidden = bloque !== "todos" && !bloquesDeFila(fila).includes(bloque);
+    });
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((otro) => {
+        const activo = otro === tab;
+        otro.classList.toggle("materiales-tabs-bloque__boton--activo", activo);
+        otro.setAttribute("aria-selected", String(activo));
+      });
+      aplicarFiltro(tab.dataset.bloque);
+    });
+  });
+
+  actualizarConteos();
+}
+
 /* =========================================================
    6. CALENDARIO
    ========================================================= */
@@ -11691,6 +11747,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarTabsAdmin();
   activarCierreSesionAdmin();
   activarGuiaAlumno();
+  activarTabsMateriales();
   await inicializarModuloCalificacion();
   await inicializarModuloAlumnos();
   await inicializarModuloAvisos();

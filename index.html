@@ -501,7 +501,13 @@
       <div class="criterios-contenedor">
         <div class="criterio-tarjeta">
           <div class="criterio-tarjeta__porcentaje">30%</div>
-          <h3>Tareas</h3>
+          <h3>
+            Tareas
+            <span class="criterio-tarjeta__info" tabindex="0" title="Entregables para realizar en casa y subir a la plataforma." aria-describedby="criterio-info-tareas">
+              <span aria-hidden="true">ⓘ</span>
+            </span>
+          </h3>
+          <span id="criterio-info-tareas" class="sr-only">Entregables para realizar en casa y subir a la plataforma.</span>
           <div class="criterio-tarjeta__barra">
             <div class="criterio-tarjeta__relleno" style="width: 30%;"></div>
           </div>
@@ -509,7 +515,13 @@
 
         <div class="criterio-tarjeta">
           <div class="criterio-tarjeta__porcentaje">30%</div>
-          <h3>Actividades</h3>
+          <h3>
+            Actividades
+            <span class="criterio-tarjeta__info" tabindex="0" title="Trabajo continuo en el taller y sistema de sellos en cuaderno." aria-describedby="criterio-info-actividades">
+              <span aria-hidden="true">ⓘ</span>
+            </span>
+          </h3>
+          <span id="criterio-info-actividades" class="sr-only">Trabajo continuo en el taller y sistema de sellos en cuaderno.</span>
           <div class="criterio-tarjeta__barra">
             <div class="criterio-tarjeta__relleno" style="width: 30%;"></div>
           </div>
@@ -518,7 +530,13 @@
         <div class="criterio-tarjeta criterio-tarjeta--destacada">
           <span class="criterio-tarjeta__badge">🏆 Mayor peso</span>
           <div class="criterio-tarjeta__porcentaje">40%</div>
-          <h3>Proyectos</h3>
+          <h3>
+            Proyectos
+            <span class="criterio-tarjeta__info" tabindex="0" title="Prácticas integradoras de mayor peso al final del periodo." aria-describedby="criterio-info-proyectos">
+              <span aria-hidden="true">ⓘ</span>
+            </span>
+          </h3>
+          <span id="criterio-info-proyectos" class="sr-only">Prácticas integradoras de mayor peso al final del periodo.</span>
           <div class="criterio-tarjeta__barra">
             <div class="criterio-tarjeta__relleno" style="width: 40%;"></div>
           </div>
@@ -578,18 +596,46 @@
 
         <div class="materiales-bloque">
           <h3>✂️ Materiales de manualidades / prototipado</h3>
-          <div class="tabla-scroll">
-            <table class="tabla-materiales">
+
+          <!-- Filtro Bloque/Trimestre: mismo patrón que .calificacion-tabs-tipo
+               en admin.html (tabs con conteo dinámico, oculta/muestra filas
+               sin quitarlas del DOM) — ver activarTabsMateriales() en
+               js/main.js. data-bloque de cada fila viene de su "Uso
+               principal": las que no traían "(B1)"/"(B2)"/"(B3)" en el texto
+               original se ubicaron cruzando el tema (diagramas de flujo/
+               algoritmos → Secuencia 7, wireframes → Secuencia 8, ambas
+               Bloque 3; ver DATOS_TEMARIO en js/main.js). -->
+          <div id="materiales-tabs-bloque" class="materiales-tabs-bloque" role="tablist" aria-label="Filtrar por bloque">
+            <button type="button" class="materiales-tabs-bloque__boton materiales-tabs-bloque__boton--activo"
+                    id="materiales-tab-bloque-todos" role="tab" aria-selected="true" data-bloque="todos">
+              Todos <span class="materiales-tabs-bloque__contador">(0)</span>
+            </button>
+            <button type="button" class="materiales-tabs-bloque__boton"
+                    id="materiales-tab-bloque-1" role="tab" aria-selected="false" data-bloque="1">
+              Bloque 1 <span class="materiales-tabs-bloque__contador">(0)</span>
+            </button>
+            <button type="button" class="materiales-tabs-bloque__boton"
+                    id="materiales-tab-bloque-2" role="tab" aria-selected="false" data-bloque="2">
+              Bloque 2 <span class="materiales-tabs-bloque__contador">(0)</span>
+            </button>
+            <button type="button" class="materiales-tabs-bloque__boton"
+                    id="materiales-tab-bloque-3" role="tab" aria-selected="false" data-bloque="3">
+              Bloque 3 <span class="materiales-tabs-bloque__contador">(0)</span>
+            </button>
+          </div>
+
+          <div class="tabla-scroll" aria-live="polite">
+            <table class="tabla-materiales" id="tabla-materiales-manualidades">
               <thead>
                 <tr><th>Material</th><th>Cantidad sugerida</th><th>Uso principal</th></tr>
               </thead>
               <tbody>
-                <tr><td>Marcadores gruesos (negro, azul, rojo, verde)</td><td>1 set por equipo</td><td>Diagramas de flujo, pósters, wireframes</td></tr>
-                <tr><td>Cartulinas de colores</td><td>~10 por alumno (todo el año)</td><td>Robots (B1), infografías (B2), wireframes/pósters (B3)</td></tr>
-                <tr><td>Revistas viejas</td><td>Varias, para collages</td><td>Realidad Virtual (B1) y Ciencia de Datos (B2)</td></tr>
-                <tr><td>Post-its de colores</td><td>3 paquetes (salón)</td><td>Retroalimentación entre equipos (wireframes en B3)</td></tr>
-                <tr><td>Cinta masking tape</td><td>Rollos para el salón</td><td>Fijar pósters, prototipos, diagramas en pared</td></tr>
-                <tr><td>Papelógrafo o pizarrón grande / rotafolio</td><td>Para el salón</td><td>Diagramas de flujo grupales, lluvias de ideas</td></tr>
+                <tr data-bloque="3"><td>Marcadores gruesos (negro, azul, rojo, verde)</td><td>1 set por equipo</td><td>Diagramas de flujo, pósters, wireframes</td></tr>
+                <tr data-bloque="1,2,3"><td>Cartulinas de colores</td><td>~10 por alumno (todo el año)</td><td>Robots (B1), infografías (B2), wireframes/pósters (B3)</td></tr>
+                <tr data-bloque="1,2"><td>Revistas viejas</td><td>Varias, para collages</td><td>Realidad Virtual (B1) y Ciencia de Datos (B2)</td></tr>
+                <tr data-bloque="3"><td>Post-its de colores</td><td>3 paquetes (salón)</td><td>Retroalimentación entre equipos (wireframes en B3)</td></tr>
+                <tr data-bloque="3"><td>Cinta masking tape</td><td>Rollos para el salón</td><td>Fijar pósters, prototipos, diagramas en pared</td></tr>
+                <tr data-bloque="3"><td>Papelógrafo o pizarrón grande / rotafolio</td><td>Para el salón</td><td>Diagramas de flujo grupales, lluvias de ideas</td></tr>
               </tbody>
             </table>
           </div>
