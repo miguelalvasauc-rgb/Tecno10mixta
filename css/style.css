@@ -14,6 +14,13 @@
   --color-primario: #1B3A6B;
   --color-primario-suave: #24467F;
   --color-acento-texto: #04211D;
+  /* Texto sobre un fondo --color-primario (botones, header, tarjetas de
+     temario, etc.) — ver la Fase de corrección del bug de contraste en
+     cyberpunk-gold más abajo. Aquí es el mismo valor que ya usaba
+     --color-claro-sobre-navy porque el navy institucional sigue siendo
+     oscuro en este tema. */
+  --color-primario-texto: #E8EEF4;
+  --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
 
   /* ---- Academic Log System: "Sala de Mando" (modo oscuro) ---- */
@@ -36,6 +43,8 @@
   --color-primario: #1B3A6B;
   --color-primario-suave: #163058;
   --color-acento-texto: #FFFFFF;
+  --color-primario-texto: #E8EEF4;
+  --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 20px rgba(27, 58, 107, 0.12);
 }
 
@@ -75,6 +84,8 @@
   --color-primario-suave: #8347E8;
   --color-turquesa: #00E5FF;
   --color-acento-texto: #0B0620;
+  --color-primario-texto: #E8EEF4;
+  --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
@@ -89,6 +100,8 @@
   --color-primario-suave: #9376F5;
   --color-turquesa: #39FF14;
   --color-acento-texto: #051405;
+  --color-primario-texto: #E8EEF4;
+  --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
@@ -103,6 +116,16 @@
   --color-primario-suave: #E6C200;
   --color-turquesa: #00F0FF;
   --color-acento-texto: #062033;
+  /* Único tema donde --color-primario (#FFD700, dorado claro) NO es
+     oscuro: los ~37 componentes que asumían "texto claro fijo sobre
+     fondo primario" (botones, header, tarjetas de temario...) quedaban
+     ilegibles aquí. #1E1E1E es el mismo valor que --color-superficie de
+     este tema — 11.89:1 contra el dorado, AA de sobra. */
+  --color-primario-texto: #1E1E1E;
+  /* Igual criterio que --color-primario-texto arriba: versión "suave"
+     (usada en texto secundario sobre fondo primario, ej. footer) —
+     8.80:1 contra el dorado, AA de sobra. */
+  --color-primario-texto-suave: #3A3428;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
@@ -117,6 +140,8 @@
   --color-primario-suave: #3C4FB0;
   --color-turquesa: #7DD3FC;
   --color-acento-texto: #062033;
+  --color-primario-texto: #E8EEF4;
+  --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
@@ -131,6 +156,8 @@
   --color-primario-suave: #C4489A;
   --color-turquesa: #FF8FC7;
   --color-acento-texto: #4A1030;
+  --color-primario-texto: #E8EEF4;
+  --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 20px rgba(178, 51, 132, 0.12);
 }
 
@@ -145,6 +172,8 @@
   --color-primario-suave: #3E6B45;
   --color-turquesa: #7C6BA6;
   --color-acento-texto: #FFFFFF;
+  --color-primario-texto: #E8EEF4;
+  --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 20px rgba(47, 82, 51, 0.12);
 }
 
@@ -164,6 +193,8 @@
      tema (5.37:1) en vez de blanco, mismo criterio que ya usa "oscuro"
      (acento-texto oscuro sobre su propio turquesa, no blanco). */
   --color-acento-texto: #0F2C28;
+  --color-primario-texto: #E8EEF4;
+  --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 20px rgba(13, 148, 136, 0.12);
 }
 
@@ -178,6 +209,8 @@
   --color-primario-suave: #2A525A;
   --color-turquesa: #4A7C82;
   --color-acento-texto: #FFFFFF;
+  --color-primario-texto: #E8EEF4;
+  --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 20px rgba(26, 60, 64, 0.12);
 }
 
@@ -519,7 +552,7 @@ a {
   left: 1rem;
   z-index: 1000;
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
   padding: 0.75rem 1.25rem;
   border-radius: 0 0 8px 8px;
   font-weight: 700;
@@ -569,7 +602,7 @@ a {
   flex-wrap: wrap;
   padding: 0.9rem 1.5rem;
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -675,7 +708,7 @@ a {
    igual que en .enlace-instrucciones y .enlace-descarga. */
 :root[data-theme="claro"] .boton-tema {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* Selector de trimestre (pestañas fijas en el header de trimestre-N.html) */
@@ -731,7 +764,7 @@ a {
 :root[data-theme="claro"] .selector-trimestre__tab--activo,
 :root[data-theme="claro"] .selector-trimestre__tab--activo:hover {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* Migas de pan (páginas de trimestre) */
@@ -897,7 +930,7 @@ summary:focus-visible {
 /* ---------- Hero ---------- */
 .hero {
   background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-suave) 100%);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
   padding: 3rem 1.5rem;
   text-align: center;
 }
@@ -913,7 +946,7 @@ summary:focus-visible {
 }
 
 .hero p {
-  color: var(--color-claro-sobre-navy-suave);
+  color: var(--color-primario-texto-suave);
   font-size: 1rem;
 }
 
@@ -1091,7 +1124,7 @@ summary:focus-visible {
    texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
 :root[data-theme="claro"] .badge-prioridad[data-prioridad="recordatorio"] {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .badge-prioridad[data-prioridad="general"] {
@@ -1173,7 +1206,7 @@ summary:focus-visible {
   height: 64px;
   border-radius: 50%;
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
   font-size: 1.75rem;
   font-weight: 800;
 }
@@ -1336,7 +1369,7 @@ summary:focus-visible {
 
 .tarjeta-temario__imagen--1 {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .tarjeta-temario__imagen--2 {
@@ -1348,7 +1381,7 @@ summary:focus-visible {
    texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
 :root[data-theme="claro"] .tarjeta-temario__imagen--2 {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .tarjeta-temario__imagen--3 {
@@ -1441,7 +1474,7 @@ summary:focus-visible {
      override en .tarjeta-temario__imagen--1): evita reintroducir el bug
      de turquesa + texto claro fallando AA en modo claro. */
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .tarjeta-temario--girada .tarjeta-temario__cara--frente {
@@ -1456,7 +1489,7 @@ summary:focus-visible {
 
 .tarjeta-temario__cara--reverso h4 {
   margin: 0;
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .tarjeta-temario__reverso-contenido {
@@ -1505,7 +1538,7 @@ summary:focus-visible {
 :root[data-theme="claro"] .tarjeta-temario__boton-girar:hover,
 :root[data-theme="claro"] .tarjeta-temario__boton-girar:focus-visible {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* El reverso es navy en AMBOS temas (ver .tarjeta-temario__cara--reverso
@@ -1513,8 +1546,8 @@ summary:focus-visible {
    turquesa + blanco no alcanza contraste de texto en modo claro, así que
    ese botón usa el par claro-sobre-navy en vez del turquesa del frente. */
 .tarjeta-temario__cara--reverso .tarjeta-temario__boton-girar {
-  color: var(--color-claro-sobre-navy);
-  border-color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
+  border-color: var(--color-primario-texto);
 }
 
 .tarjeta-temario__cara--reverso .tarjeta-temario__boton-girar:hover,
@@ -1546,7 +1579,7 @@ summary:focus-visible {
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* ---------- Cuadrícula de tarjetas ---------- */
@@ -1758,7 +1791,7 @@ summary:focus-visible {
 
 :root[data-theme="claro"] .control-vista-secuencias__boton--activo {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* .tablist-secuencias: role="tablist" real (TASK 2) — reemplaza los
@@ -2108,7 +2141,7 @@ summary:focus-visible {
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .badge-estado {
@@ -2128,7 +2161,7 @@ summary:focus-visible {
    deben quedar pisados por esta regla, sin depender del orden en el archivo. */
 :root[data-theme="claro"] .badge-estado:not([data-estado]) {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* Colores de estado del sistema de diseño "Academic Log System" (los
@@ -2253,7 +2286,7 @@ summary:focus-visible {
   padding: 0.35rem 0.8rem;
   border-radius: 999px;
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .etiqueta-nivel--compacta {
@@ -2706,7 +2739,7 @@ summary:focus-visible {
   font-family: var(--font-cuerpo);
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
   background-color: var(--color-primario);
   border: none;
   border-radius: var(--radio-full);
@@ -2784,7 +2817,7 @@ summary:focus-visible {
   font-family: var(--font-cuerpo);
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
   background-color: var(--color-primario);
   border: none;
   border-radius: var(--radio-full);
@@ -2961,7 +2994,7 @@ summary:focus-visible {
    toca. */
 .calendario__dia--hoy {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
   font-weight: 700;
 }
 
@@ -3090,7 +3123,7 @@ summary:focus-visible {
 :root[data-theme="claro"] .enlace-descarga:hover,
 :root[data-theme="claro"] .enlace-descarga:focus-visible {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* Botón principal de una tarea (instrucciones formales): más prominente
@@ -3121,7 +3154,7 @@ summary:focus-visible {
    navy + texto claro (~9.6:1) porque turquesa + blanco falla (~2.5:1). */
 :root[data-theme="claro"] .enlace-instrucciones {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* ---------- Botón "Ver detalles" (tareas/actividades/proyectos) ----------
@@ -3156,7 +3189,7 @@ summary:focus-visible {
 :root[data-theme="claro"] .boton-ver-detalle:hover,
 :root[data-theme="claro"] .boton-ver-detalle:focus-visible {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* ---------- Modal de detalle (tareas/actividades/proyectos) ----------
@@ -3372,7 +3405,7 @@ summary:focus-visible {
 
 :root[data-theme="claro"] .tema-tarjeta--activa::after {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .tema-tarjeta__swatch {
@@ -3460,7 +3493,7 @@ summary:focus-visible {
    texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
 :root[data-theme="claro"] .boton-enviar {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* Reutiliza --color-toast-advertencia (#E8A33D + #2A1D02, 7.64:1 AA,
@@ -3642,7 +3675,7 @@ summary:focus-visible {
   border-radius: 50%;
   background-color: var(--color-primario);
   border: 3px solid var(--color-turquesa);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4025,7 +4058,7 @@ summary:focus-visible {
 .materiales-tabs-bloque__boton--activo {
   background-color: var(--color-primario);
   border-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .materiales-tabs-bloque__contador {
@@ -4089,7 +4122,7 @@ summary:focus-visible {
   text-align: center;
   padding: 1.75rem 1rem;
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy-suave);
+  color: var(--color-primario-texto-suave);
   font-size: 0.85rem;
 }
 
@@ -4106,7 +4139,7 @@ summary:focus-visible {
    header y el hero), así que el turquesa del enlace no necesita override
    de modo claro: el fondo nunca cambia. */
 .pie__privacidad {
-  color: var(--color-claro-sobre-navy-suave);
+  color: var(--color-primario-texto-suave);
 }
 
 .pie__privacidad a {
@@ -4120,7 +4153,7 @@ summary:focus-visible {
    misma razón). Clase aparte porque es un contenido distinto, no un
    repurposeo de la de privacidad. */
 .pie__mapa {
-  color: var(--color-claro-sobre-navy-suave);
+  color: var(--color-primario-texto-suave);
 }
 
 .pie__mapa a {
@@ -4277,7 +4310,7 @@ summary:focus-visible {
    pero eso falla contra el fondo normal de la página (~2.3:1). */
 :root[data-theme="claro"] .fab-volver-arriba {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
   border: 3px solid var(--color-claro-sobre-navy);
 }
 
@@ -4392,12 +4425,12 @@ summary:focus-visible {
 
 :root[data-theme="claro"] .toast[data-tipo="exito"] {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .toast[data-tipo="carga"] {
   background-color: var(--color-toast-carga);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .toast[data-tipo="error"] {
@@ -4642,7 +4675,7 @@ summary:focus-visible {
   justify-content: center;
   border-radius: 999px;
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
   font-size: 0.6rem;
   font-weight: 700;
   line-height: 1;
@@ -4696,7 +4729,7 @@ summary:focus-visible {
 
 :root[data-theme="claro"] .riel__avatar {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* ---------- Flyout (columna 2): un panel por ícono del riel, superpuesto
@@ -4854,7 +4887,7 @@ summary:focus-visible {
 :root[data-theme="claro"] .riel-flyout__trimestre-tab--activo,
 :root[data-theme="claro"] .riel-flyout__trimestre-tab--activo:hover {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .riel-flyout__campo {
@@ -6303,7 +6336,7 @@ button.badge-estado {
 
 :root[data-theme="claro"] .modal-editar-entrega__confirmar {
   background-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* Texto simple en rojo de estado ("vencido"), no un botón lleno: es una
@@ -6554,7 +6587,7 @@ button.badge-estado {
 .calificacion-tabs-tipo__boton--activo {
   background-color: var(--color-primario);
   border-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 .calificacion-tabs-tipo__contador {
@@ -6582,7 +6615,7 @@ button.badge-estado {
 }
 
 :root[data-theme="oscuro"] .tabla-avance-tipo thead th {
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
   background-color: var(--color-primario);
 }
 
@@ -6615,7 +6648,7 @@ button.badge-estado {
 .calificacion-vista-toggle__boton[aria-pressed="true"] {
   background-color: var(--color-primario);
   border-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* ---------- Cambio 5: Vista Tarjetas (accordion por alumno) ----------
@@ -7715,7 +7748,7 @@ button.badge-estado {
 :root[data-theme="claro"] .guia-wizard__stepper-numero--activo {
   background-color: var(--color-primario);
   border-color: var(--color-primario);
-  color: var(--color-claro-sobre-navy);
+  color: var(--color-primario-texto);
 }
 
 /* Cada una de las 9 pantallas (bienvenida, paso-1..paso-7, cierre): solo
