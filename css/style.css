@@ -3181,6 +3181,76 @@ summary:focus-visible {
   color: var(--color-claro-sobre-navy);
 }
 
+/* Reutiliza --color-toast-advertencia (#E8A33D + #2A1D02, 7.64:1 AA,
+   valor fijo verificado en ambos temas — ver el comentario de
+   .contenedor-toast/.toast[data-tipo] más abajo en este archivo) en vez
+   de inventar un token de advertencia nuevo: mismo eje semántico
+   ("advertencia"), no el de estado de cuenta del panel admin
+   (--color-estado-cuenta-*), así que no choca con la Regla de
+   Exclusividad de Colores de Estado. */
+.formulario__advertencia {
+  background-color: var(--color-toast-advertencia);
+  color: #2a1d02;
+  border: 1px solid rgba(42, 29, 2, 0.25);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+/* Vista previa de la imagen de evidencia (#contacto-evidencia): miniatura
+   compacta + nombre truncado + botón "Quitar", llenada por
+   mostrarPreviaEvidencia() en main.js. hidden por defecto en el HTML. */
+.evidencia-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background-color: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  padding: 0.5rem 0.6rem;
+}
+
+.evidencia-preview__imagen {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.evidencia-preview__nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+}
+
+.evidencia-preview__quitar {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--color-texto-suave);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.evidencia-preview__quitar:hover,
+.evidencia-preview__quitar:focus-visible {
+  background-color: var(--color-borde);
+  color: var(--color-texto);
+}
+
 .formulario__estado {
   margin: 0;
   font-size: 0.88rem;

@@ -665,7 +665,7 @@
         agregar notificación por email a [correo de la escuela o del
         responsable del sitio].
       -->
-      <form id="formulario-contacto" name="contacto" method="POST" data-netlify="true" class="formulario-contacto">
+      <form id="formulario-contacto" name="contacto" method="POST" data-netlify="true" enctype="multipart/form-data" class="formulario-contacto">
         <input type="hidden" name="form-name" value="contacto">
 
         <div class="campo-formulario">
@@ -679,8 +679,43 @@
         </div>
 
         <div class="campo-formulario">
+          <label for="contacto-grupo">Tu grupo</label>
+          <select id="contacto-grupo" name="grupo" required>
+            <option value="" disabled selected>Selecciona tu grupo</option>
+            <option value="3C">3°C</option>
+            <option value="3E">3°E</option>
+          </select>
+        </div>
+
+        <div class="campo-formulario">
+          <label for="contacto-categoria">Categoría</label>
+          <select id="contacto-categoria" name="categoria" required>
+            <option value="" disabled selected>Selecciona una categoría</option>
+            <option value="Duda académica">Duda académica</option>
+            <option value="Duda técnica del sitio">Duda técnica del sitio</option>
+            <option value="Queja o reporte">Queja o reporte</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="campo-formulario">
           <label for="contacto-mensaje">Mensaje</label>
           <textarea id="contacto-mensaje" name="mensaje" rows="5" required></textarea>
+        </div>
+
+        <div class="formulario__advertencia" role="note">
+          ⚠️ Este campo es solo para evidencia de tu duda o problema. NO subas tareas, actividades o proyectos aquí — no se contabilizarán para tu evaluación. Usa el formulario de Entrega de trabajos de tu trimestre.
+        </div>
+
+        <div class="campo-formulario">
+          <label for="contacto-evidencia">Imagen de evidencia (opcional)</label>
+          <input type="file" id="contacto-evidencia" name="evidencia" accept="image/*">
+        </div>
+
+        <div id="evidencia-preview" class="evidencia-preview" hidden>
+          <img id="evidencia-preview-imagen" class="evidencia-preview__imagen" alt="">
+          <span id="evidencia-preview-nombre" class="evidencia-preview__nombre"></span>
+          <button type="button" id="evidencia-preview-quitar" class="evidencia-preview__quitar" aria-label="Quitar imagen de evidencia">✕</button>
         </div>
 
         <button type="submit" class="boton-enviar">Enviar mensaje</button>

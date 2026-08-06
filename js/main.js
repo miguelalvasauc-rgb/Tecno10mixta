@@ -6397,13 +6397,76 @@ async function alCambiarGrupo(evento) {
    9. FORMULARIO DE CONTACTO (Netlify Forms)
    ========================================================= */
 
-// Convierte los datos del formulario al formato que espera Netlify
-// ("application/x-www-form-urlencoded") para poder enviarlos con fetch
-// y así evitar que la página se recargue al enviar el mensaje.
-function codificarDatosFormulario(datos) {
-  return Object.keys(datos)
-    .map((clave) => encodeURIComponent(clave) + "=" + encodeURIComponent(datos[clave]))
-    .join("&");
+// Tamaño máximo aceptado para la imagen de evidencia — mismo límite que
+// ya anuncia el mensaje de error de validación en alEnviarContacto().
+const TAMANO_MAXIMO_EVIDENCIA = 5 * 1024 * 1024;
+
+// Object URL de la miniatura de evidencia actualmente mostrada (ver
+// mostrarPreviaEvidencia): se guarda aparte para poder revocarlo antes de
+// crear uno nuevo o al quitar la imagen — sin esto, cada selección de
+// archivo deja el object URL anterior sin liberar (fuga de memoria).
+let urlPreviaEvidencia = null;
+
+function ocultarPreviaEvidencia() {
+  const previa = document.getElementById("evidencia-preview");
+  if (previa) previa.hidden = true;
+  if (urlPreviaEvidencia) {
+    URL.revokeObjectURL(urlPreviaEvidencia);
+    urlPreviaEvidencia = null;
+  }
+}
+
+function mostrarPreviaEvidencia(archivo) {
+  const previa = document.getElementById("evidencia-preview");
+  const imagen = document.getElementById("evidencia-preview-imagen");
+  const nombre = document.getElementById("evidencia-preview-nombre");
+  if (!previa || !imagen || !nombre) return;
+
+  if (urlPreviaEvidencia) URL.revokeObjectURL(urlPreviaEvidencia);
+  urlPreviaEvidencia = URL.createObjectURL(archivo);
+
+  imagen.src = urlPreviaEvidencia;
+  nombre.textContent = archivo.name;
+  previa.hidden = false;
+}
+
+// Precarga el <select> de grupo del formulario con el mismo valor que ya
+// tiene grupoActual (localStorage bajo CLAVE_GRUPO, ver sincronizarSelec
+// torGrupo). Sin preselección si ese valor es "todos": nunca se eligió un
+// grupo real todavía, así que el alumno debe elegirlo a mano.
+function precargarGrupoContacto(formulario) {
+  const selectGrupo = formulario.querySelector("#contacto-grupo");
+  if (!selectGrupo) return;
+  const grupoGuardado = localStorage.getItem(CLAVE_GRUPO);
+  if (grupoGuardado === "3C" || grupoGuardado === "3E") {
+    selectGrupo.value = grupoGuardado;
+  }
+}
+
+// Engancha el <input type="file"> de evidencia: miniatura al elegir
+// archivo, botón "Quitar" que limpia el input y la oculta de nuevo.
+// Separado de alEnviarContacto() porque corre en un evento distinto
+// ("change" del input, no "submit" del formulario).
+function activarEvidenciaContacto(formulario) {
+  const input = formulario.querySelector("#contacto-evidencia");
+  const botonQuitar = document.getElementById("evidencia-preview-quitar");
+  if (!input) return;
+
+  input.addEventListener("change", () => {
+    const archivo = input.files[0];
+    if (!archivo) {
+      ocultarPreviaEvidencia();
+      return;
+    }
+    mostrarPreviaEvidencia(archivo);
+  });
+
+  if (botonQuitar) {
+    botonQuitar.addEventListener("click", () => {
+      input.value = "";
+      ocultarPreviaEvidencia();
+    });
+  }
 }
 
 async function alEnviarContacto(evento) {
@@ -6412,10 +6475,20 @@ async function alEnviarContacto(evento) {
   const formulario = evento.target;
   const boton = formulario.querySelector("button[type='submit']");
   const estado = document.getElementById("contacto-estado");
-  const datos = {};
-  new FormData(formulario).forEach((valor, clave) => {
-    datos[clave] = valor;
-  });
+  const archivo = formulario.querySelector("#contacto-evidencia")?.files[0];
+
+  if (archivo) {
+    if (!archivo.type.startsWith("image/")) {
+      estado.dataset.estado = "error";
+      estado.textContent = "La evidencia debe ser una imagen (JPG, PNG, etc.).";
+      return;
+    }
+    if (archivo.size > TAMANO_MAXIMO_EVIDENCIA) {
+      estado.dataset.estado = "error";
+      estado.textContent = "La imagen de evidencia pesa más de 5MB. Elige una más ligera.";
+      return;
+    }
+  }
 
   boton.disabled = true;
   estado.dataset.estado = "";
@@ -6424,10 +6497,13 @@ async function alEnviarContacto(evento) {
   try {
     // Netlify procesa cualquier POST a la propia página que incluya
     // "form-name" con el nombre del formulario declarado en el HTML.
+    // new FormData(formulario) ya incluye el archivo de evidencia (si se
+    // eligió) gracias a enctype="multipart/form-data" en el <form>; el
+    // navegador agrega el boundary multipart solo si NO se fija
+    // "Content-Type" a mano, por eso no va en los headers de abajo.
     const respuesta = await fetch("/", {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: codificarDatosFormulario(datos),
+      body: new FormData(formulario),
     });
 
     if (!respuesta.ok) throw new Error("Respuesta no válida de Netlify Forms");
@@ -6435,6 +6511,7 @@ async function alEnviarContacto(evento) {
     estado.dataset.estado = "exito";
     estado.textContent = "Gracias, tu mensaje fue enviado.";
     formulario.reset();
+    ocultarPreviaEvidencia();
   } catch (error) {
     estado.dataset.estado = "error";
     estado.textContent = "No se pudo enviar el mensaje. Intenta de nuevo más tarde.";
@@ -11983,6 +12060,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   // El formulario de contacto solo existe en la portada (index.html).
   const formularioContacto = document.getElementById("formulario-contacto");
   if (formularioContacto) {
+    precargarGrupoContacto(formularioContacto);
+    activarEvidenciaContacto(formularioContacto);
     formularioContacto.addEventListener("submit", alEnviarContacto);
   }
 });
