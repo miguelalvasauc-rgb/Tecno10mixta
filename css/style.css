@@ -39,6 +39,148 @@
   --sombra: 0 8px 20px rgba(27, 58, 107, 0.12);
 }
 
+/* ---------- 8 temas nuevos (selector de temas, Fase 2) ----------
+   Mismos 10 tokens que oscuro/claro arriba, + --color-turquesa como
+   OVERRIDE LOCAL del acento dentro de cada bloque (el :root de abajo lo
+   define una sola vez como default global; :root[data-theme="X"] gana
+   por especificidad cuando ese tema está activo, y --color-acento —que
+   solo referencia var(--color-turquesa)— hereda el nuevo valor sin
+   tocarlo).
+
+   --color-superficie-alterna no viene especificado en el pedido: se
+   derivó con la MISMA proporción por canal que ya usan oscuro/claro
+   (no un tono nuevo inventado a ojo):
+     - Temas oscuros (fondo más oscuro que superficie, como "oscuro"):
+       alterna = fondo + [0.429, 0.333, 0.412] × (superficie − fondo) por
+       canal R/G/B — la proporción exacta que ya separa
+       --color-fondo/--color-superficie-alterna/--color-superficie en el
+       tema oscuro actual.
+     - Temas claros/pastel (como "claro", cards blancas o casi): alterna
+       = fondo × [0.963, 0.976, 0.984] por canal — el mismo oscurecimiento
+       proporcional que ya usa el tema claro actual (ahí superficie ya es
+       blanco puro, así que "intermedio" no aplica: se separa oscureciendo
+       el fondo en vez de acercarlo a la superficie).
+
+   --sombra sigue el mismo criterio ya usado: oscuros con negro fijo
+   (0.35 de opacidad, igual que "oscuro"); claros con el --color-primario
+   del propio tema en rgba (0.12 de opacidad, igual que "claro"). */
+:root[data-theme="arcade-neon"] {
+  --color-fondo: #150E2E;
+  --color-superficie: #1F1640;
+  --color-superficie-alterna: #191135;
+  --color-borde: #362A5C;
+  --color-texto: #F1EAFF;
+  --color-texto-suave: #B6A8DE;
+  --color-primario: #6C2BD9;
+  --color-primario-suave: #8347E8;
+  --color-turquesa: #00E5FF;
+  --color-acento-texto: #0B0620;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="gamer-rgb"] {
+  --color-fondo: #0A0A0F;
+  --color-superficie: #16161F;
+  --color-superficie-alterna: #0F0E16;
+  --color-borde: #2A2A38;
+  --color-texto: #EDEDF5;
+  --color-texto-suave: #A0A0B8;
+  --color-primario: #7F5AF0;
+  --color-primario-suave: #9376F5;
+  --color-turquesa: #39FF14;
+  --color-acento-texto: #051405;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="cyberpunk-gold"] {
+  --color-fondo: #121212;
+  --color-superficie: #1E1E1E;
+  --color-superficie-alterna: #171617;
+  --color-borde: #2D2D2D;
+  --color-texto: #FFFFFF;
+  --color-texto-suave: #A0A0A0;
+  --color-primario: #FFD700;
+  --color-primario-suave: #E6C200;
+  --color-turquesa: #00F0FF;
+  --color-acento-texto: #062033;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="galaxia"] {
+  --color-fondo: #05070F;
+  --color-superficie: #0E1730;
+  --color-superficie-alterna: #090C1D;
+  --color-borde: #1E2C50;
+  --color-texto: #E6EAF5;
+  --color-texto-suave: #9FA9C4;
+  --color-primario: #2A3A8C;
+  --color-primario-suave: #3C4FB0;
+  --color-turquesa: #7DD3FC;
+  --color-acento-texto: #062033;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="rosa-pastel"] {
+  --color-fondo: #FDF0F5;
+  --color-superficie: #FFFFFF;
+  --color-superficie-alterna: #F4EAF1;
+  --color-borde: #F3D0E0;
+  --color-texto: #5A2440;
+  --color-texto-suave: #8C5670;
+  --color-primario: #B23384;
+  --color-primario-suave: #C4489A;
+  --color-turquesa: #FF8FC7;
+  --color-acento-texto: #4A1030;
+  --sombra: 0 8px 20px rgba(178, 51, 132, 0.12);
+}
+
+:root[data-theme="bosque-calido"] {
+  --color-fondo: #F4EFE1;
+  --color-superficie: #FBF7EC;
+  --color-superficie-alterna: #EBE9DD;
+  --color-borde: #D8CBAA;
+  --color-texto: #2E3A28;
+  --color-texto-suave: #5C6B52;
+  --color-primario: #2F5233;
+  --color-primario-suave: #3E6B45;
+  --color-turquesa: #7C6BA6;
+  --color-acento-texto: #FFFFFF;
+  --sombra: 0 8px 20px rgba(47, 82, 51, 0.12);
+}
+
+:root[data-theme="menta-tecnologico"] {
+  --color-fondo: #E6F4F1;
+  --color-superficie: #FFFFFF;
+  --color-superficie-alterna: #DEEEED;
+  --color-borde: #C2E2DB;
+  --color-texto: #0F2C28;
+  --color-texto-suave: #4A706A;
+  --color-primario: #0D9488;
+  --color-primario-suave: #14B8A6;
+  --color-turquesa: #0EA5E9;
+  /* #FFFFFF contra este turquesa da solo 2.77:1 (falla AA — mismo "bug
+     de contraste turquesa + texto claro" ya documentado en el resto del
+     sitio para el tema claro). Se reutiliza el --color-texto propio del
+     tema (5.37:1) en vez de blanco, mismo criterio que ya usa "oscuro"
+     (acento-texto oscuro sobre su propio turquesa, no blanco). */
+  --color-acento-texto: #0F2C28;
+  --sombra: 0 8px 20px rgba(13, 148, 136, 0.12);
+}
+
+:root[data-theme="editorial-sepia"] {
+  --color-fondo: #F5EFE6;
+  --color-superficie: #E8DFD8;
+  --color-superficie-alterna: #ECE9E2;
+  --color-borde: #D3C5B7;
+  --color-texto: #3C2A21;
+  --color-texto-suave: #6D5D53;
+  --color-primario: #1A3C40;
+  --color-primario-suave: #2A525A;
+  --color-turquesa: #4A7C82;
+  --color-acento-texto: #FFFFFF;
+  --sombra: 0 8px 20px rgba(26, 60, 64, 0.12);
+}
+
 /* Turquesa siempre disponible como color secundario de marca (badges, tags) */
 :root {
   --color-turquesa: #14B8A6;
@@ -3108,6 +3250,146 @@ summary:focus-visible {
   }
 }
 
+/* ---------- Selector de tema (10 opciones) ----------
+   <dialog> nativo llenado por construirGridTemas() en js/main.js al
+   abrir (ver activarSelectorTema()) — mismo tratamiento de caja que
+   #modal-detalle arriba (mobile-first, sin fijar "position": el
+   navegador ya centra el <dialog> como overlay vía dialog:modal). */
+#modal-tema {
+  width: 92%;
+  max-width: 560px;
+  max-height: 85vh;
+  overflow-y: auto;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-tema::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-tema-titulo {
+  margin: 0 1.8rem 1rem 0;
+  font-size: 1.1rem;
+  color: var(--color-texto);
+}
+
+.modal-tema__cerrar {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--color-texto-suave);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.modal-tema__cerrar:hover,
+.modal-tema__cerrar:focus-visible {
+  background-color: var(--color-superficie-alterna);
+  color: var(--color-texto);
+}
+
+@media (min-width: 640px) {
+  #modal-tema {
+    width: 100%;
+    padding: 1.6rem 1.8rem;
+  }
+}
+
+/* Grid de tarjetas de tema — mismo componente para #modal-tema-grid
+   (Fase 3) y para la sección "🎨 Personalización" de cuenta.html
+   (Fase 4, contenedor propio sin dialog alrededor). */
+.tema-tarjeta__grid,
+.modal-tema__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.65rem;
+}
+
+.tema-tarjeta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.5rem;
+  border: 2px solid var(--color-borde);
+  border-radius: 10px;
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.tema-tarjeta:hover,
+.tema-tarjeta:focus-visible {
+  border-color: var(--color-turquesa);
+  transform: translateY(-2px);
+}
+
+.tema-tarjeta--activa {
+  border-color: var(--color-turquesa);
+}
+
+/* Insignia "✓" del tema activo — mismo par turquesa/acento-texto que
+   .boton-enviar, con el mismo override de modo claro (ver Light-Mode
+   Turquoise Rule ya documentada: turquesa + texto claro falla AA ahí). */
+.tema-tarjeta--activa::after {
+  content: "✓";
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:root[data-theme="claro"] .tema-tarjeta--activa::after {
+  background-color: var(--color-primario);
+  color: var(--color-claro-sobre-navy);
+}
+
+.tema-tarjeta__swatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.tema-tarjeta__nombre {
+  line-height: 1.25;
+}
+
 /* ---------- Formulario de contacto ---------- */
 .formulario-contacto {
   display: flex;
@@ -5145,6 +5427,28 @@ a.boton-secundario {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
+}
+
+/* ---------- Personalización (cuenta.html, dentro de #panel-sesion-
+   activa) — mismo grid .tema-tarjeta__grid que #modal-tema (Fase 3),
+   solo que insertado directo en la página en vez de dentro de un
+   <dialog>. ---------- */
+.cuenta-personalizacion {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-borde);
+}
+
+.cuenta-personalizacion h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  color: var(--color-texto);
+}
+
+.cuenta-personalizacion__ayuda {
+  margin: 0 0 0.9rem;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
 }
 
 /* ---------- Panel de "Progreso" (portada) ---------- */

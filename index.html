@@ -140,9 +140,9 @@
     </div>
     <p id="texto-grupo-alumno" class="riel-flyout__texto-grupo texto-grupo-alumno-slot" hidden></p>
     <!-- Botón de cambio de tema claro/oscuro. La preferencia se guarda en localStorage para que no se pierda al navegar entre páginas. -->
-    <button id="boton-tema" class="boton-tema riel-flyout__tema" type="button" aria-pressed="true" aria-label="Cambiar a modo claro">
-      <span class="boton-tema__icono" aria-hidden="true">☀️</span>
-      <span class="boton-tema__texto">Modo claro</span>
+    <button id="boton-tema" class="boton-tema riel-flyout__tema" type="button" aria-haspopup="dialog" aria-label="Elegir tema">
+      <span class="boton-tema__icono" aria-hidden="true">🌙</span>
+      <span class="boton-tema__texto">Elegir tema</span>
     </button>
   </div>
 
@@ -289,9 +289,9 @@
       </select>
     </div>
     <p class="riel-flyout__texto-grupo texto-grupo-alumno-slot" hidden></p>
-    <button type="button" class="boton-tema riel-flyout__tema" aria-pressed="true" aria-label="Cambiar a modo claro">
-      <span class="boton-tema__icono" aria-hidden="true">☀️</span>
-      <span class="boton-tema__texto">Modo claro</span>
+    <button type="button" class="boton-tema riel-flyout__tema" aria-haspopup="dialog" aria-label="Elegir tema">
+      <span class="boton-tema__icono" aria-hidden="true">🌙</span>
+      <span class="boton-tema__texto">Elegir tema</span>
     </button>
   </div>
 
@@ -738,6 +738,14 @@
 
   <!-- Toast de confirmación visual genérico (no modal, no bloquea nada,
        se autodesaparece solo) — ver mostrarToast() en js/main.js. -->
+  <!-- Selector de tema (10 opciones): grid armado por construirGridTemas()
+       en js/main.js al abrir, ver activarSelectorTema(). -->
+  <dialog id="modal-tema" aria-labelledby="modal-tema-titulo">
+    <button type="button" class="modal-tema__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-tema-titulo">Elige un tema</h3>
+    <div id="modal-tema-grid" class="modal-tema__grid"></div>
+  </dialog>
+
   <div id="contenedor-toast" class="contenedor-toast" aria-live="polite" aria-atomic="true"></div>
 
   <script src="js/main.js"></script>

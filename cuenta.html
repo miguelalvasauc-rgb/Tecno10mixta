@@ -129,9 +129,9 @@
       </select>
     </div>
     <p id="texto-grupo-alumno" class="riel-flyout__texto-grupo texto-grupo-alumno-slot" hidden></p>
-    <button id="boton-tema" class="boton-tema riel-flyout__tema" type="button" aria-pressed="true" aria-label="Cambiar a modo claro">
-      <span class="boton-tema__icono" aria-hidden="true">☀️</span>
-      <span class="boton-tema__texto">Modo claro</span>
+    <button id="boton-tema" class="boton-tema riel-flyout__tema" type="button" aria-haspopup="dialog" aria-label="Elegir tema">
+      <span class="boton-tema__icono" aria-hidden="true">🌙</span>
+      <span class="boton-tema__texto">Elegir tema</span>
     </button>
   </div>
 
@@ -234,6 +234,18 @@
             <button type="button" id="boton-cerrar-sesion-cuenta" class="boton-secundario">
               Cerrar sesión
             </button>
+          </div>
+
+          <!-- Reutiliza construirGridTemas() (js/main.js) — mismo grid de
+               10 tarjetas que abre #modal-tema desde el riel/barra
+               inferior, aquí insertado directo en la página (sin dialog
+               alrededor) por activarPanelSesionCuenta(). -->
+          <div class="cuenta-personalizacion">
+            <h3>🎨 Personalización</h3>
+            <p class="cuenta-personalizacion__ayuda">
+              Elige el tema visual del sitio. Se guarda en tu cuenta y se aplica en cualquier dispositivo donde inicies sesión.
+            </p>
+            <div id="cuenta-tema-grid" class="tema-tarjeta__grid"></div>
           </div>
         </div>
       </div>
@@ -374,9 +386,9 @@
       </select>
     </div>
     <p class="riel-flyout__texto-grupo texto-grupo-alumno-slot" hidden></p>
-    <button type="button" class="boton-tema riel-flyout__tema" aria-pressed="true" aria-label="Cambiar a modo claro">
-      <span class="boton-tema__icono" aria-hidden="true">☀️</span>
-      <span class="boton-tema__texto">Modo claro</span>
+    <button type="button" class="boton-tema riel-flyout__tema" aria-haspopup="dialog" aria-label="Elegir tema">
+      <span class="boton-tema__icono" aria-hidden="true">🌙</span>
+      <span class="boton-tema__texto">Elegir tema</span>
     </button>
   </div>
 
@@ -390,6 +402,14 @@
 
   <!-- Toast de confirmación visual genérico (no modal, no bloquea nada,
        se autodesaparece solo) — ver mostrarToast() en js/main.js. -->
+  <!-- Selector de tema (10 opciones): grid armado por construirGridTemas()
+       en js/main.js al abrir, ver activarSelectorTema(). -->
+  <dialog id="modal-tema" aria-labelledby="modal-tema-titulo">
+    <button type="button" class="modal-tema__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-tema-titulo">Elige un tema</h3>
+    <div id="modal-tema-grid" class="modal-tema__grid"></div>
+  </dialog>
+
   <div id="contenedor-toast" class="contenedor-toast" aria-live="polite" aria-atomic="true"></div>
 
   <script src="js/main.js"></script>

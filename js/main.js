@@ -3017,9 +3017,13 @@ const CLAVE_TEMA = "temaSeleccionado";
 // entre páginas; si no hay nada guardado, se usa "todos".
 let grupoActual = localStorage.getItem(CLAVE_GRUPO) || "todos";
 
-// Tema visual actual ('oscuro' o 'claro'). También se recupera de
-// localStorage por la misma razón que el grupo.
-let temaActual = localStorage.getItem(CLAVE_TEMA) || "oscuro";
+// Tema visual actual (uno de los 10 slugs de TEMAS_DISPONIBLES, sección
+// 7). También se recupera de localStorage por la misma razón que el
+// grupo; sin nada guardado todavía (primera visita), cae al tema de
+// sistema (prefers-color-scheme) en vez de asumir "oscuro" a fuerzas.
+let temaActual =
+  localStorage.getItem(CLAVE_TEMA) ||
+  (window.matchMedia("(prefers-color-scheme: dark)").matches ? "oscuro" : "claro");
 
 // Preferencia de vista para Tareas/Actividades/Proyectos — piloto SOLO
 // en trimestre-1.html (ver TRIMESTRE_ACTUAL más abajo, sección 2): una
@@ -5827,35 +5831,166 @@ function mostrarToastAdvertencia(mensaje, opciones = {}) {
 }
 
 /* =========================================================
-   7. TEMA CLARO / OSCURO
+   7. SELECTOR DE TEMA (10 temas)
    ========================================================= */
 
+// Los 10 temas del sitio (2 originales + 8 nuevos, ver css/style.css
+// para los valores de cada uno). "nombre" trae el emoji al frente a
+// propósito: aplicarTema() lo separa con split(" ") para usarlo como
+// ícono del botón .boton-tema, y construirGridTemas() lo usa tal cual
+// como etiqueta visible de cada tarjeta — un solo string cubre los dos
+// usos sin duplicar el emoji en dos campos distintos.
+const TEMAS_DISPONIBLES = [
+  { slug: "claro", nombre: "☀️ Claro" },
+  { slug: "oscuro", nombre: "🌙 Oscuro" },
+  { slug: "arcade-neon", nombre: "🕹️ Arcade Neón" },
+  { slug: "gamer-rgb", nombre: "🎮 Gamer RGB" },
+  { slug: "cyberpunk-gold", nombre: "⚡ Cyberpunk Gold" },
+  { slug: "galaxia", nombre: "🌌 Galaxia" },
+  { slug: "rosa-pastel", nombre: "🌸 Rosa Pastel" },
+  { slug: "bosque-calido", nombre: "🌿 Bosque Cálido" },
+  { slug: "menta-tecnologico", nombre: "🧪 Menta Tecnológico" },
+  { slug: "editorial-sepia", nombre: "☕ Editorial Sepia" },
+];
+
+// Aplica un tema (slug de TEMAS_DISPONIBLES) al <html> y sincroniza el
+// ícono/aria-label de cada .boton-tema (hay 2 por página: riel flyout
+// desktop + sheet de la barra inferior en móvil). Ya no alterna entre 2
+// — el botón ahora abre el selector (ver activarSelectorTema); esta
+// función solo refleja cuál es el tema ACTUAL, no calcula "el siguiente".
 function aplicarTema(tema) {
   document.documentElement.setAttribute("data-theme", tema);
 
-  const esOscuro = tema === "oscuro";
+  const info = TEMAS_DISPONIBLES.find((t) => t.slug === tema) || TEMAS_DISPONIBLES[0];
+  const [emoji, ...resto] = info.nombre.split(" ");
+  const nombreSinEmoji = resto.join(" ");
 
   document.querySelectorAll(".boton-tema").forEach((boton) => {
-    boton.setAttribute("aria-pressed", String(esOscuro));
-    boton.setAttribute("aria-label", esOscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+    boton.setAttribute("aria-label", "Elegir tema (actual: " + nombreSinEmoji + ")");
     const icono = boton.querySelector(".boton-tema__icono");
-    if (icono) icono.textContent = esOscuro ? "☀️" : "🌙";
-    const texto = boton.querySelector(".boton-tema__texto");
-    if (texto) texto.textContent = esOscuro ? "Modo claro" : "Modo oscuro";
+    if (icono) icono.textContent = emoji;
   });
 }
 
-function alternarTema() {
-  // Se guarda en localStorage para que el tema no se reinicie al
-  // navegar entre la portada y las páginas de trimestre.
-  temaActual = temaActual === "oscuro" ? "claro" : "oscuro";
-  localStorage.setItem(CLAVE_TEMA, temaActual);
-  aplicarTema(temaActual);
-  // Mismo ícono que ya usa .boton-tema__icono para cada tema (ver
-  // aplicarTema arriba): luna/sol en vez del ✅ genérico, más específico
-  // para esta confirmación.
-  mostrarToast(temaActual === "oscuro" ? "Modo oscuro activado" : "Modo claro activado", {
-    icono: temaActual === "oscuro" ? "🌙" : "☀️",
+// Guarda el tema elegido (localStorage siempre; perfiles.tema_preferido
+// también si hay sesión de Supabase activa, vía la RPC
+// actualizar_tema_preferido(nuevo_tema) — no un upsert directo a la
+// tabla) y lo aplica de inmediato — aplica primero, sincroniza con la
+// cuenta después, mismo criterio de "no bloquear la UI por la escritura
+// remota" que ya usa el resto del sitio (ver p. ej. guardarEntregaManual).
+// Si la RPC falla (sin conexión, o la función/columna todavía no existe
+// en Supabase — ver Fase 1), el tema ya quedó aplicado y en localStorage:
+// solo no se sincronizó a la cuenta, se reintenta la próxima vez que el
+// alumno elija un tema.
+async function seleccionarTema(tema) {
+  temaActual = tema;
+  localStorage.setItem(CLAVE_TEMA, tema);
+  aplicarTema(tema);
+
+  const modal = document.getElementById("modal-tema");
+  if (modal?.open) modal.close();
+
+  // La sección "🎨 Personalización" de cuenta.html (a diferencia del
+  // modal, que simplemente se cierra) se queda visible después de
+  // elegir: hay que volver a armar su grid para que el indicador "✓" se
+  // mueva a la tarjeta recién elegida.
+  const gridCuenta = document.getElementById("cuenta-tema-grid");
+  if (gridCuenta) construirGridTemas(gridCuenta, temaActual, seleccionarTema);
+
+  const info = TEMAS_DISPONIBLES.find((t) => t.slug === tema);
+  const [emoji, ...resto] = (info?.nombre || tema).split(" ");
+  mostrarToast("Tema \"" + resto.join(" ") + "\" activado", { icono: emoji });
+
+  const {
+    data: { session },
+  } = await clienteSupabase.auth.getSession();
+  if (!session) return;
+
+  try {
+    const { error } = await clienteSupabase.rpc("actualizar_tema_preferido", { nuevo_tema: tema });
+    if (error) throw error;
+  } catch {
+    // Se reintenta la próxima vez que el alumno elija un tema.
+  }
+}
+
+// Arma el grid de 10 tarjetas de tema (swatch + nombre) dentro de
+// "contenedor" — reutilizada por #modal-tema (selector rápido desde el
+// riel/barra inferior) y por la sección "🎨 Personalización" de
+// cuenta.html (Fase 4), en vez de duplicar el mismo grid dos veces.
+// "alSeleccionar" recibe el slug elegido; cada punto de acceso decide
+// qué hacer (el modal usa seleccionarTema directo, cuenta.html podría
+// envolverlo si algún día necesita lógica extra).
+//
+// El swatch de cada tarjeta NO repite los hex de cada tema a mano: lee
+// los valores REALES de --color-primario/--color-turquesa alternando
+// data-theme en el <html> y leyendo getComputedStyle antes de restaurar
+// el tema activo. Un solo ciclo síncrono (sin await de por medio), así
+// que el navegador no repinta a medio camino — no hay parpadeo visible.
+function construirGridTemas(contenedor, temaActivo, alSeleccionar) {
+  contenedor.innerHTML = "";
+
+  const temaOriginal = document.documentElement.getAttribute("data-theme");
+
+  TEMAS_DISPONIBLES.forEach(({ slug, nombre }) => {
+    document.documentElement.setAttribute("data-theme", slug);
+    const estilos = getComputedStyle(document.documentElement);
+    const primario = estilos.getPropertyValue("--color-primario").trim();
+    const turquesa = estilos.getPropertyValue("--color-turquesa").trim();
+
+    const [emoji, ...resto] = nombre.split(" ");
+
+    const tarjeta = document.createElement("button");
+    tarjeta.type = "button";
+    tarjeta.className = "tema-tarjeta";
+    tarjeta.dataset.temaSlug = slug;
+    const esActiva = slug === temaActivo;
+    if (esActiva) {
+      tarjeta.classList.add("tema-tarjeta--activa");
+      tarjeta.setAttribute("aria-current", "true");
+    }
+
+    const swatch = document.createElement("span");
+    swatch.className = "tema-tarjeta__swatch";
+    swatch.style.background = "linear-gradient(135deg, " + primario + " 50%, " + turquesa + " 50%)";
+    swatch.setAttribute("aria-hidden", "true");
+    swatch.textContent = emoji;
+
+    const texto = document.createElement("span");
+    texto.className = "tema-tarjeta__nombre";
+    texto.textContent = resto.join(" ");
+
+    tarjeta.append(swatch, texto);
+    tarjeta.addEventListener("click", () => alSeleccionar(slug));
+    contenedor.appendChild(tarjeta);
+  });
+
+  document.documentElement.setAttribute("data-theme", temaOriginal);
+}
+
+// Engancha los 2 botones .boton-tema por página (riel flyout desktop +
+// sheet de la barra inferior en móvil): al hacer clic abren #modal-tema
+// con el grid de 10 temas recién armado (construirGridTemas), en vez de
+// alternar el tema directo como antes. Cierre por el botón ✕, click en
+// el ::backdrop y ESC nativo del <dialog> — mismo patrón ya usado por
+// activarCierreModalDetalle() en la sección 5.
+function activarSelectorTema() {
+  const modal = document.getElementById("modal-tema");
+  if (!modal) return;
+
+  const grid = document.getElementById("modal-tema-grid");
+  const botonCerrar = modal.querySelector(".modal-tema__cerrar");
+
+  document.querySelectorAll(".boton-tema").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      if (grid) construirGridTemas(grid, temaActual, seleccionarTema);
+      modal.showModal();
+    });
+  });
+
+  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.close();
   });
 }
 
@@ -6588,12 +6723,44 @@ async function sincronizarPerfilActivo() {
   sincronizarSelectorGrupo(grupoActual);
   actualizarFlyoutAjustesGrupo();
 
+  await sincronizarTemaConCuenta(session.user.id);
+
   const { data: progreso } = await clienteSupabase
     .from("progreso")
     .select("tipo, item_id, trimestre, actualizado_en")
     .eq("alumno_id", session.user.id);
 
   progresoCache = progreso || [];
+}
+
+// Lee perfiles.tema_preferido para la sesión activa y lo aplica si es un
+// slug válido y distinto del ya aplicado — mismo criterio que ya usa el
+// grupo arriba ("el valor de la cuenta gana sobre localStorage"). Va en
+// una consulta PROPIA, separada del select de nombre/grupo de arriba (y
+// con su propio try/catch), a propósito: si la columna tema_preferido
+// todavía no existe en Supabase (Fase 1 pendiente) o la consulta falla
+// por cualquier otra razón, esto no debe tumbar nombre/nivel/progreso —
+// solo se queda con lo que ya haya en pantalla (localStorage/sistema).
+async function sincronizarTemaConCuenta(idUsuario) {
+  try {
+    const { data: perfil, error } = await clienteSupabase
+      .from("perfiles")
+      .select("tema_preferido")
+      .eq("id", idUsuario)
+      .single();
+    if (error || !perfil?.tema_preferido) return;
+
+    const temaGuardado = perfil.tema_preferido;
+    if (temaGuardado === temaActual) return;
+    if (!TEMAS_DISPONIBLES.some((t) => t.slug === temaGuardado)) return;
+
+    temaActual = temaGuardado;
+    localStorage.setItem(CLAVE_TEMA, temaActual);
+    aplicarTema(temaActual);
+  } catch {
+    // Sin conexión o columna todavía no creada: se queda con lo que ya
+    // aplicó localStorage/el tema de sistema.
+  }
 }
 
 // Avatar con inicial: con nombre conocido (alumno o docente, cualquiera
@@ -6816,6 +6983,14 @@ async function activarPanelSesionCuenta() {
   if (textoSesion) {
     textoSesion.textContent = "Sesión iniciada como: " + (perfil?.nombre || "tu cuenta");
   }
+
+  // Sección "🎨 Personalización": mismo grid de 10 tarjetas que
+  // #modal-tema (ver construirGridTemas, sección 7), insertado directo
+  // en la página. alSeleccionar reutiliza seleccionarTema tal cual —
+  // ya llama a la RPC actualizar_tema_preferido, que es exactamente lo
+  // que esta sección necesita.
+  const gridTemaCuenta = document.getElementById("cuenta-tema-grid");
+  if (gridTemaCuenta) construirGridTemas(gridTemaCuenta, temaActual, seleccionarTema);
 
   const botonCerrar = document.getElementById("boton-cerrar-sesion-cuenta");
   if (botonCerrar) {
@@ -12013,7 +12188,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // cambiado de pestaña él mismo.
   if (TRIMESTRE_ACTUAL === "1") activarPestanaDesdeHash();
 
-  document.querySelectorAll(".boton-tema").forEach((boton) => boton.addEventListener("click", alternarTema));
+  activarSelectorTema();
   // Código muerto (ver nota de aplicarEstadoSidebarColapsada arriba):
   // #boton-colapsar-sidebar ya no existe en ninguna página.
   const botonColapsarSidebar = document.getElementById("boton-colapsar-sidebar");
