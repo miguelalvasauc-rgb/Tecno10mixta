@@ -5935,6 +5935,7 @@ const EVENTOS_DISPONIBLES = [
   { slug: "ninguno", nombre: "Ninguno" },
   { slug: "navidad", nombre: "🎄 Navidad" },
   { slug: "dia-de-muertos", nombre: "💀 Día de Muertos" },
+  { slug: "regreso-a-clases", nombre: "🎒 Regreso a Clases" },
 ];
 
 // Evento actualmente forzado (slug de EVENTOS_DISPONIBLES sin contar
@@ -6318,6 +6319,103 @@ function crearCapaIconosFlotantesDiaDeMuertos() {
     icono.style.setProperty("--icono-duracion", (6 + Math.random() * 6).toFixed(1) + "s");
     icono.style.setProperty("--icono-delay", (-Math.random() * 10).toFixed(1) + "s");
     capa.appendChild(icono);
+  }
+
+  document.body.appendChild(capa);
+}
+
+/* ---------------------------------------------------------
+   Efectos de "tema de evento": Regreso a Clases — tercer evento de la
+   serie, mismo patrón que Navidad/Día de Muertos arriba. Los destellos
+   violeta y el gradiente de fondo vibrante son puro CSS (ver
+   css/style.css, "EFECTOS DE 'TEMA DE EVENTO': REGRESO A CLASES"); acá
+   solo los 2 efectos que necesitan elementos inyectados por JS.
+   --------------------------------------------------------- */
+function activarEfectosRegresoAClases() {
+  crearCapaIconosFlotantesRegresoAClases();
+  crearCapaConfetiRegresoAClases();
+}
+
+// SVG inline propios, 2 tonos fijos (azul/violeta) por ícono — mismo
+// criterio que ICONOS_NAVIDAD/ICONOS_DIA_DE_MUERTOS: no emoji nativo
+// (no se puede recolorear con CSS), colores fijos SOLO acá, nunca
+// variables CSS reutilizables ni aplicados a componentes reales de la UI.
+const ICONOS_REGRESO_A_CLASES = [
+  // Lápiz
+  '<svg viewBox="0 0 24 24"><path d="M3 21 L5 15 L15 5 L19 9 L9 19 Z" fill="#1D63D8"/><path d="M15 5 L19 9 L21 7 L17 3 Z" fill="#7C3AED"/><path d="M3 21 L5 15 L7.5 17.5 Z" fill="#7C3AED"/></svg>',
+  // Libreta (espiral)
+  '<svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1.5" fill="#7C3AED"/><rect x="7" y="7" width="10" height="1.6" fill="#1D63D8"/><rect x="7" y="11" width="10" height="1.6" fill="#1D63D8"/><rect x="7" y="15" width="7" height="1.6" fill="#1D63D8"/><circle cx="4" cy="6" r="1" fill="#1D63D8"/><circle cx="4" cy="10" r="1" fill="#1D63D8"/><circle cx="4" cy="14" r="1" fill="#1D63D8"/><circle cx="4" cy="18" r="1" fill="#1D63D8"/></svg>',
+  // Mochila
+  '<svg viewBox="0 0 24 24"><path d="M8 8 V5 a4 4 0 0 1 8 0 V8" fill="none" stroke="#1D63D8" stroke-width="2"/><rect x="5" y="8" width="14" height="13" rx="3" fill="#1D63D8"/><rect x="4" y="9" width="2" height="6" rx="1" fill="#7C3AED"/><rect x="18" y="9" width="2" height="6" rx="1" fill="#7C3AED"/><rect x="9" y="11" width="6" height="6" rx="1.5" fill="#7C3AED"/></svg>',
+  // Regla
+  '<svg viewBox="0 0 24 24"><g transform="rotate(-8 12 13)"><rect x="2" y="10" width="20" height="6" rx="1" fill="#1D63D8"/><rect x="4" y="10" width="1.4" height="3" fill="#7C3AED"/><rect x="8" y="10" width="1.4" height="4" fill="#7C3AED"/><rect x="12" y="10" width="1.4" height="3" fill="#7C3AED"/><rect x="16" y="10" width="1.4" height="4" fill="#7C3AED"/><rect x="20" y="10" width="1.4" height="3" fill="#7C3AED"/></g></svg>',
+  // Calculadora
+  '<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" fill="#7C3AED"/><rect x="7" y="4" width="10" height="5" rx="1" fill="#1D63D8"/><g fill="#1D63D8"><rect x="7" y="11" width="3" height="3" rx="0.6"/><rect x="11" y="11" width="3" height="3" rx="0.6"/><rect x="15" y="11" width="3" height="3" rx="0.6"/><rect x="7" y="15" width="3" height="3" rx="0.6"/><rect x="11" y="15" width="3" height="3" rx="0.6"/><rect x="15" y="15" width="3" height="3" rx="0.6"/><rect x="7" y="19" width="7" height="2" rx="0.6"/></g></svg>',
+];
+
+// 12 íconos dispersos, flotando lento, mezclados al azar entre los 5 SVG
+// de arriba — mismo mecanismo que crearCapaIconosFlotantesNavidad(), pero
+// SIN diferenciar opacidad por tono (a diferencia de Navidad/Día de
+// Muertos): los 5 íconos ya alternan azul/violeta en partes similares,
+// ninguno pierde contraste más que otro. Rango de opacidad más alto en
+// general (0.45-0.65 en vez de 0.35-0.65) porque este es un tema de
+// fondo CLARO — un mismo % se percibe mucho menos que sobre fondo oscuro
+// (misma lección ya aplicada a Rosa Pastel/Menta Tecnológico/Editorial
+// Sepia en sus patrones de fondo).
+function crearCapaIconosFlotantesRegresoAClases() {
+  const capa = document.createElement("div");
+  capa.className = "capa-iconos-regresoaclases";
+  capa.setAttribute("aria-hidden", "true");
+
+  const TOTAL_ICONOS = 12;
+  for (let i = 0; i < TOTAL_ICONOS; i++) {
+    const indiceIcono = Math.floor(Math.random() * ICONOS_REGRESO_A_CLASES.length);
+
+    const icono = document.createElement("span");
+    icono.className = "icono-flotante-regresoaclases";
+    icono.innerHTML = ICONOS_REGRESO_A_CLASES[indiceIcono];
+    icono.style.setProperty("--icono-top", (Math.random() * 100).toFixed(1) + "vh");
+    icono.style.setProperty("--icono-left", (Math.random() * 100).toFixed(1) + "vw");
+    icono.style.setProperty("--icono-tamano", (20 + Math.random() * 16).toFixed(0) + "px");
+    icono.style.setProperty("--icono-opacidad", (0.45 + Math.random() * 0.2).toFixed(2));
+    icono.style.setProperty("--icono-duracion", (6 + Math.random() * 6).toFixed(1) + "s");
+    icono.style.setProperty("--icono-delay", (-Math.random() * 10).toFixed(1) + "s");
+    capa.appendChild(icono);
+  }
+
+  document.body.appendChild(capa);
+}
+
+// Colores fijos del confeti — SIN naranja ni rojo a propósito, para no
+// acercarse a ningún tono de estado reservado (--color-estado-vencido,
+// --color-estado-avisos-urgente, etc.) dentro de esta mezcla multicolor.
+const COLORES_CONFETI_REGRESO_A_CLASES = ["#1D63D8", "#7C3AED", "#14B8A6", "#FFCA3A", "#C724B1"];
+
+// Mismo mecanismo que crearCapaNieveNavidad()/crearCapaPetalosDiaDeMuertos()
+// (capa fixed AL FRENTE, pieza con posición/velocidad/deriva/rotación
+// aleatorios vía variables CSS inline), con una diferencia: cada pieza
+// necesita su PROPIO color (--confeti-color), a diferencia del copo/
+// pétalo que usan un solo color fijo en CSS para todas las piezas.
+function crearCapaConfetiRegresoAClases() {
+  const capa = document.createElement("div");
+  capa.className = "capa-confeti-regresoaclases";
+  capa.setAttribute("aria-hidden", "true");
+
+  const TOTAL_PIEZAS = 35;
+  for (let i = 0; i < TOTAL_PIEZAS; i++) {
+    const pieza = document.createElement("div");
+    pieza.className = "confeti-regresoaclases";
+    const duracion = 8 + Math.random() * 10;
+    const color = COLORES_CONFETI_REGRESO_A_CLASES[Math.floor(Math.random() * COLORES_CONFETI_REGRESO_A_CLASES.length)];
+    pieza.style.setProperty("--confeti-color", color);
+    pieza.style.setProperty("--confeti-top", (Math.random() * 100).toFixed(1) + "vh");
+    pieza.style.setProperty("--confeti-left", (Math.random() * 100).toFixed(1) + "vw");
+    pieza.style.setProperty("--confeti-tamano", (6 + Math.random() * 5).toFixed(1) + "px");
+    pieza.style.setProperty("--confeti-opacidad", (0.55 + Math.random() * 0.35).toFixed(2));
+    pieza.style.setProperty("--confeti-deriva", (0.5 + Math.random()).toFixed(2));
+    pieza.style.setProperty("--confeti-duracion", duracion.toFixed(1) + "s");
+    pieza.style.setProperty("--confeti-delay", (-Math.random() * duracion).toFixed(1) + "s");
+    capa.appendChild(pieza);
   }
 
   document.body.appendChild(capa);
@@ -12714,6 +12812,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (patronesActivos) {
     if (eventoActivo === "navidad") activarEfectosNavidad();
     else if (eventoActivo === "dia-de-muertos") activarEfectosDiaDeMuertos();
+    else if (eventoActivo === "regreso-a-clases") activarEfectosRegresoAClases();
   }
 
   // Sincroniza el <select> de grupo de la barra lateral con el grupo

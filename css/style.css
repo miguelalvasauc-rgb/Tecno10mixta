@@ -297,6 +297,38 @@
   --md-outline-variant: var(--color-borde);
 }
 
+/* Tercer "tema de evento" — Regreso a Clases, mismo patrón que Navidad/
+   Día de Muertos: bloque :root[data-theme] + valor propio
+   ("regreso-a-clases") de config_sitio.tema_evento_activo. Igual de
+   ausente de TEMAS_DISPONIBLES/construirGridTemas(). A diferencia de los
+   2 eventos anteriores (fondo oscuro), este es un tema de fondo CLARO —
+   por eso --color-primario-texto/--color-acento-texto usan blanco fijo
+   en vez del --color-texto propio del tema (que sí adoptan navidad/
+   dia-de-muertos): el azul y el violeta de este tema son lo bastante
+   oscuros/saturados para texto blanco encima, verificado con la fórmula
+   WCAG real (no solo estimado, mismo criterio que evitó el error de
+   contraste de Día de Muertos): primario/primario-texto 5.49:1 y
+   turquesa(acento)/acento-texto 5.70:1 — ambos pasan AA (4.5:1) para los
+   3 consumidores reales de --color-acento-texto (.boton-tema,
+   .badge-prioridad[recordatorio], círculo de avatar), no llegan a AAA. */
+:root[data-theme="regreso-a-clases"] {
+  --color-fondo: #EAF4FF;
+  --color-superficie: #FFFFFF;
+  --color-superficie-alterna: #DCEBFB;
+  --color-borde: #C9E3FA;
+  --color-texto: #1A2E4A;
+  --color-texto-suave: #5B7A9D;
+  --color-primario: #1D63D8;
+  --color-primario-suave: #2E7BEF;
+  --color-turquesa: #7C3AED;
+  --color-acento-texto: #FFFFFF;
+  --color-primario-texto: #FFFFFF;
+  --color-primario-texto-suave: #E8EEF4;
+  --sombra: 0 8px 20px rgba(29, 99, 216, 0.12);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
+}
+
 /* Turquesa siempre disponible como color secundario de marca (badges, tags) */
 :root {
   --color-turquesa: #14B8A6;
@@ -1085,7 +1117,8 @@ summary:focus-visible {
 :root[data-theme="bosque-calido"] body.patrones-activos::before,
 :root[data-theme="menta-tecnologico"] body.patrones-activos::before,
 :root[data-theme="editorial-sepia"] body.patrones-activos::before,
-:root[data-theme="dia-de-muertos"] body.patrones-activos::before {
+:root[data-theme="dia-de-muertos"] body.patrones-activos::before,
+:root[data-theme="regreso-a-clases"] body.patrones-activos::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -1106,6 +1139,11 @@ summary:focus-visible {
   :root[data-theme="dia-de-muertos"] body.patrones-activos::before {
     animation: desplazarPatronFondo 75s linear infinite;
   }
+
+  /* Regreso a Clases NO usa esta animación compartida: necesita combinar
+     el drift de posición con un hue-rotate adicional (ver su propia
+     sección de efectos más abajo), así que define su propio "animation"
+     completo ahí en vez de heredar este de 75s lineal. */
 }
 
 :root[data-theme="arcade-neon"] body.patrones-activos .hero::before,
@@ -1217,6 +1255,19 @@ summary:focus-visible {
     radial-gradient(circle at 75% 55%, rgba(228, 0, 124, 0.08) 0%, transparent 50%),
     radial-gradient(circle at 45% 85%, rgba(107, 45, 140, 0.10) 0%, transparent 60%);
   background-size: 700px 700px, 620px 620px, 660px 660px;
+}
+
+/* Gradiente vibrante de Regreso a Clases ("efecto 4" de su sección más
+   abajo): grande y de baja opacidad (0.08-0.12, es capa de fondo general,
+   no un elemento discreto) a propósito — el drift de posición + el
+   hue-rotate sutil que le dan su animación propia (ver esa sección) ya
+   aportan el movimiento; el valor estático de acá solo define el
+   tamaño/color base azul/violeta alternado. */
+:root[data-theme="regreso-a-clases"] body.patrones-activos::before {
+  background-image:
+    radial-gradient(circle at 25% 30%, rgba(29, 99, 216, 0.12) 0%, transparent 55%),
+    radial-gradient(circle at 75% 70%, rgba(124, 58, 237, 0.10) 0%, transparent 55%);
+  background-size: 900px 900px, 1000px 1000px;
 }
 
 /* ---- Valores por tema: capa del hero (misma imagen, mayor opacidad/escala) ---- */
@@ -8790,4 +8841,168 @@ button.badge-estado {
   :root[data-theme="dia-de-muertos"] body.patrones-activos .criterio-tarjeta:nth-child(2)::after { animation-delay: 1s; }
   :root[data-theme="dia-de-muertos"] body.patrones-activos .criterio-tarjeta:nth-child(3)::after { animation-delay: 2s; }
   :root[data-theme="dia-de-muertos"] body.patrones-activos .criterio-tarjeta:nth-child(4)::after { animation-delay: 0.5s; }
+}
+
+/* =========================================================
+   EFECTOS DE "TEMA DE EVENTO": REGRESO A CLASES
+
+   Tercer evento de la serie — mismo doble gate que Navidad/Día de
+   Muertos (:root[data-theme="regreso-a-clases"] body.patrones-activos)
+   y mismo criterio de reducción de movimiento (animación solo dentro de
+   @media (prefers-reduced-motion: no-preference), apariencia base
+   siempre visible y quieta fuera de ahí).
+
+   4 efectos:
+   1. Íconos flotantes — mismo patrón que .icono-flotante-navidad/
+      -diamuertos (capa fixed detrás del contenido, SVG inline propios:
+      lápiz/libreta/mochila/regla/calculadora en azul/violeta). Fondo
+      CLARO (a diferencia de los 2 eventos anteriores): mismo rango de
+      opacidad más alto que ya usan Rosa Pastel/Menta Tecnológico/
+      Editorial Sepia para sus patrones (un mismo % se percibe mucho
+      menos sobre fondo claro que sobre fondo oscuro).
+   2. Confeti cayendo — mismo mecanismo que .copo-nieve/.petalo-
+      cempasuchil (capa fixed AL FRENTE, posición/velocidad/deriva/
+      rotación aleatorios por pieza), con la diferencia de que cada
+      pieza es multicolor (--confeti-color inline, elegido al azar entre
+      5 colores fijos) en vez de un solo color fijo para todas — por eso
+      SÍ necesita su propia variable de color, a diferencia de los 2
+      eventos anteriores.
+   3. Destellos violeta — mismo mecanismo que destelloDorado (Navidad)/
+      velitaDiaDeMuertos (::after pulsante en los mismos 3 selectores que
+      ya usan el acento), con el violeta de este tema (#7C3AED) en vez
+      de dorado/rosa mexicano.
+   4. Gradiente de fondo vibrante — efecto nuevo, no existía en los 2
+      eventos anteriores: el mismo body.patrones-activos::before
+      compartido con los 8 temas personalizados (ver su valor estático
+      arriba, sección "Valores por tema: capa general"), pero con su
+      propia animación combinada en vez de heredar la de 75s lineal
+      compartida: drift de posición (desplazarPatronFondo, propia
+      duración dentro de 60-90s) + hue-rotate muy sutil (±15deg, otra
+      duración distinta dentro del mismo rango) para dar sensación de
+      "energía" sin ser agresivo — opacidad ya la controla el valor
+      estático (0.08-0.12), estas @keyframes solo mueven/rotan el matiz. */
+
+/* ---- 1. Íconos flotantes ---- */
+.capa-iconos-regresoaclases {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.icono-flotante-regresoaclases {
+  position: absolute;
+  top: var(--icono-top, 0);
+  left: var(--icono-left, 0);
+  width: var(--icono-tamano, 28px);
+  height: var(--icono-tamano, 28px);
+  opacity: var(--icono-opacidad, 0.55);
+}
+
+.icono-flotante-regresoaclases svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .icono-flotante-regresoaclases {
+    animation: flotarIconoNavidad var(--icono-duracion, 8s) ease-in-out infinite;
+    animation-delay: var(--icono-delay, 0s);
+  }
+}
+
+/* ---- 2. Confeti cayendo ---- */
+.capa-confeti-regresoaclases {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confeti-regresoaclases {
+  position: absolute;
+  top: var(--confeti-top, 0);
+  left: var(--confeti-left, 0);
+  width: var(--confeti-tamano, 8px);
+  height: calc(var(--confeti-tamano, 8px) * 0.4);
+  border-radius: 1px;
+  background-color: var(--confeti-color, #1D63D8);
+  opacity: var(--confeti-opacidad, 0.7);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes caerConfeti {
+    0%   { transform: translate(0, 0) rotate(0deg); }
+    10%  { transform: translate(calc(var(--confeti-deriva, 1) * 10px), 10vh) rotate(40deg); }
+    20%  { transform: translate(calc(var(--confeti-deriva, 1) * -10px), 20vh) rotate(80deg); }
+    30%  { transform: translate(calc(var(--confeti-deriva, 1) * 10px), 30vh) rotate(120deg); }
+    40%  { transform: translate(calc(var(--confeti-deriva, 1) * -10px), 40vh) rotate(160deg); }
+    50%  { transform: translate(calc(var(--confeti-deriva, 1) * 10px), 50vh) rotate(200deg); }
+    60%  { transform: translate(calc(var(--confeti-deriva, 1) * -10px), 60vh) rotate(240deg); }
+    70%  { transform: translate(calc(var(--confeti-deriva, 1) * 10px), 70vh) rotate(280deg); }
+    80%  { transform: translate(calc(var(--confeti-deriva, 1) * -10px), 80vh) rotate(320deg); }
+    90%  { transform: translate(calc(var(--confeti-deriva, 1) * 10px), 90vh) rotate(340deg); }
+    100% { transform: translate(0, 100vh) rotate(360deg); }
+  }
+
+  .confeti-regresoaclases {
+    animation: caerConfeti var(--confeti-duracion, 12s) linear infinite;
+    animation-delay: var(--confeti-delay, 0s);
+  }
+}
+
+/* ---- 3. Destellos violeta (cerca de acentos ya existentes) ---- */
+:root[data-theme="regreso-a-clases"] body.patrones-activos .etiqueta-badge,
+:root[data-theme="regreso-a-clases"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"] {
+  position: relative;
+}
+
+:root[data-theme="regreso-a-clases"] body.patrones-activos .etiqueta-badge::after,
+:root[data-theme="regreso-a-clases"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"]::after,
+:root[data-theme="regreso-a-clases"] body.patrones-activos .criterio-tarjeta::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #7C3AED;
+  box-shadow: 0 0 4px 1px rgba(124, 58, 237, 0.8);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes destelloRegresoAClases {
+    0%, 100% { opacity: 0; transform: scale(0.4); }
+    50%      { opacity: 1; transform: scale(1.2); }
+  }
+
+  :root[data-theme="regreso-a-clases"] body.patrones-activos .etiqueta-badge::after,
+  :root[data-theme="regreso-a-clases"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"]::after,
+  :root[data-theme="regreso-a-clases"] body.patrones-activos .criterio-tarjeta::after {
+    animation: destelloRegresoAClases 3s ease-in-out infinite;
+  }
+
+  :root[data-theme="regreso-a-clases"] body.patrones-activos .criterio-tarjeta:nth-child(2)::after { animation-delay: 1s; }
+  :root[data-theme="regreso-a-clases"] body.patrones-activos .criterio-tarjeta:nth-child(3)::after { animation-delay: 2s; }
+  :root[data-theme="regreso-a-clases"] body.patrones-activos .criterio-tarjeta:nth-child(4)::after { animation-delay: 0.5s; }
+}
+
+/* ---- 4. Gradiente de fondo vibrante (animación propia del ::before
+   compartido — ver su valor estático en "Valores por tema: capa
+   general" más arriba) ---- */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hueRotateSutilRegresoAClases {
+    0%, 100% { filter: hue-rotate(0deg); }
+    50%      { filter: hue-rotate(15deg); }
+  }
+
+  :root[data-theme="regreso-a-clases"] body.patrones-activos::before {
+    animation: desplazarPatronFondo 80s linear infinite, hueRotateSutilRegresoAClases 70s ease-in-out infinite;
+  }
 }
