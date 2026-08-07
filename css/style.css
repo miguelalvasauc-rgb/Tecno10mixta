@@ -235,6 +235,36 @@
   --md-outline-variant: var(--color-borde);
 }
 
+/* "Tema de evento" — Navidad, el primero de una serie (Día de Muertos,
+   Independencia, etc. vendrán después con el mismo patrón: un bloque
+   :root[data-theme] más + un valor de config_sitio.tema_evento_activo).
+   Deliberadamente AUSENTE de TEMAS_DISPONIBLES/construirGridTemas(): no
+   es una opción elegible del selector de 10 temas — se activa/desactiva
+   solo desde el módulo Apariencia del panel docente (config_sitio,
+   clave "tema_evento_activo"), forzado sobre TODAS las cuentas mientras
+   esté activo. Mismo set de variables que los 8 temas personalizados;
+   contraste primario/primario-texto y turquesa/acento-texto verificado
+   (7.4:1 y 7.6:1 respectivamente, AAA) — el verde pino oscuro no tiene
+   el problema de Cyberpunk Gold (primario claro sobre el que el texto
+   claro fijo del resto de temas oscuros ya no contrastaba). */
+:root[data-theme="navidad"] {
+  --color-fondo: #0B2618;
+  --color-superficie: #123825;
+  --color-superficie-alterna: #0E2E1E;
+  --color-borde: #1E5238;
+  --color-texto: #F5F5F0;
+  --color-texto-suave: #C3DAC9;
+  --color-primario: #1E5A3A;
+  --color-primario-suave: #2C7A4F;
+  --color-turquesa: #D4AF37;
+  --color-acento-texto: #0B2618;
+  --color-primario-texto: #F5F5F0;
+  --color-primario-texto-suave: #C3DAC9;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
+}
+
 /* Turquesa siempre disponible como color secundario de marca (badges, tags) */
 :root {
   --color-turquesa: #14B8A6;
