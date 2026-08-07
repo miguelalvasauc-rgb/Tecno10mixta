@@ -6199,9 +6199,49 @@ const ICONOS_NAVIDAD = [
   '<svg viewBox="0 0 24 24"><path d="M14 22 V10 A5 5 0 1 0 4 10" stroke="#F5F5F0" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M14 22 V10 A5 5 0 1 0 4 10" stroke="#A6192E" stroke-width="3.4" fill="none" stroke-linecap="round" stroke-dasharray="2.6 2.6"/></svg>',
 ];
 
-// 12 íconos dispersos, flotando lento, mezclados al azar entre los 6 SVG
-// de arriba — misma capa fixed/baja opacidad/z-index:-1 que los patrones
-// de los otros 8 temas (ver css/style.css), pero con varios íconos
+// Genera "total" posiciones {top, left} (0-100, unidades vh/vw) para
+// repartir íconos flotantes de forma pareja en el viewport: divide el
+// área en una cuadrícula imaginaria de celdas y ubica cada ícono en un
+// punto al azar DENTRO de su propia celda (jitter acotado al 15%-85% de
+// la celda, con margen para no pegarse al borde y amontonarse con la
+// celda vecina) — a diferencia de un Math.random() puro sobre las 100
+// unidades, que tiende a dejar huecos grandes y amontonamientos y hacía
+// sentir "escaso" el efecto aunque el conteo total no lo fuera. Las
+// celdas se mezclan (Fisher-Yates) antes de repartirlas para que, cuando
+// filas*columnas > total, las celdas "sobrantes" que quedan vacías no
+// sean siempre las mismas en cada carga. Compartida por los 3 temas de
+// evento (Navidad/Día de Muertos/Regreso a Clases) para mantener la
+// misma lógica de distribución en los 3.
+function generarPosicionesGridConJitter(total) {
+  const columnas = Math.ceil(Math.sqrt(total));
+  const filas = Math.ceil(total / columnas);
+  const anchoCelda = 100 / columnas;
+  const altoCelda = 100 / filas;
+
+  const celdas = [];
+  for (let fila = 0; fila < filas; fila++) {
+    for (let columna = 0; columna < columnas; columna++) {
+      celdas.push({ fila, columna });
+    }
+  }
+  for (let i = celdas.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [celdas[i], celdas[j]] = [celdas[j], celdas[i]];
+  }
+
+  return celdas.slice(0, total).map(({ fila, columna }) => ({
+    top: fila * altoCelda + altoCelda * (0.15 + Math.random() * 0.7),
+    left: columna * anchoCelda + anchoCelda * (0.15 + Math.random() * 0.7),
+  }));
+}
+
+// 35 íconos (antes 12 — se sentían escasos en el viewport pese al
+// conteo total, ver commit de ajuste de cantidad/distribución) sobre una
+// cuadrícula con jitter (generarPosicionesGridConJitter), ciclando entre
+// los 6 SVG de arriba (i % longitud, no al azar: garantiza que los 6
+// tipos aparezcan repartidos por igual en vez de dejarlo a la suerte) —
+// misma capa fixed/baja opacidad/z-index:-1 que los patrones de los
+// otros 8 temas (ver css/style.css), pero con varios íconos
 // independientes en vez de un solo pseudo-elemento: por eso es un <div>
 // real inyectado acá, no un ::before.
 function crearCapaIconosFlotantesNavidad() {
@@ -6217,16 +6257,17 @@ function crearCapaIconosFlotantesNavidad() {
   // percibida, rango distinto por color.
   const INDICES_TONO_VERDE = new Set([0, 2]);
 
-  const TOTAL_ICONOS = 12;
+  const TOTAL_ICONOS = 35;
+  const posiciones = generarPosicionesGridConJitter(TOTAL_ICONOS);
   for (let i = 0; i < TOTAL_ICONOS; i++) {
-    const indiceIcono = Math.floor(Math.random() * ICONOS_NAVIDAD.length);
+    const indiceIcono = i % ICONOS_NAVIDAD.length;
     const [opacidadMin, opacidadMax] = INDICES_TONO_VERDE.has(indiceIcono) ? [0.55, 0.65] : [0.35, 0.45];
 
     const icono = document.createElement("span");
     icono.className = "icono-flotante-navidad";
     icono.innerHTML = ICONOS_NAVIDAD[indiceIcono];
-    icono.style.setProperty("--icono-top", (Math.random() * 100).toFixed(1) + "vh");
-    icono.style.setProperty("--icono-left", (Math.random() * 100).toFixed(1) + "vw");
+    icono.style.setProperty("--icono-top", posiciones[i].top.toFixed(1) + "vh");
+    icono.style.setProperty("--icono-left", posiciones[i].left.toFixed(1) + "vw");
     icono.style.setProperty("--icono-tamano", (20 + Math.random() * 16).toFixed(0) + "px");
     icono.style.setProperty("--icono-opacidad", (opacidadMin + Math.random() * (opacidadMax - opacidadMin)).toFixed(2));
     icono.style.setProperty("--icono-duracion", (6 + Math.random() * 6).toFixed(1) + "s");
@@ -6290,13 +6331,16 @@ const ICONOS_DIA_DE_MUERTOS = [
   '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="16" rx="7" ry="2" fill="#4A1D6B"/><path d="M6 14 Q6 6 12 6 Q18 6 18 14 Z" fill="#F5E6FF"/><ellipse cx="9.5" cy="11" rx="1.3" ry="1.8" fill="#4A1D6B"/><ellipse cx="14.5" cy="11" rx="1.3" ry="1.8" fill="#4A1D6B"/><path d="M12 12.5 L11.2 14.5 L12.8 14.5 Z" fill="#4A1D6B"/><path d="M4 6 Q12 -1 20 6 Q20 8 17 7 Q12 3 7 7 Q4 8 4 6Z" fill="#4A1D6B"/><circle cx="7" cy="6.5" r="1" fill="#E4007C"/><circle cx="17" cy="6.5" r="1" fill="#E4007C"/></svg>',
 ];
 
-// 12 íconos dispersos, flotando lento, mezclados al azar entre los 4 SVG
-// de arriba — mismo mecanismo que crearCapaIconosFlotantesNavidad().
-// Opacidad diferenciada por tono: la Catrina (índice 3) está dominada
-// por su sombrero morado oscuro, que pierde contraste contra el fondo
-// morado del tema igual que árbol/reno perdían contra el verde de
-// Navidad — necesita el rango más alto. Calaverita/flor/papel picado ya
-// contrastan bien de por sí (blanco, naranja, multicolor).
+// 35 íconos (antes 12) sobre cuadrícula con jitter
+// (generarPosicionesGridConJitter, definida junto a
+// crearCapaIconosFlotantesNavidad), ciclando entre los 4 SVG de arriba
+// (i % longitud, no al azar) — mismo mecanismo/razón que
+// crearCapaIconosFlotantesNavidad(). Opacidad diferenciada por tono: la
+// Catrina (índice 3) está dominada por su sombrero morado oscuro, que
+// pierde contraste contra el fondo morado del tema igual que árbol/reno
+// perdían contra el verde de Navidad — necesita el rango más alto.
+// Calaverita/flor/papel picado ya contrastan bien de por sí (blanco,
+// naranja, multicolor).
 function crearCapaIconosFlotantesDiaDeMuertos() {
   const capa = document.createElement("div");
   capa.className = "capa-iconos-diamuertos";
@@ -6304,16 +6348,17 @@ function crearCapaIconosFlotantesDiaDeMuertos() {
 
   const INDICES_TONO_MORADO = new Set([3]);
 
-  const TOTAL_ICONOS = 12;
+  const TOTAL_ICONOS = 35;
+  const posiciones = generarPosicionesGridConJitter(TOTAL_ICONOS);
   for (let i = 0; i < TOTAL_ICONOS; i++) {
-    const indiceIcono = Math.floor(Math.random() * ICONOS_DIA_DE_MUERTOS.length);
+    const indiceIcono = i % ICONOS_DIA_DE_MUERTOS.length;
     const [opacidadMin, opacidadMax] = INDICES_TONO_MORADO.has(indiceIcono) ? [0.55, 0.65] : [0.35, 0.45];
 
     const icono = document.createElement("span");
     icono.className = "icono-flotante-diamuertos";
     icono.innerHTML = ICONOS_DIA_DE_MUERTOS[indiceIcono];
-    icono.style.setProperty("--icono-top", (Math.random() * 100).toFixed(1) + "vh");
-    icono.style.setProperty("--icono-left", (Math.random() * 100).toFixed(1) + "vw");
+    icono.style.setProperty("--icono-top", posiciones[i].top.toFixed(1) + "vh");
+    icono.style.setProperty("--icono-left", posiciones[i].left.toFixed(1) + "vw");
     icono.style.setProperty("--icono-tamano", (20 + Math.random() * 16).toFixed(0) + "px");
     icono.style.setProperty("--icono-opacidad", (opacidadMin + Math.random() * (opacidadMax - opacidadMin)).toFixed(2));
     icono.style.setProperty("--icono-duracion", (6 + Math.random() * 6).toFixed(1) + "s");
@@ -6353,29 +6398,33 @@ const ICONOS_REGRESO_A_CLASES = [
   '<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" fill="#7C3AED"/><rect x="7" y="4" width="10" height="5" rx="1" fill="#1D63D8"/><g fill="#1D63D8"><rect x="7" y="11" width="3" height="3" rx="0.6"/><rect x="11" y="11" width="3" height="3" rx="0.6"/><rect x="15" y="11" width="3" height="3" rx="0.6"/><rect x="7" y="15" width="3" height="3" rx="0.6"/><rect x="11" y="15" width="3" height="3" rx="0.6"/><rect x="15" y="15" width="3" height="3" rx="0.6"/><rect x="7" y="19" width="7" height="2" rx="0.6"/></g></svg>',
 ];
 
-// 12 íconos dispersos, flotando lento, mezclados al azar entre los 5 SVG
-// de arriba — mismo mecanismo que crearCapaIconosFlotantesNavidad(), pero
-// SIN diferenciar opacidad por tono (a diferencia de Navidad/Día de
-// Muertos): los 5 íconos ya alternan azul/violeta en partes similares,
-// ninguno pierde contraste más que otro. Rango de opacidad más alto en
-// general (0.45-0.65 en vez de 0.35-0.65) porque este es un tema de
-// fondo CLARO — un mismo % se percibe mucho menos que sobre fondo oscuro
-// (misma lección ya aplicada a Rosa Pastel/Menta Tecnológico/Editorial
-// Sepia en sus patrones de fondo).
+// 35 íconos (antes 12) sobre cuadrícula con jitter
+// (generarPosicionesGridConJitter, definida junto a
+// crearCapaIconosFlotantesNavidad), ciclando entre los 5 SVG de arriba
+// (i % longitud, no al azar) — mismo mecanismo que
+// crearCapaIconosFlotantesNavidad(), pero SIN diferenciar opacidad por
+// tono (a diferencia de Navidad/Día de Muertos): los 5 íconos ya
+// alternan azul/violeta en partes similares, ninguno pierde contraste
+// más que otro. Rango de opacidad más alto en general (0.45-0.65 en vez
+// de 0.35-0.65) porque este es un tema de fondo CLARO — un mismo % se
+// percibe mucho menos que sobre fondo oscuro (misma lección ya aplicada
+// a Rosa Pastel/Menta Tecnológico/Editorial Sepia en sus patrones de
+// fondo).
 function crearCapaIconosFlotantesRegresoAClases() {
   const capa = document.createElement("div");
   capa.className = "capa-iconos-regresoaclases";
   capa.setAttribute("aria-hidden", "true");
 
-  const TOTAL_ICONOS = 12;
+  const TOTAL_ICONOS = 35;
+  const posiciones = generarPosicionesGridConJitter(TOTAL_ICONOS);
   for (let i = 0; i < TOTAL_ICONOS; i++) {
-    const indiceIcono = Math.floor(Math.random() * ICONOS_REGRESO_A_CLASES.length);
+    const indiceIcono = i % ICONOS_REGRESO_A_CLASES.length;
 
     const icono = document.createElement("span");
     icono.className = "icono-flotante-regresoaclases";
     icono.innerHTML = ICONOS_REGRESO_A_CLASES[indiceIcono];
-    icono.style.setProperty("--icono-top", (Math.random() * 100).toFixed(1) + "vh");
-    icono.style.setProperty("--icono-left", (Math.random() * 100).toFixed(1) + "vw");
+    icono.style.setProperty("--icono-top", posiciones[i].top.toFixed(1) + "vh");
+    icono.style.setProperty("--icono-left", posiciones[i].left.toFixed(1) + "vw");
     icono.style.setProperty("--icono-tamano", (20 + Math.random() * 16).toFixed(0) + "px");
     icono.style.setProperty("--icono-opacidad", (0.45 + Math.random() * 0.2).toFixed(2));
     icono.style.setProperty("--icono-duracion", (6 + Math.random() * 6).toFixed(1) + "s");
