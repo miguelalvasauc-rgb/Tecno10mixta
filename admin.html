@@ -152,6 +152,10 @@
                 id="tab-dashboard" role="tab" aria-selected="false" aria-controls="panel-dashboard">
           Dashboard
         </button>
+        <button type="button" class="admin-tabs__boton"
+                id="tab-apariencia" role="tab" aria-selected="false" aria-controls="panel-apariencia">
+          🎨 Apariencia
+        </button>
       </div>
 
       <section id="panel-calificacion" class="admin-panel" role="tabpanel" aria-labelledby="tab-calificacion">
@@ -506,6 +510,34 @@
           <div class="dashboard-ficha__celda">
             <h4 class="dashboard-ficha__titulo-celda">📆 Cronograma de temario</h4>
             <div id="dashboard-cronograma" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Módulo "Apariencia" (tab-apariencia): infraestructura de control
+           para los patrones de fondo que se implementarán en una sesión
+           posterior — por ahora, un solo switch que lee/escribe
+           config_sitio (clave "patrones_fondo_activos"), mismo mecanismo
+           que el módulo Trimestre (ver leerValorConfigSitio()/
+           escribirValorConfigSitio() en js/main.js). El <h3> "Fondos"
+           deja espacio para que un futuro control de temas de fecha
+           especial se agregue como otra subsección aquí mismo, sin que
+           el layout quede apretado para una sola fila. -->
+      <section id="panel-apariencia" class="admin-panel" role="tabpanel" aria-labelledby="tab-apariencia" hidden>
+        <div class="apariencia-modulo">
+          <h3>🖼️ Fondos</h3>
+          <div class="apariencia-opcion">
+            <div class="apariencia-opcion__texto">
+              <span id="apariencia-patrones-titulo" class="apariencia-opcion__titulo">Patrones de fondo</span>
+              <p class="apariencia-opcion__descripcion">Activa o desactiva los patrones decorativos de fondo en el sitio público. (Los patrones en sí se agregarán en una próxima actualización; este switch solo controla si estarán disponibles.)</p>
+            </div>
+            <div class="apariencia-opcion__control">
+              <span id="apariencia-patrones-estado" class="apariencia-opcion__estado" aria-hidden="true">Cargando…</span>
+              <label class="interruptor" aria-labelledby="apariencia-patrones-titulo">
+                <input type="checkbox" id="apariencia-patrones-switch" class="interruptor__input" disabled>
+                <span class="interruptor__riel" aria-hidden="true"></span>
+              </label>
+            </div>
           </div>
         </div>
       </section>

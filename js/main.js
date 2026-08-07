@@ -3098,6 +3098,35 @@ async function obtenerTrimestreDesbloqueado() {
   }
 }
 
+// Patrones de fondo activos/inactivos (config_sitio, clave
+// "patrones_fondo_activos"). Infraestructura para una sesión posterior
+// que implementará los patrones visuales; por ahora nada del sitio
+// público llama a esta función todavía. A diferencia de
+// obtenerTrimestreDesbloqueado (fallback conservador = 1, bloquea), acá
+// el fallback mientras carga o si falla la consulta es "false" (sin
+// patrón), para no arriesgar un parpadeo de "aparece y desaparece"
+// cuando los patrones se activen visualmente.
+const CLAVE_CACHE_PATRONES_FONDO_ACTIVOS = "cache_patrones_fondo_activos";
+
+async function obtenerPatronesFondoActivos() {
+  try {
+    const { data, error } = await clienteSupabase
+      .from("config_sitio")
+      .select("valor")
+      .eq("clave", "patrones_fondo_activos")
+      .single();
+
+    if (error) throw error;
+
+    const valor = data.valor === "true";
+    localStorage.setItem(CLAVE_CACHE_PATRONES_FONDO_ACTIVOS, String(valor));
+    return valor;
+  } catch (error) {
+    const cache = localStorage.getItem(CLAVE_CACHE_PATRONES_FONDO_ACTIVOS);
+    return cache !== null ? cache === "true" : false;
+  }
+}
+
 // Arranca la consulta de inmediato (no dentro del IIFE de abajo) para que
 // el guard y el DOMContentLoaded de la sección 10 compartan la misma
 // petición en vez de duplicarla.
@@ -9807,6 +9836,52 @@ async function inicializarModuloAvisos() {
   activarFormularioAviso();
 }
 
+// Lectura/escritura genéricas de una fila de config_sitio (columnas
+// clave/valor/actualizado_por), compartidas por los módulos Trimestre y
+// Apariencia del panel docente para no duplicar la conexión a Supabase
+// en cada uno. Cada módulo sigue resolviendo su propio casteo/validación
+// del "valor" (texto en la tabla) al tipo que le corresponde.
+async function leerValorConfigSitio(clave) {
+  const { data, error } = await clienteSupabase
+    .from("config_sitio")
+    .select("valor")
+    .eq("clave", clave)
+    .single();
+  if (error) throw error;
+  return data.valor;
+}
+
+// Se distingue de un Error genérico para que los llamadores (ver
+// catch de ejecutarCambioTrimestre/ejecutarCambioPatronesFondo) puedan
+// mostrar este mensaje tal cual en vez del genérico "revisa tu
+// conexión" — no es un problema de red, es que a la clave le falta su
+// fila en config_sitio.
+class ErrorClaveConfigSitioInexistente extends Error {}
+
+async function escribirValorConfigSitio(clave, valor) {
+  const {
+    data: { session },
+  } = await clienteSupabase.auth.getSession();
+
+  // .select() de vuelta para conocer cuántas filas afectó el UPDATE: un
+  // UPDATE sobre una clave sin fila en config_sitio no da error (0 filas
+  // afectadas, éxito silencioso), así que sin este chequeo el toast
+  // mostraría "guardado" aunque nada se haya persistido. Aplica a
+  // cualquier clave futura de config_sitio, no solo a las que ya existen.
+  const { data, error } = await clienteSupabase
+    .from("config_sitio")
+    .update({ valor: String(valor), actualizado_por: session?.user?.id ?? null })
+    .eq("clave", clave)
+    .select();
+
+  if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new ErrorClaveConfigSitioInexistente(
+      `La clave "${clave}" no existe en config_sitio. Pide que la agreguen ahí antes de poder guardar este valor.`
+    );
+  }
+}
+
 /* ---------------------------------------------------------
    Módulo "Trimestre" (tab-trimestre)
 
@@ -9890,21 +9965,13 @@ function textoConfirmacionTrimestre(actual, nuevo) {
   );
 }
 
-// UPDATE real en config_sitio. actualizado_por queda en null si por
+// UPDATE real en config_sitio, vía escribirValorConfigSitio() (ver
+// utilidades compartidas arriba). actualizado_por queda en null si por
 // alguna razón no hay sesión activa en este punto (no debería pasar:
 // el guard del panel ya la exige), en vez de fallar el guardado entero
 // por no poder resolver ese dato secundario.
 async function guardarTrimestreDesbloqueado(nuevo) {
-  const {
-    data: { session },
-  } = await clienteSupabase.auth.getSession();
-
-  const { error } = await clienteSupabase
-    .from("config_sitio")
-    .update({ valor: String(nuevo), actualizado_por: session?.user?.id ?? null })
-    .eq("clave", "trimestre_desbloqueado");
-
-  if (error) throw error;
+  await escribirValorConfigSitio("trimestre_desbloqueado", nuevo);
 }
 
 // Guarda el nuevo trimestre desbloqueado con feedback por toast: carga
@@ -9934,7 +10001,10 @@ async function ejecutarCambioTrimestre(nuevo) {
   } catch (error) {
     actualizarToastCarga(referenciaToast, {
       tipo: "error",
-      mensaje: "No se pudo guardar. Revisa tu conexión.",
+      mensaje:
+        error instanceof ErrorClaveConfigSitioInexistente
+          ? error.message
+          : "No se pudo guardar. Revisa tu conexión.",
       onReintentar: () => ejecutarCambioTrimestre(nuevo),
     });
   }
@@ -10034,6 +10104,85 @@ async function inicializarModuloTrimestre() {
   actualizarUITrimestreModulo();
   activarSelectorTrimestre();
   activarFormularioTrimestre();
+}
+
+/* ---------------------------------------------------------
+   Módulo "Apariencia" (tab-apariencia)
+
+   Infraestructura de control para los patrones de fondo que se
+   implementarán en una sesión posterior: un solo switch que lee/escribe
+   config_sitio (clave "patrones_fondo_activos"), vía las mismas
+   leerValorConfigSitio()/escribirValorConfigSitio() que ya usa el
+   módulo Trimestre (ver arriba). A diferencia de Trimestre, el cambio
+   se guarda de inmediato al togglear (sin modal de confirmación): es
+   un ajuste visual de bajo riesgo, no un gate de acceso.
+   --------------------------------------------------------- */
+
+function actualizarUISwitchApariencia(activo) {
+  const switchPatrones = document.getElementById("apariencia-patrones-switch");
+  const estadoTexto = document.getElementById("apariencia-patrones-estado");
+  if (switchPatrones) switchPatrones.checked = activo;
+  if (estadoTexto) estadoTexto.textContent = activo ? "Activado" : "Desactivado";
+}
+
+async function ejecutarCambioPatronesFondo(activo) {
+  const switchPatrones = document.getElementById("apariencia-patrones-switch");
+  if (switchPatrones) switchPatrones.disabled = true;
+
+  const referenciaToast = mostrarToastCarga("Guardando cambio de apariencia…");
+  try {
+    await escribirValorConfigSitio("patrones_fondo_activos", activo);
+    localStorage.setItem(CLAVE_CACHE_PATRONES_FONDO_ACTIVOS, String(activo));
+    actualizarUISwitchApariencia(activo);
+    actualizarToastCarga(referenciaToast, {
+      tipo: "exito",
+      mensaje: "Apariencia actualizada",
+    });
+  } catch (error) {
+    // Revierte el switch al valor previo: el toggle ya se había marcado
+    // visualmente antes de confirmar el guardado (evento "change" nativo
+    // del checkbox), así que hay que deshacerlo si el UPDATE falla.
+    actualizarUISwitchApariencia(!activo);
+    actualizarToastCarga(referenciaToast, {
+      tipo: "error",
+      mensaje:
+        error instanceof ErrorClaveConfigSitioInexistente
+          ? error.message
+          : "No se pudo guardar. Revisa tu conexión.",
+      onReintentar: () => ejecutarCambioPatronesFondo(activo),
+    });
+  } finally {
+    if (switchPatrones) switchPatrones.disabled = false;
+  }
+}
+
+function activarSwitchApariencia() {
+  const switchPatrones = document.getElementById("apariencia-patrones-switch");
+  if (!switchPatrones) return;
+
+  switchPatrones.addEventListener("change", (evento) => {
+    ejecutarCambioPatronesFondo(evento.target.checked);
+  });
+}
+
+async function inicializarModuloApariencia() {
+  const switchPatrones = document.getElementById("apariencia-patrones-switch");
+  if (!switchPatrones) return; // no es admin.html
+
+  // Mismo guard que el resto de los módulos: config_sitio se administra
+  // desde el panel docente protegido por RLS.
+  await promesaGuardPanelDocente;
+
+  let activo = false;
+  try {
+    activo = (await leerValorConfigSitio("patrones_fondo_activos")) === "true";
+  } catch {
+    activo = false;
+  }
+
+  actualizarUISwitchApariencia(activo);
+  switchPatrones.disabled = false;
+  activarSwitchApariencia();
 }
 
 /* ---------------------------------------------------------
@@ -12218,6 +12367,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await inicializarModuloFechas();
   await inicializarModuloEvaluacion();
   await inicializarModuloDashboard();
+  await inicializarModuloApariencia();
 
   const botonMesAnterior = document.getElementById("calendario-mes-anterior");
   if (botonMesAnterior) botonMesAnterior.addEventListener("click", () => avanzarMesCalendario(-1));
