@@ -5921,6 +5921,7 @@ const TEMAS_DISPONIBLES = [
 const EVENTOS_DISPONIBLES = [
   { slug: "ninguno", nombre: "Ninguno" },
   { slug: "navidad", nombre: "🎄 Navidad" },
+  { slug: "dia-de-muertos", nombre: "💀 Día de Muertos" },
 ];
 
 // Evento actualmente forzado (slug de EVENTOS_DISPONIBLES sin contar
@@ -6210,6 +6211,93 @@ function crearCapaIconosFlotantesNavidad() {
     const icono = document.createElement("span");
     icono.className = "icono-flotante-navidad";
     icono.innerHTML = ICONOS_NAVIDAD[indiceIcono];
+    icono.style.setProperty("--icono-top", (Math.random() * 100).toFixed(1) + "vh");
+    icono.style.setProperty("--icono-left", (Math.random() * 100).toFixed(1) + "vw");
+    icono.style.setProperty("--icono-tamano", (20 + Math.random() * 16).toFixed(0) + "px");
+    icono.style.setProperty("--icono-opacidad", (opacidadMin + Math.random() * (opacidadMax - opacidadMin)).toFixed(2));
+    icono.style.setProperty("--icono-duracion", (6 + Math.random() * 6).toFixed(1) + "s");
+    icono.style.setProperty("--icono-delay", (-Math.random() * 10).toFixed(1) + "s");
+    capa.appendChild(icono);
+  }
+
+  document.body.appendChild(capa);
+}
+
+/* ---------------------------------------------------------
+   Efectos de "tema de evento": Día de Muertos — segundo evento de la
+   serie, mismo patrón que Navidad arriba (ver ese bloque de comentarios
+   para la explicación completa del mecanismo). La niebla (capa general)
+   no necesita JS: reutiliza tal cual el mecanismo de los 8 temas
+   personalizados vía css/style.css.
+   --------------------------------------------------------- */
+function activarEfectosDiaDeMuertos() {
+  crearCapaPetalosDiaDeMuertos();
+  crearCapaIconosFlotantesDiaDeMuertos();
+}
+
+// Mismo mecanismo que crearCapaNieveNavidad(), reemplazando el copo
+// blanco por un pétalo naranja (con su propio keyframe caerPetalo, que
+// además rota el pétalo al caer — ver css/style.css).
+function crearCapaPetalosDiaDeMuertos() {
+  const capa = document.createElement("div");
+  capa.className = "capa-petalos-diamuertos";
+  capa.setAttribute("aria-hidden", "true");
+
+  const TOTAL_PETALOS = 35;
+  for (let i = 0; i < TOTAL_PETALOS; i++) {
+    const petalo = document.createElement("div");
+    petalo.className = "petalo-cempasuchil";
+    const duracion = 8 + Math.random() * 10;
+    petalo.style.setProperty("--petalo-top", (Math.random() * 100).toFixed(1) + "vh");
+    petalo.style.setProperty("--petalo-left", (Math.random() * 100).toFixed(1) + "vw");
+    petalo.style.setProperty("--petalo-tamano", (5 + Math.random() * 5).toFixed(1) + "px");
+    petalo.style.setProperty("--petalo-opacidad", (0.35 + Math.random() * 0.45).toFixed(2));
+    petalo.style.setProperty("--petalo-deriva", (0.5 + Math.random()).toFixed(2));
+    petalo.style.setProperty("--petalo-duracion", duracion.toFixed(1) + "s");
+    petalo.style.setProperty("--petalo-delay", (-Math.random() * duracion).toFixed(1) + "s");
+    capa.appendChild(petalo);
+  }
+
+  document.body.appendChild(capa);
+}
+
+// SVG inline propios (mismo criterio que ICONOS_NAVIDAD): el naranja
+// #FF8C00 de la flor y los colores del papel picado quedan fijos SOLO
+// acá, nunca variables CSS reutilizables ni aplicados a componentes
+// reales de la UI.
+const ICONOS_DIA_DE_MUERTOS = [
+  // Calaverita (blanco/morado)
+  '<svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="7" fill="#F5E6FF"/><ellipse cx="9" cy="9" rx="1.6" ry="2.2" fill="#4A1D6B"/><ellipse cx="15" cy="9" rx="1.6" ry="2.2" fill="#4A1D6B"/><path d="M12 11 L11 13.5 L13 13.5 Z" fill="#4A1D6B"/><path d="M8 15 Q12 18 16 15" stroke="#4A1D6B" stroke-width="1.3" fill="none" stroke-linecap="round"/><path d="M6 17 L18 17 L16 22 L8 22 Z" fill="#F5E6FF"/></svg>',
+  // Flor de cempasúchil (naranja fijo)
+  '<svg viewBox="0 0 24 24"><g fill="#FF8C00"><ellipse cx="12" cy="4" rx="2.2" ry="4"/><ellipse cx="12" cy="20" rx="2.2" ry="4"/><ellipse cx="4" cy="12" rx="4" ry="2.2"/><ellipse cx="20" cy="12" rx="4" ry="2.2"/><ellipse cx="6.3" cy="6.3" rx="2.2" ry="3.6" transform="rotate(45 6.3 6.3)"/><ellipse cx="17.7" cy="17.7" rx="2.2" ry="3.6" transform="rotate(45 17.7 17.7)"/><ellipse cx="6.3" cy="17.7" rx="2.2" ry="3.6" transform="rotate(-45 6.3 17.7)"/><ellipse cx="17.7" cy="6.3" rx="2.2" ry="3.6" transform="rotate(-45 17.7 6.3)"/></g><circle cx="12" cy="12" r="3" fill="#FFB84D"/></svg>',
+  // Papel picado (multicolor)
+  '<svg viewBox="0 0 24 24"><path d="M2 4 H22 L20 8 H4 Z" fill="#E4007C"/><circle cx="8" cy="6" r="0.9" fill="#1A0B2E"/><circle cx="12" cy="6" r="0.9" fill="#1A0B2E"/><circle cx="16" cy="6" r="0.9" fill="#1A0B2E"/><path d="M4 8 L20 8 L18 20 L6 20 Z" fill="#6B2D8C"/><path d="M8 8 L8 20 M12 8 L12 20 M16 8 L16 20" stroke="#FF8C00" stroke-width="1" opacity="0.7"/></svg>',
+  // Catrina (silueta blanco/morado)
+  '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="16" rx="7" ry="2" fill="#4A1D6B"/><path d="M6 14 Q6 6 12 6 Q18 6 18 14 Z" fill="#F5E6FF"/><ellipse cx="9.5" cy="11" rx="1.3" ry="1.8" fill="#4A1D6B"/><ellipse cx="14.5" cy="11" rx="1.3" ry="1.8" fill="#4A1D6B"/><path d="M12 12.5 L11.2 14.5 L12.8 14.5 Z" fill="#4A1D6B"/><path d="M4 6 Q12 -1 20 6 Q20 8 17 7 Q12 3 7 7 Q4 8 4 6Z" fill="#4A1D6B"/><circle cx="7" cy="6.5" r="1" fill="#E4007C"/><circle cx="17" cy="6.5" r="1" fill="#E4007C"/></svg>',
+];
+
+// 12 íconos dispersos, flotando lento, mezclados al azar entre los 4 SVG
+// de arriba — mismo mecanismo que crearCapaIconosFlotantesNavidad().
+// Opacidad diferenciada por tono: la Catrina (índice 3) está dominada
+// por su sombrero morado oscuro, que pierde contraste contra el fondo
+// morado del tema igual que árbol/reno perdían contra el verde de
+// Navidad — necesita el rango más alto. Calaverita/flor/papel picado ya
+// contrastan bien de por sí (blanco, naranja, multicolor).
+function crearCapaIconosFlotantesDiaDeMuertos() {
+  const capa = document.createElement("div");
+  capa.className = "capa-iconos-diamuertos";
+  capa.setAttribute("aria-hidden", "true");
+
+  const INDICES_TONO_MORADO = new Set([3]);
+
+  const TOTAL_ICONOS = 12;
+  for (let i = 0; i < TOTAL_ICONOS; i++) {
+    const indiceIcono = Math.floor(Math.random() * ICONOS_DIA_DE_MUERTOS.length);
+    const [opacidadMin, opacidadMax] = INDICES_TONO_MORADO.has(indiceIcono) ? [0.55, 0.65] : [0.35, 0.45];
+
+    const icono = document.createElement("span");
+    icono.className = "icono-flotante-diamuertos";
+    icono.innerHTML = ICONOS_DIA_DE_MUERTOS[indiceIcono];
     icono.style.setProperty("--icono-top", (Math.random() * 100).toFixed(1) + "vh");
     icono.style.setProperty("--icono-left", (Math.random() * 100).toFixed(1) + "vw");
     icono.style.setProperty("--icono-tamano", (20 + Math.random() * 16).toFixed(0) + "px");
@@ -6974,7 +7062,19 @@ async function sincronizarTemaConCuenta(idUsuario) {
   // forzado activo, el tema de la cuenta (aunque sea distinto del ya
   // aplicado) NO debe pisar el tema de evento — se queda en localStorage/
   // Supabase intacto, listo para cuando el docente desactive el evento.
-  if (eventoActivo) return;
+  //
+  // A diferencia de seleccionarTema() (solo dispara por clic real, ya
+  // con eventoActivo resuelto), esta función también se dispara desde
+  // clienteSupabase.auth.onAuthStateChange() — un listener top-level que
+  // corre en SU PROPIA carrera contra el DOMContentLoaded de la sección
+  // 10, sin ninguna garantía de que "eventoActivo" ya esté asignado en
+  // ese momento (bug real: en pruebas, la variable seguía en null
+  // cuando este código corría, así que el guard no frenaba nada).
+  // Esperar la MISMA promesa que resuelve eventoActivo, en vez de leer
+  // la variable, elimina la carrera — awaits repetidos sobre una
+  // promesa ya resuelta devuelven el valor cacheado al instante, sin
+  // volver a consultar Supabase.
+  if (await promesaTemaEventoActivo) return;
 
   try {
     const { data: perfil, error } = await clienteSupabase
@@ -12598,8 +12698,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.body.classList.add("patrones-activos");
   }
 
-  if (eventoActivo === "navidad" && patronesActivos) {
-    activarEfectosNavidad();
+  if (patronesActivos) {
+    if (eventoActivo === "navidad") activarEfectosNavidad();
+    else if (eventoActivo === "dia-de-muertos") activarEfectosDiaDeMuertos();
   }
 
   // Sincroniza el <select> de grupo de la barra lateral con el grupo

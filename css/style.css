@@ -265,6 +265,38 @@
   --md-outline-variant: var(--color-borde);
 }
 
+/* Segundo "tema de evento" — Día de Muertos, mismo patrón que Navidad
+   arriba: bloque :root[data-theme] + valor propio de
+   config_sitio.tema_evento_activo ("dia-de-muertos", con guión — mismo
+   slug en CSS/JS/Supabase, sin capa de traducción). Igual de ausente de
+   TEMAS_DISPONIBLES/construirGridTemas(). Contraste calculado (fórmula
+   WCAG, no solo estimado): primario/primario-texto 10.5:1 (AAA). El rosa
+   mexicano (#E4007C) es más claro que el resto de los turquesas del
+   sitio — texto oscuro (#2A1640, mismo criterio que --color-superficie)
+   solo daba 3.6:1 sobre él, bajo el mínimo AA (4.5:1) que necesitan
+   .boton-tema/.badge-prioridad[recordatorio]/el círculo de avatar (los 3
+   consumidores reales de --color-acento-texto sobre --color-turquesa).
+   Blanco sí pasa (4.6:1), aunque raspando — si se agregan más
+   consumidores de este par en el futuro, medir de nuevo antes de asumir
+   que sigue pasando. */
+:root[data-theme="dia-de-muertos"] {
+  --color-fondo: #1A0B2E;
+  --color-superficie: #2A1640;
+  --color-superficie-alterna: #20112E;
+  --color-borde: #3D2459;
+  --color-texto: #F5E6FF;
+  --color-texto-suave: #C9AFDD;
+  --color-primario: #4A1D6B;
+  --color-primario-suave: #6B2D8C;
+  --color-turquesa: #E4007C;
+  --color-acento-texto: #FFFFFF;
+  --color-primario-texto: #F5E6FF;
+  --color-primario-texto-suave: #C9AFDD;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
+}
+
 /* Turquesa siempre disponible como color secundario de marca (badges, tags) */
 :root {
   --color-turquesa: #14B8A6;
@@ -1052,7 +1084,8 @@ summary:focus-visible {
 :root[data-theme="rosa-pastel"] body.patrones-activos::before,
 :root[data-theme="bosque-calido"] body.patrones-activos::before,
 :root[data-theme="menta-tecnologico"] body.patrones-activos::before,
-:root[data-theme="editorial-sepia"] body.patrones-activos::before {
+:root[data-theme="editorial-sepia"] body.patrones-activos::before,
+:root[data-theme="dia-de-muertos"] body.patrones-activos::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -1069,7 +1102,8 @@ summary:focus-visible {
   :root[data-theme="rosa-pastel"] body.patrones-activos::before,
   :root[data-theme="bosque-calido"] body.patrones-activos::before,
   :root[data-theme="menta-tecnologico"] body.patrones-activos::before,
-  :root[data-theme="editorial-sepia"] body.patrones-activos::before {
+  :root[data-theme="editorial-sepia"] body.patrones-activos::before,
+  :root[data-theme="dia-de-muertos"] body.patrones-activos::before {
     animation: desplazarPatronFondo 75s linear infinite;
   }
 }
@@ -1171,6 +1205,18 @@ summary:focus-visible {
 
 :root[data-theme="editorial-sepia"] body.patrones-activos::before {
   background-image: repeating-linear-gradient(135deg, transparent 0 20px, rgba(60, 42, 33, 0.09) 20px 20.6px);
+}
+
+/* Niebla/bruma de Día de Muertos: mismo mecanismo que los 8 de arriba
+   (por eso comparte el keyframe desplazarPatronFondo en vez de definir
+   uno propio), sin capa de hero — el evento no pidió una versión
+   intensificada. */
+:root[data-theme="dia-de-muertos"] body.patrones-activos::before {
+  background-image:
+    radial-gradient(circle at 20% 25%, rgba(107, 45, 140, 0.12) 0%, transparent 55%),
+    radial-gradient(circle at 75% 55%, rgba(228, 0, 124, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 45% 85%, rgba(107, 45, 140, 0.10) 0%, transparent 60%);
+  background-size: 700px 700px, 620px 620px, 660px 660px;
 }
 
 /* ---- Valores por tema: capa del hero (misma imagen, mayor opacidad/escala) ---- */
@@ -8605,4 +8651,143 @@ button.badge-estado {
   color: var(--color-texto);
   font-size: 0.85rem;
   font-weight: 600;
+}
+
+/* =========================================================
+   EFECTOS DE "TEMA DE EVENTO": DÍA DE MUERTOS
+
+   Segundo evento de la serie — mismo doble gate que Navidad
+   (:root[data-theme="dia-de-muertos"] body.patrones-activos) y mismo
+   criterio de reducción de movimiento (animación solo dentro de
+   @media (prefers-reduced-motion: no-preference), apariencia base
+   siempre visible y quieta fuera de ahí). La niebla (capa general) ya
+   vive arriba, reutilizando el mecanismo de los 8 temas personalizados
+   tal cual — este bloque es solo para los otros 3 efectos, que sí
+   necesitan su propio CSS por ser nuevos:
+
+   2. Íconos flotantes — mismo patrón que .icono-flotante-navidad
+      (capa fixed detrás del contenido, SVG inline propios: el naranja
+      #FF8C00 de la flor y los colores del papel picado son fijos,
+      decorativos, no variables reutilizables). Opacidad diferenciada
+      por tono, misma lección de Navidad: la Catrina (silueta dominada
+      por su sombrero morado oscuro) necesita más opacidad que
+      calaverita/flor/papel picado, que ya contrastan bien de por sí.
+   3. Pétalos de cempasúchil cayendo — mismo mecanismo que .copo-nieve
+      (capa fixed AL FRENTE, elementos con posición/velocidad/deriva
+      aleatorios), con una rotación de más para que el pétalo "voltee"
+      al caer en vez de solo derivar como un copo.
+   4. Velitas parpadeantes — mismo mecanismo que los destellos dorados
+      de Navidad (::after pulsante en los mismos 3 selectores que ya
+      usan el acento — acá rosa mexicano en vez de dorado).
+   ========================================================= */
+
+/* ---- 2. Íconos flotantes ---- */
+.capa-iconos-diamuertos {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.icono-flotante-diamuertos {
+  position: absolute;
+  top: var(--icono-top, 0);
+  left: var(--icono-left, 0);
+  width: var(--icono-tamano, 28px);
+  height: var(--icono-tamano, 28px);
+  opacity: var(--icono-opacidad, 0.4);
+}
+
+.icono-flotante-diamuertos svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .icono-flotante-diamuertos {
+    animation: flotarIconoNavidad var(--icono-duracion, 8s) ease-in-out infinite;
+    animation-delay: var(--icono-delay, 0s);
+  }
+}
+
+/* ---- 3. Pétalos de cempasúchil cayendo ---- */
+.capa-petalos-diamuertos {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.petalo-cempasuchil {
+  position: absolute;
+  top: var(--petalo-top, 0);
+  left: var(--petalo-left, 0);
+  width: var(--petalo-tamano, 7px);
+  height: calc(var(--petalo-tamano, 7px) * 0.65);
+  border-radius: 50%;
+  background-color: #FF8C00;
+  opacity: var(--petalo-opacidad, 0.6);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes caerPetalo {
+    0%   { transform: translate(0, 0) rotate(0deg); }
+    10%  { transform: translate(calc(var(--petalo-deriva, 1) * 10px), 10vh) rotate(40deg); }
+    20%  { transform: translate(calc(var(--petalo-deriva, 1) * -10px), 20vh) rotate(80deg); }
+    30%  { transform: translate(calc(var(--petalo-deriva, 1) * 10px), 30vh) rotate(120deg); }
+    40%  { transform: translate(calc(var(--petalo-deriva, 1) * -10px), 40vh) rotate(160deg); }
+    50%  { transform: translate(calc(var(--petalo-deriva, 1) * 10px), 50vh) rotate(200deg); }
+    60%  { transform: translate(calc(var(--petalo-deriva, 1) * -10px), 60vh) rotate(240deg); }
+    70%  { transform: translate(calc(var(--petalo-deriva, 1) * 10px), 70vh) rotate(280deg); }
+    80%  { transform: translate(calc(var(--petalo-deriva, 1) * -10px), 80vh) rotate(320deg); }
+    90%  { transform: translate(calc(var(--petalo-deriva, 1) * 10px), 90vh) rotate(340deg); }
+    100% { transform: translate(0, 100vh) rotate(360deg); }
+  }
+
+  .petalo-cempasuchil {
+    animation: caerPetalo var(--petalo-duracion, 12s) linear infinite;
+    animation-delay: var(--petalo-delay, 0s);
+  }
+}
+
+/* ---- 4. Velitas parpadeantes (cerca de acentos ya existentes) ---- */
+:root[data-theme="dia-de-muertos"] body.patrones-activos .etiqueta-badge,
+:root[data-theme="dia-de-muertos"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"] {
+  position: relative;
+}
+
+:root[data-theme="dia-de-muertos"] body.patrones-activos .etiqueta-badge::after,
+:root[data-theme="dia-de-muertos"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"]::after,
+:root[data-theme="dia-de-muertos"] body.patrones-activos .criterio-tarjeta::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #FFD23F;
+  box-shadow: 0 0 4px 1px rgba(255, 210, 63, 0.8);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes velitaDiaDeMuertos {
+    0%, 100% { opacity: 0; transform: scale(0.4); }
+    50%      { opacity: 1; transform: scale(1.2); }
+  }
+
+  :root[data-theme="dia-de-muertos"] body.patrones-activos .etiqueta-badge::after,
+  :root[data-theme="dia-de-muertos"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"]::after,
+  :root[data-theme="dia-de-muertos"] body.patrones-activos .criterio-tarjeta::after {
+    animation: velitaDiaDeMuertos 3s ease-in-out infinite;
+  }
+
+  :root[data-theme="dia-de-muertos"] body.patrones-activos .criterio-tarjeta:nth-child(2)::after { animation-delay: 1s; }
+  :root[data-theme="dia-de-muertos"] body.patrones-activos .criterio-tarjeta:nth-child(3)::after { animation-delay: 2s; }
+  :root[data-theme="dia-de-muertos"] body.patrones-activos .criterio-tarjeta:nth-child(4)::after { animation-delay: 0.5s; }
 }
