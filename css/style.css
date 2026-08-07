@@ -329,6 +329,40 @@
   --md-outline-variant: var(--color-borde);
 }
 
+/* Cuarto "tema de evento" — Independencia, mismo patrón que los 3
+   anteriores: bloque :root[data-theme] + valor propio ("independencia")
+   de config_sitio.tema_evento_activo. Igual de ausente de
+   TEMAS_DISPONIBLES/construirGridTemas(). Fondo CLARO (como Regreso a
+   Clases) — por eso --color-primario-texto/--color-acento-texto usan
+   blanco/verde oscuro fijos en vez de --color-texto propio del tema.
+   Contraste calculado con la fórmula WCAG real (no asumido):
+   primario/primario-texto 7.34:1 (AAA) — el verde institucional es lo
+   bastante oscuro/saturado para texto blanco encima. turquesa(acento)/
+   acento-texto 6.86:1 (AA, no llega a AAA) — el dorado es más claro que
+   el verde y necesita texto oscuro (#1A2E1F, no blanco) para ese
+   contraste, mismo criterio que evitó el error de Día de Muertos. El
+   rojo patrio (#CE1126) NO es variable de este bloque ni alias de
+   --color-turquesa: se define directo, fijo, SOLO en los selectores de
+   la sección "EFECTOS DE 'TEMA DE EVENTO': INDEPENDENCIA" más abajo
+   (franja/fuegos/confeti/listón) — nunca en botones/badges/toasts. */
+:root[data-theme="independencia"] {
+  --color-fondo: #F7F5EF;
+  --color-superficie: #FFFFFF;
+  --color-superficie-alterna: #EFEBE0;
+  --color-borde: #DDD6C4;
+  --color-texto: #1A2E1F;
+  --color-texto-suave: #5A6B5C;
+  --color-primario: #006341;
+  --color-primario-suave: #0B7A4A;
+  --color-turquesa: #D4AF37;
+  --color-acento-texto: #1A2E1F;
+  --color-primario-texto: #FFFFFF;
+  --color-primario-texto-suave: #E8EEF4;
+  --sombra: 0 8px 20px rgba(0, 99, 65, 0.12);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
+}
+
 /* Turquesa siempre disponible como color secundario de marca (badges, tags) */
 :root {
   --color-turquesa: #14B8A6;
@@ -9004,5 +9038,239 @@ button.badge-estado {
 
   :root[data-theme="regreso-a-clases"] body.patrones-activos::before {
     animation: desplazarPatronFondo 80s linear infinite, hueRotateSutilRegresoAClases 70s ease-in-out infinite;
+  }
+}
+
+/* =========================================================
+   EFECTOS DE "TEMA DE EVENTO": INDEPENDENCIA
+
+   Cuarto evento de la serie — mismo doble gate que Navidad/Día de
+   Muertos/Regreso a Clases (:root[data-theme="independencia"]
+   body.patrones-activos) y mismo criterio de reducción de movimiento
+   PARA 3 de los 4 efectos. La franja tricolor (punto 1) es la única
+   excepción: es un elemento estructural/identitario (igual que la
+   paleta base del tema), no un efecto animado, así que NO lleva
+   body.patrones-activos en su selector — se activa solo con
+   data-theme="independencia" (ver crearFranjaTricolorIndependencia() en
+   js/main.js, llamada fuera del gate de patrones_fondo_activos).
+
+   4 efectos:
+   1. Franja tricolor — banda fija en el borde superior de TODO el
+      viewport (position:fixed, por encima del riel/barra inferior,
+      ambos sin z-index propio), verde/blanco/rojo en tercios iguales.
+      Elemento nuevo y exclusivo de este tema.
+   2. Fuegos artificiales — mismo mecanismo que los destellos dorados
+      (Navidad)/velitas (Día de Muertos)/destellos violeta (Regreso a
+      Clases): ::after pulsante en los mismos 3 selectores que ya usan
+      el acento. Acá con 3 colores en vez de 1: .criterio-tarjeta cicla
+      verde/blanco/rojo por nth-child (ya tiene el patrón de stagger
+      necesario); etiqueta-badge/badge-prioridad, al ser elementos
+      singulares por contexto, se quedan cada uno en un color fijo.
+   3. Confeti tricolor cayendo — mismo mecanismo que
+      .confeti-regresoaclases (reutiliza su keyframe caerConfeti tal
+      cual), con --confeti-color eligiendo entre verde/blanco/rojo en
+      vez de la paleta de 5 colores de Regreso a Clases. Acá el rojo SÍ
+      es el rojo patrio fijo (#CE1126), decorativo, no variable de
+      botón/badge.
+   4. Íconos flotantes — mismo patrón que .icono-flotante-navidad/
+      -diamuertos/-regresoaclases (reutiliza su keyframe
+      flotarIconoNavidad tal cual): águila/listón/campana/sombrero
+      charro. Fondo CLARO (como Regreso a Clases): mismo rango base de
+      opacidad más alto, MÁS diferenciación por tono (como Navidad/Día
+      de Muertos) porque, a diferencia de Regreso a Clases, acá sí hay
+      íconos claros (águila/campana doradas, sombrero blanco) e íconos
+      dominados por tonos oscuros saturados (el listón, verde+rojo). */
+
+/* ---- 1. Franja tricolor ---- */
+:root[data-theme="independencia"] {
+  /* Fuente única para el alto de la franja: reutilizada por el
+     padding-top compensatorio de #main-content y por el offset de
+     .barra-progreso-lectura de abajo, para que los tres nunca puedan
+     desincronizarse entre sí. */
+  --alto-franja-independencia: 8px;
+}
+
+.franja-tricolor-independencia {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--alto-franja-independencia, 8px);
+  /* Por encima de TODO lo que ya usa z-index en el sitio (riel: sin
+     z-index propio, ver .riel; barra-inferior: 80) para cruzar el
+     viewport completo, incluida la columna del riel en escritorio —
+     justo debajo del skip link, que usa 1000 y debe seguir siendo
+     siempre lo más alto para no perder accesibilidad por teclado. */
+  z-index: 999;
+  display: flex;
+  pointer-events: none;
+}
+
+.franja-tricolor-independencia__verde,
+.franja-tricolor-independencia__blanco,
+.franja-tricolor-independencia__rojo {
+  flex: 1 1 0;
+}
+
+.franja-tricolor-independencia__verde { background-color: #006341; }
+.franja-tricolor-independencia__blanco { background-color: #FFFFFF; }
+.franja-tricolor-independencia__rojo { background-color: #CE1126; }
+
+/* Compensación para que la franja (fixed, fuera del flujo) nunca tape
+   contenido — NO en <body>: body ya carga padding-left condicional para
+   el ancho del riel (ver "body:has(.riel)" en la media query de
+   escritorio) y mezclar ahí un padding-top de evento habría acoplado
+   dos cosas sin relación entre sí. El elemento realmente PRIMERO en el
+   flujo del documento (el que de verdad queda pegado al borde superior)
+   no es el mismo en las 11 páginas:
+   - index.html/cuenta.html: no tienen <nav class="migas-de-pan">
+     (portada y "Mi cuenta" no llevan breadcrumbs) — #main-content es el
+     primer elemento en flujo.
+   - Las otras 9 (faq/padres/progreso/guia/sitemap/admin/trimestre-1/2/3):
+     <nav class="migas-de-pan"> vive ANTES de <main>, así que es ESE el
+     que hay que empujar — empujar solo #main-content lo habría dejado
+     pegado al borde superior de todas formas. Se suma (no reemplaza) su
+     padding-top propio (0.5rem, ver regla base más arriba) para no
+     perder el aire interno de la barra de breadcrumbs. trimestre-1/2/3
+     además tienen ".banner-trimestre" entre el breadcrumb y <main>: al
+     ser hermano posterior en el mismo flujo, el padding-top del
+     breadcrumb ya lo empuja a él también, sin necesidad de una regla
+     propia. */
+:root[data-theme="independencia"] #main-content {
+  padding-top: var(--alto-franja-independencia, 8px);
+}
+
+:root[data-theme="independencia"] .migas-de-pan {
+  padding-top: calc(0.5rem + var(--alto-franja-independencia, 8px));
+}
+
+/* .barra-progreso-lectura (index.html/trimestre-1/2/3.html) comparte el
+   mismo top:0 — se recorre hacia abajo el alto de la franja para que no
+   se tapen entre sí mientras el evento esté activo. */
+:root[data-theme="independencia"] .barra-progreso-lectura {
+  top: var(--alto-franja-independencia, 8px);
+}
+
+/* ---- 2. Fuegos artificiales (cerca de acentos ya existentes) ---- */
+:root[data-theme="independencia"] body.patrones-activos .etiqueta-badge,
+:root[data-theme="independencia"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"] {
+  position: relative;
+}
+
+:root[data-theme="independencia"] body.patrones-activos .etiqueta-badge::after,
+:root[data-theme="independencia"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"]::after,
+:root[data-theme="independencia"] body.patrones-activos .criterio-tarjeta::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+:root[data-theme="independencia"] body.patrones-activos .etiqueta-badge::after {
+  background-color: #006341;
+  box-shadow: 0 0 4px 1px rgba(0, 99, 65, 0.8);
+  opacity: 0.55;
+}
+
+:root[data-theme="independencia"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"]::after {
+  background-color: #CE1126;
+  box-shadow: 0 0 4px 1px rgba(206, 17, 38, 0.8);
+  opacity: 0.55;
+}
+
+:root[data-theme="independencia"] body.patrones-activos .criterio-tarjeta:nth-child(3n+1)::after {
+  background-color: #006341;
+  box-shadow: 0 0 4px 1px rgba(0, 99, 65, 0.8);
+  opacity: 0.55;
+}
+
+:root[data-theme="independencia"] body.patrones-activos .criterio-tarjeta:nth-child(3n+2)::after {
+  background-color: #FFFFFF;
+  box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.9);
+  opacity: 0.6;
+}
+
+:root[data-theme="independencia"] body.patrones-activos .criterio-tarjeta:nth-child(3n)::after {
+  background-color: #CE1126;
+  box-shadow: 0 0 4px 1px rgba(206, 17, 38, 0.8);
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes fuegoArtificialIndependencia {
+    0%, 100% { opacity: 0; transform: scale(0.4); }
+    50%      { opacity: 1; transform: scale(1.2); }
+  }
+
+  :root[data-theme="independencia"] body.patrones-activos .etiqueta-badge::after,
+  :root[data-theme="independencia"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"]::after,
+  :root[data-theme="independencia"] body.patrones-activos .criterio-tarjeta::after {
+    animation: fuegoArtificialIndependencia 3s ease-in-out infinite;
+  }
+
+  :root[data-theme="independencia"] body.patrones-activos .criterio-tarjeta:nth-child(2)::after { animation-delay: 1s; }
+  :root[data-theme="independencia"] body.patrones-activos .criterio-tarjeta:nth-child(3)::after { animation-delay: 2s; }
+  :root[data-theme="independencia"] body.patrones-activos .criterio-tarjeta:nth-child(4)::after { animation-delay: 0.5s; }
+}
+
+/* ---- 3. Confeti tricolor cayendo ---- */
+.capa-confeti-independencia {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confeti-independencia {
+  position: absolute;
+  top: var(--confeti-top, 0);
+  left: var(--confeti-left, 0);
+  width: var(--confeti-tamano, 8px);
+  height: calc(var(--confeti-tamano, 8px) * 0.4);
+  border-radius: 1px;
+  background-color: var(--confeti-color, #006341);
+  opacity: var(--confeti-opacidad, 0.7);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .confeti-independencia {
+    animation: caerConfeti var(--confeti-duracion, 12s) linear infinite;
+    animation-delay: var(--confeti-delay, 0s);
+  }
+}
+
+/* ---- 4. Íconos flotantes ---- */
+.capa-iconos-independencia {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.icono-flotante-independencia {
+  position: absolute;
+  top: var(--icono-top, 0);
+  left: var(--icono-left, 0);
+  width: var(--icono-tamano, 28px);
+  height: var(--icono-tamano, 28px);
+  opacity: var(--icono-opacidad, 0.5);
+}
+
+.icono-flotante-independencia svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .icono-flotante-independencia {
+    animation: flotarIconoNavidad var(--icono-duracion, 8s) ease-in-out infinite;
+    animation-delay: var(--icono-delay, 0s);
   }
 }

@@ -5936,6 +5936,7 @@ const EVENTOS_DISPONIBLES = [
   { slug: "navidad", nombre: "🎄 Navidad" },
   { slug: "dia-de-muertos", nombre: "💀 Día de Muertos" },
   { slug: "regreso-a-clases", nombre: "🎒 Regreso a Clases" },
+  { slug: "independencia", nombre: "🇲🇽 Independencia" },
 ];
 
 // Evento actualmente forzado (slug de EVENTOS_DISPONIBLES sin contar
@@ -6456,6 +6457,122 @@ function crearCapaConfetiRegresoAClases() {
     pieza.className = "confeti-regresoaclases";
     const duracion = 8 + Math.random() * 10;
     const color = COLORES_CONFETI_REGRESO_A_CLASES[Math.floor(Math.random() * COLORES_CONFETI_REGRESO_A_CLASES.length)];
+    pieza.style.setProperty("--confeti-color", color);
+    pieza.style.setProperty("--confeti-top", (Math.random() * 100).toFixed(1) + "vh");
+    pieza.style.setProperty("--confeti-left", (Math.random() * 100).toFixed(1) + "vw");
+    pieza.style.setProperty("--confeti-tamano", (6 + Math.random() * 5).toFixed(1) + "px");
+    pieza.style.setProperty("--confeti-opacidad", (0.55 + Math.random() * 0.35).toFixed(2));
+    pieza.style.setProperty("--confeti-deriva", (0.5 + Math.random()).toFixed(2));
+    pieza.style.setProperty("--confeti-duracion", duracion.toFixed(1) + "s");
+    pieza.style.setProperty("--confeti-delay", (-Math.random() * duracion).toFixed(1) + "s");
+    capa.appendChild(pieza);
+  }
+
+  document.body.appendChild(capa);
+}
+
+/* ---------------------------------------------------------
+   Efectos de "tema de evento": Independencia — cuarto evento de la
+   serie, mismo patrón que Navidad/Día de Muertos/Regreso a Clases. La
+   franja tricolor (ver Fase 2) NO pasa por acá: a diferencia de los
+   otros 3 efectos, no depende de patrones_fondo_activos, así que tiene
+   su propia llamada incondicional en el DOMContentLoaded (sección 10).
+   --------------------------------------------------------- */
+function activarEfectosIndependencia() {
+  crearCapaIconosFlotantesIndependencia();
+  crearCapaConfetiIndependencia();
+}
+
+// Franja verde/blanco/rojo fija en el borde superior, por encima de todo
+// (riel/barra inferior incluidos) — elemento estructural/identitario del
+// evento, no un efecto animado. Un solo <div> contenedor con 3 hijos
+// flex en vez de 3 franjas independientes, para que los tercios se
+// mantengan iguales sin calcular anchos a mano.
+function crearFranjaTricolorIndependencia() {
+  const franja = document.createElement("div");
+  franja.className = "franja-tricolor-independencia";
+  franja.setAttribute("aria-hidden", "true");
+
+  ["verde", "blanco", "rojo"].forEach((color) => {
+    const seccion = document.createElement("span");
+    seccion.className = "franja-tricolor-independencia__" + color;
+    franja.appendChild(seccion);
+  });
+
+  document.body.appendChild(franja);
+}
+
+// SVG inline propios, mismo criterio que ICONOS_NAVIDAD/ICONOS_DIA_DE_MUERTOS/
+// ICONOS_REGRESO_A_CLASES: colores fijos SOLO acá, nunca variables CSS
+// reutilizables. El rojo patrio (#CE1126) queda contenido al detalle del
+// listón — ningún otro ícono de este set lo usa (ver Fase 2).
+const ICONOS_INDEPENDENCIA = [
+  // Águila (dorado)
+  '<svg viewBox="0 0 24 24"><path d="M12 3c-1 0-1.7.6-2 1.5L9 3.5 8 5l1.5 1C7 6.5 3 8 1 11c3-1 5.5-1.2 7.5-.7-1 1.2-1.5 2.7-1.3 4.2.8-1 2.1-1.8 3.3-2.1-.3 1.6 0 3.6 1 5.1l.5-2 .5 2c1-1.5 1.3-3.5 1-5.1 1.2.3 2.5 1.1 3.3 2.1.2-1.5-.3-3-1.3-4.2 2-.5 4.5-.3 7.5.7-2-3-6-4.5-8.5-5l1.5-1-1-1.5-1 1C13.7 3.6 13 3 12 3Z" fill="#D4AF37"/></svg>',
+  // Listón tricolor (verde/blanco/rojo — único ícono con el rojo patrio)
+  '<svg viewBox="0 0 24 24"><path d="M9 2 11 11 7 11Z" fill="#006341"/><path d="M15 2 17 11 13 11Z" fill="#CE1126"/><circle cx="12" cy="10" r="4.5" fill="#FFFFFF" stroke="#006341" stroke-width="1"/><circle cx="12" cy="10" r="2.2" fill="#CE1126"/></svg>',
+  // Campana (dorado; el acento verde reemplaza el detalle que en Navidad era rojo acebo)
+  '<svg viewBox="0 0 24 24"><path d="M12 2c-1 0-1.8.8-1.8 1.8v.6C7.5 5.2 6 7.8 6 11v5l-2 3h16l-2-3v-5c0-3.2-1.5-5.8-4.2-6.6v-.6C13.8 2.8 13 2 12 2z" fill="#D4AF37"/><circle cx="12" cy="21" r="1.6" fill="#D4AF37"/><path d="M9 4.5 12 3 15 4.5" stroke="#006341" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>',
+  // Sombrero charro (blanco/dorado)
+  '<svg viewBox="0 0 24 24"><path d="M12 17c-5 0-6-4-6-7 0-4 3-6 6-6s6 2 6 6c0 3-1 7-6 7Z" fill="#FFFFFF" stroke="#D4AF37" stroke-width="0.6"/><ellipse cx="12" cy="17" rx="11" ry="3" fill="#FFFFFF" stroke="#D4AF37" stroke-width="1"/><path d="M6.3 14.3c1.7.8 9.7.8 11.4 0" stroke="#D4AF37" stroke-width="1.4" fill="none"/></svg>',
+];
+
+// 35 íconos sobre cuadrícula con jitter (generarPosicionesGridConJitter,
+// definida junto a crearCapaIconosFlotantesNavidad), ciclando entre los 4
+// SVG de arriba. Opacidad diferenciada por tono, mismo criterio que
+// Navidad/Día de Muertos: el listón (índice 1, dominado por su verde y
+// rojo saturados) pierde contraste sobre este fondo claro igual que
+// árbol/reno perdían contra el verde de Navidad, así que necesita el
+// rango más alto; águila/campana/sombrero (dorado/blanco) ya contrastan
+// bien de por sí — mismo rango base que Regreso a Clases (el otro tema
+// de fondo claro de la serie).
+function crearCapaIconosFlotantesIndependencia() {
+  const capa = document.createElement("div");
+  capa.className = "capa-iconos-independencia";
+  capa.setAttribute("aria-hidden", "true");
+
+  const INDICES_TONO_OSCURO = new Set([1]);
+
+  const TOTAL_ICONOS = 35;
+  const posiciones = generarPosicionesGridConJitter(TOTAL_ICONOS);
+  for (let i = 0; i < TOTAL_ICONOS; i++) {
+    const indiceIcono = i % ICONOS_INDEPENDENCIA.length;
+    const [opacidadMin, opacidadMax] = INDICES_TONO_OSCURO.has(indiceIcono) ? [0.6, 0.75] : [0.45, 0.55];
+
+    const icono = document.createElement("span");
+    icono.className = "icono-flotante-independencia";
+    icono.innerHTML = ICONOS_INDEPENDENCIA[indiceIcono];
+    icono.style.setProperty("--icono-top", posiciones[i].top.toFixed(1) + "vh");
+    icono.style.setProperty("--icono-left", posiciones[i].left.toFixed(1) + "vw");
+    icono.style.setProperty("--icono-tamano", (20 + Math.random() * 16).toFixed(0) + "px");
+    icono.style.setProperty("--icono-opacidad", (opacidadMin + Math.random() * (opacidadMax - opacidadMin)).toFixed(2));
+    icono.style.setProperty("--icono-duracion", (6 + Math.random() * 6).toFixed(1) + "s");
+    icono.style.setProperty("--icono-delay", (-Math.random() * 10).toFixed(1) + "s");
+    capa.appendChild(icono);
+  }
+
+  document.body.appendChild(capa);
+}
+
+// Colores fijos del confeti — verde/blanco/rojo patrio, a diferencia del
+// confeti multicolor de Regreso a Clases (acá el rojo #CE1126 SÍ se usa,
+// es decorativo/de evento, no toca ningún botón/badge/toast real).
+const COLORES_CONFETI_INDEPENDENCIA = ["#006341", "#FFFFFF", "#CE1126"];
+
+// Mismo mecanismo que crearCapaConfetiRegresoAClases() (capa fixed AL
+// FRENTE, --confeti-color por pieza) — reutiliza también su keyframe
+// caerConfeti tal cual en css/style.css, sin duplicarlo.
+function crearCapaConfetiIndependencia() {
+  const capa = document.createElement("div");
+  capa.className = "capa-confeti-independencia";
+  capa.setAttribute("aria-hidden", "true");
+
+  const TOTAL_PIEZAS = 35;
+  for (let i = 0; i < TOTAL_PIEZAS; i++) {
+    const pieza = document.createElement("div");
+    pieza.className = "confeti-independencia";
+    const duracion = 8 + Math.random() * 10;
+    const color = COLORES_CONFETI_INDEPENDENCIA[Math.floor(Math.random() * COLORES_CONFETI_INDEPENDENCIA.length)];
     pieza.style.setProperty("--confeti-color", color);
     pieza.style.setProperty("--confeti-top", (Math.random() * 100).toFixed(1) + "vh");
     pieza.style.setProperty("--confeti-left", (Math.random() * 100).toFixed(1) + "vw");
@@ -12848,6 +12965,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   eventoActivo = await promesaTemaEventoActivo;
   aplicarTema(eventoActivo || temaActual);
 
+  // Franja tricolor de Independencia: elemento estructural, no depende
+  // de patrones_fondo_activos (a diferencia de los otros 3 efectos del
+  // evento, ver activarEfectosIndependencia más abajo) — mismo criterio
+  // que la paleta base del tema, que tampoco depende de ese flag.
+  if (eventoActivo === "independencia") crearFranjaTricolorIndependencia();
+
   // Mientras la promesa no resuelve (o si falla/devuelve false), el
   // <body> se queda sin la clase y css/style.css no muestra ningún
   // patrón — el mismo fallback "false" de obtenerPatronesFondoActivos()
@@ -12862,6 +12985,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (eventoActivo === "navidad") activarEfectosNavidad();
     else if (eventoActivo === "dia-de-muertos") activarEfectosDiaDeMuertos();
     else if (eventoActivo === "regreso-a-clases") activarEfectosRegresoAClases();
+    else if (eventoActivo === "independencia") activarEfectosIndependencia();
   }
 
   // Sincroniza el <select> de grupo de la barra lateral con el grupo
