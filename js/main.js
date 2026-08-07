@@ -3138,6 +3138,28 @@ const promesaTrimestreDesbloqueado = obtenerTrimestreDesbloqueado();
 // patrones de fondo de los 8 temas nuevos).
 const promesaPatronesFondoActivos = obtenerPatronesFondoActivos();
 
+// Tema de evento activo (config_sitio, clave "tema_evento_activo") — ver
+// EVENTOS_DISPONIBLES (sección 7). "ninguno" (valor por defecto) y
+// cualquier error de lectura se tratan igual que "sin evento": null,
+// para que el flujo normal de tema personal siga como siempre. Usa
+// leerValorConfigSitio(), definida más abajo (sección de módulos admin)
+// pero ya disponible acá — es function declaration, no const, sin TDZ.
+async function obtenerTemaEventoActivo() {
+  try {
+    const valor = await leerValorConfigSitio("tema_evento_activo");
+    return valor && valor !== "ninguno" ? valor : null;
+  } catch {
+    return null;
+  }
+}
+
+// Misma razón que promesaTrimestreDesbloqueado/promesaPatronesFondoActivos
+// arriba: arranca ya, se espera dentro de DOMContentLoaded ANTES de
+// aplicar el tema personal (sección 10) — un evento forzado gana siempre
+// que exista, sin ni siquiera leer localStorage/Supabase del tema
+// personal.
+const promesaTemaEventoActivo = obtenerTemaEventoActivo();
+
 // Trimestre de la página actual ('1', '2' o '3'), tomado de
 // <body data-trimestre="…">. En la portada (index.html) no existe
 // ese atributo, por lo que queda en null.
@@ -5888,15 +5910,39 @@ const TEMAS_DISPONIBLES = [
   { slug: "editorial-sepia", nombre: "☕ Editorial Sepia" },
 ];
 
-// Aplica un tema (slug de TEMAS_DISPONIBLES) al <html> y sincroniza el
-// ícono/aria-label de cada .boton-tema (hay 2 por página: riel flyout
-// desktop + sheet de la barra inferior en móvil). Ya no alterna entre 2
-// — el botón ahora abre el selector (ver activarSelectorTema); esta
-// función solo refleja cuál es el tema ACTUAL, no calcula "el siguiente".
+// "Temas de evento" (Navidad, y los que se agreguen después) —
+// deliberadamente separados de TEMAS_DISPONIBLES: no son una opción del
+// selector de 10 temas, se activan/desactivan solo desde el módulo
+// Apariencia del panel docente (ver inicializarSelectorEventoAdmin() más
+// abajo) y se fuerzan sobre TODAS las cuentas mientras estén activos.
+// "ninguno" es el valor que se guarda en config_sitio para "sin evento"
+// (nunca NULL — ver obtenerTemaEventoActivo()), pero no es un tema en sí
+// (aplicarTema() nunca lo recibe), así que no necesita bloque CSS propio.
+const EVENTOS_DISPONIBLES = [
+  { slug: "ninguno", nombre: "Ninguno" },
+  { slug: "navidad", nombre: "🎄 Navidad" },
+];
+
+// Evento actualmente forzado (slug de EVENTOS_DISPONIBLES sin contar
+// "ninguno"), o null si no hay ninguno — resuelto una vez en
+// DOMContentLoaded (sección 10) antes de aplicar cualquier tema, y leído
+// después por seleccionarTema()/activarSelectorTema()/cuenta.html para
+// saber si el selector de 10 temas debe quedar deshabilitado.
+let eventoActivo = null;
+
+// Aplica un tema (slug de TEMAS_DISPONIBLES, o de EVENTOS_DISPONIBLES
+// cuando hay un evento forzado) al <html> y sincroniza el ícono/
+// aria-label de cada .boton-tema (hay 2 por página: riel flyout desktop
+// + sheet de la barra inferior en móvil). Ya no alterna entre 2 — el
+// botón ahora abre el selector (ver activarSelectorTema); esta función
+// solo refleja cuál es el tema ACTUAL, no calcula "el siguiente".
 function aplicarTema(tema) {
   document.documentElement.setAttribute("data-theme", tema);
 
-  const info = TEMAS_DISPONIBLES.find((t) => t.slug === tema) || TEMAS_DISPONIBLES[0];
+  const info =
+    TEMAS_DISPONIBLES.find((t) => t.slug === tema) ||
+    EVENTOS_DISPONIBLES.find((e) => e.slug === tema) ||
+    TEMAS_DISPONIBLES[0];
   const [emoji, ...resto] = info.nombre.split(" ");
   const nombreSinEmoji = resto.join(" ");
 
@@ -5918,6 +5964,11 @@ function aplicarTema(tema) {
 // solo no se sincronizó a la cuenta, se reintenta la próxima vez que el
 // alumno elija un tema.
 async function seleccionarTema(tema) {
+  // El grid ya queda pointer-events:none mientras hay un evento forzado
+  // (ver actualizarUIGridSegunEvento), así que esto no debería disparar
+  // por clic real — solo por si acaso (ej. invocación programática).
+  if (eventoActivo) return;
+
   temaActual = tema;
   localStorage.setItem(CLAVE_TEMA, tema);
   aplicarTema(tema);
@@ -5930,7 +5981,10 @@ async function seleccionarTema(tema) {
   // elegir: hay que volver a armar su grid para que el indicador "✓" se
   // mueva a la tarjeta recién elegida.
   const gridCuenta = document.getElementById("cuenta-tema-grid");
-  if (gridCuenta) construirGridTemas(gridCuenta, temaActual, seleccionarTema);
+  if (gridCuenta) {
+    construirGridTemas(gridCuenta, temaActual, seleccionarTema);
+    actualizarUIGridSegunEvento(gridCuenta);
+  }
 
   const info = TEMAS_DISPONIBLES.find((t) => t.slug === tema);
   const [emoji, ...resto] = (info?.nombre || tema).split(" ");
@@ -6003,6 +6057,42 @@ function construirGridTemas(contenedor, temaActivo, alSeleccionar) {
   document.documentElement.setAttribute("data-theme", temaOriginal);
 }
 
+// Texto del aviso que reemplaza la posibilidad de elegir tema mientras
+// hay un evento forzado — mismo texto en #modal-tema y en la sección
+// "Personalización" de cuenta.html (ver actualizarUIGridSegunEvento).
+function textoAvisoEventoActivo(slug) {
+  const info = EVENTOS_DISPONIBLES.find((e) => e.slug === slug);
+  const [emoji, ...resto] = (info?.nombre || slug).split(" ");
+  return (
+    emoji + " Modo " + resto.join(" ") + " activo — tu tema vuelve a estar disponible cuando el docente lo desactive."
+  );
+}
+
+// Deshabilita visualmente un grid de temas ya armado (pointer-events:none
+// + opacidad) e inserta el aviso justo antes, o lo quita si no hay
+// evento activo. Se llama después de CADA construirGridTemas() — el
+// tema personal del alumno sigue en localStorage/Supabase sin tocarse,
+// esto solo bloquea la UI para elegir uno nuevo mientras dura el evento.
+function actualizarUIGridSegunEvento(contenedorGrid) {
+  if (!contenedorGrid) return;
+
+  const anterior = contenedorGrid.previousElementSibling;
+  const avisoExistente = anterior?.classList?.contains("tema-grid__aviso-evento") ? anterior : null;
+
+  if (eventoActivo) {
+    contenedorGrid.classList.add("tema-tarjeta__grid--deshabilitado");
+    if (!avisoExistente) {
+      const aviso = document.createElement("p");
+      aviso.className = "tema-grid__aviso-evento";
+      aviso.textContent = textoAvisoEventoActivo(eventoActivo);
+      contenedorGrid.before(aviso);
+    }
+  } else {
+    contenedorGrid.classList.remove("tema-tarjeta__grid--deshabilitado");
+    if (avisoExistente) avisoExistente.remove();
+  }
+}
+
 // Engancha los 2 botones .boton-tema por página (riel flyout desktop +
 // sheet de la barra inferior en móvil): al hacer clic abren #modal-tema
 // con el grid de 10 temas recién armado (construirGridTemas), en vez de
@@ -6018,7 +6108,10 @@ function activarSelectorTema() {
 
   document.querySelectorAll(".boton-tema").forEach((boton) => {
     boton.addEventListener("click", () => {
-      if (grid) construirGridTemas(grid, temaActual, seleccionarTema);
+      if (grid) {
+        construirGridTemas(grid, temaActual, seleccionarTema);
+        actualizarUIGridSegunEvento(grid);
+      }
       modal.showModal();
     });
   });
@@ -6027,6 +6120,95 @@ function activarSelectorTema() {
   modal.addEventListener("click", (evento) => {
     if (evento.target === modal) modal.close();
   });
+}
+
+/* ---------------------------------------------------------
+   Efectos de "tema de evento": Navidad — ver EVENTOS_DISPONIBLES arriba
+   y css/style.css ("EFECTOS DE 'TEMA DE EVENTO': NAVIDAD") para el resto
+   de la explicación de cada efecto. Solo activarEfectosNavidad() sabe
+   qué activa qué; un futuro evento agrega su propio
+   activarEfectosXxxx() + su propio "if" en el DOMContentLoaded de la
+   sección 10, sin tocar nada de lo de acá.
+   --------------------------------------------------------- */
+function activarEfectosNavidad() {
+  crearCapaNieveNavidad();
+  crearCapaIconosFlotantesNavidad();
+}
+
+// 30-40 copos con posición/tamaño/opacidad/velocidad/deriva aleatorios
+// por copo, vía variables CSS inline (ver .copo-nieve en css/style.css).
+// animationDelay NEGATIVO a propósito: cada copo arranca "a medio
+// camino" de su propio ciclo de caída, así la nieve ya se ve dispersa
+// por toda la pantalla desde el primer frame en vez de empezar toda
+// junta arriba y caer en oleada.
+function crearCapaNieveNavidad() {
+  const capa = document.createElement("div");
+  capa.className = "capa-nieve-navidad";
+  capa.setAttribute("aria-hidden", "true");
+
+  const TOTAL_COPOS = 35;
+  for (let i = 0; i < TOTAL_COPOS; i++) {
+    const copo = document.createElement("div");
+    copo.className = "copo-nieve";
+    const duracion = 8 + Math.random() * 10;
+    copo.style.setProperty("--copo-top", (Math.random() * 100).toFixed(1) + "vh");
+    copo.style.setProperty("--copo-left", (Math.random() * 100).toFixed(1) + "vw");
+    copo.style.setProperty("--copo-tamano", (3 + Math.random() * 6).toFixed(1) + "px");
+    copo.style.setProperty("--copo-opacidad", (0.35 + Math.random() * 0.45).toFixed(2));
+    copo.style.setProperty("--copo-deriva", (0.5 + Math.random()).toFixed(2));
+    copo.style.setProperty("--copo-duracion", duracion.toFixed(1) + "s");
+    copo.style.setProperty("--copo-delay", (-Math.random() * duracion).toFixed(1) + "s");
+    capa.appendChild(copo);
+  }
+
+  document.body.appendChild(capa);
+}
+
+// SVG inline propios (no emoji nativo: el color de un emoji no se puede
+// tocar con CSS, y campana/acebo/bastón necesitan su detalle en rojo
+// acebo #A6192E). #A6192E queda fijo SOLO dentro de estos 3 SVG
+// decorativos — nunca una variable CSS reutilizable, nunca aplicado a
+// botones/badges/texto/componentes reales de la UI.
+const ICONOS_NAVIDAD = [
+  // Árbol
+  '<svg viewBox="0 0 24 24"><path d="M12 1 L16 8 H14 L18 14 H15 L19 20 H5 L9 14 H6 L10 8 H8 Z" fill="#1E5A3A"/></svg>',
+  // Estrella
+  '<svg viewBox="0 0 24 24"><path d="M12 1 L14.7 8.6 L22.5 8.9 L16.3 13.7 L18.5 21.1 L12 16.8 L5.5 21.1 L7.7 13.7 L1.5 8.9 L9.3 8.6 Z" fill="#D4AF37"/></svg>',
+  // Reno
+  '<svg viewBox="0 0 24 24"><path d="M4 4 L7 8 M20 4 L17 8 M6 7 L4 3 M18 7 L20 3" stroke="#2C7A4F" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="12" cy="14" rx="6" ry="7" fill="#2C7A4F"/></svg>',
+  // Campana (detalle rojo acebo)
+  '<svg viewBox="0 0 24 24"><path d="M12 2c-1 0-1.8.8-1.8 1.8v.6C7.5 5.2 6 7.8 6 11v5l-2 3h16l-2-3v-5c0-3.2-1.5-5.8-4.2-6.6v-.6C13.8 2.8 13 2 12 2z" fill="#D4AF37"/><circle cx="12" cy="21" r="1.6" fill="#D4AF37"/><path d="M9 4.5 L12 3 L15 4.5" stroke="#A6192E" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>',
+  // Acebo (hojas verde pino, bayas rojo acebo)
+  '<svg viewBox="0 0 24 24"><path d="M12 2 C15 5 15 9 12 12 C9 9 9 5 12 2Z" fill="#1E5A3A"/><path d="M4 10 C7 11 9 14 8 18 C5 16 3 13 4 10Z" fill="#1E5A3A"/><path d="M20 10 C17 11 15 14 16 18 C19 16 21 13 20 10Z" fill="#1E5A3A"/><circle cx="10.5" cy="16" r="1.6" fill="#A6192E"/><circle cx="13.5" cy="16" r="1.6" fill="#A6192E"/><circle cx="12" cy="18.5" r="1.6" fill="#A6192E"/></svg>',
+  // Bastón de caramelo (franjas blanco/rojo acebo)
+  '<svg viewBox="0 0 24 24"><path d="M14 22 V10 A5 5 0 1 0 4 10" stroke="#F5F5F0" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M14 22 V10 A5 5 0 1 0 4 10" stroke="#A6192E" stroke-width="3.4" fill="none" stroke-linecap="round" stroke-dasharray="2.6 2.6"/></svg>',
+];
+
+// 12 íconos dispersos, flotando lento, mezclados al azar entre los 6 SVG
+// de arriba — misma capa fixed/baja opacidad/z-index:-1 que los patrones
+// de los otros 8 temas (ver css/style.css), pero con varios íconos
+// independientes en vez de un solo pseudo-elemento: por eso es un <div>
+// real inyectado acá, no un ::before.
+function crearCapaIconosFlotantesNavidad() {
+  const capa = document.createElement("div");
+  capa.className = "capa-iconos-navidad";
+  capa.setAttribute("aria-hidden", "true");
+
+  const TOTAL_ICONOS = 12;
+  for (let i = 0; i < TOTAL_ICONOS; i++) {
+    const icono = document.createElement("span");
+    icono.className = "icono-flotante-navidad";
+    icono.innerHTML = ICONOS_NAVIDAD[Math.floor(Math.random() * ICONOS_NAVIDAD.length)];
+    icono.style.setProperty("--icono-top", (Math.random() * 100).toFixed(1) + "vh");
+    icono.style.setProperty("--icono-left", (Math.random() * 100).toFixed(1) + "vw");
+    icono.style.setProperty("--icono-tamano", (20 + Math.random() * 16).toFixed(0) + "px");
+    icono.style.setProperty("--icono-opacidad", (0.08 + Math.random() * 0.08).toFixed(2));
+    icono.style.setProperty("--icono-duracion", (6 + Math.random() * 6).toFixed(1) + "s");
+    icono.style.setProperty("--icono-delay", (-Math.random() * 10).toFixed(1) + "s");
+    capa.appendChild(icono);
+  }
+
+  document.body.appendChild(capa);
 }
 
 /* =========================================================
@@ -6777,6 +6959,12 @@ async function sincronizarPerfilActivo() {
 // por cualquier otra razón, esto no debe tumbar nombre/nivel/progreso —
 // solo se queda con lo que ya haya en pantalla (localStorage/sistema).
 async function sincronizarTemaConCuenta(idUsuario) {
+  // Mismo criterio que el guard de seleccionarTema(): con un evento
+  // forzado activo, el tema de la cuenta (aunque sea distinto del ya
+  // aplicado) NO debe pisar el tema de evento — se queda en localStorage/
+  // Supabase intacto, listo para cuando el docente desactive el evento.
+  if (eventoActivo) return;
+
   try {
     const { data: perfil, error } = await clienteSupabase
       .from("perfiles")
@@ -7025,7 +7213,10 @@ async function activarPanelSesionCuenta() {
   // ya llama a la RPC actualizar_tema_preferido, que es exactamente lo
   // que esta sección necesita.
   const gridTemaCuenta = document.getElementById("cuenta-tema-grid");
-  if (gridTemaCuenta) construirGridTemas(gridTemaCuenta, temaActual, seleccionarTema);
+  if (gridTemaCuenta) {
+    construirGridTemas(gridTemaCuenta, temaActual, seleccionarTema);
+    actualizarUIGridSegunEvento(gridTemaCuenta);
+  }
 
   const botonCerrar = document.getElementById("boton-cerrar-sesion-cuenta");
   if (botonCerrar) {
@@ -10171,6 +10362,74 @@ function activarSwitchApariencia() {
   });
 }
 
+// Arma las <option> del selector desde EVENTOS_DISPONIBLES — un futuro
+// evento solo agrega una entrada a ese array (sección 7), esta función
+// no necesita cambiar.
+function poblarSelectEventoAdmin(select) {
+  select.innerHTML = "";
+  EVENTOS_DISPONIBLES.forEach(({ slug, nombre }) => {
+    const option = document.createElement("option");
+    option.value = slug;
+    option.textContent = nombre;
+    select.appendChild(option);
+  });
+}
+
+// select.dataset.valorGuardado guarda el último valor confirmado en
+// Supabase (no el que esté mostrando el <select> en este instante): si
+// el guardado falla, esta función lo usa para revertir la selección
+// visible — mismo criterio que actualizarUISwitchApariencia(!activo) ya
+// usa para el switch de Patrones de fondo.
+async function ejecutarCambioEvento(nuevoSlug, valorAnterior) {
+  const select = document.getElementById("apariencia-evento-select");
+  if (select) select.disabled = true;
+
+  const referenciaToast = mostrarToastCarga("Guardando cambio de evento…");
+  try {
+    await escribirValorConfigSitio("tema_evento_activo", nuevoSlug);
+    if (select) select.dataset.valorGuardado = nuevoSlug;
+    actualizarToastCarga(referenciaToast, {
+      tipo: "exito",
+      mensaje: "Evento actualizado",
+    });
+  } catch (error) {
+    if (select) select.value = valorAnterior;
+    actualizarToastCarga(referenciaToast, {
+      tipo: "error",
+      mensaje:
+        error instanceof ErrorClaveConfigSitioInexistente
+          ? error.message
+          : "No se pudo guardar. Revisa tu conexión.",
+      onReintentar: () => ejecutarCambioEvento(nuevoSlug, valorAnterior),
+    });
+  } finally {
+    if (select) select.disabled = false;
+  }
+}
+
+async function inicializarSelectorEventoAdmin() {
+  const select = document.getElementById("apariencia-evento-select");
+  if (!select) return; // no es admin.html
+
+  poblarSelectEventoAdmin(select);
+
+  let valorActual = "ninguno";
+  try {
+    valorActual = (await leerValorConfigSitio("tema_evento_activo")) || "ninguno";
+  } catch {
+    valorActual = "ninguno";
+  }
+
+  select.value = valorActual;
+  select.dataset.valorGuardado = valorActual;
+  select.disabled = false;
+
+  select.addEventListener("change", (evento) => {
+    const valorAnterior = select.dataset.valorGuardado || "ninguno";
+    ejecutarCambioEvento(evento.target.value, valorAnterior);
+  });
+}
+
 async function inicializarModuloApariencia() {
   const switchPatrones = document.getElementById("apariencia-patrones-switch");
   if (!switchPatrones) return; // no es admin.html
@@ -10189,6 +10448,8 @@ async function inicializarModuloApariencia() {
   actualizarUISwitchApariencia(activo);
   switchPatrones.disabled = false;
   activarSwitchApariencia();
+
+  await inicializarSelectorEventoAdmin();
 }
 
 /* ---------------------------------------------------------
@@ -12310,14 +12571,24 @@ function activarGuiaAlumno() {
    ========================================================= */
 
 document.addEventListener("DOMContentLoaded", async () => {
-  aplicarTema(temaActual);
+  // Un evento forzado (Navidad, ver Fase 4) gana siempre sobre el tema
+  // personal — ni siquiera se lee localStorage/Supabase de temaActual en
+  // ese caso, aplicarTema() recibe directo el slug del evento.
+  eventoActivo = await promesaTemaEventoActivo;
+  aplicarTema(eventoActivo || temaActual);
 
   // Mientras la promesa no resuelve (o si falla/devuelve false), el
   // <body> se queda sin la clase y css/style.css no muestra ningún
   // patrón — el mismo fallback "false" de obtenerPatronesFondoActivos()
-  // ya evita el parpadeo de "aparece y desaparece".
-  if (await promesaPatronesFondoActivos) {
+  // ya evita el parpadeo de "aparece y desaparece". Los 4 efectos de
+  // Navidad comparten ese mismo gate (ver activarEfectosNavidad).
+  const patronesActivos = await promesaPatronesFondoActivos;
+  if (patronesActivos) {
     document.body.classList.add("patrones-activos");
+  }
+
+  if (eventoActivo === "navidad" && patronesActivos) {
+    activarEfectosNavidad();
   }
 
   // Sincroniza el <select> de grupo de la barra lateral con el grupo

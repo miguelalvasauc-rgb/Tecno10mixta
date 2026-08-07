@@ -525,18 +525,38 @@
            el layout quede apretado para una sola fila. -->
       <section id="panel-apariencia" class="admin-panel" role="tabpanel" aria-labelledby="tab-apariencia" hidden>
         <div class="apariencia-modulo">
-          <h3>🖼️ Fondos</h3>
-          <div class="apariencia-opcion">
-            <div class="apariencia-opcion__texto">
-              <span id="apariencia-patrones-titulo" class="apariencia-opcion__titulo">Patrones de fondo</span>
-              <p class="apariencia-opcion__descripcion">Activa o desactiva los patrones decorativos de fondo en el sitio público. (Los patrones en sí se agregarán en una próxima actualización; este switch solo controla si estarán disponibles.)</p>
+          <div class="apariencia-seccion">
+            <h3>🖼️ Fondos</h3>
+            <div class="apariencia-opcion">
+              <div class="apariencia-opcion__texto">
+                <span id="apariencia-patrones-titulo" class="apariencia-opcion__titulo">Patrones de fondo</span>
+                <p class="apariencia-opcion__descripcion">Activa o desactiva los patrones decorativos de fondo en el sitio público. (Los patrones en sí se agregarán en una próxima actualización; este switch solo controla si estarán disponibles.)</p>
+              </div>
+              <div class="apariencia-opcion__control">
+                <span id="apariencia-patrones-estado" class="apariencia-opcion__estado" aria-hidden="true">Cargando…</span>
+                <label class="interruptor" aria-labelledby="apariencia-patrones-titulo">
+                  <input type="checkbox" id="apariencia-patrones-switch" class="interruptor__input" disabled>
+                  <span class="interruptor__riel" aria-hidden="true"></span>
+                </label>
+              </div>
             </div>
-            <div class="apariencia-opcion__control">
-              <span id="apariencia-patrones-estado" class="apariencia-opcion__estado" aria-hidden="true">Cargando…</span>
-              <label class="interruptor" aria-labelledby="apariencia-patrones-titulo">
-                <input type="checkbox" id="apariencia-patrones-switch" class="interruptor__input" disabled>
-                <span class="interruptor__riel" aria-hidden="true"></span>
-              </label>
+          </div>
+
+          <!-- Fuerza un tema de evento (Navidad, y los que se agreguen
+               después) sobre TODAS las cuentas mientras esté activo — ver
+               EVENTOS_DISPONIBLES/inicializarSelectorEventoAdmin() en
+               js/main.js. Un futuro evento solo agrega una <option> más
+               aquí (generada desde ese mismo array, no hardcodeada). -->
+          <div class="apariencia-seccion">
+            <h3>🎉 Eventos</h3>
+            <div class="apariencia-opcion">
+              <div class="apariencia-opcion__texto">
+                <label for="apariencia-evento-select" class="apariencia-opcion__titulo">Tema de evento activo</label>
+                <p class="apariencia-opcion__descripcion">Reemplaza temporalmente el tema personal de todos los alumnos mientras esté activo. Se aplica en su próxima recarga de página, no en tiempo real.</p>
+              </div>
+              <div class="apariencia-opcion__control">
+                <select id="apariencia-evento-select" class="apariencia-evento-select" disabled></select>
+              </div>
             </div>
           </div>
         </div>

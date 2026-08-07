@@ -8381,3 +8381,228 @@ button.badge-estado {
     margin: 0.5rem 0 0;
   }
 }
+
+/* =========================================================
+   EFECTOS DE "TEMA DE EVENTO": NAVIDAD
+
+   Todo aquí abajo vive detrás de :root[data-theme="navidad"]
+   body.patrones-activos — mismo doble gate que los patrones de los
+   otros 8 temas (ver más arriba): solo se ve si el docente activó el
+   evento (js/main.js, config_sitio.tema_evento_activo) Y no desactivó
+   los patrones de fondo desde el módulo Apariencia. Primer tema de
+   evento de una serie — un futuro evento (Día de Muertos, etc.) repite
+   este mismo patrón con su propio :root[data-theme] + sus propios
+   efectos, sin tocar nada de aquí.
+
+   4 efectos:
+   1. Nieve — capa fixed EN FRENTE del contenido (z-index alto,
+      pointer-events:none), copos inyectados por JS
+      (crearCapaNieveNavidad()) con posición/velocidad/deriva
+      aleatorias por copo vía variables CSS inline.
+   2. Brillo en los íconos de .riel — NO es un elemento nuevo, es un
+      box-shadow pulsante directo sobre los botones de navegación que
+      ya existen (ver corrección de sesión: nada de foquitos ni fila
+      nueva). Como .riel tiene display:none bajo 1024px, este efecto
+      desaparece solo en móvil — intencional.
+   3. Destellos dorados — ::after pulsante en un puñado de elementos
+      que YA usan el acento dorado en su borde/fondo (etiqueta-badge,
+      badge de aviso urgente, tarjetas de criterio). CSS puro (no JS):
+      así alcanza también a tarjetas que se renderizan después de
+      cargar la página (ej. desde Supabase), sin tener que re-escanear
+      el DOM.
+   4. Íconos flotantes — capa fixed DETRÁS del contenido (mismo
+      z-index: -1 que .hero::before/body::before de los otros temas,
+      aunque es un <div> real inyectado por JS en vez de un
+      pseudo-elemento único, porque necesita varios íconos
+      independientes). SVG inline propios (no emoji nativo: el emoji no
+      se puede recolorear con CSS, y el rojo acebo de campana/acebo/
+      bastón necesitaba control de color real).
+
+   Reducción de movimiento: cada animación vive en su propio
+   @media (prefers-reduced-motion: no-preference); la apariencia base
+   (fuera de esa media query) ya deja todo visible y quieto, así que
+   "reduce" no necesita reglas propias — mismo criterio que los
+   patrones de fondo. */
+
+/* ---- 1. Nieve ---- */
+.capa-nieve-navidad {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.copo-nieve {
+  position: absolute;
+  top: var(--copo-top, 0);
+  left: var(--copo-left, 0);
+  width: var(--copo-tamano, 6px);
+  height: var(--copo-tamano, 6px);
+  border-radius: 50%;
+  background-color: #F5F5F0;
+  opacity: var(--copo-opacidad, 0.6);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes caerNieve {
+    0%   { transform: translate(0, 0); }
+    10%  { transform: translate(calc(var(--copo-deriva, 1) * 10px), 10vh); }
+    20%  { transform: translate(calc(var(--copo-deriva, 1) * -10px), 20vh); }
+    30%  { transform: translate(calc(var(--copo-deriva, 1) * 10px), 30vh); }
+    40%  { transform: translate(calc(var(--copo-deriva, 1) * -10px), 40vh); }
+    50%  { transform: translate(calc(var(--copo-deriva, 1) * 10px), 50vh); }
+    60%  { transform: translate(calc(var(--copo-deriva, 1) * -10px), 60vh); }
+    70%  { transform: translate(calc(var(--copo-deriva, 1) * 10px), 70vh); }
+    80%  { transform: translate(calc(var(--copo-deriva, 1) * -10px), 80vh); }
+    90%  { transform: translate(calc(var(--copo-deriva, 1) * 10px), 90vh); }
+    100% { transform: translate(0, 100vh); }
+  }
+
+  .copo-nieve {
+    animation: caerNieve var(--copo-duracion, 12s) linear infinite;
+    animation-delay: var(--copo-delay, 0s);
+  }
+}
+
+/* ---- 2. Brillo en íconos de .riel (sin elemento nuevo) ---- */
+:root[data-theme="navidad"] body.patrones-activos .riel__boton {
+  box-shadow: 0 0 6px 1px rgba(212, 175, 55, 0.55);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes brilloIconoNavidad {
+    0%, 100% { box-shadow: 0 0 6px 1px rgba(44, 122, 79, 0.55); }
+    33%      { box-shadow: 0 0 8px 2px rgba(212, 175, 55, 0.7); }
+    66%      { box-shadow: 0 0 6px 1px rgba(245, 245, 240, 0.55); }
+  }
+
+  :root[data-theme="navidad"] body.patrones-activos .riel__boton {
+    animation: brilloIconoNavidad 4s ease-in-out infinite;
+  }
+
+  :root[data-theme="navidad"] body.patrones-activos .riel__boton:nth-child(2) { animation-delay: 0.5s; }
+  :root[data-theme="navidad"] body.patrones-activos .riel__boton:nth-child(3) { animation-delay: 1s; }
+  :root[data-theme="navidad"] body.patrones-activos .riel__boton:nth-child(4) { animation-delay: 1.5s; }
+  :root[data-theme="navidad"] body.patrones-activos .riel__boton:nth-child(5) { animation-delay: 2s; }
+}
+
+/* ---- 3. Destellos dorados (cerca de acentos ya existentes) ---- */
+:root[data-theme="navidad"] body.patrones-activos .etiqueta-badge,
+:root[data-theme="navidad"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"] {
+  position: relative;
+}
+
+:root[data-theme="navidad"] body.patrones-activos .etiqueta-badge::after,
+:root[data-theme="navidad"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"]::after,
+:root[data-theme="navidad"] body.patrones-activos .criterio-tarjeta::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #D4AF37;
+  box-shadow: 0 0 4px 1px rgba(212, 175, 55, 0.8);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes destelloDorado {
+    0%, 100% { opacity: 0; transform: scale(0.4); }
+    50%      { opacity: 1; transform: scale(1.2); }
+  }
+
+  :root[data-theme="navidad"] body.patrones-activos .etiqueta-badge::after,
+  :root[data-theme="navidad"] body.patrones-activos .badge-prioridad[data-prioridad="recordatorio"]::after,
+  :root[data-theme="navidad"] body.patrones-activos .criterio-tarjeta::after {
+    animation: destelloDorado 3s ease-in-out infinite;
+  }
+
+  :root[data-theme="navidad"] body.patrones-activos .criterio-tarjeta:nth-child(2)::after { animation-delay: 1s; }
+  :root[data-theme="navidad"] body.patrones-activos .criterio-tarjeta:nth-child(3)::after { animation-delay: 2s; }
+  :root[data-theme="navidad"] body.patrones-activos .criterio-tarjeta:nth-child(4)::after { animation-delay: 0.5s; }
+}
+
+/* ---- 4. Íconos flotantes decorativos ---- */
+.capa-iconos-navidad {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.icono-flotante-navidad {
+  position: absolute;
+  top: var(--icono-top, 0);
+  left: var(--icono-left, 0);
+  width: var(--icono-tamano, 28px);
+  height: var(--icono-tamano, 28px);
+  opacity: var(--icono-opacidad, 0.12);
+}
+
+.icono-flotante-navidad svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes flotarIconoNavidad {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-16px); }
+  }
+
+  .icono-flotante-navidad {
+    animation: flotarIconoNavidad var(--icono-duracion, 8s) ease-in-out infinite;
+    animation-delay: var(--icono-delay, 0s);
+  }
+}
+
+/* ---- Módulo Apariencia: subsección "Eventos" ---- */
+.apariencia-seccion {
+  margin-bottom: 2rem;
+}
+
+.apariencia-seccion:last-child {
+  margin-bottom: 0;
+}
+
+.apariencia-evento-select {
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-size: 0.85rem;
+  min-width: 180px;
+  cursor: pointer;
+}
+
+.apariencia-evento-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---- Selector de 10 temas deshabilitado durante un evento (#modal-tema
+   y "Personalización" de cuenta.html) — ver actualizarUIGridSegunEvento()
+   en js/main.js. El aviso se inserta/quita dinámicamente justo antes del
+   grid, mismo texto en los dos puntos de acceso. ---- */
+.tema-tarjeta__grid--deshabilitado {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.tema-grid__aviso-evento {
+  margin: 0 0 0.85rem;
+  padding: 0.6rem 0.85rem;
+  background-color: rgba(212, 175, 55, 0.12);
+  border: 1px solid var(--color-turquesa);
+  border-radius: var(--radio-md);
+  color: var(--color-texto);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
