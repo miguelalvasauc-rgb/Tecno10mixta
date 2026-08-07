@@ -6194,15 +6194,26 @@ function crearCapaIconosFlotantesNavidad() {
   capa.className = "capa-iconos-navidad";
   capa.setAttribute("aria-hidden", "true");
 
+  // Índices de ICONOS_NAVIDAD en tono verde pino (árbol=0, reno=2): sobre
+  // el fondo verde pino del tema pierden contraste incluso antes de
+  // aplicar opacidad, así que necesitan un rango más alto que el resto
+  // (dorado/blanco/rojo acebo, que ya contrastan bien de por sí) para
+  // leerse igual de notorios — mismo ícono, misma opacidad final
+  // percibida, rango distinto por color.
+  const INDICES_TONO_VERDE = new Set([0, 2]);
+
   const TOTAL_ICONOS = 12;
   for (let i = 0; i < TOTAL_ICONOS; i++) {
+    const indiceIcono = Math.floor(Math.random() * ICONOS_NAVIDAD.length);
+    const [opacidadMin, opacidadMax] = INDICES_TONO_VERDE.has(indiceIcono) ? [0.55, 0.65] : [0.35, 0.45];
+
     const icono = document.createElement("span");
     icono.className = "icono-flotante-navidad";
-    icono.innerHTML = ICONOS_NAVIDAD[Math.floor(Math.random() * ICONOS_NAVIDAD.length)];
+    icono.innerHTML = ICONOS_NAVIDAD[indiceIcono];
     icono.style.setProperty("--icono-top", (Math.random() * 100).toFixed(1) + "vh");
     icono.style.setProperty("--icono-left", (Math.random() * 100).toFixed(1) + "vw");
     icono.style.setProperty("--icono-tamano", (20 + Math.random() * 16).toFixed(0) + "px");
-    icono.style.setProperty("--icono-opacidad", (0.08 + Math.random() * 0.08).toFixed(2));
+    icono.style.setProperty("--icono-opacidad", (opacidadMin + Math.random() * (opacidadMax - opacidadMin)).toFixed(2));
     icono.style.setProperty("--icono-duracion", (6 + Math.random() * 6).toFixed(1) + "s");
     icono.style.setProperty("--icono-delay", (-Math.random() * 10).toFixed(1) + "s");
     capa.appendChild(icono);
