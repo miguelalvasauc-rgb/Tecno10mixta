@@ -3132,6 +3132,12 @@ async function obtenerPatronesFondoActivos() {
 // petición en vez de duplicarla.
 const promesaTrimestreDesbloqueado = obtenerTrimestreDesbloqueado();
 
+// Misma razón que promesaTrimestreDesbloqueado arriba: arranca ya, se
+// espera dentro de DOMContentLoaded (ver sección 10) para decidir si se
+// agrega la clase "patrones-activos" al <body> (ver css/style.css,
+// patrones de fondo de los 8 temas nuevos).
+const promesaPatronesFondoActivos = obtenerPatronesFondoActivos();
+
 // Trimestre de la página actual ('1', '2' o '3'), tomado de
 // <body data-trimestre="…">. En la portada (index.html) no existe
 // ese atributo, por lo que queda en null.
@@ -12305,6 +12311,14 @@ function activarGuiaAlumno() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   aplicarTema(temaActual);
+
+  // Mientras la promesa no resuelve (o si falla/devuelve false), el
+  // <body> se queda sin la clase y css/style.css no muestra ningún
+  // patrón — el mismo fallback "false" de obtenerPatronesFondoActivos()
+  // ya evita el parpadeo de "aparece y desaparece".
+  if (await promesaPatronesFondoActivos) {
+    document.body.classList.add("patrones-activos");
+  }
 
   // Sincroniza el <select> de grupo de la barra lateral con el grupo
   // recuperado de localStorage (por defecto "todos").
