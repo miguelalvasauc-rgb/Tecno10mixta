@@ -5,6 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mapa del sitio · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
   <meta name="description" content="Mapa del sitio: encuentra rápido cualquier página o sección — Educación Tecnológica 3°C y 3°E, Esc. Sec. No. 10 Mixta 'Fernando Hernández Alcalá'.">
+  <script>
+    // Aplica el tema lo antes posible (antes de cargar css/style.css) para
+    // evitar el flash del tema por defecto al cargar la página. Autocontenido
+    // a propósito — no depende de main.js, que carga después. Un tema de
+    // evento cacheado (Navidad, Día de Muertos, etc.) gana sobre el tema
+    // personal; si no hay evento, usa el tema personal guardado, o si nunca
+    // se ha guardado nada, el de sistema (prefers-color-scheme). Las claves
+    // de localStorage deben coincidir con CLAVE_TEMA y
+    // CLAVE_CACHE_TEMA_EVENTO_ACTIVO en js/main.js.
+    (function () {
+      var temaEvento = localStorage.getItem("cache_tema_evento_activo");
+      var tema =
+        (temaEvento && temaEvento !== "ninguno" && temaEvento) ||
+        localStorage.getItem("temaSeleccionado") ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "oscuro" : "claro");
+      document.documentElement.setAttribute("data-theme", tema);
+    })();
+  </script>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>

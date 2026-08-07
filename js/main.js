@@ -3144,10 +3144,23 @@ const promesaPatronesFondoActivos = obtenerPatronesFondoActivos();
 // para que el flujo normal de tema personal siga como siempre. Usa
 // leerValorConfigSitio(), definida más abajo (sección de módulos admin)
 // pero ya disponible acá — es function declaration, no const, sin TDZ.
+//
+// El resultado se cachea en localStorage (siempre como "ninguno" o el
+// slug real, nunca vacío) para que el script inline de <head> de cada
+// página (ver las 11 páginas HTML) pueda aplicar el tema correcto de
+// forma síncrona en la SIGUIENTE carga, antes de que Supabase responda
+// — evita el flash del tema por defecto. Ese script inline es
+// autocontenido y no importa este archivo, así que la clave
+// "cache_tema_evento_activo" está literal ahí también: si se cambia
+// acá, hay que cambiarla en las 11 páginas.
+const CLAVE_CACHE_TEMA_EVENTO_ACTIVO = "cache_tema_evento_activo";
+
 async function obtenerTemaEventoActivo() {
   try {
     const valor = await leerValorConfigSitio("tema_evento_activo");
-    return valor && valor !== "ninguno" ? valor : null;
+    const resultado = valor && valor !== "ninguno" ? valor : null;
+    localStorage.setItem(CLAVE_CACHE_TEMA_EVENTO_ACTIVO, resultado || "ninguno");
+    return resultado;
   } catch {
     return null;
   }
