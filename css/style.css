@@ -87,6 +87,13 @@
   --color-primario-texto: #E8EEF4;
   --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+  /* Puente para el riel/barra inferior (sistema "Bitácora" heredado, ver
+     --color-superficie-baja/--md-outline-variant en oscuro/claro más
+     arriba): esos dos tokens no se definieron para los 8 temas nuevos,
+     así que sin este puente el riel se quedaba con el valor de claro
+     (fallback del :root base) sin importar el tema activo. */
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
 }
 
 :root[data-theme="gamer-rgb"] {
@@ -103,6 +110,8 @@
   --color-primario-texto: #E8EEF4;
   --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
 }
 
 :root[data-theme="cyberpunk-gold"] {
@@ -127,6 +136,8 @@
      8.80:1 contra el dorado, AA de sobra. */
   --color-primario-texto-suave: #3A3428;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
 }
 
 :root[data-theme="galaxia"] {
@@ -143,6 +154,8 @@
   --color-primario-texto: #E8EEF4;
   --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
 }
 
 :root[data-theme="rosa-pastel"] {
@@ -159,6 +172,8 @@
   --color-primario-texto: #E8EEF4;
   --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 20px rgba(178, 51, 132, 0.12);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
 }
 
 :root[data-theme="bosque-calido"] {
@@ -175,6 +190,8 @@
   --color-primario-texto: #E8EEF4;
   --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 20px rgba(47, 82, 51, 0.12);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
 }
 
 :root[data-theme="menta-tecnologico"] {
@@ -196,6 +213,8 @@
   --color-primario-texto: #E8EEF4;
   --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 20px rgba(13, 148, 136, 0.12);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
 }
 
 :root[data-theme="editorial-sepia"] {
@@ -212,6 +231,8 @@
   --color-primario-texto: #E8EEF4;
   --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 20px rgba(26, 60, 64, 0.12);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
 }
 
 /* Turquesa siempre disponible como color secundario de marca (badges, tags) */
