@@ -530,6 +530,32 @@
             <div id="dashboard-cronograma" aria-live="polite"></div>
           </div>
         </div>
+
+        <h3>📊 Métricas adicionales</h3>
+        <div class="dashboard-ficha">
+          <!-- Única celda que ignora el filtro de Grupo de arriba (por
+               definición: es una comparación ENTRE grupos) — el aviso de
+               abajo lo aclara para que no se confunda con el resto de la
+               pestaña, que sí respeta ese filtro. -->
+          <div class="dashboard-ficha__celda dashboard-ficha__celda--ancha">
+            <h4 class="dashboard-ficha__titulo-celda">⚖️ Comparativa 3°C vs 3°E</h4>
+            <p class="dashboard-nota-alcance">ℹ️ Esta comparación siempre incluye ambos grupos, sin importar el filtro de Grupo de arriba.</p>
+            <div id="dashboard-comparativa-grupos" aria-live="polite"></div>
+          </div>
+          <div class="dashboard-ficha__celda">
+            <h4 class="dashboard-ficha__titulo-celda">⏱️ Puntualidad por tipo de entregable</h4>
+            <div id="dashboard-puntualidad-tipo" aria-live="polite"></div>
+          </div>
+          <div class="dashboard-ficha__celda">
+            <h4 class="dashboard-ficha__titulo-celda">📈 Evolución del promedio por secuencia</h4>
+            <div id="dashboard-evolucion-secuencia" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <h3>🕒 Actividad reciente</h3>
+        <div class="dashboard-ficha__celda">
+          <div id="dashboard-feed-actividad" aria-live="polite"></div>
+        </div>
       </section>
 
       <!-- Módulo "Apariencia" (tab-apariencia): infraestructura de control

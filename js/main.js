@@ -5021,11 +5021,22 @@ function construirTarjetaNivel(porcentaje) {
 // progreso del alumno de la sesión activa: el Dashboard, que evalúa
 // alumnos arbitrarios, pasa su propio checker respaldado por un mapa de
 // progreso ya consultado para ese alumno en vez de progresoCache.
-async function calcularAvanceGeneralAlumno(perfil, estaCompletado = itemEstaCompletado) {
+// Versión detallada de calcularAvanceGeneralAlumno: mismo recorrido de los 3
+// trimestres, pero además acumula totales/completadas por tipo de entregable
+// (tarea/actividad/proyecto) para el desglose de la card "Avance del ciclo"
+// del Dashboard (ver construirTarjetaAvanceCiclo()). calcularAvanceGeneralAlumno
+// se deja como envoltura delgada de esta función para no duplicar la lógica
+// y no afectar a su otro llamador (nivel del alumno en progreso.html).
+async function calcularAvanceGeneralAlumnoDetallado(perfil, estaCompletado = itemEstaCompletado) {
   const coincideConGrupoDelAlumno = (item) => item.grupo === "todos" || item.grupo === perfil.grupo;
 
   let totalGeneral = 0;
   let completadasGeneral = 0;
+  const porTipo = {
+    tarea: { total: 0, completadas: 0 },
+    actividad: { total: 0, completadas: 0 },
+    proyecto: { total: 0, completadas: 0 },
+  };
 
   for (const trimestre of ["1", "2", "3"]) {
     const tareas = (await obtenerTareas(trimestre)).filter(coincideConGrupoDelAlumno);
@@ -5042,9 +5053,29 @@ async function calcularAvanceGeneralAlumno(perfil, estaCompletado = itemEstaComp
 
     totalGeneral += tareas.length + actividades.length + proyectos.length;
     completadasGeneral += completadasTareas + completadasActividades + completadasProyectos;
+
+    porTipo.tarea.total += tareas.length;
+    porTipo.tarea.completadas += completadasTareas;
+    porTipo.actividad.total += actividades.length;
+    porTipo.actividad.completadas += completadasActividades;
+    porTipo.proyecto.total += proyectos.length;
+    porTipo.proyecto.completadas += completadasProyectos;
   }
 
-  return totalGeneral === 0 ? 0 : Math.round((completadasGeneral / totalGeneral) * 100);
+  const porcentaje = (bucket) => (bucket.total === 0 ? 0 : Math.round((bucket.completadas / bucket.total) * 100));
+
+  return {
+    avance: totalGeneral === 0 ? 0 : Math.round((completadasGeneral / totalGeneral) * 100),
+    porTipo: {
+      tarea: porcentaje(porTipo.tarea),
+      actividad: porcentaje(porTipo.actividad),
+      proyecto: porcentaje(porTipo.proyecto),
+    },
+  };
+}
+
+async function calcularAvanceGeneralAlumno(perfil, estaCompletado = itemEstaCompletado) {
+  return (await calcularAvanceGeneralAlumnoDetallado(perfil, estaCompletado)).avance;
 }
 
 // Panel de "Progreso" de la portada: solo existe en index.html (los
@@ -12416,6 +12447,20 @@ function calcularPctTardeOFaltante(entregables, mapaProgresoTrimestre, alumno) {
   return evaluables === 0 ? 0 : Math.round((tardeOFaltante / evaluables) * 100);
 }
 
+// Desglose por tipo de entregable de calcularPctTardeOFaltante para la
+// gráfica de puntualidad del Dashboard (ver renderizarPuntualidadPorTipoDashboard()):
+// mismo cálculo puro reutilizado tal cual, solo filtrando los entregables
+// de entrada por tipo antes de llamarlo — sin reimplementar la lógica de
+// "evaluable"/"tarde o faltante".
+function calcularPctTardeOFaltantePorTipo(entregablesDelAlumno, mapaProgresoTrimestre, alumno) {
+  const resultado = {};
+  ["tarea", "actividad", "proyecto"].forEach((tipo) => {
+    const entregablesDelTipo = entregablesDelAlumno.filter((item) => item.tipoEntregable === tipo);
+    resultado[tipo] = calcularPctTardeOFaltante(entregablesDelTipo, mapaProgresoTrimestre, alumno);
+  });
+  return resultado;
+}
+
 // Núcleo del módulo: UNA sola consulta de alumnos + progreso (3
 // trimestres en paralelo) para derivar todo lo que necesitan los KPIs,
 // el semáforo, la tasa de entrega y el Top 5 — evita repetir esas
@@ -12441,18 +12486,22 @@ async function construirResumenAlumnosDashboard(trimestre, grupoFiltro) {
     const mapaProgresoAdaptado = crearMapaProgresoAdaptadoParaPromedio(mapasPorTrimestre, alumno);
     const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAdaptado);
 
-    const avance = await calcularAvanceGeneralAlumno(
+    const detalleAvance = await calcularAvanceGeneralAlumnoDetallado(
       { grupo: alumno.grupo },
       crearEstaCompletadoParaAlumno(mapasPorTrimestre, alumno)
     );
+    const avance = detalleAvance.avance;
 
     const pctTardeOFaltante = calcularPctTardeOFaltante(entregablesDelAlumno, mapaProgresoTrimestre, alumno);
+    const pctTardeOFaltantePorTipo = calcularPctTardeOFaltantePorTipo(entregablesDelAlumno, mapaProgresoTrimestre, alumno);
 
     resultados.push({
       alumno,
       avance,
+      avancePorTipo: detalleAvance.porTipo,
       promedioFinal: promedio.promedioFinal,
       pctTardeOFaltante,
+      pctTardeOFaltantePorTipo,
       riesgo: calcularRiesgoAlumno(avance, pctTardeOFaltante),
     });
   }
@@ -12476,7 +12525,230 @@ async function contarPendientesPorCalificar(trimestre, idsAlumnos) {
   return error ? 0 : count || 0;
 }
 
-function renderizarKPIsDashboard(resumenAlumnos, pendientes) {
+// Histórico semanal de "progreso" (calificacion/completado) para los
+// sparklines de KPI, SCOPEADO AL TRIMESTRE FILTRADO (a propósito distinto
+// del alcance de calcularAvanceGeneralAlumno, que es de todo el ciclo —
+// ver nota junto a construirTendenciaKPI: el sparkline muestra dinámica
+// reciente del trimestre, no una réplica histórica del número ciclo-wide
+// del KPI). Una sola consulta adicional (no una por KPI), reutilizando
+// los ids ya resueltos por construirResumenAlumnosDashboard.
+async function obtenerTendenciasSemanalesDashboard(trimestre, grupo, idsAlumnos) {
+  const vacio = { promedioSemanal: [], avanceSemanal: [] };
+  if (idsAlumnos.length === 0) return vacio;
+
+  const [{ data, error }, entregablesTodos] = await Promise.all([
+    clienteSupabase
+      .from("progreso")
+      .select("calificacion, completado, actualizado_en")
+      .eq("trimestre", trimestre)
+      .in("alumno_id", idsAlumnos)
+      .not("actualizado_en", "is", null)
+      .order("actualizado_en", { ascending: true }),
+    obtenerEntregablesPorTipo("todos", trimestre),
+  ]);
+
+  if (error || !data || data.length === 0) return vacio;
+
+  // Mismos entregables que ve cada alumno del grupo filtrado (grupo
+  // fijo, sin opción "Todos" en este módulo) × cantidad de alumnos =
+  // total de "completados posibles" para el % de avance acumulado.
+  const totalEntregablesGrupo =
+    entregablesTodos.filter((item) => item.grupo === "todos" || item.grupo === grupo).length * idsAlumnos.length;
+
+  const inicioSemanaISO = (fechaISO) => {
+    const fecha = new Date(fechaISO);
+    const diaISO = (fecha.getDay() + 6) % 7; // lunes = 0
+    fecha.setUTCDate(fecha.getUTCDate() - diaISO);
+    return fecha.toISOString().slice(0, 10);
+  };
+
+  const semanas = new Map();
+  data.forEach((fila) => {
+    const clave = inicioSemanaISO(fila.actualizado_en);
+    if (!semanas.has(clave)) semanas.set(clave, { sumaCalificacion: 0, nCalificaciones: 0, completadas: 0 });
+    const bucket = semanas.get(clave);
+    if (fila.calificacion != null) {
+      bucket.sumaCalificacion += Number(fila.calificacion);
+      bucket.nCalificaciones++;
+    }
+    if (fila.completado) bucket.completadas++;
+  });
+
+  const clavesOrdenadas = [...semanas.keys()].sort();
+  // Con menos de 3 semanas con datos, una línea no comunica una
+  // tendencia real (2 puntos siempre "suben" o "bajan") — se omite el
+  // sparkline en vez de simular una tendencia que no existe.
+  if (clavesOrdenadas.length < 3) return vacio;
+
+  const promedioSemanal = [];
+  const avanceSemanal = [];
+  let acumuladoCompletadas = 0;
+
+  clavesOrdenadas.forEach((clave) => {
+    const bucket = semanas.get(clave);
+    if (bucket.nCalificaciones > 0) {
+      promedioSemanal.push(bucket.sumaCalificacion / bucket.nCalificaciones);
+    }
+    acumuladoCompletadas += bucket.completadas;
+    if (totalEntregablesGrupo > 0) {
+      avanceSemanal.push(Math.min(100, (acumuladoCompletadas / totalEntregablesGrupo) * 100));
+    }
+  });
+
+  return {
+    promedioSemanal: promedioSemanal.length >= 3 ? promedioSemanal : [],
+    avanceSemanal: avanceSemanal.length >= 3 ? avanceSemanal : [],
+  };
+}
+
+function formatearValorTendencia(valor, unidad) {
+  return unidad === "porcentaje" ? Math.round(valor) + "%" : valor.toFixed(1);
+}
+
+// SVG puro (skill dataviz, mismo enfoque que construirFiguraBarraApilada
+// más abajo): polyline + relleno translúcido, sin librerías. role="img" +
+// <title> con el rango en palabras porque una línea sola no dice nada a
+// un lector de pantalla.
+function construirSparklineSVG(valores, unidad) {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const ANCHO = 72;
+  const ALTO = 24;
+  const PAD = 2;
+
+  const minVal = Math.min(...valores);
+  const maxVal = Math.max(...valores);
+  const rango = maxVal - minVal || 1; // todos los valores iguales: línea plana, no división entre 0
+
+  const puntos = valores.map((valor, indice) => {
+    const x = PAD + (indice / (valores.length - 1)) * (ANCHO - PAD * 2);
+    const y = ALTO - PAD - ((valor - minVal) / rango) * (ALTO - PAD * 2);
+    return [x, y];
+  });
+  const puntosTexto = puntos.map(([x, y]) => x + "," + y).join(" ");
+
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 " + ANCHO + " " + ALTO);
+  svg.setAttribute("role", "img");
+  svg.classList.add("criterio-tarjeta__tendencia-svg");
+
+  const titulo = document.createElementNS(svgNS, "title");
+  titulo.textContent =
+    "Tendencia de las últimas " +
+    valores.length +
+    " semanas: de " +
+    formatearValorTendencia(valores[0], unidad) +
+    " a " +
+    formatearValorTendencia(valores[valores.length - 1], unidad);
+  svg.appendChild(titulo);
+
+  const relleno = document.createElementNS(svgNS, "polygon");
+  relleno.setAttribute(
+    "points",
+    PAD + "," + (ALTO - PAD) + " " + puntosTexto + " " + (ANCHO - PAD) + "," + (ALTO - PAD)
+  );
+  relleno.classList.add("criterio-tarjeta__tendencia-relleno");
+  svg.appendChild(relleno);
+
+  const linea = document.createElementNS(svgNS, "polyline");
+  linea.setAttribute("points", puntosTexto);
+  linea.classList.add("criterio-tarjeta__tendencia-linea");
+  svg.appendChild(linea);
+
+  return svg;
+}
+
+// null si no hay suficiente histórico (ver obtenerTendenciasSemanalesDashboard)
+// — el llamador simplemente no agrega el bloque, en vez de mostrar un
+// sparkline vacío o inventado.
+function construirTendenciaKPI(valores, unidad) {
+  if (!valores || valores.length < 3) return null;
+
+  const contenedor = document.createElement("div");
+  contenedor.className = "criterio-tarjeta__tendencia";
+  contenedor.appendChild(construirSparklineSVG(valores, unidad));
+
+  const primero = valores[0];
+  const ultimo = valores[valores.length - 1];
+  const delta = ultimo - primero;
+  const deltaAbsFormateado =
+    unidad === "porcentaje" ? Math.round(Math.abs(delta)) + " pts" : Math.abs(delta).toFixed(1);
+
+  const deltaTexto = document.createElement("span");
+  deltaTexto.className =
+    "criterio-tarjeta__tendencia-delta " +
+    (delta >= 0 ? "criterio-tarjeta__tendencia-delta--sube" : "criterio-tarjeta__tendencia-delta--baja");
+  deltaTexto.textContent = (delta >= 0 ? "▲ " : "▼ ") + deltaAbsFormateado;
+  contenedor.appendChild(deltaTexto);
+
+  return contenedor;
+}
+
+function construirTarjetaKPISimple(datos) {
+  const tarjeta = document.createElement("div");
+  tarjeta.className = "criterio-tarjeta";
+
+  const valor = document.createElement("div");
+  valor.className = "criterio-tarjeta__porcentaje";
+  valor.textContent = datos.icono + " " + datos.valor;
+
+  const titulo = document.createElement("h3");
+  titulo.textContent = datos.titulo;
+
+  tarjeta.append(valor, titulo);
+
+  const tendenciaEl = construirTendenciaKPI(datos.tendencia, datos.unidad);
+  if (tendenciaEl) tarjeta.appendChild(tendenciaEl);
+
+  return tarjeta;
+}
+
+const ETIQUETAS_TIPO_ENTREGABLE_DASHBOARD = { tarea: "Tareas", actividad: "Actividades", proyecto: "Proyectos" };
+
+// Card "Avance del ciclo": barra de progreso como punto focal + desglose por
+// tipo de entregable debajo (patrón "Storage Dashboard" de 21st.dev,
+// traducido a HTML/CSS puro). porTipoPromedio ya viene promediado entre
+// resumenAlumnos, construido a partir de avancePorTipo de cada alumno
+// (calcularAvanceGeneralAlumnoDetallado), sin duplicar ese cálculo aquí.
+function construirTarjetaAvanceCiclo(avancePromedio, porTipoPromedio, tendencia) {
+  const tarjeta = document.createElement("div");
+  tarjeta.className = "criterio-tarjeta";
+
+  const valor = document.createElement("div");
+  valor.className = "criterio-tarjeta__porcentaje";
+  valor.textContent = "🎯 " + avancePromedio + "%";
+
+  const titulo = document.createElement("h3");
+  titulo.textContent = "Avance del ciclo";
+
+  const barra = document.createElement("div");
+  barra.className = "criterio-tarjeta__barra";
+  const relleno = document.createElement("div");
+  relleno.className = "criterio-tarjeta__relleno";
+  relleno.style.width = avancePromedio + "%";
+  barra.appendChild(relleno);
+
+  tarjeta.append(valor, titulo, barra);
+
+  const desglose = document.createElement("ul");
+  desglose.className = "criterio-tarjeta__desglose";
+  Object.entries(ETIQUETAS_TIPO_ENTREGABLE_DASHBOARD).forEach(([tipo, etiqueta]) => {
+    const item = document.createElement("li");
+    const etiquetaEl = document.createElement("span");
+    etiquetaEl.textContent = etiqueta;
+    const valorEl = document.createElement("span");
+    valorEl.textContent = (porTipoPromedio[tipo] ?? 0) + "%";
+    item.append(etiquetaEl, valorEl);
+    desglose.appendChild(item);
+  });
+  tarjeta.appendChild(desglose);
+
+  const tendenciaEl = construirTendenciaKPI(tendencia, "porcentaje");
+  if (tendenciaEl) tarjeta.appendChild(tendenciaEl);
+
+  return tarjeta;
+}
+
+function renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias) {
   const contenedor = document.getElementById("dashboard-kpis");
   if (!contenedor) return;
   contenedor.innerHTML = "";
@@ -12487,28 +12759,38 @@ function renderizarKPIsDashboard(resumenAlumnos, pendientes) {
   const avancePromedio =
     total === 0 ? 0 : Math.round(resumenAlumnos.reduce((suma, r) => suma + r.avance, 0) / total);
   const enRiesgo = resumenAlumnos.filter((r) => r.riesgo >= UMBRAL_RIESGO_ZONA_ROJA).length;
-
-  const tarjetas = [
-    { icono: "📈", titulo: "Promedio general", valor: promedioGeneral.toFixed(1) },
-    { icono: "✅", titulo: "Pendientes por calificar", valor: String(pendientes) },
-    { icono: "🎯", titulo: "Avance del ciclo", valor: avancePromedio + "%" },
-    { icono: "🚨", titulo: "Alumnos en riesgo", valor: String(enRiesgo) },
-  ];
-
-  tarjetas.forEach((datos) => {
-    const tarjeta = document.createElement("div");
-    tarjeta.className = "criterio-tarjeta";
-
-    const valor = document.createElement("div");
-    valor.className = "criterio-tarjeta__porcentaje";
-    valor.textContent = datos.icono + " " + datos.valor;
-
-    const titulo = document.createElement("h3");
-    titulo.textContent = datos.titulo;
-
-    tarjeta.append(valor, titulo);
-    contenedor.appendChild(tarjeta);
+  const porTipoPromedio = {};
+  Object.keys(ETIQUETAS_TIPO_ENTREGABLE_DASHBOARD).forEach((tipo) => {
+    porTipoPromedio[tipo] =
+      total === 0
+        ? 0
+        : Math.round(resumenAlumnos.reduce((suma, r) => suma + (r.avancePorTipo?.[tipo] || 0), 0) / total);
   });
+
+  contenedor.append(
+    construirTarjetaKPISimple({
+      icono: "📈",
+      titulo: "Promedio general",
+      valor: promedioGeneral.toFixed(1),
+      tendencia: tendencias?.promedioSemanal,
+      unidad: "decimal",
+    }),
+    construirTarjetaKPISimple({
+      icono: "✅",
+      titulo: "Pendientes por calificar",
+      valor: String(pendientes),
+      tendencia: null,
+      unidad: null,
+    }),
+    construirTarjetaAvanceCiclo(avancePromedio, porTipoPromedio, tendencias?.avanceSemanal),
+    construirTarjetaKPISimple({
+      icono: "🚨",
+      titulo: "Alumnos en riesgo",
+      valor: String(enRiesgo),
+      tendencia: null,
+      unidad: null,
+    })
+  );
 }
 
 // Construye una gráfica de barra horizontal 100%-apilada de UNA sola
@@ -12762,6 +13044,392 @@ function renderizarTop5RiesgoDashboard(resumenAlumnos) {
   contenedor.appendChild(lista);
 }
 
+// Métricas agregadas de un resumenAlumnos (mismo array que produce
+// construirResumenAlumnosDashboard) para la comparativa de grupos: cero
+// cálculo nuevo, solo promedios/porcentajes sobre promedioFinal/
+// pctTardeOFaltante/riesgo que esa función ya deja listos por alumno.
+function metricasGrupoDashboard(resumenAlumnos) {
+  const total = resumenAlumnos.length;
+  if (total === 0) return { promedio: 0, pctATiempo: 0, pctEnRiesgo: 0 };
+
+  const promedio = resumenAlumnos.reduce((suma, r) => suma + r.promedioFinal, 0) / total;
+  const promedioTarde = resumenAlumnos.reduce((suma, r) => suma + r.pctTardeOFaltante, 0) / total;
+  const enRiesgo = resumenAlumnos.filter((r) => r.riesgo >= UMBRAL_RIESGO_ZONA_ROJA).length;
+
+  return {
+    promedio: Math.round(promedio * 10) / 10,
+    pctATiempo: Math.round(100 - promedioTarde),
+    pctEnRiesgo: Math.round((enRiesgo / total) * 100),
+  };
+}
+
+// Comparativa 3°C vs 3°E: la ÚNICA sección del Dashboard que ignora el
+// filtro de Grupo por definición (ver nota visual en
+// renderizarComparativaGruposDashboard). Reutiliza resumenGrupoActual (ya
+// calculado por renderizarDashboard para el grupo filtrado) y solo hace
+// UNA consulta adicional — vía construirResumenAlumnosDashboard tal
+// cual, sin query nueva — para el grupo complementario.
+async function construirResumenPorGrupoDashboard(trimestre, resumenGrupoActual, grupoActual) {
+  const resultado = {};
+  for (const grupo of ["3C", "3E"]) {
+    resultado[grupo] =
+      grupo === grupoActual ? resumenGrupoActual : await construirResumenAlumnosDashboard(trimestre, grupo);
+  }
+  return resultado;
+}
+
+function renderizarComparativaGruposDashboard(resumenPorGrupo) {
+  const contenedor = document.getElementById("dashboard-comparativa-grupos");
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  const metricas3C = metricasGrupoDashboard(resumenPorGrupo["3C"]);
+  const metricas3E = metricasGrupoDashboard(resumenPorGrupo["3E"]);
+
+  const filas = [
+    { etiqueta: "Promedio general", valor3C: metricas3C.promedio.toFixed(1), valor3E: metricas3E.promedio.toFixed(1) },
+    { etiqueta: "% a tiempo", valor3C: metricas3C.pctATiempo + "%", valor3E: metricas3E.pctATiempo + "%" },
+    { etiqueta: "% en riesgo", valor3C: metricas3C.pctEnRiesgo + "%", valor3E: metricas3E.pctEnRiesgo + "%" },
+  ];
+
+  // Reutiliza .tabla-calificacion tal cual (misma clase que la tabla de
+  // fallback de construirFiguraBarraApilada) en vez de definir un estilo
+  // de tabla nuevo solo para esta comparación.
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-calificacion";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  ["Métrica", "3°C", "3°E"].forEach((texto) => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  filas.forEach(({ etiqueta, valor3C, valor3E }) => {
+    const tr = document.createElement("tr");
+    const thFila = document.createElement("th");
+    thFila.scope = "row";
+    thFila.textContent = etiqueta;
+    const td3C = document.createElement("td");
+    td3C.textContent = valor3C;
+    const td3E = document.createElement("td");
+    td3E.textContent = valor3E;
+    tr.append(thFila, td3C, td3E);
+    tbody.appendChild(tr);
+  });
+  tabla.appendChild(tbody);
+
+  contenedor.appendChild(tabla);
+}
+
+// Puntualidad por tipo de entregable: reutiliza construirFiguraBarraApilada
+// (misma pieza del semáforo/tasa de entrega) 3 veces, una por tipo, con las
+// mismas categorías/colores de COLORES_ENTREGA/INK_ENTREGA — y
+// pctTardeOFaltantePorTipo, ya calculado por alumno en
+// construirResumenAlumnosDashboard, así que no hace falta ninguna consulta
+// adicional.
+function renderizarPuntualidadPorTipoDashboard(resumenAlumnos) {
+  const contenedor = document.getElementById("dashboard-puntualidad-tipo");
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  const total = resumenAlumnos.length;
+  if (total === 0) {
+    const vacio = document.createElement("p");
+    vacio.className = "sin-resultados";
+    vacio.textContent = "Sin alumnos con cuenta activa para este filtro.";
+    contenedor.appendChild(vacio);
+    return;
+  }
+
+  Object.entries(ETIQUETAS_TIPO_ENTREGABLE_DASHBOARD).forEach(([tipo, etiqueta]) => {
+    const promedioTarde =
+      resumenAlumnos.reduce((suma, r) => suma + (r.pctTardeOFaltantePorTipo?.[tipo] || 0), 0) / total;
+    const valores = { "A tiempo": Math.round(100 - promedioTarde), "Tarde o faltante": Math.round(promedioTarde) };
+
+    const subtitulo = document.createElement("p");
+    subtitulo.className = "dashboard-grafica__titulo";
+    subtitulo.textContent = etiqueta;
+    contenedor.appendChild(subtitulo);
+
+    contenedor.appendChild(
+      construirFiguraBarraApilada({
+        tituloAccesible: "Puntualidad de " + etiqueta.toLowerCase(),
+        categorias: ["A tiempo", "Tarde o faltante"],
+        valores,
+        colores: COLORES_ENTREGA,
+        inkPorCategoria: INK_ENTREGA,
+      })
+    );
+  });
+}
+
+// item.secuencia es un string largo predefinido ("🧠 Secuencia 1 — ...",
+// ver claveSecuenciaDeEntregable) — se extrae solo el número para el eje X
+// y una etiqueta corta. Los entregables sin secuencia numerada (fallback
+// "Otras tareas"/etc.) quedan fuera de este gráfico a propósito: el
+// alcance pedido es "las 9 secuencias", no una 10ª categoría de sobras.
+function etiquetaCortaSecuencia(claveSecuencia) {
+  const coincidencia = claveSecuencia.match(/Secuencia\s+(\d+)/);
+  return coincidencia ? "Sec. " + coincidencia[1] : null;
+}
+
+// Promedio de calificacion por secuencia (extensión del mismo patrón de
+// agrupar-por-claveSecuenciaDeEntregable que ya usa promedioDeTipo() dentro
+// de calcularPromedioTrimestre, pero agregado por grupo completo en vez de
+// por alumno). Reutiliza obtenerAlumnosParaCalificacion/
+// obtenerEntregablesPorTipo/obtenerMapasProgresoPorTrimestre tal cual —
+// mismas funciones de consulta ya existentes, sin inventar una forma de
+// query nueva.
+async function obtenerEvolucionPromedioPorSecuencia(trimestre, grupoFiltro) {
+  const idsAlumnos = (await obtenerAlumnosParaCalificacion(grupoFiltro))
+    .filter((alumno) => alumno.usado !== false && alumno.auth_user_id)
+    .map((alumno) => alumno.auth_user_id);
+  if (idsAlumnos.length === 0) return [];
+
+  const entregablesTodos = await obtenerEntregablesPorTipo("todos", trimestre);
+  const entregablesDelGrupo = entregablesTodos.filter(
+    (item) => item.grupo === "todos" || item.grupo === grupoFiltro
+  );
+
+  const mapasPorTrimestre = await obtenerMapasProgresoPorTrimestre(idsAlumnos);
+  const mapaProgresoTrimestre = mapasPorTrimestre.get(trimestre);
+
+  const porSecuencia = new Map();
+  entregablesDelGrupo.forEach((item) => {
+    const etiqueta = etiquetaCortaSecuencia(claveSecuenciaDeEntregable(item));
+    if (!etiqueta) return;
+
+    if (!porSecuencia.has(etiqueta)) {
+      porSecuencia.set(etiqueta, { suma: 0, n: 0, orden: Number(etiqueta.replace("Sec. ", "")) });
+    }
+    const bucket = porSecuencia.get(etiqueta);
+
+    idsAlumnos.forEach((alumnoId) => {
+      const fila = mapaProgresoTrimestre.get(alumnoId + "-" + item.tipoEntregable + "-" + item.id);
+      if (fila && fila.calificacion != null) {
+        bucket.suma += Number(fila.calificacion);
+        bucket.n++;
+      }
+    });
+  });
+
+  return [...porSecuencia.entries()]
+    .filter(([, bucket]) => bucket.n > 0)
+    .sort((a, b) => a[1].orden - b[1].orden)
+    .map(([etiqueta, bucket]) => ({ etiqueta, promedio: bucket.suma / bucket.n }));
+}
+
+// Gráfica de barras verticales en escala absoluta (0-escalaMax), SVG puro:
+// distinta de construirFiguraBarraApilada (esa es una sola fila 100%
+// apilada de porcentajes) porque aquí cada barra es independiente sobre la
+// misma escala 0-10 de calificación — mismo patrón de accesibilidad
+// (role="img" + aria-label + tabla de respaldo con el mismo botón toggle)
+// para que ambas gráficas del Dashboard se sientan consistentes.
+function construirFiguraBarrasVerticales({ tituloAccesible, etiquetas, valores, colorBarra, escalaMax }) {
+  contadorFigurasDashboard++;
+  const idTabla = "dashboard-tabla-" + contadorFigurasDashboard;
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const figura = document.createElement("figure");
+  figura.className = "dashboard-grafica";
+
+  const ANCHO = 320;
+  const ALTO_TOTAL = 140;
+  const ALTO_BARRAS = ALTO_TOTAL - 24;
+  const GAP = 6;
+  const anchoBarra = (ANCHO - GAP * (etiquetas.length - 1)) / etiquetas.length;
+
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 " + ANCHO + " " + ALTO_TOTAL);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", tituloAccesible + " — ver la tabla de abajo para el detalle exacto");
+  svg.classList.add("dashboard-grafica__svg");
+
+  etiquetas.forEach((etiqueta, indice) => {
+    const valor = valores[indice] || 0;
+    const alturaBarra = Math.max(0, (valor / escalaMax) * ALTO_BARRAS);
+    const x = indice * (anchoBarra + GAP);
+    const y = ALTO_BARRAS - alturaBarra;
+
+    const barra = document.createElementNS(svgNS, "rect");
+    barra.setAttribute("x", String(x));
+    barra.setAttribute("y", String(y));
+    barra.setAttribute("width", String(anchoBarra));
+    barra.setAttribute("height", String(alturaBarra));
+    barra.setAttribute("rx", "3");
+    barra.setAttribute("fill", colorBarra);
+    const tituloBarra = document.createElementNS(svgNS, "title");
+    tituloBarra.textContent = etiqueta + ": " + valor.toFixed(1);
+    barra.appendChild(tituloBarra);
+    svg.appendChild(barra);
+
+    const texto = document.createElementNS(svgNS, "text");
+    texto.setAttribute("x", String(x + anchoBarra / 2));
+    texto.setAttribute("y", String(ALTO_BARRAS + 16));
+    texto.setAttribute("class", "dashboard-grafica__etiqueta-barra");
+    texto.textContent = etiqueta;
+    svg.appendChild(texto);
+  });
+
+  figura.appendChild(svg);
+
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "boton-secundario dashboard-grafica__boton-tabla";
+  boton.textContent = "📊 Ver como tabla";
+  boton.setAttribute("aria-expanded", "false");
+  boton.setAttribute("aria-controls", idTabla);
+  figura.appendChild(boton);
+
+  const contenedorTabla = document.createElement("div");
+  contenedorTabla.id = idTabla;
+  contenedorTabla.className = "dashboard-grafica__tabla";
+  contenedorTabla.hidden = true;
+
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-calificacion";
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  etiquetas.forEach((etiqueta) => {
+    const th = document.createElement("th");
+    th.textContent = etiqueta;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  const filaValores = document.createElement("tr");
+  valores.forEach((valor) => {
+    const td = document.createElement("td");
+    td.textContent = valor.toFixed(1);
+    filaValores.appendChild(td);
+  });
+  tbody.appendChild(filaValores);
+  tabla.appendChild(tbody);
+  contenedorTabla.appendChild(tabla);
+  figura.appendChild(contenedorTabla);
+
+  boton.addEventListener("click", () => {
+    const seVaAAbrir = contenedorTabla.hidden;
+    contenedorTabla.hidden = !seVaAAbrir;
+    boton.setAttribute("aria-expanded", String(seVaAAbrir));
+  });
+
+  return figura;
+}
+
+function renderizarEvolucionSecuenciaDashboard(datosSecuencia) {
+  const contenedor = document.getElementById("dashboard-evolucion-secuencia");
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  if (datosSecuencia.length === 0) {
+    const vacio = document.createElement("p");
+    vacio.className = "sin-resultados";
+    vacio.textContent = "Sin calificaciones registradas todavía para este trimestre y grupo.";
+    contenedor.appendChild(vacio);
+    return;
+  }
+
+  contenedor.appendChild(
+    construirFiguraBarrasVerticales({
+      tituloAccesible: "Promedio de calificación por secuencia",
+      etiquetas: datosSecuencia.map((d) => d.etiqueta),
+      valores: datosSecuencia.map((d) => d.promedio),
+      colorBarra: "var(--color-turquesa)",
+      escalaMax: 10,
+    })
+  );
+}
+
+// Igual que formatearFecha() pero para timestamps completos (con hora) —
+// esa función asume fecha-sola (le concatena "T00:00:00"), aquí
+// actualizado_en ya trae hora, así que se formatea directo.
+function formatearFechaHoraCorta(fechaHoraISO) {
+  const fecha = new Date(fechaHoraISO);
+  return (
+    fecha.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }) +
+    " · " +
+    fecha.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })
+  );
+}
+
+// Feed de actividad reciente: últimas entregas completadas del trimestre/
+// grupo filtrado. La tabla "progreso" no tiene columna created_at (solo
+// actualizado_en, que ya se usa en todo el resto del módulo) — se usa esa
+// como único timestamp en vez de inventar una columna que no existe.
+async function obtenerActividadRecienteDashboard(trimestre, resumenAlumnos, limite = 15) {
+  const idsAlumnos = resumenAlumnos.map((r) => r.alumno.auth_user_id);
+  if (idsAlumnos.length === 0) return [];
+
+  const { data, error } = await clienteSupabase
+    .from("progreso")
+    .select("alumno_id, tipo, item_id, origen, actualizado_en")
+    .eq("trimestre", trimestre)
+    .eq("completado", true)
+    .in("alumno_id", idsAlumnos)
+    .not("actualizado_en", "is", null)
+    .order("actualizado_en", { ascending: false })
+    .limit(limite);
+  if (error || !data) return [];
+
+  const mapaAlumnos = new Map(resumenAlumnos.map((r) => [r.alumno.auth_user_id, r.alumno]));
+  const entregablesTodos = await obtenerEntregablesPorTipo("todos", trimestre);
+  const mapaEntregables = new Map(entregablesTodos.map((item) => [item.tipoEntregable + "-" + item.id, item]));
+
+  return data
+    .map((fila) => {
+      const alumno = mapaAlumnos.get(fila.alumno_id);
+      const entregable = mapaEntregables.get(fila.tipo + "-" + fila.item_id);
+      if (!alumno || !entregable) return null;
+      return { alumno, entregable, origen: fila.origen, actualizadoEn: fila.actualizado_en };
+    })
+    .filter(Boolean);
+}
+
+function renderizarFeedActividadDashboard(actividad) {
+  const contenedor = document.getElementById("dashboard-feed-actividad");
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  if (actividad.length === 0) {
+    const vacio = document.createElement("p");
+    vacio.className = "sin-resultados";
+    vacio.textContent = "Sin entregas registradas todavía para este trimestre y grupo.";
+    contenedor.appendChild(vacio);
+    return;
+  }
+
+  const lista = document.createElement("ul");
+  lista.className = "dashboard-riesgo-lista";
+
+  actividad.forEach(({ alumno, entregable, origen, actualizadoEn }) => {
+    const li = document.createElement("li");
+    li.className = "dashboard-riesgo-lista__item";
+
+    const info = document.createElement("span");
+    info.className = "dashboard-riesgo-lista__info";
+    info.textContent = alumno.nombre + " · " + entregable.titulo;
+    li.appendChild(info);
+
+    const meta = document.createElement("span");
+    meta.className = "dashboard-riesgo-lista__meta";
+    const etiquetaOrigen = origen === "formulario" ? "📝 Formulario" : "🧑‍🏫 Registro manual";
+    meta.textContent = formatearFechaHoraCorta(actualizadoEn) + " · " + etiquetaOrigen;
+    li.appendChild(meta);
+
+    lista.appendChild(li);
+  });
+
+  contenedor.appendChild(lista);
+}
+
 // Barra de progreso simple (misma .barra-progreso ya usada en Progreso):
 // config_sitio SOLO guarda trimestre_desbloqueado (1/2/3) — las 9
 // "secuencias" de proyectos NO están bloqueadas por trimestre (las 9
@@ -12805,11 +13473,22 @@ async function renderizarDashboard() {
   const resumenAlumnos = await construirResumenAlumnosDashboard(trimestre, grupo);
   const idsAlumnos = resumenAlumnos.map((r) => r.alumno.auth_user_id);
   const pendientes = await contarPendientesPorCalificar(trimestre, idsAlumnos);
+  const tendencias = await obtenerTendenciasSemanalesDashboard(trimestre, grupo, idsAlumnos);
 
-  renderizarKPIsDashboard(resumenAlumnos, pendientes);
+  renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias);
   renderizarSemaforoDashboard(resumenAlumnos);
   renderizarTasaEntregaDashboard(resumenAlumnos);
   renderizarTop5RiesgoDashboard(resumenAlumnos);
+  renderizarPuntualidadPorTipoDashboard(resumenAlumnos);
+
+  const [resumenPorGrupo, evolucionSecuencia, actividadReciente] = await Promise.all([
+    construirResumenPorGrupoDashboard(trimestre, resumenAlumnos, grupo),
+    obtenerEvolucionPromedioPorSecuencia(trimestre, grupo),
+    obtenerActividadRecienteDashboard(trimestre, resumenAlumnos),
+  ]);
+  renderizarComparativaGruposDashboard(resumenPorGrupo);
+  renderizarEvolucionSecuenciaDashboard(evolucionSecuencia);
+  renderizarFeedActividadDashboard(actividadReciente);
 }
 
 async function inicializarModuloDashboard() {

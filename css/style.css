@@ -1077,19 +1077,92 @@ summary:focus-visible {
 }
 
 /* ---------- Hero ---------- */
+/* Gradiente animado (inspirado en "Hero Animated" de youcefbnm, 21st.dev
+   — solo como referencia visual, traducido a CSS vanilla, ver regla del
+   MCP 21st.dev en este CLAUDE.md): linear-gradient de 3 paradas que
+   empieza y termina en --color-primario (mismo color en 0% y 100% para
+   que el loop de la animación no salte al reiniciar), con
+   --color-primario-suave en medio — el drift de background-position
+   recorre ese degradado de ida y vuelta. Encima, un radial-gradient
+   ESTÁTICO (no anima su posición) con --color-acento da un toque de
+   color de marca en una esquina sin sumar una segunda animación —
+   "movimiento sutil" pedido en el brief, no dos capas en movimiento a
+   la vez. Ambas capas usan solo variables de tema (nada de color fijo),
+   así que se ven coherentes en los 10 temas sin overrides — salvo
+   menta-tecnologico, ver la nota de contraste más abajo. */
 .hero {
   position: relative;
   z-index: 0;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-primario-suave) 100%);
+  background:
+    radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--color-acento) 28%, transparent) 0%, transparent 42%),
+    linear-gradient(120deg, var(--color-primario) 0%, var(--color-primario-suave) 50%, var(--color-primario) 100%);
+  background-size: 100% 100%, 220% 220%;
+  background-position: 0% 0%, 0% 50%;
   color: var(--color-primario-texto);
   padding: 3rem 1.5rem;
   text-align: center;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes flujoGradienteHero {
+    0%, 100% { background-position: 0% 0%, 0% 50%; }
+    50%      { background-position: 0% 0%, 100% 50%; }
+  }
+
+  .hero {
+    animation: flujoGradienteHero 16s ease-in-out infinite;
+  }
+}
+
+/* --color-primario-texto (#E8EEF4, fijo en los 10 temas) da solo ~3.2:1
+   contra --color-primario (#0D9488) en este tema — INSUFICIENTE para AA
+   (4.5:1) y ya presente en el hero estático de antes, no introducido por
+   esta animación (mismo token, mismo par de colores). Como
+   --color-primario-texto lo consumen más componentes del sitio (header,
+   botones), corregirlo ahí sería tocar más que "la capa visual del
+   hero" — este override se queda local a .hero. #041F1B pasa AA contra
+   AMBOS extremos del gradiente animado (4.61:1 contra --color-primario,
+   6.94:1 contra --color-primario-suave) Y contra el radial de acento en
+   su punto más intenso (5.03:1) — el margen es tan estrecho que
+   --color-primario-texto-suave (que da ~2.5:1, peor todavía) no tiene
+   reemplazo seguro con más contraste: .hero p usa el mismo tono que el
+   título en este tema, la jerarquía queda solo en tamaño/peso. */
+:root[data-theme="menta-tecnologico"] .hero,
+:root[data-theme="menta-tecnologico"] .hero p {
+  color: #041F1B;
+}
+
 .hero__contenido {
   max-width: 720px;
   margin: 0 auto;
+}
+
+/* Entrada del contenido (badge/título/texto) escalonada, UNA sola vez al
+   cargar — no es scroll-driven (nada de animation-timeline aquí), así
+   que no se repite al hacer scroll. El estado de reposo (opacity:1, sin
+   transform) es el valor por defecto incondicional de abajo; la
+   animación en sí (que arranca en opacity:0) solo existe dentro de
+   prefers-reduced-motion: no-preference, así que con reducción de
+   movimiento activada el contenido aparece directo en su estado final,
+   nunca invisible. */
+.hero__contenido > * {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes entradaHeroContenido {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero__contenido > * {
+    animation: entradaHeroContenido 0.7s ease-out both;
+  }
+
+  .hero__contenido > *:nth-child(1) { animation-delay: 0s; }
+  .hero__contenido > *:nth-child(2) { animation-delay: 0.12s; }
+  .hero__contenido > *:nth-child(3) { animation-delay: 0.24s; }
 }
 
 .hero h2 {
@@ -4279,6 +4352,7 @@ summary:focus-visible {
 .criterio-tarjeta__barra {
   width: 100%;
   height: 8px;
+  margin-top: 0.75rem;
   background-color: var(--color-borde);
   border-radius: 999px;
   overflow: hidden;
@@ -4288,6 +4362,94 @@ summary:focus-visible {
   height: 100%;
   background-color: var(--color-turquesa);
   border-radius: 999px;
+}
+
+/* Desglose por tipo de entregable de la card "Avance del ciclo" (Dashboard,
+   ver construirTarjetaAvanceCiclo() en js/main.js) — texto alineado a la
+   izquierda porque .criterio-tarjeta centra todo lo demás por defecto. */
+.criterio-tarjeta__desglose {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+}
+
+.criterio-tarjeta__desglose li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.criterio-tarjeta__desglose li span:first-child {
+  color: var(--color-texto-suave);
+}
+
+.criterio-tarjeta__desglose li span:last-child {
+  font-weight: 600;
+}
+
+/* Sparkline de tendencia (Dashboard, ver renderizarKPIsDashboard() en
+   js/main.js): solo en KPIs con histórico semanal real (Promedio general,
+   Avance del ciclo) — Pendientes por calificar y Alumnos en riesgo son
+   fotos del momento sin serie de tiempo con sentido, así que nunca
+   traen este bloque (no es un bug si falta). Mismo criterio de color
+   oscuro/resto-de-temas que .criterio-tarjeta__porcentaje arriba (navy
+   por defecto, turquesa solo en oscuro), ya validado AA ahí. */
+.criterio-tarjeta__tendencia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.criterio-tarjeta__tendencia-svg {
+  display: block;
+  width: 72px;
+  height: 24px;
+  overflow: visible;
+}
+
+.criterio-tarjeta__tendencia-linea {
+  fill: none;
+  stroke: var(--color-primario);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+:root[data-theme="oscuro"] .criterio-tarjeta__tendencia-linea {
+  stroke: var(--color-turquesa);
+}
+
+.criterio-tarjeta__tendencia-relleno {
+  fill: color-mix(in srgb, var(--color-primario) 16%, transparent);
+}
+
+:root[data-theme="oscuro"] .criterio-tarjeta__tendencia-relleno {
+  fill: color-mix(in srgb, var(--color-turquesa) 16%, transparent);
+}
+
+.criterio-tarjeta__tendencia-delta {
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Mismos 2 tokens de estado ya usados en el semáforo/tasa de entrega de
+   este mismo módulo (--color-estado-cuenta-activa/vencido) — no un
+   tercer par de verde/rojo nuevo. */
+.criterio-tarjeta__tendencia-delta--sube {
+  color: var(--color-estado-cuenta-activa);
+}
+
+.criterio-tarjeta__tendencia-delta--baja {
+  color: var(--color-estado-vencido);
 }
 
 .criterios-nota {
@@ -8280,6 +8442,25 @@ button.badge-estado {
   font-size: 0.95rem;
 }
 
+/* Comparativa 3°C vs 3°E: ocupa las 2 columnas del grid desde el mismo
+   breakpoint (640px) en el que .dashboard-ficha pasa a 2 columnas —
+   la tabla de 3 columnas (Métrica/3°C/3°E) necesita el ancho completo. */
+@media (min-width: 640px) {
+  .dashboard-ficha__celda--ancha {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Aviso de alcance (Comparativa 3°C vs 3°E: única sección que ignora el
+   filtro de Grupo) — mismo tono que .dashboard-cronograma__etiqueta
+   (texto suave, sin alarmar) porque es una aclaración, no una advertencia
+   de error. */
+.dashboard-nota-alcance {
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+}
+
 .dashboard-grafica {
   margin: 0;
 }
@@ -8345,6 +8526,16 @@ button.badge-estado {
   fill: var(--color-claro-sobre-navy);
 }
 
+/* Etiquetas del eje X de construirFiguraBarrasVerticales() (evolución por
+   secuencia) — fuera de las barras, no sobre un color de fondo variable
+   como __texto-segmento, así que usa --color-texto-suave normal en vez de
+   los tokens ink oscuro/claro fijos de arriba. */
+.dashboard-grafica__etiqueta-barra {
+  font-size: 11px;
+  fill: var(--color-texto-suave);
+  text-anchor: middle;
+}
+
 .dashboard-grafica__boton-tabla {
   margin-top: 0.5rem;
 }
@@ -8380,6 +8571,16 @@ button.badge-estado {
 
 .dashboard-riesgo-lista__info {
   font-weight: 600;
+}
+
+/* Segunda línea de metadato (feed de actividad reciente: fecha/hora +
+   origen) — misma lista reutilizada del Top 5 en riesgo, con un span
+   secundario adicional que el space-between del item ya envía a la
+   derecha (o abajo, gracias a flex-wrap, en pantallas angostas). */
+.dashboard-riesgo-lista__meta {
+  font-size: 0.78rem;
+  color: var(--color-texto-suave);
+  white-space: nowrap;
 }
 
 .dashboard-cronograma__etiqueta {
