@@ -3591,6 +3591,10 @@ async function renderizarAvisos() {
     // de la etiqueta interna) para que la tarjeta "importante" ocupe más
     // espacio que una "general" o "recordatorio" (ver style.css).
     li.dataset.prioridad = item.prioridad || "general";
+    // Borde animado (.borde-animado-urgente, ver css/style.css) solo en
+    // "urgente" — "importante"/"recordatorio"/"general" se quedan con el
+    // borde plano de siempre para no diluir la jerarquía de prioridades.
+    if (li.dataset.prioridad === "urgente") li.classList.add("borde-animado-urgente");
 
     const fechaBox = document.createElement("div");
     fechaBox.className = "aviso-tarjeta__fecha";
@@ -4945,6 +4949,12 @@ async function construirTarjetaRachaPuntualidad() {
   const tarjeta = document.createElement("div");
   tarjeta.className = "insignia-racha";
   tarjeta.dataset.estado = resultado.desbloqueada ? "ganada" : "bloqueada";
+  // Borde animado (.borde-animado-acento, ver css/style.css) solo al
+  // ganar la racha — se siente como recompensa, no como algo que ya
+  // estaba ahí antes de desbloquearla.
+  if (resultado.desbloqueada) {
+    tarjeta.classList.add("borde-animado-acento", "borde-animado-acento--compacto");
+  }
 
   const icono = document.createElement("span");
   icono.className = "insignia-racha__icono";
@@ -6890,6 +6900,11 @@ function actualizarEstadoTarjetasTrimestre() {
 
     tarjeta.dataset.estado = estado;
     if (etiqueta) etiqueta.textContent = TEXTO_ESTADO_TRIMESTRE[estado];
+    // Borde animado (.borde-animado-acento, ver css/style.css) solo en la
+    // tarjeta del trimestre actual — migra sola en cada carga siguiendo a
+    // trimestreDesbloqueado, sin tocar calcularEstadoTrimestre() ni el
+    // resto del sistema de estados.
+    tarjeta.classList.toggle("borde-animado-acento", estado === "actual");
 
     tarjeta.addEventListener("click", (evento) => {
       if (tarjeta.dataset.estado === "proximamente") {

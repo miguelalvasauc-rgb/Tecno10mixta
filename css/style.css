@@ -4297,6 +4297,198 @@ summary:focus-visible {
   text-align: center;
 }
 
+/* ---------- Borde animado con acento (mixin reutilizable) ----------
+   Haz de luz animado (inspirado en "Sign In Card" de jatin-yadav05,
+   21st.dev — solo como referencia visual, traducido a CSS vanilla, ver
+   regla del MCP 21st.dev en este CLAUDE.md). Anillo de conic-gradient
+   recortado con mask-composite: exclude para dejar solo el borde visible;
+   --haz-angulo gira vía @property para interpolar suave. El tramo base
+   del anillo usa --color-borde (mismo tono que el borde plano que este
+   anillo sustituye) y el arco brillante usa --color-acento —ya resuelve
+   al turquesa/violeta/dorado/etc. de cada uno de los 10 temas sin
+   overrides por tema (ver --color-acento: var(--color-turquesa) más abajo
+   en este archivo). ::after es un halo borroso extra, con el mismo arco
+   pero difuminado hacia transparent (no hacia --color-borde) para no
+   ensuciar los temas claros con un halo gris.
+
+   Compartida por .cuenta-tarjeta (siempre activa), #boton-panel-docente-
+   cuenta (siempre que el botón esté visible), .tarjeta-trimestre[data-
+   estado="actual"] (la agrega/quita actualizarEstadoTarjetasTrimestre()
+   en js/main.js según TRIMESTRE_DESBLOQUEADO) y .insignia-racha (la
+   agrega construirTarjetaRachaPuntualidad() solo si resultado.desbloqueada
+   — nunca en el estado "bloqueada", para que se sienta como recompensa) —
+   cualquier elemento con esta clase necesita su propio border-radius y un
+   border de respaldo (--color-borde u otro) para el caso @supports-not de
+   abajo.
+
+   El grosor del anillo y del halo son variables (--haz-grosor/--haz-halo-
+   *) en vez de valores fijos para poder ajustarlos por tamaño de host sin
+   duplicar el bloque entero: ver el modificador --compacto más abajo,
+   pensado para botones como #boton-panel-docente-cuenta en vez de
+   tarjetas como .cuenta-tarjeta/.tarjeta-trimestre. */
+@property --haz-angulo {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.borde-animado-acento {
+  position: relative;
+  z-index: 0;
+  --haz-grosor: 2px;
+  --haz-halo-inset: -4px;
+  --haz-halo-grosor: 10px;
+  --haz-halo-blur: 8px;
+}
+
+/* Mismo anillo, proporcionado para elementos pequeños tipo botón en vez
+   de tarjetas (halo más corto y menos difuminado para no verse como una
+   mancha sobre un elemento de ~150px de ancho). */
+.borde-animado-acento--compacto {
+  --haz-halo-inset: -2px;
+  --haz-halo-grosor: 6px;
+  --haz-halo-blur: 4px;
+}
+
+/* Progresivo: si el navegador no soporta mask-composite, el ::before/
+   ::after sin máscara pintaría un rectángulo relleno encima del
+   contenido — por eso todo el efecto vive detrás de este @supports, y el
+   border de respaldo del elemento host se queda como borde real (no solo
+   fallback visual) en esos navegadores. */
+@supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+  .borde-animado-acento {
+    border-color: transparent;
+  }
+
+  .borde-animado-acento::before,
+  .borde-animado-acento::after {
+    content: "";
+    position: absolute;
+    border-radius: inherit;
+    pointer-events: none;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+  }
+
+  .borde-animado-acento::before {
+    inset: 0;
+    z-index: -1;
+    padding: var(--haz-grosor);
+    background: conic-gradient(
+      from var(--haz-angulo),
+      var(--color-borde) 0deg 284deg,
+      color-mix(in srgb, var(--color-acento) 35%, var(--color-borde)) 306deg,
+      var(--color-acento) 330deg,
+      color-mix(in srgb, var(--color-acento) 35%, var(--color-borde)) 354deg,
+      var(--color-borde) 360deg
+    );
+  }
+
+  .borde-animado-acento::after {
+    inset: var(--haz-halo-inset);
+    z-index: -2;
+    padding: var(--haz-halo-grosor);
+    opacity: 0.6;
+    filter: blur(var(--haz-halo-blur));
+    background: conic-gradient(
+      from var(--haz-angulo),
+      transparent 0deg 284deg,
+      color-mix(in srgb, var(--color-acento) 45%, transparent) 306deg,
+      var(--color-acento) 330deg,
+      color-mix(in srgb, var(--color-acento) 45%, transparent) 354deg,
+      transparent 360deg
+    );
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes girarHazAcento {
+      to { --haz-angulo: 360deg; }
+    }
+
+    .borde-animado-acento::before,
+    .borde-animado-acento::after,
+    .borde-animado-urgente::before,
+    .borde-animado-urgente::after {
+      animation: girarHazAcento 6s linear infinite;
+    }
+  }
+}
+
+/* Variante de .borde-animado-acento para .aviso-tarjeta[data-prioridad=
+   "urgente"] (la agrega renderizarAvisos() en js/main.js, nunca en
+   "importante"/"recordatorio"/"general" — solo urgente lleva el efecto,
+   para no diluir la jerarquía de prioridades). Deliberadamente separada
+   en vez de sobrecargar .borde-animado-acento con un color condicional:
+   usa --color-estado-avisos-urgente (#A61E4D, el MISMO token fijo que ya
+   consume .badge-prioridad[data-prioridad="urgente"], no una variable
+   nueva) en vez de --color-acento — "urgente" debe verse igual en los 10
+   temas, no seguir el turquesa/violeta/dorado de cada uno. Por la misma
+   razón el tramo base del anillo también es magenta (a baja opacidad),
+   no --color-borde: si el resto del anillo tomara el tono neutro del
+   tema, la intención de "siempre magenta" se perdería fuera del arco
+   brillante. Reutiliza @property --haz-angulo y @keyframes girarHazAcento
+   de arriba — mismo giro, coordinado con .borde-animado-acento si ambos
+   aparecen en la misma pantalla. */
+@supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+  .borde-animado-urgente {
+    position: relative;
+    z-index: 0;
+    border-color: transparent;
+  }
+
+  .borde-animado-urgente::before,
+  .borde-animado-urgente::after {
+    content: "";
+    position: absolute;
+    border-radius: inherit;
+    pointer-events: none;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+  }
+
+  .borde-animado-urgente::before {
+    inset: 0;
+    z-index: -1;
+    padding: 2px;
+    /* A diferencia de .borde-animado-acento::before (que difumina el
+       tramo base hacia --color-borde/transparent), aquí el tramo base es
+       --color-estado-avisos-urgente SÓLIDO — el mismo valor exacto que ya
+       usa el badge, sin mezclar con transparent, para que el anillo se
+       vea magenta también en reposo (no solo durante el barrido) sobre
+       superficies de tarjeta oscuras. El arco brillante sube de ahí hacia
+       blanco (no hacia un magenta más saturado) porque un magenta puro ya
+       es lo más oscuro/saturado del degradado — blanco es la única
+       dirección que de verdad se percibe como "punto caliente" en vez de
+       una variación sutil del mismo tono. */
+    background: conic-gradient(
+      from var(--haz-angulo),
+      var(--color-estado-avisos-urgente) 0deg 284deg,
+      color-mix(in srgb, var(--color-estado-avisos-urgente) 60%, white) 306deg,
+      color-mix(in srgb, var(--color-estado-avisos-urgente) 35%, white) 330deg,
+      color-mix(in srgb, var(--color-estado-avisos-urgente) 60%, white) 354deg,
+      var(--color-estado-avisos-urgente) 360deg
+    );
+  }
+
+  .borde-animado-urgente::after {
+    inset: -4px;
+    z-index: -2;
+    padding: 10px;
+    opacity: 0.65;
+    filter: blur(8px);
+    background: conic-gradient(
+      from var(--haz-angulo),
+      transparent 0deg 284deg,
+      color-mix(in srgb, var(--color-estado-avisos-urgente) 55%, transparent) 306deg,
+      var(--color-estado-avisos-urgente) 330deg,
+      color-mix(in srgb, var(--color-estado-avisos-urgente) 55%, transparent) 354deg,
+      transparent 360deg
+    );
+  }
+}
+
 /* ---------- Cuenta (login/registro con Supabase) ---------- */
 .cuenta-tarjeta {
   max-width: 480px;
