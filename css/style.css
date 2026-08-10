@@ -436,6 +436,15 @@
      del tema porque esas superficies no cambian de color entre temas. */
   --color-claro-sobre-navy: #E8EEF4;
   --color-claro-sobre-navy-suave: #C7D4E4;
+  /* Fondo del banner de privacidad dentro de .pie (footer): una mezcla
+     con --color-primario-suave en vez de un color fijo, para que la
+     franja se note ligeramente distinta del resto del footer EN LOS 10
+     TEMAS (el footer usa --color-primario como fondo siempre, sea cual
+     sea el tema). 35% es el punto que deja más margen AA contra
+     --color-primario-texto/-texto-suave en los 10 temas (ver
+     scripts/validate_palette.js, par --pie-aviso-fondo) — a partir de
+     ~55% ya rompe en rosa-pastel (4.49:1, bajo el mínimo). */
+  --pie-aviso-fondo: color-mix(in srgb, var(--color-primario-suave) 35%, var(--color-primario));
 
   /* Paleta EXCLUSIVA de estados del toast (ver mostrarToast* en
      js/main.js) — deliberadamente separada de --color-estado-* (esos
@@ -4948,49 +4957,166 @@ summary:focus-visible {
   color: var(--color-texto-suave);
 }
 
-/* ---------- Pie de página ---------- */
+/* ---------- Pie de página ----------
+   4 bloques apilados (marca / banner de privacidad / columnas / barra
+   inferior), estructura inspirada en "Footer 7" (shadcnblockscom) y
+   "Agency Footer" (shadcnspace) de 21st.dev — solo como referencia de
+   layout (columnas con encabezado + lista de links, columna de contacto
+   separada de la navegación), traducido a CSS vanilla, ver regla del MCP
+   21st.dev en este CLAUDE.md. Sin iconos de redes sociales: el sitio no
+   tiene presencia social, así que ese elemento de ambas referencias no
+   aplica aquí.
+
+   El pie sigue siendo una superficie siempre --color-primario en los 10
+   temas (igual que header/hero, no cambia con el tema). LO QUE SÍ
+   CAMBIA respecto a la versión anterior: los links ya NO usan
+   --color-turquesa como color de texto — ese par (turquesa sobre
+   primario) nunca se había validado y falla AA en 6 de los 10 temas
+   (cyberpunk-gold: 1.00:1, menta-tecnologico: 1.35:1, bosque-calido:
+   1.90:1, editorial-sepia: 2.55:1, rosa-pastel: 2.70:1, gamer-rgb:
+   3.35:1 — ver scripts/validate_palette.js). Con solo 2 links cortos no
+   se notaba; con 3 columnas de navegación sí. Los links ahora usan
+   --color-primario-texto/-texto-suave, los mismos tokens ya corregidos
+   y validados con margen real contra --color-primario en los 10 temas —
+   la distinción visual "es un link" viene de peso/subrayado, no de un
+   tercer color sin validar. */
 .pie {
-  text-align: center;
-  padding: 1.75rem 1rem;
   background-color: var(--color-primario);
   color: var(--color-primario-texto-suave);
   font-size: 0.85rem;
 }
 
-.pie p {
-  margin: 0.2rem 0;
+.pie__marca {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 0;
 }
 
-.pie__grupos {
-  color: var(--color-turquesa);
+.pie__marca-nombre {
+  margin: 0 0 0.3rem;
   font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-primario-texto);
 }
 
-/* El pie es una superficie siempre-navy en ambos temas (igual que el
-   header y el hero), así que el turquesa del enlace no necesita override
-   de modo claro: el fondo nunca cambia. */
-.pie__privacidad {
-  color: var(--color-primario-texto-suave);
+.pie__marca-detalle {
+  margin: 0;
 }
 
-.pie__privacidad a {
-  color: var(--color-turquesa);
+/* Banner de privacidad — franja de ancho completo (fuera del contenedor
+   de 1180px para que se note como una franja real, no una tarjeta más),
+   con --pie-aviso-fondo (ver :root global) en vez del --color-primario
+   plano del resto del pie, para que se perciba como un bloque discreto
+   pero visible — sin usar el borde animado ni el magenta fijo de
+   "urgente" (ver .borde-animado-urgente): esto es informativo, no una
+   alerta. */
+.pie__aviso {
+  background-color: var(--pie-aviso-fondo);
+}
+
+.pie__aviso-texto {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0.85rem 1.5rem;
+}
+
+.pie__aviso-enlace {
+  color: var(--color-primario-texto);
   font-weight: 700;
   text-decoration: underline;
 }
 
-/* Mismo tratamiento que .pie__privacidad (enlace turquesa sobre la
-   superficie siempre-navy del pie, sin override de modo claro por la
-   misma razón). Clase aparte porque es un contenido distinto, no un
-   repurposeo de la de privacidad. */
-.pie__mapa {
+.pie__columnas {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem;
+  display: grid;
+  /* Mismo patrón que .horario-contenedor: auto-fit resuelve 1-2 columnas
+     en mobile y 3 en desktop sin necesidad de un breakpoint dedicado. */
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1.5rem 2rem;
+}
+
+.pie__columna-titulo {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-primario-texto);
+}
+
+.pie__enlaces {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.pie__enlaces a {
   color: var(--color-primario-texto-suave);
+  text-decoration: none;
+}
+
+.pie__enlaces a:hover,
+.pie__enlaces a:focus-visible {
+  color: var(--color-primario-texto);
+  text-decoration: underline;
+}
+
+/* Página actual dentro de la columna de navegación: texto plano en vez
+   de link (no tiene sentido enlazar la página en la que ya se está),
+   mismo criterio que ya aplicaban --sitemap.html sin link a sí mismo y
+   faq.html con ancla local en vez de faq.html#aviso-privacidad — aquí se
+   generaliza esa regla a los 7 links de navegación en vez de dejarla
+   solo en privacidad/mapa. */
+.pie__enlace-actual {
+  color: var(--color-primario-texto);
+  font-weight: 700;
+}
+
+.pie__contacto-dato {
+  margin: 0 0 0.5rem;
+}
+
+.pie__contacto-dato:last-child {
+  margin-bottom: 0;
+}
+
+.pie__inferior {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-primario-texto) 20%, transparent);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.pie__copyright,
+.pie__mapa {
+  margin: 0;
 }
 
 .pie__mapa a {
-  color: var(--color-turquesa);
+  color: var(--color-primario-texto);
   font-weight: 700;
   text-decoration: underline;
+}
+
+/* Mobile-first: en pantallas angostas la marca y la barra inferior se
+   centran (las columnas ya se acomodan solas vía auto-fit arriba). */
+@media (max-width: 640px) {
+  .pie__marca {
+    text-align: center;
+  }
+
+  .pie__inferior {
+    justify-content: center;
+    text-align: center;
+  }
 }
 
 /* ---------- Mapa del sitio (sitemap.html) ----------

@@ -35,7 +35,7 @@ const PARES_CONTRASTE = [
     fg: "--color-primario-texto-suave",
     bg: "--color-primario",
     tamano: "normal",
-    nota: "Texto secundario sobre primario (footer: .pie__privacidad, .pie__mapa)",
+    nota: "Texto secundario sobre primario (footer: .pie__marca, .pie__enlaces, .pie__inferior)",
   },
   {
     fg: "--color-texto",
@@ -66,6 +66,18 @@ const PARES_CONTRASTE = [
     bg: "--color-turquesa",
     tamano: "normal",
     nota: "Texto sobre badges/botones de acento turquesa (.boton-tema, badges, avatar)",
+  },
+  {
+    fg: "--color-primario-texto",
+    bg: "--pie-aviso-fondo",
+    tamano: "normal",
+    nota: "Link del banner de privacidad sobre el fondo mezclado del footer (.pie__aviso)",
+  },
+  {
+    fg: "--color-primario-texto-suave",
+    bg: "--pie-aviso-fondo",
+    tamano: "normal",
+    nota: "Texto de cuerpo del banner de privacidad sobre el fondo mezclado del footer (.pie__aviso)",
   },
 ];
 
@@ -135,10 +147,35 @@ function parsearCss(cssTexto) {
 // Resolución de var(--token, fallback) contra el mapa fusionado del tema
 // ---------------------------------------------------------------------
 
+// Soporta la única forma de color-mix() que el CSS del proyecto genera:
+// dos var() con UN porcentaje explícito en el primer color (el resto va
+// al segundo, igual que la spec). No es un motor de CSS genérico — si
+// aparece otra forma (colores literales, dos porcentajes, "in oklch",
+// etc.) se deja pasar sin resolver a propósito en vez de adivinar.
+const RE_COLOR_MIX = /^color-mix\(\s*in\s+srgb\s*,\s*var\((--[\w-]+)\)\s+(\d+(?:\.\d+)?)%\s*,\s*var\((--[\w-]+)\)\s*\)$/;
+
 function resolverValor(valor, mapa, profundidad = 0) {
   if (profundidad > 10) return null; // corta ciclos/cadenas rotas
-  const m = /^var\(\s*(--[\w-]+)\s*(?:,\s*([\s\S]+))?\)$/.exec(valor.trim());
-  if (!m) return valor.trim();
+  const v = valor.trim();
+
+  const mMix = RE_COLOR_MIX.exec(v);
+  if (mMix) {
+    const [, refA, pctStr, refB] = mMix;
+    const colorA = resolverValor(`var(${refA})`, mapa, profundidad + 1);
+    const colorB = resolverValor(`var(${refB})`, mapa, profundidad + 1);
+    const rgbA = hexARgb(colorA || "");
+    const rgbB = hexARgb(colorB || "");
+    if (!rgbA || !rgbB) return null;
+    const p = parseFloat(pctStr) / 100;
+    const mezclar = (a, b) => Math.round(a * p + b * (1 - p));
+    const r = mezclar(rgbA.r, rgbB.r);
+    const g = mezclar(rgbA.g, rgbB.g);
+    const b = mezclar(rgbA.b, rgbB.b);
+    return "#" + [r, g, b].map((c) => c.toString(16).padStart(2, "0")).join("");
+  }
+
+  const m = /^var\(\s*(--[\w-]+)\s*(?:,\s*([\s\S]+))?\)$/.exec(v);
+  if (!m) return v;
   const [, ref, fallback] = m;
   if (Object.prototype.hasOwnProperty.call(mapa, ref)) {
     return resolverValor(mapa[ref], mapa, profundidad + 1);
