@@ -42,7 +42,13 @@
   --color-texto-suave: #4A5A6C;
   --color-primario: #1B3A6B;
   --color-primario-suave: #163058;
-  --color-acento-texto: #FFFFFF;
+  /* Antes #FFFFFF: --color-turquesa no se sobreescribe en este tema (se
+     queda con el #14B8A6 global de la sección "Turquesa siempre
+     disponible" más abajo), y blanco contra ese turquesa da solo 2.49:1
+     — bajo AA. Mismo bug ya corregido en menta-tecnologico (que sí tiene
+     su propio --color-turquesa) reutilizando --color-texto en vez de
+     blanco fijo: 5.86:1 aquí, margen amplio. */
+  --color-acento-texto: #1B2A3A;
   --color-primario-texto: #E8EEF4;
   --color-primario-texto-suave: #C7D4E4;
   --sombra: 0 8px 20px rgba(27, 58, 107, 0.12);
@@ -84,8 +90,16 @@
   --color-primario-suave: #8347E8;
   --color-turquesa: #00E5FF;
   --color-acento-texto: #0B0620;
-  --color-primario-texto: #E8EEF4;
-  --color-primario-texto-suave: #C7D4E4;
+  /* --color-primario-texto (#E8EEF4, el fijo por defecto del resto de
+     temas) daba 6.02:1 contra --color-primario pero solo 4.46:1 contra
+     --color-primario-suave (#8347E8) — insuficiente, quedaba al filo del
+     mínimo AA (4.5:1). Blanco puro sube ambos: 7.03:1 y 5.21:1
+     respectivamente, con margen real. --color-primario-texto-suave sube
+     al mismo tono que --color-primario-texto en el resto de temas
+     oscuros (antes era la variante "suave" de un texto ya insuficiente):
+     6.02:1 contra --color-primario, margen amplio. */
+  --color-primario-texto: #FFFFFF;
+  --color-primario-texto-suave: #E8EEF4;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
   /* Puente para el riel/barra inferior (sistema "Bitácora" heredado, ver
      --color-superficie-baja/--md-outline-variant en oscuro/claro más
@@ -107,8 +121,21 @@
   --color-primario-suave: #9376F5;
   --color-turquesa: #39FF14;
   --color-acento-texto: #051405;
-  --color-primario-texto: #E8EEF4;
-  --color-primario-texto-suave: #C7D4E4;
+  /* --color-primario (#7F5AF0) y --color-primario-suave (#9376F5) caen
+     casi exactos en el punto de cruce de la fórmula WCAG (luminancia
+     relativa ~0.18, el punto donde texto claro y oscuro dan
+     aproximadamente el mismo contraste) — para --color-primario en
+     particular, NINGÚN color de texto fijo pasa de ~4.62:1 contra él
+     (probado con negro y blanco puros, los dos extremos que maximizan
+     contraste; el valor anterior, #E8EEF4, daba solo 3.89:1). Negro puro
+     es el mejor de los dos extremos posibles aquí: 4.62:1 contra
+     --color-primario (el techo matemático de este violeta, sin margen
+     extra posible sin oscurecer el color de marca) y 6.15:1 contra
+     --color-primario-suave. Por el mismo techo, --color-primario-texto-suave
+     no tiene espacio para ser más claro que el texto principal sin caer
+     bajo AA — se deja igual. */
+  --color-primario-texto: #000000;
+  --color-primario-texto-suave: #000000;
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
   --color-superficie-baja: var(--color-superficie);
   --md-outline-variant: var(--color-borde);
@@ -166,11 +193,25 @@
   --color-texto: #5A2440;
   --color-texto-suave: #8C5670;
   --color-primario: #B23384;
-  --color-primario-suave: #C4489A;
+  /* Antes #C4489A: --color-primario (luminancia ~0.135) y el
+     --color-primario-suave original (luminancia ~0.187) quedan en lados
+     OPUESTOS del punto de cruce WCAG (~0.179) — blanco pasa contra
+     primario (5.68:1) pero no contra el suave original (4.43:1, bajo
+     incluso el mínimo AA de 4.5:1), y negro es al revés (3.70:1 / 4.74:1).
+     Matemáticamente NINGÚN color de texto fijo pasa AA contra ambos a la
+     vez con el suave original — se prueban los dos extremos (negro y
+     blanco), que son los que maximizan contraste contra un fondo fijo,
+     y ninguno alcanza. Se acerca el suave al primario (menos "tinte
+     claro" en el hover) para bajar su luminancia a ~0.165, dentro del
+     rango donde blanco sí pasa con margen real: 4.88:1. */
+  --color-primario-suave: #BD4091;
   --color-turquesa: #FF8FC7;
   --color-acento-texto: #4A1030;
-  --color-primario-texto: #E8EEF4;
-  --color-primario-texto-suave: #C7D4E4;
+  /* Blanco puro en vez de #E8EEF4: 5.68:1 contra --color-primario y
+     4.88:1 contra el --color-primario-suave ya oscurecido arriba, ambos
+     con margen real (antes 4.86:1 / 3.79:1, el segundo bajo AA). */
+  --color-primario-texto: #FFFFFF;
+  --color-primario-texto-suave: #F5EBF1;
   --sombra: 0 8px 20px rgba(178, 51, 132, 0.12);
   --color-superficie-baja: var(--color-superficie);
   --md-outline-variant: var(--color-borde);
@@ -210,8 +251,16 @@
      tema (5.37:1) en vez de blanco, mismo criterio que ya usa "oscuro"
      (acento-texto oscuro sobre su propio turquesa, no blanco). */
   --color-acento-texto: #0F2C28;
-  --color-primario-texto: #E8EEF4;
-  --color-primario-texto-suave: #C7D4E4;
+  /* --color-primario (#0D9488) y --color-primario-suave (#14B8A6) daban
+     solo 3.20:1 y 2.13:1 con el #E8EEF4 fijo del resto de temas —
+     insuficiente para AA, y era exactamente el que generaba el override
+     local de contraste en .hero (ver nota junto a ese selector, ya
+     eliminada tras este fix). Negro puro sube ambos a 5.61:1 y 8.44:1,
+     con margen real. --color-primario-texto-suave no tiene espacio para
+     ser un gris más claro que el negro sin caer bajo AA otra vez (mismo
+     tipo de techo de contraste que gamer-rgb) — se deja igual. */
+  --color-primario-texto: #000000;
+  --color-primario-texto-suave: #000000;
   --sombra: 0 8px 20px rgba(13, 148, 136, 0.12);
   --color-superficie-baja: var(--color-superficie);
   --md-outline-variant: var(--color-borde);
@@ -317,9 +366,19 @@
   --color-superficie-alterna: #DCEBFB;
   --color-borde: #C9E3FA;
   --color-texto: #1A2E4A;
-  --color-texto-suave: #5B7A9D;
+  /* Antes #5B7A9D: contra --color-fondo (4.00:1) y --color-superficie
+     (4.45:1) quedaba bajo AA en ambos — el tono era demasiado claro para
+     un fondo casi blanco. Se oscurece manteniendo la misma familia
+     azul-gris: 6.52:1 y 7.25:1 respectivamente, margen real. */
+  --color-texto-suave: #3F5975;
   --color-primario: #1D63D8;
-  --color-primario-suave: #2E7BEF;
+  /* Antes #2E7BEF: --color-primario (luminancia ~0.141) y el suave
+     original (~0.210) quedan en lados opuestos del punto de cruce WCAG
+     (~0.179), igual que el bug de rosa-pastel — blanco pasaba contra
+     primario (5.49:1) pero no contra el suave (4.04:1, bajo AA), y negro
+     al revés. Se acerca el suave al primario para bajar su luminancia a
+     ~0.16, dentro del rango donde blanco pasa con margen: 4.83:1. */
+  --color-primario-suave: #246DE1;
   --color-turquesa: #7C3AED;
   --color-acento-texto: #FFFFFF;
   --color-primario-texto: #FFFFFF;
@@ -1088,8 +1147,10 @@ summary:focus-visible {
    color de marca en una esquina sin sumar una segunda animación —
    "movimiento sutil" pedido en el brief, no dos capas en movimiento a
    la vez. Ambas capas usan solo variables de tema (nada de color fijo),
-   así que se ven coherentes en los 10 temas sin overrides — salvo
-   menta-tecnologico, ver la nota de contraste más abajo. */
+   así que se ven coherentes en los 10 temas sin overrides — incluido
+   menta-tecnologico, que necesitó su propio override de contraste aquí
+   hasta que --color-primario-texto se corrigió a nivel de tema (ver
+   :root[data-theme="menta-tecnologico"]). */
 .hero {
   position: relative;
   z-index: 0;
@@ -1113,24 +1174,6 @@ summary:focus-visible {
   .hero {
     animation: flujoGradienteHero 16s ease-in-out infinite;
   }
-}
-
-/* --color-primario-texto (#E8EEF4, fijo en los 10 temas) da solo ~3.2:1
-   contra --color-primario (#0D9488) en este tema — INSUFICIENTE para AA
-   (4.5:1) y ya presente en el hero estático de antes, no introducido por
-   esta animación (mismo token, mismo par de colores). Como
-   --color-primario-texto lo consumen más componentes del sitio (header,
-   botones), corregirlo ahí sería tocar más que "la capa visual del
-   hero" — este override se queda local a .hero. #041F1B pasa AA contra
-   AMBOS extremos del gradiente animado (4.61:1 contra --color-primario,
-   6.94:1 contra --color-primario-suave) Y contra el radial de acento en
-   su punto más intenso (5.03:1) — el margen es tan estrecho que
-   --color-primario-texto-suave (que da ~2.5:1, peor todavía) no tiene
-   reemplazo seguro con más contraste: .hero p usa el mismo tono que el
-   título en este tema, la jerarquía queda solo en tamaño/peso. */
-:root[data-theme="menta-tecnologico"] .hero,
-:root[data-theme="menta-tecnologico"] .hero p {
-  color: #041F1B;
 }
 
 .hero__contenido {
