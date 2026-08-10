@@ -4519,9 +4519,11 @@ summary:focus-visible {
    Compartida por .cuenta-tarjeta (siempre activa), #boton-panel-docente-
    cuenta (siempre que el botón esté visible), .tarjeta-trimestre[data-
    estado="actual"] (la agrega/quita actualizarEstadoTarjetasTrimestre()
-   en js/main.js según TRIMESTRE_DESBLOQUEADO) y .insignia-racha (la
+   en js/main.js según TRIMESTRE_DESBLOQUEADO), .insignia-racha (la
    agrega construirTarjetaRachaPuntualidad() solo si resultado.desbloqueada
-   — nunca en el estado "bloqueada", para que se sienta como recompensa) —
+   — nunca en el estado "bloqueada", para que se sienta como recompensa) y
+   .tarjeta-examen-diagnostico (banner de atención especial, clase fija en
+   el HTML: no depende de ningún estado calculado en js/main.js) —
    cualquier elemento con esta clase necesita su propio border-radius y un
    border de respaldo (--color-borde u otro) para el caso @supports-not de
    abajo.
@@ -4530,20 +4532,31 @@ summary:focus-visible {
    *) en vez de valores fijos para poder ajustarlos por tamaño de host sin
    duplicar el bloque entero: ver el modificador --compacto más abajo,
    pensado para botones como #boton-panel-docente-cuenta en vez de
-   tarjetas como .cuenta-tarjeta/.tarjeta-trimestre. */
+   tarjetas como .cuenta-tarjeta/.tarjeta-trimestre — y ver también
+   .borde-acento-estatico, la variante SIN GIRO (mismo anillo/halo, pero
+   --haz-angulo se queda fijo en su initial-value de 0deg porque nunca
+   entra en la lista de selectores animados de abajo) para elementos "de
+   marca pero no urgentes": .tarjeta-presentacion y .tarjeta-docente en
+   index.html. Comparte todo el andamiaje de pseudo-elementos/mask con
+   .borde-animado-acento (mismo bloque de reglas, selectores combinados)
+   para no duplicar CSS — solo difiere en --haz-halo-opacidad (halo más
+   discreto, ya que sin movimiento un halo del mismo brillo igual
+   competiría por atención) y en quedar fuera de @keyframes girarHazAcento. */
 @property --haz-angulo {
   syntax: "<angle>";
   inherits: false;
   initial-value: 0deg;
 }
 
-.borde-animado-acento {
+.borde-animado-acento,
+.borde-acento-estatico {
   position: relative;
   z-index: 0;
   --haz-grosor: 2px;
   --haz-halo-inset: -4px;
   --haz-halo-grosor: 10px;
   --haz-halo-blur: 8px;
+  --haz-halo-opacidad: 0.6;
 }
 
 /* Mismo anillo, proporcionado para elementos pequeños tipo botón en vez
@@ -4555,18 +4568,32 @@ summary:focus-visible {
   --haz-halo-blur: 4px;
 }
 
+/* Variante estática: halo más corto y a menos opacidad que el default —
+   sin el giro, un halo del mismo tamaño/brillo que .cuenta-tarjeta se
+   leería como un efecto "roto" (brillo fijo en un punto) en vez de
+   discreto. */
+.borde-acento-estatico {
+  --haz-halo-inset: -3px;
+  --haz-halo-grosor: 7px;
+  --haz-halo-blur: 6px;
+  --haz-halo-opacidad: 0.4;
+}
+
 /* Progresivo: si el navegador no soporta mask-composite, el ::before/
    ::after sin máscara pintaría un rectángulo relleno encima del
    contenido — por eso todo el efecto vive detrás de este @supports, y el
    border de respaldo del elemento host se queda como borde real (no solo
    fallback visual) en esos navegadores. */
 @supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
-  .borde-animado-acento {
+  .borde-animado-acento,
+  .borde-acento-estatico {
     border-color: transparent;
   }
 
   .borde-animado-acento::before,
-  .borde-animado-acento::after {
+  .borde-animado-acento::after,
+  .borde-acento-estatico::before,
+  .borde-acento-estatico::after {
     content: "";
     position: absolute;
     border-radius: inherit;
@@ -4576,7 +4603,8 @@ summary:focus-visible {
             mask-composite: exclude;
   }
 
-  .borde-animado-acento::before {
+  .borde-animado-acento::before,
+  .borde-acento-estatico::before {
     inset: 0;
     z-index: -1;
     padding: var(--haz-grosor);
@@ -4590,11 +4618,12 @@ summary:focus-visible {
     );
   }
 
-  .borde-animado-acento::after {
+  .borde-animado-acento::after,
+  .borde-acento-estatico::after {
     inset: var(--haz-halo-inset);
     z-index: -2;
     padding: var(--haz-halo-grosor);
-    opacity: 0.6;
+    opacity: var(--haz-halo-opacidad);
     filter: blur(var(--haz-halo-blur));
     background: conic-gradient(
       from var(--haz-angulo),
@@ -4611,6 +4640,9 @@ summary:focus-visible {
       to { --haz-angulo: 360deg; }
     }
 
+    /* .borde-acento-estatico deliberadamente fuera de esta lista: es la
+       variante sin giro, --haz-angulo se queda en 0deg (su initial-value
+       de @property de arriba) tanto con como sin prefers-reduced-motion. */
     .borde-animado-acento::before,
     .borde-animado-acento::after,
     .borde-animado-urgente::before,
