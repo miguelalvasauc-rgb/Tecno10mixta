@@ -22,6 +22,15 @@
         (window.matchMedia("(prefers-color-scheme: dark)").matches ? "oscuro" : "claro");
       document.documentElement.setAttribute("data-theme", tema);
     })();
+
+    // Aplica el tamaño de texto elegido (accesibilidad visual) antes de
+    // pintar, mismo criterio que el tema de arriba. Los multiplicadores
+    // deben coincidir con NIVELES_ESCALA_TEXTO en js/main.js.
+    (function () {
+      var multiplicadores = { normal: 1, grande: 1.15, "muy-grande": 1.3 };
+      var escala = multiplicadores[localStorage.getItem("escalaTextoSeleccionada")] || 1;
+      document.documentElement.style.setProperty("--escala-texto", escala);
+    })();
   </script>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>

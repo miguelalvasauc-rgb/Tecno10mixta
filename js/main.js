@@ -3183,6 +3183,10 @@ async function obtenerInfografias(trimestre) {
 // mantengan al navegar entre la portada y las páginas de trimestre.
 const CLAVE_GRUPO = "grupoSeleccionado";
 const CLAVE_TEMA = "temaSeleccionado";
+// Mismo patrón que CLAVE_TEMA: el <script> del <head> de cada página ya
+// la lee y aplica --escala-texto antes de cargar css/style.css (evita
+// parpadeo); ver activarControlEscalaTexto() más abajo.
+const CLAVE_ESCALA_TEXTO = "escalaTextoSeleccionada";
 
 // Grupo seleccionado actualmente ('todos', '3C' o '3E'). Se recupera
 // de localStorage para que la elección sobreviva a la navegación
@@ -3196,6 +3200,24 @@ let grupoActual = localStorage.getItem(CLAVE_GRUPO) || "todos";
 let temaActual =
   localStorage.getItem(CLAVE_TEMA) ||
   (window.matchMedia("(prefers-color-scheme: dark)").matches ? "oscuro" : "claro");
+
+// Niveles de tamaño de texto (accesibilidad visual, alumnos con lentes).
+// "multiplicador" escala --escala-texto en :root (ver html{font-size} en
+// css/style.css) — casi toda la tipografía del sitio está en rem, así
+// que escala proporcionalmente sin romper layouts.
+const NIVELES_ESCALA_TEXTO = [
+  { slug: "normal", nombre: "Normal", multiplicador: 1 },
+  { slug: "grande", nombre: "Grande", multiplicador: 1.15 },
+  { slug: "muy-grande", nombre: "Muy grande", multiplicador: 1.3 },
+];
+
+// Recuperado de localStorage por la misma razón que temaActual/grupoActual.
+// El <script> del <head> de cada página ya aplicó --escala-texto antes de
+// este punto (evita parpadeo); esto solo sincroniza la variable de JS con
+// lo que ya está pintado.
+let escalaTextoActual =
+  NIVELES_ESCALA_TEXTO.find((nivel) => nivel.slug === localStorage.getItem(CLAVE_ESCALA_TEXTO))
+    ?.slug || "normal";
 
 // Preferencia de vista para Tareas/Actividades/Proyectos — piloto SOLO
 // en trimestre-1.html (ver TRIMESTRE_ACTUAL más abajo, sección 2): una
@@ -7084,6 +7106,110 @@ function activarPanelesConDisparador(selectorDisparadores, claseVisible, opcione
   });
 
   return { cerrarPanel: () => cerrarPanel(true) };
+}
+
+// Aplica el multiplicador del nivel (slug de NIVELES_ESCALA_TEXTO) al
+// <html> y sincroniza el estado (etiqueta + disabled de A−/A+) de cada
+// .control-escala-texto — hay 2 por página, igual que .boton-tema
+// (flyout de escritorio + sheet de Perfil en móvil).
+function aplicarEscalaTexto(slug) {
+  const indice = NIVELES_ESCALA_TEXTO.findIndex((nivel) => nivel.slug === slug);
+  const nivel = NIVELES_ESCALA_TEXTO[indice] || NIVELES_ESCALA_TEXTO[0];
+
+  document.documentElement.style.setProperty("--escala-texto", String(nivel.multiplicador));
+
+  document.querySelectorAll(".control-escala-texto").forEach((control) => {
+    const etiquetaNivel = control.querySelector(".control-escala-texto__nivel");
+    if (etiquetaNivel) etiquetaNivel.textContent = nivel.nombre;
+
+    const disminuir = control.querySelector(".control-escala-texto__disminuir");
+    if (disminuir) {
+      const deshabilitado = indice <= 0;
+      disminuir.disabled = deshabilitado;
+      disminuir.setAttribute("aria-disabled", String(deshabilitado));
+    }
+
+    const aumentar = control.querySelector(".control-escala-texto__aumentar");
+    if (aumentar) {
+      const deshabilitado = indice >= NIVELES_ESCALA_TEXTO.length - 1;
+      aumentar.disabled = deshabilitado;
+      aumentar.setAttribute("aria-disabled", String(deshabilitado));
+    }
+  });
+}
+
+// Guarda el nivel elegido y lo aplica de inmediato — a diferencia de
+// seleccionarTema(), esto no tiene contraparte en Supabase (es
+// puramente local), así que no hay nada async que esperar. Anuncia el
+// cambio reutilizando el mismo mecanismo aria-live que ya usa el resto
+// del sitio (#contenedor-toast, ver mostrarToast) en vez de armar una
+// región propia.
+function seleccionarEscalaTexto(slug) {
+  if (slug === escalaTextoActual) return;
+  escalaTextoActual = slug;
+  localStorage.setItem(CLAVE_ESCALA_TEXTO, slug);
+  aplicarEscalaTexto(slug);
+
+  const nivel = NIVELES_ESCALA_TEXTO.find((n) => n.slug === slug);
+  mostrarToast("Tamaño de texto: " + (nivel?.nombre || slug), { icono: "🔎" });
+}
+
+// Arma el control de 3 partes (A−, nivel actual, A+). Se construye por
+// JS en vez de hardcodearse en cada página: así basta con esta función
+// (llamada desde activarControlEscalaTexto) para que aparezca en las 10
+// páginas públicas del sitio sin duplicar el markup en cada una.
+function construirControlEscalaTexto() {
+  const contenedor = document.createElement("div");
+  contenedor.className = "control-escala-texto riel-flyout__campo";
+
+  const etiquetaCampo = document.createElement("span");
+  etiquetaCampo.className = "control-escala-texto__etiqueta";
+  etiquetaCampo.textContent = "Tamaño de texto";
+
+  const fila = document.createElement("div");
+  fila.className = "control-escala-texto__fila";
+
+  const disminuir = document.createElement("button");
+  disminuir.type = "button";
+  disminuir.className = "control-escala-texto__boton control-escala-texto__disminuir";
+  disminuir.setAttribute("aria-label", "Disminuir tamaño de texto");
+  disminuir.textContent = "A−";
+  disminuir.addEventListener("click", () => {
+    const indice = NIVELES_ESCALA_TEXTO.findIndex((nivel) => nivel.slug === escalaTextoActual);
+    if (indice > 0) seleccionarEscalaTexto(NIVELES_ESCALA_TEXTO[indice - 1].slug);
+  });
+
+  const etiquetaNivel = document.createElement("span");
+  etiquetaNivel.className = "control-escala-texto__nivel";
+
+  const aumentar = document.createElement("button");
+  aumentar.type = "button";
+  aumentar.className = "control-escala-texto__boton control-escala-texto__aumentar";
+  aumentar.setAttribute("aria-label", "Aumentar tamaño de texto");
+  aumentar.textContent = "A+";
+  aumentar.addEventListener("click", () => {
+    const indice = NIVELES_ESCALA_TEXTO.findIndex((nivel) => nivel.slug === escalaTextoActual);
+    if (indice < NIVELES_ESCALA_TEXTO.length - 1) seleccionarEscalaTexto(NIVELES_ESCALA_TEXTO[indice + 1].slug);
+  });
+
+  fila.append(disminuir, etiquetaNivel, aumentar);
+  contenedor.append(etiquetaCampo, fila);
+  return contenedor;
+}
+
+// Inserta el control justo después de "Elegir tema" (.riel-flyout__tema)
+// en los 2 paneles de Ajustes del sitio: #flyout-ajustes (riel de
+// escritorio) y #sheet-perfil (sheet de Perfil en móvil, ver el
+// subtítulo "Ajustes" dentro de ese sheet). Se ancla en
+// .riel-flyout__tema y no en .boton-tema a secas: admin.html también
+// tiene un .boton-tema propio (header del panel docente) que no lleva
+// esa clase extra, así que queda fuera a propósito — el panel docente no
+// forma parte de las 10 páginas públicas de este control.
+function activarControlEscalaTexto() {
+  document.querySelectorAll(".riel-flyout__tema").forEach((botonTema) => {
+    botonTema.insertAdjacentElement("afterend", construirControlEscalaTexto());
+  });
+  aplicarEscalaTexto(escalaTextoActual);
 }
 
 // Riel de navegación (Discord/Notion-style, desktop ≥1024px).
@@ -14053,6 +14179,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarSubmenusSidebar();
   activarFlyoutsRiel();
   activarSheetsMovil();
+  activarControlEscalaTexto();
   activarResaltadoDeNavegacion();
   activarBotonVolverArriba();
   activarBannerExamenDiagnostico();

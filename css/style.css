@@ -424,6 +424,14 @@
 
 /* Turquesa siempre disponible como color secundario de marca (badges, tags) */
 :root {
+  /* Tamaño de texto (accesibilidad visual, ver control-escala-texto más
+     abajo y activarControlEscalaTexto() en js/main.js): multiplicador
+     sobre el font-size base de html — 1 = Normal, 1.15 = Grande,
+     1.3 = Muy grande. Casi toda la tipografía del sitio está en rem, así
+     que escala proporcionalmente sin romper layouts. El <script> del
+     <head> de cada página ya lo aplica antes de este archivo (evita
+     parpadeo), este valor es solo el fallback para JS deshabilitado. */
+  --escala-texto: 1;
   --color-turquesa: #14B8A6;
   /* Antes --color-acento cambiaba de turquesa (oscuro) a navy (claro)
      según el tema, lo que hacía confuso su significado. Ahora siempre
@@ -666,6 +674,16 @@
 
 html {
   scroll-behavior: smooth;
+  /* Ver --escala-texto en :root de arriba. 100% (no 16px fijos) para
+     seguir respetando el tamaño de fuente del navegador/SO del usuario
+     además de este control. */
+  font-size: calc(100% * var(--escala-texto, 1));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    transition: font-size 0.2s ease;
+  }
 }
 
 h1,
@@ -6056,6 +6074,66 @@ summary:focus-visible {
 
 .riel-flyout__tema {
   justify-content: center;
+}
+
+/* Control de tamaño de texto (accesibilidad visual) — inyectado por JS
+   justo después de .riel-flyout__tema en #flyout-ajustes/#sheet-perfil,
+   ver activarControlEscalaTexto() en js/main.js. También lleva la clase
+   .riel-flyout__campo (etiqueta arriba, control abajo, mismo espaciado
+   que el campo "Grupo"), así que solo hace falta layout propio para la
+   fila de botones. */
+.control-escala-texto__etiqueta {
+  color: var(--color-texto-suave);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.control-escala-texto__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* Mismo patrón de botón circular que .calendario__flecha (stepper de
+   mes): tamaño, bordes y estado disabled ya probados en el resto del
+   sitio, solo cambia el contexto (superficie del flyout/sheet). */
+.control-escala-texto__boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background-color: var(--color-superficie-baja);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-full);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.control-escala-texto__boton:hover:not(:disabled) {
+  background-color: var(--color-superficie-alterna);
+}
+
+.control-escala-texto__boton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.control-escala-texto__boton:focus-visible {
+  outline: 3px solid var(--color-focus-outline);
+  outline-offset: 2px;
+}
+
+.control-escala-texto__nivel {
+  flex: 1;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-texto);
 }
 
 .riel-flyout__nivel {
