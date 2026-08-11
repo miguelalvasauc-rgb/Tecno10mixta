@@ -3399,8 +3399,20 @@ function mostrarOverlayCargaTrimestre() {
 }
 
 // Hace fade-out del overlay y lo quita del DOM al terminar la transición.
+// Con prefers-reduced-motion activado, .overlay-carga-trimestre pierde su
+// "transition" (ver css/style.css) y "transitionend" nunca dispara: sin
+// este fallback el overlay se queda invisible pero con pointer-events
+// activo, bloqueando clics en toda la página hasta recargar. Se detecta
+// leyendo transition-duration ANTES de quitar la clase --visible (esa
+// duración vive en la clase base .overlay-carga-trimestre, no en
+// --visible, así que el valor no cambia al quitarla).
 function ocultarOverlayCargaTrimestre(overlay) {
+  const sinTransicion = getComputedStyle(overlay).transitionDuration === "0s";
   overlay.classList.remove("overlay-carga-trimestre--visible");
+  if (sinTransicion) {
+    overlay.remove();
+    return;
+  }
   overlay.addEventListener("transitionend", () => overlay.remove(), { once: true });
 }
 
