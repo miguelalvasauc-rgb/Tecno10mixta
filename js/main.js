@@ -2397,6 +2397,174 @@ const DATOS_PRESENTACIONES = {
   ],
 };
 
+// "secuencia" usa el mismo texto que "unidad" en DATOS_TEMARIO, para que
+// renderizarInfografias() agrupe visualmente con el mismo rótulo que ya
+// ve el alumno en Temario. Imágenes reales aún no existen (ver
+// renderizarInfografias: fallback "🎨 Infografía en preparación" mientras
+// no se suban a assets/infografias/).
+const DATOS_INFOGRAFIAS = {
+  1: [
+    {
+      id: "info-t1-1",
+      secuencia: "🧠 Secuencia 1 — Inteligencia Artificial",
+      titulo: "IA, Machine Learning y Asistentes Virtuales",
+      imagen: "assets/infografias/t1-seq1-info1.png",
+      alt: "Infografía: IA, Machine Learning y Asistentes Virtuales",
+    },
+    {
+      id: "info-t1-2",
+      secuencia: "🧠 Secuencia 1 — Inteligencia Artificial",
+      titulo: "Chatbots y creatividad con IA",
+      imagen: "assets/infografias/t1-seq1-info2.png",
+      alt: "Infografía: Chatbots y creatividad con IA",
+    },
+    {
+      id: "info-t1-3",
+      secuencia: "🥽 Secuencia 2 — Realidad Virtual",
+      titulo: "Cómo se crean los mundos virtuales",
+      imagen: "assets/infografias/t1-seq2-info1.png",
+      alt: "Infografía: Cómo se crean los mundos virtuales",
+    },
+    {
+      id: "info-t1-4",
+      secuencia: "🥽 Secuencia 2 — Realidad Virtual",
+      titulo: "AR vs VR y el Metaverso",
+      imagen: "assets/infografias/t1-seq2-info2.png",
+      alt: "Infografía: AR vs VR y el Metaverso",
+    },
+    {
+      id: "info-t1-5",
+      secuencia: "🤖 Secuencia 3 — Robótica",
+      titulo: "Robótica, IA y Automatización",
+      imagen: "assets/infografias/t1-seq3-info1.png",
+      alt: "Infografía: Robótica, IA y Automatización",
+    },
+    {
+      id: "info-t1-6",
+      secuencia: "🤖 Secuencia 3 — Robótica",
+      titulo: "Cómo funciona un robot: sensores, programación y diseño",
+      imagen: "assets/infografias/t1-seq3-info2.png",
+      alt: "Infografía: Cómo funciona un robot: sensores, programación y diseño",
+    },
+  ],
+  2: [
+    {
+      id: "info-t2-1",
+      secuencia: "📊 Secuencia 4 — Ciencia de Datos",
+      titulo: "¿Qué son los datos?",
+      imagen: "assets/infografias/t2-seq4-info1.png",
+      alt: "Infografía: ¿Qué son los datos?",
+    },
+    {
+      id: "info-t2-2",
+      secuencia: "📊 Secuencia 4 — Ciencia de Datos",
+      titulo: "Algoritmos que deciden por ti",
+      imagen: "assets/infografias/t2-seq4-info2.png",
+      alt: "Infografía: Algoritmos que deciden por ti",
+    },
+    {
+      id: "info-t2-3",
+      secuencia: "📊 Secuencia 4 — Ciencia de Datos",
+      titulo: "De datos a historias visuales",
+      imagen: "assets/infografias/t2-seq4-info3.png",
+      alt: "Infografía: De datos a historias visuales",
+    },
+    {
+      id: "info-t2-4",
+      secuencia: "🧮 Secuencia 5 — Hojas de Cálculo",
+      titulo: "Primeros pasos en Excel",
+      imagen: "assets/infografias/t2-seq5-info1.png",
+      alt: "Infografía: Primeros pasos en Excel",
+    },
+    {
+      id: "info-t2-5",
+      secuencia: "🧮 Secuencia 5 — Hojas de Cálculo",
+      titulo: "Fórmulas y funciones",
+      imagen: "assets/infografias/t2-seq5-info2.png",
+      alt: "Infografía: Fórmulas y funciones",
+    },
+    {
+      id: "info-t2-6",
+      secuencia: "🧮 Secuencia 5 — Hojas de Cálculo",
+      titulo: "Gráficos e infografías con datos",
+      imagen: "assets/infografias/t2-seq5-info3.png",
+      alt: "Infografía: Gráficos e infografías con datos",
+    },
+    {
+      id: "info-t2-7",
+      secuencia: "🔒 Secuencia 6 — Seguridad Digital",
+      titulo: "Tu huella digital y ciberataques",
+      imagen: "assets/infografias/t2-seq6-info1.png",
+      alt: "Infografía: Tu huella digital y ciberataques",
+    },
+    {
+      id: "info-t2-8",
+      secuencia: "🔒 Secuencia 6 — Seguridad Digital",
+      titulo: "Contraseñas y cifrado",
+      imagen: "assets/infografias/t2-seq6-info2.png",
+      alt: "Infografía: Contraseñas y cifrado",
+    },
+    {
+      id: "info-t2-9",
+      secuencia: "🔒 Secuencia 6 — Seguridad Digital",
+      titulo: "Ataques cibernéticos famosos",
+      imagen: "assets/infografias/t2-seq6-info3.png",
+      alt: "Infografía: Ataques cibernéticos famosos",
+    },
+  ],
+  3: [
+    {
+      id: "info-t3-1",
+      secuencia: "🧠 Secuencia 7 — Soluciones Digitales",
+      titulo: "Pensamiento computacional: de la idea a la solución",
+      imagen: "assets/infografias/t3-seq7-info1.png",
+      alt: "Infografía: Pensamiento computacional: de la idea a la solución",
+    },
+    {
+      id: "info-t3-2",
+      secuencia: "🧠 Secuencia 7 — Soluciones Digitales",
+      titulo: "Programando con propósito y hackatón",
+      imagen: "assets/infografias/t3-seq7-info2.png",
+      alt: "Infografía: Programando con propósito y hackatón",
+    },
+    {
+      id: "info-t3-3",
+      secuencia: "🌐 Secuencia 8 — Diseño Web",
+      titulo: "Arquitectura de la información y UX",
+      imagen: "assets/infografias/t3-seq8-info1.png",
+      alt: "Infografía: Arquitectura de la información y UX",
+    },
+    {
+      id: "info-t3-4",
+      secuencia: "🌐 Secuencia 8 — Diseño Web",
+      titulo: "HTML y CSS: la estructura de una web",
+      imagen: "assets/infografias/t3-seq8-info2.png",
+      alt: "Infografía: HTML y CSS: la estructura de una web",
+    },
+    {
+      id: "info-t3-5",
+      secuencia: "🌐 Secuencia 8 — Diseño Web",
+      titulo: "Sitios estáticos vs dinámicos",
+      imagen: "assets/infografias/t3-seq8-info3.png",
+      alt: "Infografía: Sitios estáticos vs dinámicos",
+    },
+    {
+      id: "info-t3-6",
+      secuencia: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT",
+      titulo: "Design Thinking, MVP e IoT",
+      imagen: "assets/infografias/t3-seq9-info1.png",
+      alt: "Infografía: Design Thinking, MVP e IoT",
+    },
+    {
+      id: "info-t3-7",
+      secuencia: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT",
+      titulo: "Sensores, actuadores y ciclo de iteración",
+      imagen: "assets/infografias/t3-seq9-info2.png",
+      alt: "Infografía: Sensores, actuadores y ciclo de iteración",
+    },
+  ],
+};
+
 const DATOS_VIDEOS = {
   1: [
     {
@@ -3001,6 +3169,10 @@ async function obtenerVideos(trimestre) {
 
 async function obtenerPresentaciones(trimestre) {
   return DATOS_PRESENTACIONES[trimestre] || [];
+}
+
+async function obtenerInfografias(trimestre) {
+  return DATOS_INFOGRAFIAS[trimestre] || [];
 }
 
 /* =========================================================
@@ -3815,6 +3987,145 @@ function crearBotonGirarTemario(esReverso) {
 
   boton.append(icono, texto);
   return boton;
+}
+
+// item.imagen -> item completo, para que el listener delegado
+// (activarDelegacionInfografias) recupere el objeto con solo el
+// data-item-id que trae el botón, igual patrón que mapaDetallesPorId.
+const mapaInfografiasPorId = new Map();
+
+async function renderizarInfografias() {
+  const contenedor = document.getElementById("contenedor-infografias");
+  if (!contenedor) return;
+
+  const datos = await obtenerInfografias(TRIMESTRE_ACTUAL);
+
+  if (datos.length === 0) {
+    mostrarSinResultados(contenedor, "Las infografías de este trimestre aún no están disponibles.");
+    return;
+  }
+
+  // Agrupar por secuencia conservando el orden de aparición, igual
+  // técnica que renderizarRubricas().
+  const grupos = new Map();
+  datos.forEach((item) => {
+    const clave = item.secuencia || "Infografías";
+    if (!grupos.has(clave)) grupos.set(clave, []);
+    grupos.get(clave).push(item);
+  });
+
+  contenedor.innerHTML = "";
+  let indiceGlobal = 0;
+  let indiceGrupo = 0;
+
+  grupos.forEach((itemsDelGrupo, nombreGrupo) => {
+    const bloqueGrupo = document.createElement("details");
+    bloqueGrupo.className = "infografias-grupo";
+    if (indiceGrupo === 0) bloqueGrupo.open = true;
+    indiceGrupo++;
+
+    const resumenGrupo = document.createElement("summary");
+    resumenGrupo.className = "infografias-grupo__resumen";
+
+    const tituloGrupo = document.createElement("h3");
+    tituloGrupo.className = "infografias-grupo__titulo";
+    tituloGrupo.textContent = nombreGrupo;
+
+    const conteoGrupo = document.createElement("p");
+    conteoGrupo.className = "infografias-grupo__conteo";
+    conteoGrupo.textContent =
+      itemsDelGrupo.length + " infografía" + (itemsDelGrupo.length === 1 ? "" : "s");
+
+    const iconoGrupo = document.createElement("span");
+    iconoGrupo.className = "infografias-grupo__icono";
+    iconoGrupo.setAttribute("aria-hidden", "true");
+    iconoGrupo.textContent = "▾";
+
+    resumenGrupo.append(tituloGrupo, conteoGrupo, iconoGrupo);
+    bloqueGrupo.appendChild(resumenGrupo);
+
+    const cuadriculaGrupo = document.createElement("div");
+    cuadriculaGrupo.className = "cuadricula-infografias";
+
+    itemsDelGrupo.forEach((item) => {
+      mapaInfografiasPorId.set(item.id, item);
+
+      const tarjeta = document.createElement("article");
+      tarjeta.className = "tarjeta-infografia";
+
+      const boton = document.createElement("button");
+      boton.type = "button";
+      boton.className =
+        "tarjeta-infografia__imagen tarjeta-infografia__imagen--" + ((indiceGlobal % 3) + 1);
+      boton.dataset.itemId = item.id;
+      boton.setAttribute("aria-label", "Ver infografía ampliada: " + item.titulo);
+
+      const textoPlaceholder = document.createElement("span");
+      textoPlaceholder.textContent = "🎨 Infografía en preparación";
+
+      const img = document.createElement("img");
+      img.src = item.imagen;
+      img.alt = item.alt || item.titulo;
+      img.loading = "lazy";
+      img.addEventListener("error", () => {
+        img.hidden = true;
+        boton.appendChild(textoPlaceholder);
+        // Sin imagen real todavía no hay nada que ampliar: se
+        // deshabilita el botón en vez de abrir un lightbox vacío.
+        boton.disabled = true;
+        boton.setAttribute("aria-disabled", "true");
+      });
+      boton.appendChild(img);
+
+      const titulo = document.createElement("h4");
+      titulo.className = "tarjeta-infografia__titulo";
+      titulo.textContent = item.titulo;
+
+      tarjeta.append(boton, titulo);
+      cuadriculaGrupo.appendChild(tarjeta);
+      indiceGlobal++;
+    });
+
+    bloqueGrupo.appendChild(cuadriculaGrupo);
+    contenedor.appendChild(bloqueGrupo);
+  });
+}
+
+// Reutiliza el <dialog id="modal-detalle"> compartido (mismo cierre con
+// "✕", clic en ::backdrop y Esc ya wireado por activarCierreModalDetalle)
+// en vez de crear un modal nuevo: solo cambia lo que se pinta adentro
+// (imagen a tamaño grande + título como caption, sin el HTML largo que
+// usa abrirModalDetalle).
+function abrirModalImagenInfografia(item) {
+  const modal = document.getElementById("modal-detalle");
+  if (!modal) return;
+
+  document.getElementById("modal-detalle-titulo").textContent = item.titulo;
+
+  const contenido = document.getElementById("modal-detalle-contenido");
+  contenido.innerHTML = "";
+  const imgAmpliada = document.createElement("img");
+  imgAmpliada.className = "modal-detalle__imagen-ampliada";
+  imgAmpliada.src = item.imagen;
+  imgAmpliada.alt = item.alt || item.titulo;
+  contenido.appendChild(imgAmpliada);
+
+  modal.showModal();
+}
+
+// Delegación de eventos sobre #contenedor-infografias, mismo patrón que
+// activarDelegacionVerDetalle (un único listener, sobrevive a que el
+// contenedor se vacíe y repinte en cada renderizarInfografias()).
+function activarDelegacionInfografias() {
+  const contenedor = document.getElementById("contenedor-infografias");
+  if (!contenedor) return;
+
+  contenedor.addEventListener("click", (evento) => {
+    const boton = evento.target.closest(".tarjeta-infografia__imagen");
+    if (!boton || boton.disabled) return;
+    const item = mapaInfografiasPorId.get(boton.dataset.itemId);
+    if (item) abrirModalImagenInfografia(item);
+  });
 }
 
 async function renderizarRubricas() {
@@ -7114,6 +7425,7 @@ async function renderizarTodo() {
     renderizarHorario(),
     renderizarCalendario(),
     renderizarTemario(),
+    renderizarInfografias(),
     renderizarRubricas(),
     renderizarTareas(),
     renderizarActividades(),
@@ -13756,6 +14068,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarDelegacionVerDetalle("contenedor-actividades");
   activarDelegacionVerDetalle("contenedor-proyectos");
   activarDelegacionVerDetalle("contenedor-temario");
+  activarDelegacionInfografias();
   activarCierreModalDetalle();
 
   // El formulario de contacto solo existe en la portada (index.html).
