@@ -6547,6 +6547,39 @@ summary:focus-visible {
     padding-left: var(--margen-desktop);
     padding-right: var(--margen-desktop);
   }
+
+  /* Pila fija en escritorio (trimestre-1/2/3.html): barra-progreso-lectura
+     (fixed, top:0, 3px, sin tocar) → migas-de-pan → banner-trimestre, así
+     el alumno siempre ve en qué trimestre/sección está sin que ninguno
+     tape al siguiente ni al contenido de #main-content (sticky no saca a
+     migas-de-pan/banner-trimestre del flujo, así que #main-content ya se
+     acomoda solo, sin padding-top compensatorio como el que sí necesita
+     la franja de Independencia por ser fixed — ver ese tema más abajo).
+
+     --alto-migas-de-pan-1linea es un valor FIJO, no medido con JS (esta
+     página del proyecto es CSS-only): asume que la miga ocupa una sola
+     línea. A este ancho el texto es corto ("Inicio / Trimestre X /
+     [Sección]", breadcrumb en español) y no llega a envolver a 2 líneas
+     en la práctica, así que optimizamos para el caso normal. Si algún
+     texto de sección llegara a forzar 2 líneas, banner-trimestre se
+     solaparía levemente con esa 2a línea en vez de dejar un hueco
+     permanente en el caso normal de 1 línea — el resultado menos malo
+     de los dos. */
+  :root {
+    --alto-migas-de-pan-1linea: calc(2.2rem + 1px); /* 0.5rem padding-top + 0.5rem padding-bottom + ~1.2rem de línea de texto (0.8rem, line-height normal medido en navegador ≈19px) + 1px borde inferior de .migas-de-pan */
+  }
+
+  .migas-de-pan {
+    position: sticky;
+    top: 3px; /* alto real de .barra-progreso-lectura */
+    z-index: 60; /* por debajo de barra-progreso-lectura (999); por encima del contenido normal; no choca con barra-inferior/sheet-backdrop (80/94, ocultos en escritorio) */
+  }
+
+  .banner-trimestre {
+    position: sticky;
+    top: calc(3px + var(--alto-migas-de-pan-1linea, 2.2rem + 1px));
+    z-index: 59;
+  }
 }
 
 @media (max-width: 1023.98px) {
@@ -9925,6 +9958,26 @@ button.badge-estado {
    se tapen entre sí mientras el evento esté activo. */
 :root[data-theme="independencia"] .barra-progreso-lectura {
   top: var(--alto-franja-independencia, 8px);
+}
+
+/* Escritorio (≥1024px): el sticky stack de migas-de-pan/banner-trimestre
+   (ver @media (min-width: 1024px) más arriba) también tiene que correrse
+   hacia abajo el alto de la franja — pero DOS veces, no una:
+   - migas-de-pan: una vez, porque cuelga de barra-progreso-lectura (de
+     arriba), que ya bajó ese alto.
+   - banner-trimestre: dos veces, porque además de heredar el offset de
+     migas-de-pan, migas-de-pan mismo creció ese alto por su propio
+     padding-top compensatorio (regla de arriba, necesaria incluso con
+     sticky: al cargar la página con scroll en 0, migas-de-pan todavía
+     está en su posición estática normal, no "pegado"). */
+@media (min-width: 1024px) {
+  :root[data-theme="independencia"] .migas-de-pan {
+    top: calc(var(--alto-franja-independencia, 8px) + 3px);
+  }
+
+  :root[data-theme="independencia"] .banner-trimestre {
+    top: calc(var(--alto-franja-independencia, 8px) * 2 + 3px + var(--alto-migas-de-pan-1linea, 2.2rem + 1px));
+  }
 }
 
 /* ---- 2. Fuegos artificiales (cerca de acentos ya existentes) ---- */
