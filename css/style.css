@@ -433,6 +433,13 @@
      parpadeo), este valor es solo el fallback para JS deshabilitado. */
   --escala-texto: 1;
   --color-turquesa: #14B8A6;
+  /* Stop "bueno" de la franja de 4 segmentos de rúbricas (ver
+     .tarjeta-rubrica::after, sección de rúbricas): por defecto es el
+     mismo --color-turquesa del tema. Los 5 temas de superficie clara lo
+     sobreescriben más abajo, junto a --glow-opacidad-tarjeta, porque en
+     rosa-pastel ese turquesa es un rosa pastel (#FF8FC7) que casi
+     desaparece contra el blanco casi puro de la tarjeta (~2.1:1). */
+  --color-nivel-bueno-franja: var(--color-turquesa);
   /* Opacidad del glow al cursor en tarjetas de contenido (ver
      .tarjeta::before y variantes, sección de tarjetas): 14% ya se nota
      bien contra las superficies oscuras. Los 5 temas de superficie clara
@@ -2960,13 +2967,22 @@ summary:focus-visible {
 
 /* Los 5 temas de superficie clara (blanca o casi) necesitan más fuerza
    para que el glow se note igual que en los 5 oscuros — mismo criterio
-   que ya usan los patrones de fondo del panel docente. */
+   que ya usan los patrones de fondo del panel docente. Mismo grupo de
+   temas para --color-nivel-bueno-franja: oscurecemos el propio
+   --color-turquesa del tema (no un color nuevo fuera de paleta) mezclado
+   con negro al 30%, solo para ese stop de la franja de rúbricas — el
+   resto de usos de --color-turquesa en estos temas se queda con su tono
+   pastel original a propósito. rosa-pastel pasa de ~2.1:1 a ~4.1:1
+   contra la tarjeta blanca; claro/menta-tecnologico/editorial-sepia ya
+   tenían turquesas con contraste suficiente, así que aquí solo se
+   intensifican un poco más, sin quedar mal. */
 :root[data-theme="claro"],
 :root[data-theme="rosa-pastel"],
 :root[data-theme="bosque-calido"],
 :root[data-theme="menta-tecnologico"],
 :root[data-theme="editorial-sepia"] {
   --glow-opacidad-tarjeta: 30%;
+  --color-nivel-bueno-franja: color-mix(in srgb, var(--color-turquesa) 70%, black);
 }
 
 .tarjeta__cabecera {
@@ -3200,7 +3216,7 @@ summary:focus-visible {
   background: linear-gradient(
     to right,
     #3fa34d 0% 25%,
-    var(--color-turquesa) 25% 50%,
+    var(--color-nivel-bueno-franja) 25% 50%,
     #e0a526 50% 75%,
     #d64545 75% 100%
   );
