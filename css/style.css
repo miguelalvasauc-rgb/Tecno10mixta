@@ -9261,15 +9261,37 @@ button.badge-estado {
    duplicar esos estilos.
    ========================================================= */
 
-/* KPIs del Dashboard: mismo grid que .criterios-contenedor (auto-fit,
-   200px mínimo) pero jerarquía propia — etiqueta pequeña arriba, número
-   grande, tendencia/mensaje abajo — en vez del layout "valor+ícono
+/* KPIs del Dashboard: jerarquía propia (etiqueta pequeña arriba, número
+   grande, tendencia/mensaje abajo) en vez del layout "valor+ícono
    arriba, título abajo" de .criterio-tarjeta (pensado para la vista
-   pública de 3 criterios fijos, no para un dashboard). */
+   pública de 3 criterios fijos, no para un dashboard).
+   Mobile-first: 1 columna hasta 640px, mismo breakpoint que
+   .dashboard-ficha — el orden de aparición (Promedio general/Pendientes
+   por calificar/Avance del ciclo/Alumnos en riesgo, el mismo que ya
+   arma renderizarKPIsDashboard() en js/main.js) ya es de mayor a menor
+   prioridad, así que colapsar a 1 columna respeta ese orden sin
+   necesitar reordenar nada. */
 .kpi-contenedor {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1.25rem;
+}
+
+/* Bento por prioridad (confirmado con Hiram): 1. Promedio general >
+   2. Pendientes por calificar > 3. Avance del ciclo > 4. Alumnos en
+   riesgo. Ancho asimétrico en una sola fila, NO alto: las 4 tarjetas
+   tienen contenido de largo muy distinto (Avance del ciclo trae barra +
+   desglose de 3 líneas + tendencia; las otras 3 son solo número +
+   tendencia/mensaje) — repartir la prioridad por ALTO forzaría a
+   comprimir esa tarjeta o dejaría hueco vacío en las demás. En una sola
+   fila, el align-items:stretch por defecto de grid iguala el alto de
+   las 4 a la más alta sin recortar contenido, y el ancho asimétrico
+   sigue comunicando la jerarquía con claridad — variante más simple y
+   con menos riesgo que un grid-template-areas 2D para este contenido. */
+@media (min-width: 640px) {
+  .kpi-contenedor {
+    grid-template-columns: 1.5fr 1.15fr 1.15fr 0.8fr;
+  }
 }
 
 .kpi-tarjeta {
