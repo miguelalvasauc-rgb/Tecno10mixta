@@ -6444,6 +6444,27 @@ async function seleccionarTema(tema) {
   }
 }
 
+// Lee los 4 colores reales de un tema (primario/turquesa/superficie/
+// texto) alternando data-theme en el <html> y leyendo getComputedStyle
+// antes de restaurar el tema que estaba activo — mismo mecanismo que ya
+// usaba construirGridTemas() para el swatch de 2 colores, ahora extraído
+// para que el preview en vivo del selector (activarPreviewTemaEnVivo) lo
+// reutilice sin duplicar la lectura. Nunca hardcodea hex: si mañana se
+// ajusta un color de tema en css/style.css, esto lee el valor real.
+function leerColoresTema(slug) {
+  const temaOriginal = document.documentElement.getAttribute("data-theme");
+  document.documentElement.setAttribute("data-theme", slug);
+  const estilos = getComputedStyle(document.documentElement);
+  const colores = {
+    primario: estilos.getPropertyValue("--color-primario").trim(),
+    turquesa: estilos.getPropertyValue("--color-turquesa").trim(),
+    superficie: estilos.getPropertyValue("--color-superficie").trim(),
+    texto: estilos.getPropertyValue("--color-texto").trim(),
+  };
+  document.documentElement.setAttribute("data-theme", temaOriginal);
+  return colores;
+}
+
 // Arma el grid de 10 tarjetas de tema (swatch + nombre) dentro de
 // "contenedor" — reutilizada por #modal-tema (selector rápido desde el
 // riel/barra inferior) y por la sección "🎨 Personalización" de
@@ -6452,21 +6473,18 @@ async function seleccionarTema(tema) {
 // qué hacer (el modal usa seleccionarTema directo, cuenta.html podría
 // envolverlo si algún día necesita lógica extra).
 //
-// El swatch de cada tarjeta NO repite los hex de cada tema a mano: lee
-// los valores REALES de --color-primario/--color-turquesa alternando
-// data-theme en el <html> y leyendo getComputedStyle antes de restaurar
-// el tema activo. Un solo ciclo síncrono (sin await de por medio), así
-// que el navegador no repinta a medio camino — no hay parpadeo visible.
+// El swatch de cada tarjeta es un mosaico de 4 cuadros (primario/
+// turquesa/superficie/texto, ver leerColoresTema) en vez del split
+// diagonal de 2 colores de antes — se ve el tema real, no solo su acento.
+// Todas las lecturas pasan por leerColoresTema(), que alterna data-theme
+// y restaura de inmediato: 10 llamadas síncronas seguidas, sin ningún
+// await de por medio, así que el navegador no repinta a medio camino —
+// no hay parpadeo visible pese a alternar el tema 10 veces.
 function construirGridTemas(contenedor, temaActivo, alSeleccionar) {
   contenedor.innerHTML = "";
 
-  const temaOriginal = document.documentElement.getAttribute("data-theme");
-
   TEMAS_DISPONIBLES.forEach(({ slug, nombre }) => {
-    document.documentElement.setAttribute("data-theme", slug);
-    const estilos = getComputedStyle(document.documentElement);
-    const primario = estilos.getPropertyValue("--color-primario").trim();
-    const turquesa = estilos.getPropertyValue("--color-turquesa").trim();
+    const { primario, turquesa, superficie, texto } = leerColoresTema(slug);
 
     const [emoji, ...resto] = nombre.split(" ");
 
@@ -6482,20 +6500,26 @@ function construirGridTemas(contenedor, temaActivo, alSeleccionar) {
 
     const swatch = document.createElement("span");
     swatch.className = "tema-tarjeta__swatch";
-    swatch.style.background = "linear-gradient(135deg, " + primario + " 50%, " + turquesa + " 50%)";
     swatch.setAttribute("aria-hidden", "true");
-    swatch.textContent = emoji;
+    [primario, turquesa, superficie, texto].forEach((color) => {
+      const cuadro = document.createElement("span");
+      cuadro.className = "tema-tarjeta__swatch-cuadro";
+      cuadro.style.backgroundColor = color;
+      swatch.appendChild(cuadro);
+    });
+    const emojiSwatch = document.createElement("span");
+    emojiSwatch.className = "tema-tarjeta__swatch-emoji";
+    emojiSwatch.textContent = emoji;
+    swatch.appendChild(emojiSwatch);
 
-    const texto = document.createElement("span");
-    texto.className = "tema-tarjeta__nombre";
-    texto.textContent = resto.join(" ");
+    const textoNombre = document.createElement("span");
+    textoNombre.className = "tema-tarjeta__nombre";
+    textoNombre.textContent = resto.join(" ");
 
-    tarjeta.append(swatch, texto);
+    tarjeta.append(swatch, textoNombre);
     tarjeta.addEventListener("click", () => alSeleccionar(slug));
     contenedor.appendChild(tarjeta);
   });
-
-  document.documentElement.setAttribute("data-theme", temaOriginal);
 }
 
 // Texto del aviso que reemplaza la posibilidad de elegir tema mientras

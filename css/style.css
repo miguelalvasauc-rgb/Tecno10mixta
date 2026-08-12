@@ -4215,15 +4215,49 @@ summary:focus-visible {
   color: var(--color-primario-texto);
 }
 
+/* Mosaico de 4 cuadros (primario/turquesa/superficie/texto, ver
+   leerColoresTema() en js/main.js) en vez del split diagonal de 2
+   colores de antes. "gap: 1px" + background-color en el propio grid
+   deja una línea divisoria fina entre cuadros SIEMPRE, sin importar si
+   dos colores del tema quedan parecidos entre sí (ej. superficie casi
+   blanca junto a un acento también claro) — se distinguen por el borde,
+   no solo por el contraste de color. */
 .tema-tarjeta__swatch {
   width: 44px;
   height: 44px;
   border-radius: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 1px;
+  background-color: rgba(0, 0, 0, 0.18);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.tema-tarjeta__swatch-cuadro {
+  display: block;
+}
+
+/* Emoji del tema centrado ENCIMA del mosaico, en una placa circular
+   pequeña con fondo oscuro fijo — legible sin importar qué 4 colores le
+   toquen debajo (no depende de calcular contraste por tema). Solo cubre
+   el centro: cada cuadro sigue siendo visible en su propia esquina. */
+.tema-tarjeta__swatch-emoji {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  font-size: 0.8rem;
+  line-height: 1;
 }
 
 .tema-tarjeta__nombre {
