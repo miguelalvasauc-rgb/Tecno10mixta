@@ -6265,7 +6265,17 @@ function crearYMostrarToast(tipo, mensaje, { icono = "", spinner = false } = {})
 // de respaldo (250ms, más que los 200ms de la transición) asegura que
 // el toast se quite del DOM aunque ese evento no llegue a disparar
 // (pestaña en segundo plano, ver crearYMostrarToast).
+//
+// --duracion-toast + .toast--con-progreso: arrancan la barra de
+// progreso (::after, css/style.css) con el MISMO "ms" que recibe este
+// setTimeout — ambos empiezan en el mismo instante y duran lo mismo,
+// así que la barra llega a 0 justo cuando el toast empieza a
+// desvanecerse. Sin recalcular ni hardcodear nada: es el mismo "ms" que
+// ya trae esta función (2.5s éxito/advertencia, 7s error).
 function agendarAutodesaparicion(toast, ms) {
+  toast.style.setProperty("--duracion-toast", ms + "ms");
+  toast.classList.add("toast--con-progreso");
+
   temporizadorToastActual = setTimeout(() => {
     toast.classList.add("toast--oculto");
     let yaQuitado = false;

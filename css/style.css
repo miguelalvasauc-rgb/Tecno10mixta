@@ -5839,11 +5839,72 @@ summary:focus-visible {
      simple sin transform (ver más abajo) — el toast sigue
      apareciendo/desapareciendo, solo sin el efecto de movimiento. */
   transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  /* relative+hidden para que la barra de progreso (::after, más abajo)
+     quede recortada dentro de la forma de píldora en vez de sobresalir
+     en las esquinas redondeadas — no afecta el box-shadow propio de
+     .toast (es una capa aparte, no se ve afectada por overflow del
+     elemento que lo proyecta). */
+  position: relative;
+  overflow: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .toast {
     transition: opacity 0.2s ease;
+  }
+}
+
+/* Barra de progreso de autodesaparición: línea delgada abajo que se
+   vacía (scaleX 1→0, transform-origin:right, NUNCA width — evita layout
+   thrash) durante los mismos "ms" exactos que ya recibe
+   agendarAutodesaparicion(toast, ms) en js/main.js, que setea
+   --duracion-toast vía style.setProperty al mismo tiempo que agrega
+   .toast--con-progreso. Sin esa clase (toast "carga" persistente, antes
+   de que actualizarToastCarga lo resuelva a éxito/error) la barra ni
+   siquiera se muestra: no hay "ms" que animar todavía.
+   background-color:currentColor, no un token nuevo: currentColor ya ES
+   el color de texto que cada .toast[data-tipo] eligió para pasar AA
+   contra su propio fondo (#04211d/--color-primario-texto/
+   --color-claro-sobre-navy/#2a1d02 según el tipo) — la barra hereda
+   exactamente ese mismo contraste ya validado, en los 10 temas, sin
+   verificar un color nuevo. */
+.toast::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background-color: currentColor;
+  transform-origin: right;
+  transform: scaleX(0);
+}
+
+.toast--con-progreso::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .toast--con-progreso::after {
+    animation: toast-progreso var(--duracion-toast, 2500ms) linear forwards;
+  }
+}
+
+@keyframes toast-progreso {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* reduced-motion: se oculta por completo en vez de dejarla estática —
+   una barra congelada a medio vaciar no comunica nada útil sin el
+   movimiento que le da sentido. */
+@media (prefers-reduced-motion: reduce) {
+  .toast--con-progreso::after {
+    display: none;
   }
 }
 
