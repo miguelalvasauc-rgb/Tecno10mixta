@@ -4249,6 +4249,22 @@ async function renderizarRubricas() {
     resumenGrupo.append(tituloGrupo, conteoGrupo, iconoGrupo);
     bloqueGrupo.appendChild(resumenGrupo);
 
+    // Wrapper dedicado para animar la altura del acordeón (grid-rows en
+    // style.css). No es "content-envuelto-en-cuadricula": .cuadricula ya
+    // es su propio grid multi-columna, así que necesita este panel aparte
+    // para no pisar su grid-template-rows con el de la animación.
+    // panel-interior (sin margin/padding/border propios) es el ítem de
+    // grid real: .cuadricula trae margin-top propio que, si fuera el
+    // ítem directo, no lo deja colapsar a 0 aunque tenga min-height:0
+    // (el margin de un ítem de grid siempre cuenta para el tamaño de la
+    // pista). Con la interior "limpia" en medio, overflow:hidden sí
+    // recorta ese margin completo al cerrar.
+    const panelGrupo = document.createElement("div");
+    panelGrupo.className = "rubricas-grupo__panel";
+    const panelGrupoInterior = document.createElement("div");
+    panelGrupoInterior.className = "rubricas-grupo__panel-interior";
+    panelGrupo.appendChild(panelGrupoInterior);
+
     const cuadriculaGrupo = document.createElement("div");
     cuadriculaGrupo.className = "cuadricula";
 
@@ -4308,11 +4324,24 @@ async function renderizarRubricas() {
         niveles.appendChild(li);
       });
 
-      tarjeta.append(resumen, niveles);
+      // Mismo wrapper de animación (panel + panel-interior "limpia") que
+      // panelGrupo arriba, aquí para la lista de niveles de cada rúbrica
+      // individual. .tarjeta-rubrica__niveles trae su propio
+      // margin/padding/border-top (separador visual) que necesita la
+      // interior limpia en medio para poder recortarse a 0 al cerrar.
+      const panelNiveles = document.createElement("div");
+      panelNiveles.className = "tarjeta-rubrica__panel";
+      const panelNivelesInterior = document.createElement("div");
+      panelNivelesInterior.className = "tarjeta-rubrica__panel-interior";
+      panelNivelesInterior.appendChild(niveles);
+      panelNiveles.appendChild(panelNivelesInterior);
+
+      tarjeta.append(resumen, panelNiveles);
       cuadriculaGrupo.appendChild(tarjeta);
     });
 
-    bloqueGrupo.appendChild(cuadriculaGrupo);
+    panelGrupoInterior.appendChild(cuadriculaGrupo);
+    bloqueGrupo.appendChild(panelGrupo);
     contenedor.appendChild(bloqueGrupo);
   });
 }

@@ -2416,6 +2416,61 @@ summary:focus-visible {
   margin-top: 1rem;
 }
 
+/* Wrapper de animación de altura (rubricas-grupo__panel y su equivalente
+   tarjeta-rubrica__panel más abajo). Técnica grid-rows 0fr→1fr: el estado
+   base de abajo es SIEMPRE el resultado instantáneo (abierto/cerrado sin
+   transición); la animación en sí solo existe dentro de
+   prefers-reduced-motion: no-preference, mismo patrón que el resto del
+   archivo (ver .hero__contenido). display:grid aquí vence la regla nativa
+   details:not([open]) > *:not(summary) { display:none } — cualquier regla
+   de autor le gana a la hoja de estilos del user-agent, así que el panel
+   nunca queda oculto de golpe y puede animarse. visibility (con transición
+   retrasada) es lo que de verdad lo saca del árbol de accesibilidad y del
+   tab order al cerrar — grid-template-rows: 0fr con overflow:hidden solo
+   lo colapsa visualmente, un lector de pantalla igual podría navegar el
+   contenido "cerrado" sin esto. Si el navegador no soporta CSS Grid, la
+   declaración display:grid completa se descarta (valor inválido) y la
+   regla nativa display:none vuelve a aplicar: degrada a expand/collapse
+   instantáneo, nunca rompe la funcionalidad. */
+.rubricas-grupo__panel,
+.tarjeta-rubrica__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+/* Ítem de grid real, deliberadamente sin margin/padding/border propios:
+   .cuadricula y .tarjeta-rubrica__niveles sí los tienen (separador
+   visual), y el margin/padding/border de un ítem de grid siempre cuenta
+   para el tamaño de su pista aunque tenga min-height:0 — con esta capa
+   "limpia" en medio, overflow:hidden + min-height:0 sí logran un 0fr
+   real (recorta todo lo de adentro, separador incluido) en vez de dejar
+   un remanente visible al cerrar. */
+.rubricas-grupo__panel-interior,
+.tarjeta-rubrica__panel-interior {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.rubricas-grupo[open] > .rubricas-grupo__panel,
+.tarjeta-rubrica[open] > .tarjeta-rubrica__panel {
+  grid-template-rows: 1fr;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rubricas-grupo__panel,
+  .tarjeta-rubrica__panel {
+    transition: grid-template-rows 0.25s ease, visibility 0s linear 0.25s;
+  }
+
+  .rubricas-grupo[open] > .rubricas-grupo__panel,
+  .tarjeta-rubrica[open] > .tarjeta-rubrica__panel {
+    transition: grid-template-rows 0.25s ease, visibility 0s linear 0s;
+  }
+}
+
 :root[data-theme="oscuro"] .rubricas-grupo__titulo {
   color: var(--color-texto);
 }
