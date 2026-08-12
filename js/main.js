@@ -13301,8 +13301,24 @@ async function contarPendientesPorCalificar(trimestre, idsAlumnos) {
 // reciente del trimestre, no una réplica histórica del número ciclo-wide
 // del KPI). Una sola consulta adicional (no una por KPI), reutilizando
 // los ids ya resueltos por construirResumenAlumnosDashboard.
+// pendientesSemanal (agregado junto con Commit C de "extender sparkline
+// a las 4 KPIs"): cuenta, por semana, filas con completado=true Y
+// calificacion=null a partir de actualizado_en — es decir, "de las
+// entregas que SIGUEN sin calificar hoy, cuántas llegaron cada semana".
+// No es "tamaño del backlog medido esa semana en el pasado" (para eso
+// haría falta la fecha en que se calificó cada una, que no se
+// registra aparte de actualizado_en, que se pisa al calificar) — es
+// una vista honesta de "antigüedad del backlog actual", derivada de la
+// MISMA fila ya traída para promedioSemanal/avanceSemanal, sin
+// consulta nueva. "Alumnos en riesgo" no tiene un equivalente así de
+// simple: su fórmula (calcularRiesgoAlumno) es POR ALUMNO y depende de
+// fechas límite por entregable, no de una sola columna de progreso —
+// reconstruirla semana a semana requeriría re-correr esa fórmula por
+// alumno con un corte de fecha distinto en cada semana, mucho más
+// trabajo que sumar una columna más al mismo bucket. Se deja sin
+// tendencia a propósito (ver renderizarKPIsDashboard).
 async function obtenerTendenciasSemanalesDashboard(trimestre, grupo, idsAlumnos) {
-  const vacio = { promedioSemanal: [], avanceSemanal: [] };
+  const vacio = { promedioSemanal: [], avanceSemanal: [], pendientesSemanal: [] };
   if (idsAlumnos.length === 0) return vacio;
 
   const [{ data, error }, entregablesTodos] = await Promise.all([
@@ -13334,13 +13350,16 @@ async function obtenerTendenciasSemanalesDashboard(trimestre, grupo, idsAlumnos)
   const semanas = new Map();
   data.forEach((fila) => {
     const clave = inicioSemanaISO(fila.actualizado_en);
-    if (!semanas.has(clave)) semanas.set(clave, { sumaCalificacion: 0, nCalificaciones: 0, completadas: 0 });
+    if (!semanas.has(clave)) {
+      semanas.set(clave, { sumaCalificacion: 0, nCalificaciones: 0, completadas: 0, pendientes: 0 });
+    }
     const bucket = semanas.get(clave);
     if (fila.calificacion != null) {
       bucket.sumaCalificacion += Number(fila.calificacion);
       bucket.nCalificaciones++;
     }
     if (fila.completado) bucket.completadas++;
+    if (fila.completado && fila.calificacion == null) bucket.pendientes++;
   });
 
   const clavesOrdenadas = [...semanas.keys()].sort();
@@ -13351,6 +13370,7 @@ async function obtenerTendenciasSemanalesDashboard(trimestre, grupo, idsAlumnos)
 
   const promedioSemanal = [];
   const avanceSemanal = [];
+  const pendientesSemanal = [];
   let acumuladoCompletadas = 0;
 
   clavesOrdenadas.forEach((clave) => {
@@ -13362,16 +13382,27 @@ async function obtenerTendenciasSemanalesDashboard(trimestre, grupo, idsAlumnos)
     if (totalEntregablesGrupo > 0) {
       avanceSemanal.push(Math.min(100, (acumuladoCompletadas / totalEntregablesGrupo) * 100));
     }
+    // A diferencia de promedioSemanal (que omite semanas sin
+    // calificaciones), aquí 0 es un dato real ("esa semana no dejó
+    // backlog pendiente"), no una semana sin datos — se empuja siempre.
+    pendientesSemanal.push(bucket.pendientes);
   });
 
   return {
     promedioSemanal: promedioSemanal.length >= 3 ? promedioSemanal : [],
     avanceSemanal: avanceSemanal.length >= 3 ? avanceSemanal : [],
+    pendientesSemanal: pendientesSemanal.length >= 3 ? pendientesSemanal : [],
   };
 }
 
 function formatearValorTendencia(valor, unidad) {
-  return unidad === "porcentaje" ? Math.round(valor) + "%" : valor.toFixed(1);
+  if (unidad === "porcentaje") return Math.round(valor) + "%";
+  // "conteo" (Pendientes por calificar): entero sin decimales — a
+  // diferencia de "decimal" (Promedio general, escala 0-10), acá
+  // valor.toFixed(1) daría "5.0" en vez de "5" para un simple número
+  // de entregas.
+  if (unidad === "conteo") return String(Math.round(valor));
+  return valor.toFixed(1);
 }
 
 // SVG puro (skill dataviz, mismo enfoque que construirFiguraBarraApilada
@@ -13429,7 +13460,13 @@ function construirSparklineSVG(valores, unidad) {
 // null si no hay suficiente histórico (ver obtenerTendenciasSemanalesDashboard)
 // — el llamador simplemente no agrega el bloque, en vez de mostrar un
 // sparkline vacío o inventado.
-function construirTendenciaKPI(valores, unidad) {
+//
+// menorEsMejor: la flecha (▲/▼) siempre refleja la dirección real del
+// número, pero el COLOR es un juicio de valor aparte — para la mayoría
+// de los KPI "subir" es la mejora (más promedio, más avance), pero en
+// Pendientes por calificar es al revés (menos pendientes = mejora).
+// Sin este parámetro, un backlog creciendo se pintaría verde.
+function construirTendenciaKPI(valores, unidad, menorEsMejor) {
   if (!valores || valores.length < 3) return null;
 
   const contenedor = document.createElement("div");
@@ -13440,16 +13477,39 @@ function construirTendenciaKPI(valores, unidad) {
   const ultimo = valores[valores.length - 1];
   const delta = ultimo - primero;
   const deltaAbsFormateado =
-    unidad === "porcentaje" ? Math.round(Math.abs(delta)) + " pts" : Math.abs(delta).toFixed(1);
+    unidad === "porcentaje"
+      ? Math.round(Math.abs(delta)) + " pts"
+      : unidad === "conteo"
+      ? String(Math.round(Math.abs(delta)))
+      : Math.abs(delta).toFixed(1);
+
+  const esMejora = menorEsMejor ? delta <= 0 : delta >= 0;
 
   const deltaTexto = document.createElement("span");
   deltaTexto.className =
     "kpi-tarjeta__tendencia-delta " +
-    (delta >= 0 ? "kpi-tarjeta__tendencia-delta--sube" : "kpi-tarjeta__tendencia-delta--baja");
+    (esMejora ? "kpi-tarjeta__tendencia-delta--mejora" : "kpi-tarjeta__tendencia-delta--empeora");
   deltaTexto.textContent = (delta >= 0 ? "▲ " : "▼ ") + deltaAbsFormateado;
   contenedor.appendChild(deltaTexto);
 
   return contenedor;
+}
+
+// Mensaje visible cuando construirTendenciaKPI no dibuja nada (exige
+// >=3 puntos, ver esa función) — antes la tarjeta se quedaba sin ese
+// bloque sin explicar por qué, y se leía como que faltaba algo por
+// error. "hayFuente" distingue "sí hay una serie que calcular, solo
+// falta historial todavía" (Promedio general/Avance del ciclo/
+// Pendientes con <3 semanas) de "esta KPI no tiene ninguna fuente de
+// tendencia implementada" (Alumnos en riesgo — ver nota junto a
+// obtenerTendenciasSemanalesDashboard sobre por qué no es trivial).
+function construirMensajeTendenciaPendiente(hayFuente) {
+  const mensaje = document.createElement("p");
+  mensaje.className = "kpi-tarjeta__tendencia-pendiente";
+  mensaje.textContent = hayFuente
+    ? "Necesitas más semanas de datos para ver la tendencia"
+    : "Tendencia no disponible todavía para este KPI";
+  return mensaje;
 }
 
 function construirTarjetaKPISimple(datos) {
@@ -13466,8 +13526,8 @@ function construirTarjetaKPISimple(datos) {
 
   tarjeta.append(etiqueta, valor);
 
-  const tendenciaEl = construirTendenciaKPI(datos.tendencia, datos.unidad);
-  if (tendenciaEl) tarjeta.appendChild(tendenciaEl);
+  const tendenciaEl = construirTendenciaKPI(datos.tendencia, datos.unidad, datos.menorEsMejor);
+  tarjeta.appendChild(tendenciaEl || construirMensajeTendenciaPendiente(datos.tendenciaDisponible !== false));
 
   return tarjeta;
 }
@@ -13514,7 +13574,7 @@ function construirTarjetaAvanceCiclo(avancePromedio, porTipoPromedio, tendencia)
   tarjeta.appendChild(desglose);
 
   const tendenciaEl = construirTendenciaKPI(tendencia, "porcentaje");
-  if (tendenciaEl) tarjeta.appendChild(tendenciaEl);
+  tarjeta.appendChild(tendenciaEl || construirMensajeTendenciaPendiente(true));
 
   return tarjeta;
 }
@@ -13550,8 +13610,11 @@ function renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias) {
       icono: "✅",
       titulo: "Pendientes por calificar",
       valor: String(pendientes),
-      tendencia: null,
-      unidad: null,
+      tendencia: tendencias?.pendientesSemanal,
+      unidad: "conteo",
+      // Menos pendientes = mejora (al revés que promedio/avance, donde
+      // subir es lo bueno) — ver nota junto a construirTendenciaKPI.
+      menorEsMejor: true,
     }),
     construirTarjetaAvanceCiclo(avancePromedio, porTipoPromedio, tendencias?.avanceSemanal),
     construirTarjetaKPISimple({
@@ -13560,6 +13623,15 @@ function renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias) {
       valor: String(enRiesgo),
       tendencia: null,
       unidad: null,
+      // A diferencia de las otras 3, esta KPI no tiene ninguna fuente de
+      // tendencia semanal calculada (ver el comentario largo junto a
+      // obtenerTendenciasSemanalesDashboard: calcularRiesgoAlumno es por
+      // alumno y depende de fechas límite por entregable, reconstruirla
+      // semana a semana es scope mayor al de este commit) —
+      // tendenciaDisponible:false le pone a la tarjeta el mensaje
+      // correcto ("no disponible todavía") en vez de "necesitas más
+      // semanas", que prometería algo que más historial no va a resolver.
+      tendenciaDisponible: false,
     })
   );
 }

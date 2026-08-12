@@ -4964,65 +4964,6 @@ summary:focus-visible {
   font-weight: 600;
 }
 
-/* Sparkline de tendencia (Dashboard, ver renderizarKPIsDashboard() en
-   js/main.js): solo en KPIs con histórico semanal real (Promedio general,
-   Avance del ciclo) — Pendientes por calificar y Alumnos en riesgo son
-   fotos del momento sin serie de tiempo con sentido, así que nunca
-   traen este bloque (no es un bug si falta). Mismo criterio de color
-   oscuro/resto-de-temas que .criterio-tarjeta__porcentaje arriba (navy
-   por defecto, turquesa solo en oscuro), ya validado AA ahí. */
-.criterio-tarjeta__tendencia {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  margin-top: 0.6rem;
-}
-
-.criterio-tarjeta__tendencia-svg {
-  display: block;
-  width: 72px;
-  height: 24px;
-  overflow: visible;
-}
-
-.criterio-tarjeta__tendencia-linea {
-  fill: none;
-  stroke: var(--color-primario);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-:root[data-theme="oscuro"] .criterio-tarjeta__tendencia-linea {
-  stroke: var(--color-turquesa);
-}
-
-.criterio-tarjeta__tendencia-relleno {
-  fill: color-mix(in srgb, var(--color-primario) 16%, transparent);
-}
-
-:root[data-theme="oscuro"] .criterio-tarjeta__tendencia-relleno {
-  fill: color-mix(in srgb, var(--color-turquesa) 16%, transparent);
-}
-
-.criterio-tarjeta__tendencia-delta {
-  font-size: 0.78rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-/* Mismos 2 tokens de estado ya usados en el semáforo/tasa de entrega de
-   este mismo módulo (--color-estado-cuenta-activa/vencido) — no un
-   tercer par de verde/rojo nuevo. */
-.criterio-tarjeta__tendencia-delta--sube {
-  color: var(--color-estado-cuenta-activa);
-}
-
-.criterio-tarjeta__tendencia-delta--baja {
-  color: var(--color-estado-vencido);
-}
-
 .criterios-nota {
   margin: 1.25rem 0 0;
   font-size: 0.85rem;
@@ -9458,13 +9399,28 @@ button.badge-estado {
 
 /* Mismos 2 tokens de estado ya usados en el semáforo/tasa de entrega de
    este mismo módulo (--color-estado-cuenta-activa/vencido) — no un
-   tercer par de verde/rojo nuevo. */
-.kpi-tarjeta__tendencia-delta--sube {
+   tercer par de verde/rojo nuevo. --mejora/--empeora (no --sube/--baja):
+   el color es un juicio de valor separado de hacia dónde apunta la
+   flecha — en Pendientes por calificar bajar es la mejora, así que la
+   flecha y el color pueden apuntar distinto (ver menorEsMejor en
+   construirTendenciaKPI, js/main.js). */
+.kpi-tarjeta__tendencia-delta--mejora {
   color: var(--color-estado-cuenta-activa);
 }
 
-.kpi-tarjeta__tendencia-delta--baja {
+.kpi-tarjeta__tendencia-delta--empeora {
   color: var(--color-estado-vencido);
+}
+
+/* Mensaje de "necesitas más historial" cuando construirTendenciaKPI no
+   dibuja nada (ver construirMensajeTendenciaPendiente, js/main.js) —
+   discreto pero legible, mismo tono que .criterios-nota/.dashboard-nota-
+   alcance para texto aclaratorio secundario en este módulo. */
+.kpi-tarjeta__tendencia-pendiente {
+  margin: 0.6rem 0 0;
+  font-size: 0.72rem;
+  color: var(--color-texto-suave);
+  font-style: italic;
 }
 
 /* Ficha de análisis del grupo: mismo grid mobile-first que
