@@ -2831,6 +2831,13 @@ summary:focus-visible {
      lateral), así que solo hace falta un margen pequeño para que la
      tarjeta no quede pegada al borde superior de la ventana. */
   scroll-margin-top: 1rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.tarjeta:hover,
+.tarjeta:focus-within {
+  transform: translateY(-4px);
+  border-color: var(--color-turquesa);
 }
 
 .tarjeta__cabecera {
