@@ -5832,7 +5832,19 @@ summary:focus-visible {
   box-shadow: var(--sombra);
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  /* Desaceleración exponencial en vez de ease simple: la curva llega
+     rápido al ~80% y se asienta despacio en el último tramo, se siente
+     menos mecánica que un ease parejo para un elemento que aparece y
+     debe "posarse". Bajo reduced-motion, se reemplaza por un ease
+     simple sin transform (ver más abajo) — el toast sigue
+     apareciendo/desapareciendo, solo sin el efecto de movimiento. */
+  transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: opacity 0.2s ease;
+  }
 }
 
 .toast[data-tipo="exito"] {
@@ -5909,6 +5921,12 @@ summary:focus-visible {
 .toast--oculto {
   opacity: 0;
   transform: translateY(-8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast--oculto {
+    transform: none;
+  }
 }
 
 /* ---------- Mensaje "sin resultados" ---------- */
