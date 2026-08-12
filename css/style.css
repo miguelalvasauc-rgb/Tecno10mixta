@@ -4151,6 +4151,71 @@ summary:focus-visible {
   }
 }
 
+/* Preview en vivo del selector de tema (#modal-tema únicamente — la
+   sección "Personalización" de cuenta.html no lo usa). Insertada por JS
+   (crearPreviewTemaEnVivo en main.js) entre el título y el grid.
+   Decorativa (aria-hidden, sin <button> real): nunca entra al orden de
+   Tab. Los 4 colores vienen de custom properties LOCALES que solo JS
+   escribe en este elemento al pasar el mouse/foco por una tarjeta —
+   var(--color-*) real es el fallback antes del primer hover/focus. */
+.tema-preview-en-vivo {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.1rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-borde);
+  border-left: 4px solid var(--preview-primario, var(--color-primario));
+  background-color: var(--preview-superficie, var(--color-superficie));
+  transition: background-color 0.15s ease, border-left-color 0.15s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tema-preview-en-vivo,
+  .tema-preview-en-vivo * {
+    transition: none;
+  }
+}
+
+.tema-preview-en-vivo__muestra {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--preview-texto, var(--color-texto));
+  transition: color 0.15s ease;
+}
+
+.tema-preview-en-vivo__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.tema-preview-en-vivo__texto {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--preview-texto, var(--color-texto));
+  transition: color 0.15s ease;
+}
+
+/* Outline en vez de relleno sólido a propósito: turquesa como fondo +
+   texto claro falla AA en superficies claras (Light-Mode Turquoise Rule
+   ya documentada) y este preview recorre los 10 temas sin poder
+   verificar contraste por tema en cada hover. Turquesa como borde/texto
+   sobre --preview-superficie no tiene ese problema. */
+.tema-preview-en-vivo__boton {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--preview-turquesa, var(--color-turquesa));
+  color: var(--preview-turquesa, var(--color-turquesa));
+  font-size: 0.72rem;
+  font-weight: 700;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
 /* Grid de tarjetas de tema — mismo componente para #modal-tema-grid
    (Fase 3) y para la sección "🎨 Personalización" de cuenta.html
    (Fase 4, contenedor propio sin dialog alrededor). */

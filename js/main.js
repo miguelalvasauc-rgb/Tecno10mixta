@@ -6558,6 +6558,81 @@ function actualizarUIGridSegunEvento(contenedorGrid) {
   }
 }
 
+// Inserta la superficie de preview en vivo del selector de tema (una vez
+// por página, antes del grid) si todavía no existe. A propósito NO es
+// aplicarTema(): esa pinta <html> completo y con 10 temas para recorrer
+// con el mouse produciría un flash en cada hover — esto solo actualiza 4
+// custom properties LOCALES sobre este elemento, el resto de la página
+// queda intacta. Decorativa de principio a fin (aria-hidden, sin
+// <button> real): no debe entrar al orden de Tab ni robar foco mientras
+// se navega el grid con teclado.
+function crearPreviewTemaEnVivo(modal) {
+  const existente = modal.querySelector(".tema-preview-en-vivo");
+  if (existente) return existente;
+
+  const preview = document.createElement("div");
+  preview.className = "tema-preview-en-vivo";
+  preview.setAttribute("aria-hidden", "true");
+  preview.innerHTML =
+    '<span class="tema-preview-en-vivo__muestra">Aa</span>' +
+    '<div class="tema-preview-en-vivo__info">' +
+    '<p class="tema-preview-en-vivo__texto">Así se ve este tema</p>' +
+    '<span class="tema-preview-en-vivo__boton">Botón de muestra</span>' +
+    "</div>";
+
+  const grid = modal.querySelector("#modal-tema-grid");
+  modal.insertBefore(preview, grid);
+  return preview;
+}
+
+// Escribe los 4 colores de "slug" como custom properties locales sobre
+// el elemento de preview (--preview-primario/-turquesa/-superficie/
+// -texto), reutilizando leerColoresTema() — la misma lectura que ya usa
+// el swatch de cada tarjeta-tema, no una copia. El CSS del preview cae
+// a var(--color-*) real como fallback si por lo que sea el custom
+// property local no está seteado todavía.
+function aplicarColoresAPreview(preview, slug) {
+  const { primario, turquesa, superficie, texto } = leerColoresTema(slug);
+  preview.style.setProperty("--preview-primario", primario);
+  preview.style.setProperty("--preview-turquesa", turquesa);
+  preview.style.setProperty("--preview-superficie", superficie);
+  preview.style.setProperty("--preview-texto", texto);
+}
+
+// Delegado sobre el contenedor del grid (no un listener por tarjeta):
+// sobrevive a que construirGridTemas() reconstruya las 10 tarjetas cada
+// vez que se abre el modal, sin tener que reenganchar nada. mouseover/
+// mouseout y focusin/focusout SÍ burbujean (a diferencia de mouseenter/
+// mouseleave y focus/blur), así que un solo par de listeners cubre las
+// 10 tarjetas. Al salir el hover/foco de la tarjeta (evento.relatedTarget
+// ya no es otra tarjeta del mismo grid), el preview vuelve al tema
+// activo real del alumno — nunca se queda "huérfano" en el último tema
+// que se pasó a ver.
+function activarPreviewTemaEnVivo(grid, preview) {
+  if (!grid || !preview) return;
+
+  const revertirAlTemaActivo = () => aplicarColoresAPreview(preview, temaActual);
+
+  const alEntrar = (evento) => {
+    const tarjeta = evento.target.closest(".tema-tarjeta");
+    if (tarjeta && grid.contains(tarjeta)) {
+      aplicarColoresAPreview(preview, tarjeta.dataset.temaSlug);
+    }
+  };
+
+  const alSalir = (evento) => {
+    const tarjeta = evento.target.closest(".tema-tarjeta");
+    if (!tarjeta) return;
+    const siguienteEsOtraTarjeta = evento.relatedTarget?.closest?.(".tema-tarjeta");
+    if (!siguienteEsOtraTarjeta) revertirAlTemaActivo();
+  };
+
+  grid.addEventListener("mouseover", alEntrar);
+  grid.addEventListener("mouseout", alSalir);
+  grid.addEventListener("focusin", alEntrar);
+  grid.addEventListener("focusout", alSalir);
+}
+
 // Engancha los 2 botones .boton-tema por página (riel flyout desktop +
 // sheet de la barra inferior en móvil): al hacer clic abren #modal-tema
 // con el grid de 10 temas recién armado (construirGridTemas), en vez de
@@ -6570,6 +6645,8 @@ function activarSelectorTema() {
 
   const grid = document.getElementById("modal-tema-grid");
   const botonCerrar = modal.querySelector(".modal-tema__cerrar");
+  const preview = crearPreviewTemaEnVivo(modal);
+  activarPreviewTemaEnVivo(grid, preview);
 
   document.querySelectorAll(".boton-tema").forEach((boton) => {
     boton.addEventListener("click", () => {
@@ -6577,6 +6654,7 @@ function activarSelectorTema() {
         construirGridTemas(grid, temaActual, seleccionarTema);
         actualizarUIGridSegunEvento(grid);
       }
+      aplicarColoresAPreview(preview, temaActual);
       modal.showModal();
     });
   });
