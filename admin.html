@@ -500,11 +500,15 @@
           </div>
         </div>
 
-        <!-- KPIs: reutiliza .criterios-contenedor/.criterio-tarjeta tal
-             cual (ver css/style.css), poblados por renderizarKPIsDashboard()
-             en js/main.js. Se recalculan sobre el grupo seleccionado
-             arriba (sin opción "Todos" en esta pestaña). -->
-        <div id="dashboard-kpis" class="criterios-contenedor" aria-live="polite"></div>
+        <!-- KPIs: .kpi-contenedor/.kpi-tarjeta propios del Dashboard (ver
+             css/style.css), desacoplados de .criterios-contenedor/
+             .criterio-tarjeta (vista pública "Criterios de evaluación" en
+             index.html/padres.html) — mismo grid, jerarquía tipográfica
+             distinta (etiqueta pequeña arriba, número grande, tendencia
+             abajo). Poblados por renderizarKPIsDashboard() en js/main.js,
+             recalculados sobre el grupo seleccionado arriba (sin opción
+             "Todos" en esta pestaña). -->
+        <div id="dashboard-kpis" class="kpi-contenedor" aria-live="polite"></div>
 
         <h3>📋 Ficha de análisis del grupo</h3>
         <!-- Grid 2×2 (misma técnica que .cuadricula-temario: 1 columna en

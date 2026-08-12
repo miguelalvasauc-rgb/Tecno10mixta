@@ -13398,7 +13398,7 @@ function construirSparklineSVG(valores, unidad) {
   const svg = document.createElementNS(svgNS, "svg");
   svg.setAttribute("viewBox", "0 0 " + ANCHO + " " + ALTO);
   svg.setAttribute("role", "img");
-  svg.classList.add("criterio-tarjeta__tendencia-svg");
+  svg.classList.add("kpi-tarjeta__tendencia-svg");
 
   const titulo = document.createElementNS(svgNS, "title");
   titulo.textContent =
@@ -13415,12 +13415,12 @@ function construirSparklineSVG(valores, unidad) {
     "points",
     PAD + "," + (ALTO - PAD) + " " + puntosTexto + " " + (ANCHO - PAD) + "," + (ALTO - PAD)
   );
-  relleno.classList.add("criterio-tarjeta__tendencia-relleno");
+  relleno.classList.add("kpi-tarjeta__tendencia-relleno");
   svg.appendChild(relleno);
 
   const linea = document.createElementNS(svgNS, "polyline");
   linea.setAttribute("points", puntosTexto);
-  linea.classList.add("criterio-tarjeta__tendencia-linea");
+  linea.classList.add("kpi-tarjeta__tendencia-linea");
   svg.appendChild(linea);
 
   return svg;
@@ -13433,7 +13433,7 @@ function construirTendenciaKPI(valores, unidad) {
   if (!valores || valores.length < 3) return null;
 
   const contenedor = document.createElement("div");
-  contenedor.className = "criterio-tarjeta__tendencia";
+  contenedor.className = "kpi-tarjeta__tendencia";
   contenedor.appendChild(construirSparklineSVG(valores, unidad));
 
   const primero = valores[0];
@@ -13444,8 +13444,8 @@ function construirTendenciaKPI(valores, unidad) {
 
   const deltaTexto = document.createElement("span");
   deltaTexto.className =
-    "criterio-tarjeta__tendencia-delta " +
-    (delta >= 0 ? "criterio-tarjeta__tendencia-delta--sube" : "criterio-tarjeta__tendencia-delta--baja");
+    "kpi-tarjeta__tendencia-delta " +
+    (delta >= 0 ? "kpi-tarjeta__tendencia-delta--sube" : "kpi-tarjeta__tendencia-delta--baja");
   deltaTexto.textContent = (delta >= 0 ? "▲ " : "▼ ") + deltaAbsFormateado;
   contenedor.appendChild(deltaTexto);
 
@@ -13454,16 +13454,17 @@ function construirTendenciaKPI(valores, unidad) {
 
 function construirTarjetaKPISimple(datos) {
   const tarjeta = document.createElement("div");
-  tarjeta.className = "criterio-tarjeta";
+  tarjeta.className = "kpi-tarjeta";
+
+  const etiqueta = document.createElement("h3");
+  etiqueta.className = "kpi-tarjeta__etiqueta";
+  etiqueta.textContent = datos.icono + " " + datos.titulo;
 
   const valor = document.createElement("div");
-  valor.className = "criterio-tarjeta__porcentaje";
-  valor.textContent = datos.icono + " " + datos.valor;
+  valor.className = "kpi-tarjeta__valor";
+  valor.textContent = datos.valor;
 
-  const titulo = document.createElement("h3");
-  titulo.textContent = datos.titulo;
-
-  tarjeta.append(valor, titulo);
+  tarjeta.append(etiqueta, valor);
 
   const tendenciaEl = construirTendenciaKPI(datos.tendencia, datos.unidad);
   if (tendenciaEl) tarjeta.appendChild(tendenciaEl);
@@ -13480,30 +13481,31 @@ const ETIQUETAS_TIPO_ENTREGABLE_DASHBOARD = { tarea: "Tareas", actividad: "Activ
 // (calcularAvanceGeneralAlumnoDetallado), sin duplicar ese cálculo aquí.
 function construirTarjetaAvanceCiclo(avancePromedio, porTipoPromedio, tendencia) {
   const tarjeta = document.createElement("div");
-  tarjeta.className = "criterio-tarjeta";
+  tarjeta.className = "kpi-tarjeta";
+
+  const etiqueta = document.createElement("h3");
+  etiqueta.className = "kpi-tarjeta__etiqueta";
+  etiqueta.textContent = "🎯 Avance del ciclo";
 
   const valor = document.createElement("div");
-  valor.className = "criterio-tarjeta__porcentaje";
-  valor.textContent = "🎯 " + avancePromedio + "%";
-
-  const titulo = document.createElement("h3");
-  titulo.textContent = "Avance del ciclo";
+  valor.className = "kpi-tarjeta__valor";
+  valor.textContent = avancePromedio + "%";
 
   const barra = document.createElement("div");
-  barra.className = "criterio-tarjeta__barra";
+  barra.className = "kpi-tarjeta__barra";
   const relleno = document.createElement("div");
-  relleno.className = "criterio-tarjeta__relleno";
+  relleno.className = "kpi-tarjeta__relleno";
   relleno.style.width = avancePromedio + "%";
   barra.appendChild(relleno);
 
-  tarjeta.append(valor, titulo, barra);
+  tarjeta.append(etiqueta, valor, barra);
 
   const desglose = document.createElement("ul");
-  desglose.className = "criterio-tarjeta__desglose";
-  Object.entries(ETIQUETAS_TIPO_ENTREGABLE_DASHBOARD).forEach(([tipo, etiqueta]) => {
+  desglose.className = "kpi-tarjeta__desglose";
+  Object.entries(ETIQUETAS_TIPO_ENTREGABLE_DASHBOARD).forEach(([tipo, etiquetaTipo]) => {
     const item = document.createElement("li");
     const etiquetaEl = document.createElement("span");
-    etiquetaEl.textContent = etiqueta;
+    etiquetaEl.textContent = etiquetaTipo;
     const valorEl = document.createElement("span");
     valorEl.textContent = (porTipoPromedio[tipo] ?? 0) + "%";
     item.append(etiquetaEl, valorEl);

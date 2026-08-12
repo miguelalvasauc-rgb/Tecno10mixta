@@ -9309,11 +9309,163 @@ button.badge-estado {
 /* =========================================================
    MÓDULO "DASHBOARD" (panel docente, tab-dashboard)
 
-   Gráficas SVG puro (skill dataviz): sin canvas, sin librerías. Reutiliza
-   .criterios-contenedor/.criterio-tarjeta (KPIs), .barra-progreso
-   (cronograma) y .tabla-calificacion (vista de tabla de cada gráfica) tal
-   cual, para no duplicar estilos ya existentes.
+   Gráficas SVG puro (skill dataviz): sin canvas, sin librerías. Los KPIs
+   tienen su propia .kpi-contenedor/.kpi-tarjeta (abajo), desacoplada de
+   .criterios-contenedor/.criterio-tarjeta (vista pública "Criterios de
+   evaluación" en index.html/padres.html) — antes las reutilizaba tal
+   cual; se separaron para poder afinar la jerarquía tipográfica del
+   Dashboard sin arrastrar cambios a esa vista pública. El resto del
+   módulo sí sigue reutilizando .barra-progreso (cronograma) y
+   .tabla-calificacion (vista de tabla de cada gráfica) tal cual, sin
+   duplicar esos estilos.
    ========================================================= */
+
+/* KPIs del Dashboard: mismo grid que .criterios-contenedor (auto-fit,
+   200px mínimo) pero jerarquía propia — etiqueta pequeña arriba, número
+   grande, tendencia/mensaje abajo — en vez del layout "valor+ícono
+   arriba, título abajo" de .criterio-tarjeta (pensado para la vista
+   pública de 3 criterios fijos, no para un dashboard). */
+.kpi-contenedor {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.kpi-tarjeta {
+  position: relative;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--sombra);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.kpi-tarjeta__etiqueta {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-tarjeta__valor {
+  font-family: "Quicksand", sans-serif;
+  font-size: 2.3rem;
+  font-weight: 700;
+  color: var(--color-primario);
+  margin-top: 0.3rem;
+  line-height: 1.15;
+}
+
+/* Mismo criterio ya validado AA en .criterio-tarjeta__porcentaje: navy
+   por defecto falla AA como acento sobre superficie clara en modo
+   claro (~2.5:1), turquesa solo se habilita en oscuro. */
+:root[data-theme="oscuro"] .kpi-tarjeta__valor {
+  color: var(--color-turquesa);
+}
+
+.kpi-tarjeta__barra {
+  width: 100%;
+  height: 8px;
+  margin-top: 0.85rem;
+  background-color: var(--color-borde);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.kpi-tarjeta__relleno {
+  height: 100%;
+  background-color: var(--color-turquesa);
+  border-radius: 999px;
+}
+
+.kpi-tarjeta__desglose {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+  width: 100%;
+}
+
+.kpi-tarjeta__desglose li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.kpi-tarjeta__desglose li span:first-child {
+  color: var(--color-texto-suave);
+}
+
+.kpi-tarjeta__desglose li span:last-child {
+  font-weight: 600;
+}
+
+/* Sparkline de tendencia — solo en KPIs con histórico semanal real (ver
+   construirTendenciaKPI() en js/main.js: exige >=3 puntos). Mismo
+   criterio de color oscuro/resto-de-temas que .kpi-tarjeta__valor
+   arriba (navy por defecto, turquesa solo en oscuro), ya validado AA. */
+.kpi-tarjeta__tendencia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.kpi-tarjeta__tendencia-svg {
+  display: block;
+  width: 72px;
+  height: 24px;
+  overflow: visible;
+}
+
+.kpi-tarjeta__tendencia-linea {
+  fill: none;
+  stroke: var(--color-primario);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+:root[data-theme="oscuro"] .kpi-tarjeta__tendencia-linea {
+  stroke: var(--color-turquesa);
+}
+
+.kpi-tarjeta__tendencia-relleno {
+  fill: color-mix(in srgb, var(--color-primario) 16%, transparent);
+}
+
+:root[data-theme="oscuro"] .kpi-tarjeta__tendencia-relleno {
+  fill: color-mix(in srgb, var(--color-turquesa) 16%, transparent);
+}
+
+.kpi-tarjeta__tendencia-delta {
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Mismos 2 tokens de estado ya usados en el semáforo/tasa de entrega de
+   este mismo módulo (--color-estado-cuenta-activa/vencido) — no un
+   tercer par de verde/rojo nuevo. */
+.kpi-tarjeta__tendencia-delta--sube {
+  color: var(--color-estado-cuenta-activa);
+}
+
+.kpi-tarjeta__tendencia-delta--baja {
+  color: var(--color-estado-vencido);
+}
 
 /* Ficha de análisis del grupo: mismo grid mobile-first que
    .cuadricula-temario (1 columna en mobile, 2 desde 640px) — el único
