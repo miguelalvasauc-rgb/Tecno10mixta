@@ -9064,6 +9064,42 @@ button.badge-estado {
   color: var(--color-primario);
 }
 
+/* Chip de rango (verde/ámbar/rojo) junto al número — nunca lo
+   reemplaza, no depende solo del color (WCAG 1.4.1: ícono + palabra
+   visibles). Mismo triplete --color-estado-* que ya usa .badge-estado
+   (completado/pendiente/vencido), nunca --color-turquesa aquí (Status-
+   Color Exclusivity Rule) — el turquesa/navy de arriba sigue siendo solo
+   el "número destacado", un trabajo distinto del chip. */
+.chip-rango-promedio {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  /* Evita que ✓/⚠/✕ se rendericen como emoji a color en plataformas que
+     los tratan como tal (sobre todo ⚠) — se ven consistentes como
+     glifo simple sobre el fondo de color del chip en los 10 temas. */
+  font-variant-emoji: text;
+}
+
+.chip-rango-promedio--verde {
+  background-color: var(--color-estado-completado);
+  color: #04211D;
+}
+
+.chip-rango-promedio--ambar {
+  background-color: var(--color-estado-pendiente);
+  color: #2A1D02;
+}
+
+.chip-rango-promedio--rojo {
+  background-color: var(--color-estado-vencido);
+  color: var(--color-claro-sobre-navy);
+}
+
 /* ---------- Calificar entrega (#modal-calificar) ----------
    Mismo patrón visual angosto que #modal-editar-fecha: un solo campo
    numérico. #modal-calificar-archivo (enlace opcional) reutiliza

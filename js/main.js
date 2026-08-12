@@ -12685,6 +12685,43 @@ async function obtenerMapaProgresoPorAlumno(trimestre, alumnoIds) {
   return mapaPorAlumno;
 }
 
+// Cortes de la tabla de promedios, confirmados con Hiram (no hay ningún
+// criterio de 3 rangos ya usado en el sitio: la fórmula de riesgo del
+// Dashboard es binaria y mide avance/puntualidad, no promedio numérico
+// — no aplica aquí). Escala 0-10 estándar (ver min/max del input
+// #calificar-valor en admin.html). 6.0 = mínimo aprobatorio SEP; 8.0
+// separa "aprobado pero en riesgo" de "aprobado con buen nivel".
+const UMBRAL_PROMEDIO_APROBATORIO = 6.0;
+const UMBRAL_PROMEDIO_BUEN_NIVEL = 8.0;
+
+// Reutiliza el MISMO triplete de tokens --color-estado-* que ya usa
+// .badge-estado (completado/pendiente/vencido = verde/ámbar/rojo, ya AA
+// en los 10 temas) — nunca --color-turquesa aquí (Status-Color
+// Exclusivity Rule, DESIGN.md). El chip acompaña al número, nunca lo
+// reemplaza: ícono + palabra visibles para todos, no solo color (WCAG
+// 1.4.1) — font-variant-emoji:text en el CSS evita que ⚠ se renderice
+// como emoji a color en algunas plataformas, para que se vea consistente
+// sobre el fondo ámbar del chip.
+const CHIP_RANGO_PROMEDIO = {
+  reprobado: { texto: "✕ Reprobado", clase: "chip-rango-promedio--rojo" },
+  riesgo: { texto: "⚠ En riesgo", clase: "chip-rango-promedio--ambar" },
+  aprobado: { texto: "✓ Aprobado", clase: "chip-rango-promedio--verde" },
+};
+
+function rangoPromedio(promedioFinal) {
+  if (promedioFinal < UMBRAL_PROMEDIO_APROBATORIO) return "reprobado";
+  if (promedioFinal < UMBRAL_PROMEDIO_BUEN_NIVEL) return "riesgo";
+  return "aprobado";
+}
+
+function crearChipRangoPromedio(promedioFinal) {
+  const { texto, clase } = CHIP_RANGO_PROMEDIO[rangoPromedio(promedioFinal)];
+  const chip = document.createElement("span");
+  chip.className = "chip-rango-promedio " + clase;
+  chip.textContent = texto;
+  return chip;
+}
+
 // Alumno sin cuenta activa: "—" en las 4 columnas numéricas, sin
 // intentar promediar nada (no hay progreso real que leer para él).
 function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, trimestre) {
@@ -12743,7 +12780,15 @@ function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, t
 
   const celdaFinal = document.createElement("td");
   celdaFinal.className = "tabla-promedios__promedio-final";
-  celdaFinal.textContent = promedio.promedioFinal.toFixed(1);
+  // dataset.valor: fuente numérica limpia para exportarCSVPromedios() y
+  // el ordenamiento por columna — el chip de abajo agrega texto visible
+  // (ícono + palabra) dentro de la misma celda, así que .textContent ya
+  // no alcanza para leer el número solo.
+  celdaFinal.dataset.valor = String(promedio.promedioFinal);
+  const numeroFinal = document.createElement("span");
+  numeroFinal.className = "tabla-promedios__promedio-final-numero";
+  numeroFinal.textContent = promedio.promedioFinal.toFixed(1);
+  celdaFinal.append(numeroFinal, crearChipRangoPromedio(promedio.promedioFinal));
   fila.appendChild(celdaFinal);
 
   return fila;
@@ -12872,7 +12917,13 @@ function exportarCSVPromedios() {
       celdas[1]?.textContent || "",
       celdas[2]?.textContent || "",
       celdas[3]?.textContent || "",
-      celdas[4]?.textContent || "",
+      // Promedio final: .textContent ya no es solo el número (trae el
+      // chip de rango pegado, ver crearFilaAlumnoPromedios) — dataset.valor
+      // es la fuente numérica limpia; "—" (alumno sin cuenta/sin
+      // calificación) no lo trae, ahí cae al textContent normal.
+      celdas[4]?.dataset.valor
+        ? Number(celdas[4].dataset.valor).toFixed(1)
+        : celdas[4]?.textContent || "",
     ];
     lineas.push(valores.map(escaparValorCSV).join(","));
   });
