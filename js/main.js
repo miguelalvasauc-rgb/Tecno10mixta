@@ -12766,16 +12766,22 @@ function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, t
 
   const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAlumno);
 
+  // dataset.valor en las 3: mismo motivo que en celdaFinal más abajo —
+  // fuente numérica limpia para el ordenamiento por columna (Commit C),
+  // sin depender de parsear el texto de la celda.
   const celdaTarea = document.createElement("td");
   celdaTarea.textContent = promedio.promedioTarea.toFixed(1);
+  celdaTarea.dataset.valor = String(promedio.promedioTarea);
   fila.appendChild(celdaTarea);
 
   const celdaActividad = document.createElement("td");
   celdaActividad.textContent = promedio.promedioActividad.toFixed(1);
+  celdaActividad.dataset.valor = String(promedio.promedioActividad);
   fila.appendChild(celdaActividad);
 
   const celdaProyecto = document.createElement("td");
   celdaProyecto.textContent = promedio.promedioProyecto.toFixed(1);
+  celdaProyecto.dataset.valor = String(promedio.promedioProyecto);
   fila.appendChild(celdaProyecto);
 
   const celdaFinal = document.createElement("td");
@@ -12794,29 +12800,121 @@ function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, t
   return fila;
 }
 
+// Columnas ordenables de la tabla de promedios (Commit C). "texto" ==
+// Alumno (localeCompare por nombre); las otras 4 son "numero" y leen
+// dataset.valor de la celda correspondiente (ver crearFilaAlumnoPromedios
+// — Tareas/Actividades/Proyectos/Promedio final lo traen todas). Un
+// alumno sin cuenta/sin calificación no tiene dataset.valor en esas
+// celdas: sus filas siempre quedan al final, sin importar la dirección.
+const COLUMNAS_ORDENABLES_PROMEDIOS = [
+  { texto: "Alumno", tipo: "texto" },
+  { texto: "Tareas", tipo: "numero" },
+  { texto: "Actividades", tipo: "numero" },
+  { texto: "Proyectos", tipo: "numero" },
+  { texto: "Promedio final", tipo: "numero" },
+];
+
+function valorOrdenFilaPromedios(fila, indiceColumna, tipo) {
+  if (tipo === "texto") {
+    return fila.querySelector(".calificacion-tabla__alumno-nombre")?.textContent || "";
+  }
+  const valor = fila.children[indiceColumna]?.dataset.valor;
+  return valor == null ? null : Number(valor);
+}
+
+function compararFilasPromedios(filaA, filaB, indiceColumna, tipo, direccion) {
+  const valorA = valorOrdenFilaPromedios(filaA, indiceColumna, tipo);
+  const valorB = valorOrdenFilaPromedios(filaB, indiceColumna, tipo);
+
+  if (valorA == null && valorB == null) return 0;
+  if (valorA == null) return 1;
+  if (valorB == null) return -1;
+
+  const comparacion =
+    tipo === "texto" ? String(valorA).localeCompare(String(valorB), "es") : valorA - valorB;
+  return direccion === "asc" ? comparacion : -comparacion;
+}
+
 // Reutiliza la clase "tabla-calificacion" (no solo "tabla-promedios")
 // para heredar gratis el mismo look (bordes, encabezado sticky) y las
 // mismas reglas @media print en blanco y negro que ya apuntan a esa
 // clase — sin sticky de columna "Alumno" (aquí solo son 5 columnas,
 // caben sin scroll horizontal, a diferencia de la tabla de captura).
+//
+// Ordenamiento (Commit C) SOLO vive aquí, dentro de esta función — no
+// toca .tabla-calificacion genérico ni las otras 4 vistas que la
+// comparten. Reordena las mismas filas <tr> ya construidas (con
+// tbody.append(...filasOrdenadas), que MUEVE nodos existentes en vez de
+// reconstruirlos) en vez de volver a pedir datos a Supabase: el thead
+// sticky no se entera del reorden (solo depende de posición dentro del
+// contenedor con scroll, no del orden de las filas del tbody).
 function construirTablaPromedios(alumnos, itemsPorTipo, mapaProgresoPorAlumno, trimestre) {
   const tabla = document.createElement("table");
   tabla.className = "tabla-calificacion tabla-promedios";
 
   const thead = document.createElement("thead");
   const filaEncabezado = document.createElement("tr");
-  ["Alumno", "Tareas", "Actividades", "Proyectos", "Promedio final"].forEach((texto) => {
-    const th = document.createElement("th");
-    th.textContent = texto;
-    filaEncabezado.appendChild(th);
-  });
-  thead.appendChild(filaEncabezado);
-  tabla.appendChild(thead);
 
   const tbody = document.createElement("tbody");
   alumnos.forEach((alumno) => {
     tbody.appendChild(crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, trimestre));
   });
+
+  let columnaOrdenActual = null;
+  let direccionOrdenActual = "asc";
+
+  function actualizarEncabezadosOrdenamiento() {
+    Array.from(filaEncabezado.children).forEach((th, indice) => {
+      const flecha = th.querySelector(".tabla-promedios__flecha-orden");
+      if (indice === columnaOrdenActual) {
+        th.setAttribute("aria-sort", direccionOrdenActual === "asc" ? "ascending" : "descending");
+        if (flecha) flecha.textContent = direccionOrdenActual === "asc" ? "▲" : "▼";
+      } else {
+        th.setAttribute("aria-sort", "none");
+        if (flecha) flecha.textContent = "";
+      }
+    });
+  }
+
+  function reordenarPor(indiceColumna, tipo) {
+    // Re-click en la misma columna alterna dirección; una columna nueva
+    // siempre arranca ascendente.
+    direccionOrdenActual =
+      columnaOrdenActual === indiceColumna && direccionOrdenActual === "asc" ? "desc" : "asc";
+    columnaOrdenActual = indiceColumna;
+
+    const filasOrdenadas = Array.from(tbody.querySelectorAll("tr")).sort((filaA, filaB) =>
+      compararFilasPromedios(filaA, filaB, indiceColumna, tipo, direccionOrdenActual)
+    );
+    tbody.append(...filasOrdenadas);
+
+    actualizarEncabezadosOrdenamiento();
+  }
+
+  COLUMNAS_ORDENABLES_PROMEDIOS.forEach(({ texto, tipo }, indice) => {
+    const th = document.createElement("th");
+    th.setAttribute("aria-sort", "none");
+
+    // <button> nativo: foco y activación por teclado (Enter/Espacio)
+    // gratis, sin tener que agregar tabindex ni manejar keydown a mano.
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "tabla-promedios__boton-orden";
+    boton.append(texto);
+
+    const flecha = document.createElement("span");
+    flecha.className = "tabla-promedios__flecha-orden";
+    flecha.setAttribute("aria-hidden", "true");
+    boton.appendChild(flecha);
+
+    boton.addEventListener("click", () => reordenarPor(indice, tipo));
+
+    th.appendChild(boton);
+    filaEncabezado.appendChild(th);
+  });
+
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
   tabla.appendChild(tbody);
 
   return tabla;

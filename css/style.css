@@ -9100,6 +9100,49 @@ button.badge-estado {
   color: var(--color-claro-sobre-navy);
 }
 
+/* Ordenamiento por columna (Commit C) — SOLO dentro de .tabla-promedios,
+   scoped al <button> que construirTablaPromedios() mete dentro de cada
+   <th>; .tabla-calificacion thead th genérico (las otras 4 vistas que
+   comparten esa clase) sigue con texto plano sin tocar. all:unset quita
+   el chrome nativo del <button> y luego se reponen solo las propiedades
+   que necesita para verse igual que el texto plano de antes (heredar
+   color/mayúsculas/tracking del th ya establecidos más arriba). */
+.tabla-promedios__boton-orden {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+}
+
+.tabla-promedios__boton-orden:hover,
+.tabla-promedios__boton-orden:focus-visible {
+  color: var(--color-turquesa);
+}
+
+.tabla-promedios__boton-orden:focus-visible {
+  outline: 2px solid var(--color-turquesa);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Columna activa: mismo color que hover/focus, refuerza cuál está
+   ordenando ahora mismo sin depender solo del color (la flecha de abajo
+   ya es la señal no-color). */
+.tabla-promedios thead th[aria-sort="ascending"] .tabla-promedios__boton-orden,
+.tabla-promedios thead th[aria-sort="descending"] .tabla-promedios__boton-orden {
+  color: var(--color-turquesa);
+}
+
+.tabla-promedios__flecha-orden {
+  font-size: 0.65rem;
+}
+
 /* ---------- Calificar entrega (#modal-calificar) ----------
    Mismo patrón visual angosto que #modal-editar-fecha: un solo campo
    numérico. #modal-calificar-archivo (enlace opcional) reutiliza
