@@ -14073,6 +14073,15 @@ async function obtenerEvolucionPromedioPorSecuencia(trimestre, grupoFiltro) {
 // misma escala 0-10 de calificación — mismo patrón de accesibilidad
 // (role="img" + aria-label + tabla de respaldo con el mismo botón toggle)
 // para que ambas gráficas del Dashboard se sientan consistentes.
+// MARGEN_SUPERIOR: franja reservada arriba de las barras para el valor
+// numérico de cada una (Commit D — antes solo estaba en el <title> al
+// hover y en "Ver como tabla", así que un valor cercano a escalaMax con
+// pocas categorías llenaba el lienzo de borde a borde sin ningún dato
+// visible, y se leía como roto aunque no lo estuviera). El valor SIEMPRE
+// se dibuja en esta franja fija, nunca encima/dentro de la barra: así no
+// hace falta un color de texto distinto según si la barra es alta o
+// baja (evita el problema de contraste de escribir texto claro/oscuro
+// encima de un relleno de color que puede variar).
 function construirFiguraBarrasVerticales({ tituloAccesible, etiquetas, valores, colorBarra, escalaMax }) {
   contadorFigurasDashboard++;
   const idTabla = "dashboard-tabla-" + contadorFigurasDashboard;
@@ -14082,8 +14091,9 @@ function construirFiguraBarrasVerticales({ tituloAccesible, etiquetas, valores, 
   figura.className = "dashboard-grafica";
 
   const ANCHO = 320;
-  const ALTO_TOTAL = 140;
-  const ALTO_BARRAS = ALTO_TOTAL - 24;
+  const MARGEN_SUPERIOR = 18;
+  const ALTO_BARRAS = 116;
+  const ALTO_TOTAL = MARGEN_SUPERIOR + ALTO_BARRAS + 24;
   const GAP = 6;
   const anchoBarra = (ANCHO - GAP * (etiquetas.length - 1)) / etiquetas.length;
 
@@ -14097,7 +14107,7 @@ function construirFiguraBarrasVerticales({ tituloAccesible, etiquetas, valores, 
     const valor = valores[indice] || 0;
     const alturaBarra = Math.max(0, (valor / escalaMax) * ALTO_BARRAS);
     const x = indice * (anchoBarra + GAP);
-    const y = ALTO_BARRAS - alturaBarra;
+    const y = MARGEN_SUPERIOR + (ALTO_BARRAS - alturaBarra);
 
     const barra = document.createElementNS(svgNS, "rect");
     barra.setAttribute("x", String(x));
@@ -14111,9 +14121,16 @@ function construirFiguraBarrasVerticales({ tituloAccesible, etiquetas, valores, 
     barra.appendChild(tituloBarra);
     svg.appendChild(barra);
 
+    const textoValor = document.createElementNS(svgNS, "text");
+    textoValor.setAttribute("x", String(x + anchoBarra / 2));
+    textoValor.setAttribute("y", String(y - 5));
+    textoValor.setAttribute("class", "dashboard-grafica__valor-barra");
+    textoValor.textContent = valor.toFixed(1);
+    svg.appendChild(textoValor);
+
     const texto = document.createElementNS(svgNS, "text");
     texto.setAttribute("x", String(x + anchoBarra / 2));
-    texto.setAttribute("y", String(ALTO_BARRAS + 16));
+    texto.setAttribute("y", String(MARGEN_SUPERIOR + ALTO_BARRAS + 16));
     texto.setAttribute("class", "dashboard-grafica__etiqueta-barra");
     texto.textContent = etiqueta;
     svg.appendChild(texto);

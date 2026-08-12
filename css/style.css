@@ -9568,6 +9568,20 @@ button.badge-estado {
   text-anchor: middle;
 }
 
+/* Valor numérico sobre cada barra (Commit D): vive en la franja
+   MARGEN_SUPERIOR reservada arriba de las barras (ver
+   construirFiguraBarrasVerticales, js/main.js), nunca encima del
+   relleno de color — por eso usa el mismo --color-texto normal del
+   fondo de la tarjeta que el resto del Dashboard, sin necesitar un
+   token de contraste distinto por tema como si estuviera pintado sobre
+   colorBarra. */
+.dashboard-grafica__valor-barra {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--color-texto);
+  text-anchor: middle;
+}
+
 .dashboard-grafica__boton-tabla {
   margin-top: 0.5rem;
 }
