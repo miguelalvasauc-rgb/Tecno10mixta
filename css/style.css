@@ -3179,6 +3179,33 @@ summary:focus-visible {
      verticalmente <summary> y la lista de niveles como hijos directos. */
 }
 
+/* Mosaico de 4 segmentos (excelente/bueno/regular/deficiente) como firma
+   visual del criterio, visible tanto cerrado como abierto — puramente
+   decorativo, los 4 se ven siempre igual, no hay nivel "logrado" que
+   resaltar (las rúbricas son descriptivas, no de seguimiento). Coexiste
+   con el borde por nivel de cada .nivel-item de abajo: ese cumple un rol
+   distinto (asociar cada descripción con su color al leer la lista
+   abierta), este es la vista rápida con la tarjeta cerrada. Un solo
+   ::after con gradiente de cortes duros en vez de 4 elementos aparte;
+   ::before ya lo usa el glow del spotlight compartido de .tarjeta. El
+   overflow:hidden + border-radius de .tarjeta recorta la franja a las
+   esquinas redondeadas del borde superior. */
+.tarjeta-rubrica::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    #3fa34d 0% 25%,
+    var(--color-turquesa) 25% 50%,
+    #e0a526 50% 75%,
+    #d64545 75% 100%
+  );
+}
+
 .tarjeta-rubrica > summary {
   list-style: none;
   cursor: pointer;
