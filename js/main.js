@@ -4162,6 +4162,35 @@ function activarDelegacionInfografias() {
   });
 }
 
+// Spotlight glow al cursor en tarjetas de contenido (Temario, Tareas,
+// Actividades, Proyectos, Infografías, Trimestre) — ver .tarjeta::before
+// y variantes en css/style.css. Un solo listener delegado en document
+// (mismo criterio que activarDelegacionInfografias arriba): sobrevive a
+// que renderizarTareas/Actividades/Proyectos/Rubricas reconstruyan el
+// DOM en cada refresh, sin tener que reenganchar nada por tarjeta. Solo
+// escribe --x/--y; el resto (si el glow se ve o no) lo decide el CSS.
+const SELECTOR_TARJETAS_GLOW =
+  ".tarjeta, .tarjeta-trimestre, .tarjeta-temario, .tarjeta-infografia";
+
+function activarSpotlightTarjetas() {
+  const sinHoverReal = !window.matchMedia("(hover: hover)").matches;
+  const movimientoReducido = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+  // Sin mouse real o con reduced-motion, ni siquiera se engancha el
+  // listener: la tarjeta se queda solo con el hover base (translateY +
+  // borde), el CSS del glow nunca se activa (ver @media en style.css).
+  if (sinHoverReal || movimientoReducido) return;
+
+  document.addEventListener("mousemove", (evento) => {
+    const tarjeta = evento.target.closest(SELECTOR_TARJETAS_GLOW);
+    if (!tarjeta) return;
+    const rect = tarjeta.getBoundingClientRect();
+    tarjeta.style.setProperty("--x", `${evento.clientX - rect.left}px`);
+    tarjeta.style.setProperty("--y", `${evento.clientY - rect.top}px`);
+  });
+}
+
 async function renderizarRubricas() {
   const contenedor = document.getElementById("contenedor-rubricas");
   if (!contenedor) return;
@@ -14208,6 +14237,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarDelegacionVerDetalle("contenedor-proyectos");
   activarDelegacionVerDetalle("contenedor-temario");
   activarDelegacionInfografias();
+  activarSpotlightTarjetas();
   activarCierreModalDetalle();
 
   // El formulario de contacto solo existe en la portada (index.html).

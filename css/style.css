@@ -433,6 +433,13 @@
      parpadeo), este valor es solo el fallback para JS deshabilitado. */
   --escala-texto: 1;
   --color-turquesa: #14B8A6;
+  /* Opacidad del glow al cursor en tarjetas de contenido (ver
+     .tarjeta::before y variantes, sección de tarjetas): 14% ya se nota
+     bien contra las superficies oscuras. Los 5 temas de superficie clara
+     lo sobreescriben más arriba de opacidad justo donde vive el resto
+     del CSS del glow, mismo criterio que ya usan los patrones de fondo
+     (claro necesita más fuerza que oscuro para el mismo efecto). */
+  --glow-opacidad-tarjeta: 14%;
   /* Antes --color-acento cambiaba de turquesa (oscuro) a navy (claro)
      según el tema, lo que hacía confuso su significado. Ahora siempre
      es turquesa; el navy de modo claro se aplica como override explícito
@@ -1698,6 +1705,9 @@ summary:focus-visible {
   padding: 2rem 1.5rem;
   box-shadow: var(--sombra);
   transition: transform 0.2s ease, border-color 0.2s ease;
+  /* Contiene el glow del spotlight (::before, ver sección de tarjetas
+     genéricas más abajo) dentro de las esquinas redondeadas. */
+  overflow: hidden;
 }
 
 .tarjeta-trimestre:hover,
@@ -2832,12 +2842,66 @@ summary:focus-visible {
      tarjeta no quede pegada al borde superior de la ventana. */
   scroll-margin-top: 1rem;
   transition: transform 0.2s ease, border-color 0.2s ease;
+  /* Contiene el glow del spotlight (::before, más abajo) dentro de las
+     esquinas redondeadas. .tarjeta-rubrica/-tarea/-actividad/-proyecto
+     ya ponen su propio position:relative — no hace falta repetirlo aquí. */
+  overflow: hidden;
 }
 
 .tarjeta:hover,
 .tarjeta:focus-within {
   transform: translateY(-4px);
   border-color: var(--color-turquesa);
+}
+
+/* Spotlight glow al cursor, compartido por las 4 variantes de tarjeta
+   (Temario/Infografías tienen su propio bloque de estilos pero comparten
+   este mismo efecto). Activado por JS (activarSpotlightTarjetas() en
+   js/main.js) que solo escribe --x/--y — el resto es CSS puro. Gateado
+   en dos condiciones a la vez: (hover: hover) para que no aparezca en
+   touch (sin cursor real que "seguir"), y prefers-reduced-motion para
+   que el efecto de seguimiento se desactive del todo, no solo se
+   atenúe — la tarjeta se queda con el hover base de arriba. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .tarjeta::before,
+  .tarjeta-trimestre::before,
+  .tarjeta-temario::before,
+  .tarjeta-infografia::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    background: radial-gradient(
+      circle 220px at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--color-turquesa) var(--glow-opacidad-tarjeta), transparent),
+      transparent
+    );
+  }
+
+  .tarjeta:hover::before,
+  .tarjeta:focus-within::before,
+  .tarjeta-trimestre:hover::before,
+  .tarjeta-trimestre:focus-visible::before,
+  .tarjeta-temario:hover::before,
+  .tarjeta-temario:focus-within::before,
+  .tarjeta-infografia:hover::before,
+  .tarjeta-infografia:focus-within::before {
+    opacity: 1;
+  }
+}
+
+/* Los 5 temas de superficie clara (blanca o casi) necesitan más fuerza
+   para que el glow se note igual que en los 5 oscuros — mismo criterio
+   que ya usan los patrones de fondo del panel docente. */
+:root[data-theme="claro"],
+:root[data-theme="rosa-pastel"],
+:root[data-theme="bosque-calido"],
+:root[data-theme="menta-tecnologico"],
+:root[data-theme="editorial-sepia"] {
+  --glow-opacidad-tarjeta: 30%;
 }
 
 .tarjeta__cabecera {
