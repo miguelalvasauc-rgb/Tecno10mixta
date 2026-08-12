@@ -4530,6 +4530,30 @@ summary:focus-visible {
   min-height: 120px;
 }
 
+/* Borde marcado en el input que falló (Commit A, validación por campo)
+   — selector sobre el propio atributo aria-invalid, no una clase aparte
+   que se pudiera desincronizar del estado real. Mismo
+   --color-error-formulario que ya usa .campo-formulario__error abajo y
+   .cuenta-error (Unificación), no un color nuevo. */
+.campo-formulario input[aria-invalid="true"],
+.campo-formulario select[aria-invalid="true"],
+.campo-formulario textarea[aria-invalid="true"] {
+  border-color: var(--color-error-formulario);
+}
+
+/* Mensaje de error específico por campo — vive dentro del mismo
+   .campo-formulario que su input, ya asociado vía aria-describedby
+   (ver cuenta.html). Mismo tamaño/color que .cuenta-error (el resumen
+   de formulario que puede seguir usándose para errores no atribuibles
+   a un campo específico, ver activarFormulariosCuenta() en
+   js/main.js), solo sin el margin-bottom de abajo porque aquí ya
+   participa del gap de .campo-formulario. */
+.campo-formulario__error {
+  color: var(--color-error-formulario);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
 .boton-enviar {
   align-self: flex-start;
   background-color: var(--color-turquesa);

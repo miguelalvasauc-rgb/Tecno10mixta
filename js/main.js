@@ -8177,34 +8177,77 @@ function activarFormulariosCuenta() {
   tabCrear.addEventListener("click", () => mostrarTab("crear"));
   tabLogin.addEventListener("click", () => mostrarTab("login"));
 
+  // Validación inline por campo (WCAG 3.3.1): cada <input required> de
+  // cuenta.html trae su propio <p class="campo-formulario__error"
+  // role="alert" hidden id="{input.id}-error"> ya referenciado por
+  // aria-describedby en el HTML (estático, siempre presente — no se
+  // agrega/quita el atributo en JS, solo se llena/vacía y se
+  // muestra/oculta el <p> que ya apunta). marcarCampoInvalido/
+  // limpiarCampoInvalido son las únicas dos funciones que tocan ese
+  // estado, compartidas por los 2 formularios para no duplicar la
+  // mecánica de "encontrar el <p>-error por convención de id".
+  function marcarCampoInvalido(input, mensaje) {
+    input.setAttribute("aria-invalid", "true");
+    const errorEl = document.getElementById(input.id + "-error");
+    if (errorEl) {
+      errorEl.textContent = mensaje;
+      errorEl.hidden = false;
+    }
+  }
+
+  function limpiarCampoInvalido(input) {
+    input.removeAttribute("aria-invalid");
+    const errorEl = document.getElementById(input.id + "-error");
+    if (errorEl) {
+      errorEl.textContent = "";
+      errorEl.hidden = true;
+    }
+  }
+
   const formCrear = document.getElementById("formulario-crear-cuenta");
   const errorCrear = document.getElementById("crear-cuenta-error");
+  const campoCodigo = document.getElementById("codigo-invitacion");
+  const campoCorreoCrear = document.getElementById("crear-correo");
+  const campoContrasenaCrear = document.getElementById("crear-contrasena");
+  const campoConfirmarCrear = document.getElementById("crear-contrasena-confirmar");
 
   formCrear?.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     errorCrear.hidden = true;
+    [campoCodigo, campoCorreoCrear, campoContrasenaCrear, campoConfirmarCrear].forEach(limpiarCampoInvalido);
 
-    const codigo = document.getElementById("codigo-invitacion").value.trim().toUpperCase();
-    const correo = document.getElementById("crear-correo").value.trim();
-    const contrasena = document.getElementById("crear-contrasena").value;
-    const confirmar = document.getElementById("crear-contrasena-confirmar").value;
+    const codigo = campoCodigo.value.trim().toUpperCase();
+    const correo = campoCorreoCrear.value.trim();
+    const contrasena = campoContrasenaCrear.value;
+    const confirmar = campoConfirmarCrear.value;
 
-    const formatoValido = /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(codigo);
-    if (!formatoValido) {
-      errorCrear.textContent = "El código debe tener el formato XXXX-XXXX-XXXX. Verifica que esté bien escrito.";
-      errorCrear.hidden = false;
-      return;
+    // Mismas 4 reglas de antes (mismo regex, mismo umbral de longitud,
+    // misma comparación) — la única diferencia es que ya no se corta en
+    // la primera que falle: se revisan las 4 y se marca cada campo que
+    // aplique, para que "correo mal formateado + contraseña corta" a la
+    // vez muestre los dos mensajes de una sola pasada, no uno por
+    // intento. checkValidity() en el correo reutiliza el type="email"
+    // ya declarado en el HTML (antes este formulario no validaba el
+    // correo en el cliente para nada, solo lo mandaba a Supabase).
+    let huboError = false;
+
+    if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(codigo)) {
+      marcarCampoInvalido(campoCodigo, "El código debe tener el formato XXXX-XXXX-XXXX. Verifica que esté bien escrito.");
+      huboError = true;
     }
-    if (contrasena !== confirmar) {
-      errorCrear.textContent = "Las contraseñas no coinciden.";
-      errorCrear.hidden = false;
-      return;
+    if (!campoCorreoCrear.checkValidity()) {
+      marcarCampoInvalido(campoCorreoCrear, "Ingresa un correo válido, por ejemplo: nombre@ejemplo.com");
+      huboError = true;
     }
     if (contrasena.length < 6) {
-      errorCrear.textContent = "La contraseña debe tener al menos 6 caracteres.";
-      errorCrear.hidden = false;
-      return;
+      marcarCampoInvalido(campoContrasenaCrear, "La contraseña debe tener al menos 6 caracteres.");
+      huboError = true;
     }
+    if (contrasena !== confirmar) {
+      marcarCampoInvalido(campoConfirmarCrear, "Las contraseñas no coinciden.");
+      huboError = true;
+    }
+    if (huboError) return;
 
     const { error: errorSignUp } = await clienteSupabase.auth.signUp({ email: correo, password: contrasena });
     if (errorSignUp) {
@@ -8226,14 +8269,40 @@ function activarFormulariosCuenta() {
 
   const formLogin = document.getElementById("formulario-login");
   const errorLogin = document.getElementById("login-error");
+  const campoCorreoLogin = document.getElementById("login-correo");
+  const campoContrasenaLogin = document.getElementById("login-contrasena");
 
   formLogin?.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     errorLogin.hidden = true;
+    [campoCorreoLogin, campoContrasenaLogin].forEach(limpiarCampoInvalido);
 
-    const correo = document.getElementById("login-correo").value.trim();
-    const contrasena = document.getElementById("login-contrasena").value;
+    const correo = campoCorreoLogin.value.trim();
+    const contrasena = campoContrasenaLogin.value;
 
+    // Antes este formulario no validaba nada en el cliente (iba directo
+    // a Supabase) — checkValidity()/valueMissing reutilizan el
+    // type="email"/required ya declarados en el HTML, mismas reglas
+    // que el navegador habría aplicado solo si no tuviera novalidate.
+    let huboError = false;
+    if (!campoCorreoLogin.checkValidity()) {
+      marcarCampoInvalido(
+        campoCorreoLogin,
+        campoCorreoLogin.validity.valueMissing ? "Ingresa tu correo." : "Ingresa un correo válido, por ejemplo: nombre@ejemplo.com"
+      );
+      huboError = true;
+    }
+    if (!contrasena) {
+      marcarCampoInvalido(campoContrasenaLogin, "Ingresa tu contraseña.");
+      huboError = true;
+    }
+    if (huboError) return;
+
+    // "Correo o contraseña incorrectos" se queda como mensaje de
+    // formulario (no por campo): Supabase no distingue cuál de los dos
+    // falló (a propósito, por seguridad — no confirmar si un correo
+    // existe), así que atribuirlo a un campo específico sería inventar
+    // una precisión que la respuesta real no tiene.
     const { error } = await clienteSupabase.auth.signInWithPassword({ email: correo, password: contrasena });
     if (error) {
       errorLogin.textContent = "Correo o contraseña incorrectos.";
