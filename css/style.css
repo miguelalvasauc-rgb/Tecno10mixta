@@ -3061,6 +3061,48 @@ summary:focus-visible {
 .badge-estado[data-estado="atrasada"] {
   background-color: var(--color-estado-vencido);
   color: var(--color-claro-sobre-navy);
+  position: relative;
+}
+
+/* Punto pulsante en la esquina, SOLO en "atrasada" (el único estado que
+   necesita reclamar atención activa) — si pulsaran los 3 estados por
+   igual se perdería la jerarquía. Va fuera del relleno rojo del badge
+   (top/right negativos) en vez de adentro: --color-estado-vencido sobre
+   sí mismo sería invisible. El anillo de --color-superficie lo separa
+   limpiamente del borde del badge en la superficie donde vive
+   (tarjetas, celdas de tabla, filas de panel-progreso — todas
+   --color-superficie). Contenido decorativo (::before sin texto): no
+   necesita aria-hidden, ya queda fuera del árbol de accesibilidad. */
+.badge-estado[data-estado="atrasada"]::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-estado-vencido);
+  box-shadow: 0 0 0 2px var(--color-superficie);
+}
+
+/* Sin esto el punto se queda estático (visible, sin animar) — sigue
+   funcionando como indicador, solo sin el pulso. */
+@media (prefers-reduced-motion: no-preference) {
+  .badge-estado[data-estado="atrasada"]::before {
+    animation: pulsoBadgeAtrasada 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes pulsoBadgeAtrasada {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
 }
 
 .tarjeta__fecha {
