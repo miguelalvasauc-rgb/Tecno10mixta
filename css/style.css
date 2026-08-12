@@ -6963,11 +6963,20 @@ a.boton-secundario {
   gap: 1rem;
   background-color: var(--color-fondo);
   opacity: 0;
+  /* "none" por defecto SIEMPRE, atado a la misma clase --visible que
+     controla la opacidad — no al evento "transitionend" (ver
+     ocultarOverlayCargaTrimestre() en js/main.js). Si ese evento no
+     dispara (el navegador puede colapsar un show+hide muy seguido antes
+     de pintar el frame intermedio, sin disparar transición real), el
+     overlay se queda invisible pero este pointer-events ya cortó los
+     clics de forma síncrona — no depende de que la transición termine. */
+  pointer-events: none;
   transition: opacity 0.2s ease;
 }
 
 .overlay-carga-trimestre--visible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .overlay-carga-trimestre__anillo {

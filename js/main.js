@@ -3422,12 +3422,21 @@ function mostrarOverlayCargaTrimestre() {
 
 // Hace fade-out del overlay y lo quita del DOM al terminar la transición.
 // Con prefers-reduced-motion activado, .overlay-carga-trimestre pierde su
-// "transition" (ver css/style.css) y "transitionend" nunca dispara: sin
-// este fallback el overlay se queda invisible pero con pointer-events
-// activo, bloqueando clics en toda la página hasta recargar. Se detecta
-// leyendo transition-duration ANTES de quitar la clase --visible (esa
-// duración vive en la clase base .overlay-carga-trimestre, no en
+// "transition" (ver css/style.css) y "transitionend" nunca dispara. Se
+// detecta leyendo transition-duration ANTES de quitar la clase --visible
+// (esa duración vive en la clase base .overlay-carga-trimestre, no en
 // --visible, así que el valor no cambia al quitarla).
+//
+// El bloqueo de clics YA NO depende de que "transitionend" dispare: quitar
+// la clase --visible corta pointer-events de inmediato (ver css/style.css),
+// de forma síncrona. Lo que sigue abajo (listener + setTimeout de
+// respaldo) es solo limpieza del DOM — sacar el div ya invisible y
+// ya no-interactivo — no correctness de que el sitio quede bloqueado.
+// El setTimeout cubre el caso general de "un evento que a veces no
+// dispara" (el navegador puede colapsar un show+hide muy seguido antes de
+// pintar el frame intermedio, sin disparar transición real — el mismo
+// timing reproducido para este bug), no solo el caso de reduced-motion ya
+// cubierto arriba. 300ms = duración real de la transición (200ms) + margen.
 function ocultarOverlayCargaTrimestre(overlay) {
   const sinTransicion = getComputedStyle(overlay).transitionDuration === "0s";
   overlay.classList.remove("overlay-carga-trimestre--visible");
@@ -3436,6 +3445,7 @@ function ocultarOverlayCargaTrimestre(overlay) {
     return;
   }
   overlay.addEventListener("transitionend", () => overlay.remove(), { once: true });
+  setTimeout(() => overlay.remove(), 300);
 }
 
 // Último trimestre que el alumno visitó ('1' por defecto). La barra
