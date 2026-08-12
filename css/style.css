@@ -1874,6 +1874,16 @@ summary:focus-visible {
   .cuadricula-temario {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  /* La primera secuencia del trimestre es la entrada natural al
+     contenido (jerarquía real, no decorativa): su primer tema ocupa 2
+     columnas. Solo desde 640px, donde el grid ya tiene 2+ columnas de
+     verdad — en mobile (1 columna) span:2 no aplica, la tarjeta se queda
+     del mismo ancho que las demás sin necesidad de override. El resto
+     de las secuencias no se tocan. */
+  .temario-grupo:first-of-type .cuadricula-temario > .tarjeta-temario:first-child {
+    grid-column: span 2;
+  }
 }
 
 @media (min-width: 960px) {
