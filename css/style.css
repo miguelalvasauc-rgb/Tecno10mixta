@@ -433,6 +433,13 @@
      parpadeo), este valor es solo el fallback para JS deshabilitado. */
   --escala-texto: 1;
   --color-turquesa: #14B8A6;
+  /* Antes era un hex suelto (#E5484D) hardcodeado una sola vez en
+     .cuenta-error, sin variable — promovido a token aquí (Unificación de
+     formularios) para reutilizar el MISMO color en el borde de input
+     inválido del Commit A, en vez de definirlo dos veces o de inventar
+     uno nuevo. Mismo valor exacto que ya estaba en producción, fijo (no
+     varía por tema) igual que --color-turquesa arriba. */
+  --color-error-formulario: #E5484D;
   /* Stop "bueno" de la franja de 4 segmentos de rúbricas (ver
      .tarjeta-rubrica::after, sección de rúbricas): por defecto es el
      mismo --color-turquesa del tema. Los 5 temas de superficie clara lo
@@ -4483,6 +4490,17 @@ summary:focus-visible {
   box-shadow: var(--sombra);
 }
 
+/* Sistema único de campo de formulario del sitio — antes había dos en
+   paralelo sin unificar (este, usado por el formulario de contacto, y
+   .cuenta-formulario en cuenta.html, con su propio label+input suelto
+   y sin font-family/font-size propios: heredaba la fuente por defecto
+   del navegador, Arial, en vez de Inter). Se eligió este (con wrapper
+   por campo) como sobreviviente porque ya cubre label+input+select+
+   textarea, y porque el Commit A necesita un contenedor por campo para
+   anidar ahí el mensaje de error específico — .cuenta-formulario (sin
+   wrapper, label/input sueltos) habría necesitado ese wrapper de todos
+   modos. index.html no cambia (ya usa esta clase); cuenta.html adapta
+   su markup para usarla también (ver .cuenta-formulario más abajo). */
 .campo-formulario {
   display: flex;
   flex-direction: column;
@@ -5229,19 +5247,18 @@ summary:focus-visible {
   border-bottom-color: var(--color-turquesa);
 }
 
+/* Ya NO define su propio estilo de input (antes duplicaba
+   .campo-formulario casi al valor, salvo que le faltaba font-family/
+   font-size propios y espaciaba con margin-bottom en vez de gap) — el
+   markup de cuenta.html ahora envuelve cada label+input en
+   .campo-formulario (ver cuenta.html), así que solo hace falta el
+   layout del <form> en sí. gap más grande que el 0.35rem de
+   .campo-formulario porque aquí cada "campo" ya es su propio bloque
+   completo (label+input+mensaje de error), no una fila suelta. */
 .cuenta-formulario {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-}
-
-.cuenta-formulario input {
-  padding: 0.6rem 0.75rem;
-  border-radius: 6px;
-  border: 1px solid var(--color-borde);
-  background-color: var(--color-fondo);
-  color: var(--color-texto);
-  margin-bottom: 0.75rem;
+  gap: 1rem;
 }
 
 .cuenta-mensaje {
@@ -5255,9 +5272,9 @@ summary:focus-visible {
 }
 
 .cuenta-error {
-  color: #E5484D;
+  color: var(--color-error-formulario);
   font-size: 0.85rem;
-  margin: 0 0 0.75rem;
+  margin: 0;
 }
 
 .cuenta-ayuda {
