@@ -1134,17 +1134,6 @@ a {
   color: var(--color-turquesa);
 }
 
-.boton-menu {
-  display: none;
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  color: var(--color-claro-sobre-navy);
-  border-radius: 6px;
-  font-size: 1.1rem;
-  padding: 0.35rem 0.6rem;
-  cursor: pointer;
-}
-
 /* ---------- Navegación ---------- */
 .nav-principal {
   display: flex;
@@ -4745,7 +4734,7 @@ summary {
    Exclusividad de Colores de Estado. */
 .formulario__advertencia {
   background-color: var(--color-toast-advertencia);
-  color: #2a1d02;
+  color: #2A1D02;
   border: 1px solid rgba(42, 29, 2, 0.25);
   border-radius: 8px;
   padding: 0.75rem 0.9rem;
@@ -6058,7 +6047,7 @@ summary {
    background-color:currentColor, no un token nuevo: currentColor ya ES
    el color de texto que cada .toast[data-tipo] eligió para pasar AA
    contra su propio fondo (#04211d/--color-primario-texto/
-   --color-claro-sobre-navy/#2a1d02 según el tipo) — la barra hereda
+   --color-claro-sobre-navy/#2A1D02 según el tipo) — la barra hereda
    exactamente ese mismo contraste ya validado, en los 10 temas, sin
    verificar un color nuevo. */
 .toast::after {
@@ -6123,7 +6112,7 @@ summary {
 
 .toast[data-tipo="advertencia"] {
   background-color: var(--color-toast-advertencia);
-  color: #2a1d02;
+  color: #2A1D02;
 }
 
 .toast__icono {
@@ -6205,10 +6194,6 @@ summary {
     white-space: normal;
   }
 
-  .boton-menu {
-    display: inline-flex;
-  }
-
   .nav-principal {
     display: none;
     flex-direction: column;
@@ -6261,9 +6246,10 @@ summary {
    fixed superpuesto sobre el contenido — no reserva espacio en el body,
    ver activarFlyoutsRiel() en js/main.js). Reemplaza el header + nav
    superior y la barra lateral de una sola columna que existía antes.
-   .encabezado/.nav-principal/.boton-menu de arriba quedan sin uso en el
-   HTML nuevo (se conservan en este archivo por si alguna página aún no
-   se migra), y se reutilizan tal cual .boton-tema, .campo-grupo,
+   .encabezado/.nav-principal de arriba quedan sin uso en el HTML nuevo
+   (se conservan en este archivo por si alguna página aún no se migra;
+   .boton-menu, que solo servía a esa navegación, ya se eliminó — cero
+   referencias en HTML/JS), y se reutilizan tal cual .boton-tema, .campo-grupo,
    #selector-grupo, .etiqueta-nivel, .migas-de-pan y .banner-trimestre,
    que no dependían del header navy.
    ========================================================= */
@@ -9793,7 +9779,9 @@ button.badge-estado {
 .dashboard-grafica__swatch {
   width: 12px;
   height: 12px;
-  border-radius: 3px;
+  /* Mismo tamaño y rol que .calendario__leyenda-color: alineado a
+     --radio-sm en vez de un 3px suelto sin relación con la escala. */
+  border-radius: var(--radio-sm);
   flex-shrink: 0;
 }
 
