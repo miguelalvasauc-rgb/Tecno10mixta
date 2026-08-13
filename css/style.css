@@ -1804,7 +1804,18 @@ summary {
   overflow: hidden;
 }
 
-.tarjeta-trimestre:hover,
+/* Gateado a (hover: hover) and (pointer: fine): en touch, el hover
+   simulado por el toque puede dejar la tarjeta "levantada" hasta el
+   siguiente toque en otro lugar. :focus-visible queda fuera del gate
+   porque la navegación por teclado sí necesita ver el lift al enfocar,
+   sin importar el tipo de dispositivo. */
+@media (hover: hover) and (pointer: fine) {
+  .tarjeta-trimestre:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-turquesa);
+  }
+}
+
 .tarjeta-trimestre:focus-visible {
   transform: translateY(-4px);
   border-color: var(--color-turquesa);
@@ -1995,7 +2006,15 @@ summary {
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-.tarjeta-temario:hover,
+/* Gateado a (hover: hover) and (pointer: fine), mismo motivo que
+   .tarjeta-trimestre arriba. :focus-within queda fuera del gate. */
+@media (hover: hover) and (pointer: fine) {
+  .tarjeta-temario:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-turquesa);
+  }
+}
+
 .tarjeta-temario:focus-within {
   transform: translateY(-4px);
   border-color: var(--color-turquesa);
@@ -2327,7 +2346,15 @@ summary {
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-.tarjeta-infografia:hover,
+/* Gateado a (hover: hover) and (pointer: fine), mismo motivo que
+   .tarjeta-trimestre arriba. :focus-within queda fuera del gate. */
+@media (hover: hover) and (pointer: fine) {
+  .tarjeta-infografia:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-turquesa);
+  }
+}
+
 .tarjeta-infografia:focus-within {
   transform: translateY(-4px);
   border-color: var(--color-turquesa);
@@ -3007,7 +3034,15 @@ summary {
   overflow: hidden;
 }
 
-.tarjeta:hover,
+/* Gateado a (hover: hover) and (pointer: fine), mismo motivo que
+   .tarjeta-trimestre arriba. :focus-within queda fuera del gate. */
+@media (hover: hover) and (pointer: fine) {
+  .tarjeta:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-turquesa);
+  }
+}
+
 .tarjeta:focus-within {
   transform: translateY(-4px);
   border-color: var(--color-turquesa);
