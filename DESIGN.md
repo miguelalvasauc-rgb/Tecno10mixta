@@ -120,7 +120,7 @@ The site already names its own two moods in code comments, and DESIGN.md keeps t
 The mood is warm and encouraging, not corporate-institutional: this is a 3°C/3°E classroom portal for teenagers, so the navy/turquoise institutional palette is softened by fully-rounded corners, pill buttons and badges everywhere, and a status-color vocabulary (mint/orange/red) that makes progress feel like a game log rather than a spreadsheet. Components are tactile — generous padding, soft single-tier shadows, a consistent hover lift — built for comfortable tapping on a phone in a school hallway as much as a desktop at home.
 
 **Key Characteristics:**
-- Two-persona theming (Bitácora/light, Sala de Mando/dark) over one fixed institutional palette — hue never changes between themes, only which surface/text roles are dark vs. light.
+- Two-persona theming (Bitácora/light, Sala de Mando/dark) is the institutional core — hue never changes between these two, only which surface/text roles are dark vs. light. The shipped theme picker layers 12 more hue-shifted personas on top of that core (10 selectable, 4 seasonal); see **Theming** below.
 - Flat-by-default surfaces with exactly one soft ambient shadow tier, no elevation ramp.
 - Pill shape (full radius) as the default form for anything actionable: buttons, tabs, badges.
 - A dedicated 4-color status vocabulary (completado/progreso/pendiente/vencido) reserved strictly for progress and rubric state, never decoration.
@@ -148,6 +148,25 @@ Two brand hues — navy and turquoise — carry the institutional identity; ever
 **The Light-Mode Turquoise Rule.** Turquoise as a solid fill behind white/light text fails WCAG AA in light mode (~2.5:1 measured, repeatedly, across the codebase). Wherever a component would use turquoise as a solid background with light text — buttons, active tabs, filled badges, focus rings, the checklist checkbox, the back-to-top button — light mode swaps to navy fill + light text instead (`~9.6:1`+). Turquoise itself is never removed from light mode; it stays as text color, border, and accent-on-dark-surface, since those pairings already pass.
 
 **The Status-Color Exclusivity Rule.** The four status colors (`estado-completado` mint, `estado-progreso` orange, `estado-pendiente` light orange, `estado-vencido` red) exist for exactly one job: progress bars, completion badges, rubric-level indicators, and calendar day-types that reuse those same semantics. Never repurpose one as a decorative accent — a new mint highlight on an unrelated card would silently read as "completed" to a returning student.
+
+## Theming
+
+The two-persona system above (Bitácora/Sala de Mando) is the institutional core — the identity every other persona is a variation of. Beyond it, the site ships a **14-theme system**, switched via `data-theme` on `:root`:
+
+- **10 selectable personas**, chosen from the "Elegir tema" picker in Ajustes: Claro (Bitácora), Oscuro (Sala de Mando), Arcade Neón, Gamer RGB, Cyberpunk Gold, Galaxia, Rosa Pastel, Bosque Cálido, Menta Tecnológico, Editorial Sepia.
+- **4 seasonal event personas**, toggled from the teacher panel's Apariencia module rather than the public picker: Navidad, Día de Muertos, Regreso a Clases, Independencia.
+
+### Named Rules
+
+**The Theme-Owns-Its-Accent Rule.** Every theme redefines `--color-primario` and `--color-turquesa` (and its own `--color-fondo`/`--color-superficie` pair) to its own hue — Arcade Neón's violet, Cyberpunk Gold's gold, Bosque Cálido's green, and so on. This is deliberate, not drift: the Colors section's "navy and turquoise are the only two brand hues" rule describes the *institutional* Bitácora/Sala de Mando core, not every persona layered on top of it.
+
+**Per-theme decoration is exempt from the two-hue rule.** When `body.patrones-activos` is on, a theme may add its own one-off decorative accents — a glow behind the hero, confetti, flag stripes — scoped strictly inside that theme's own `:root[data-theme="…"]` block. These are picked to match that theme's own hue, or, for the seasonal personas, a real-world reference (Independencia's green/red are Mexico's flag colors; Navidad's gold reads as string-light gold). A literal decorative color living inside a `[data-theme]` block is expected and does not need to resolve to navy or turquoise; the same literal living *outside* one still does.
+
+The theme picker's own preview card (`.tema-tarjeta__swatch`) uses a `rgba(0,0,0,.15–.4)` shadow/emoji-plate — a utilitarian effect scoped to that one component, not part of any theme's visible palette.
+
+### Print Output
+
+`#plantilla-impresion-progreso` (the printable progress report) forces black text on white regardless of the active theme — paper has no light/dark mode. This is the one place theming is deliberately bypassed.
 
 ## Typography
 
@@ -189,6 +208,12 @@ Rounded and pill-heavy throughout: a six-step radius scale (`4px / 8px / 12px / 
 
 Left-border accent stripes (`4px solid`) are a recurring lightweight categorization device — announcement priority, temario/rúbricas group headers, rubric level items, calendar event cards — used instead of tinting the whole card, so the accent reads as a tag rather than repainting the surface.
 
+**Nested radius.** A few components round an inner element slightly less than its container instead of matching it exactly — the graded-submission preview (`.entrega__formulario iframe`, `6px`) sits inside its `10px` form panel, and rubric group items nest an `8px` icon inside their `10px` card (see Cards below). The inner curve reads gentler than the outer one on purpose; it's not a mismatched value.
+
+**Message-bubble tail.** `.tarjeta-docente__mensaje` and `.cuenta-mensaje` round only their trailing corners (`0 6px 6px 0`) to read as a speech-bubble tail pointing at their sender. The one deliberate asymmetric radius in the system, reserved for that one component family.
+
+**Seasonal confetti.** Event-theme confetti pieces (`.confeti-regresoaclases`, `.confeti-independencia`) use a near-zero `1px` radius — barely-softened rectangles rather than the site's usual rounded/pill vocabulary, since real confetti reads as angular. Part of the same per-theme decoration exemption as Theming above, not a break from the radius scale.
+
 ## Components
 
 Buttons, cards, and badges share one tactile, rounded language: soft shadows, pill or generously-rounded corners, and a consistent lift-on-hover.
@@ -213,7 +238,7 @@ Buttons, cards, and badges share one tactile, rounded language: soft shadows, pi
 - **Roles:** priority (`importante` red / `recordatorio` turquoise-or-navy / `general` slate), status (`entregada`/`finalizado` mint, `pendiente` light-orange, `atrasada` red — see Status-Color Exclusivity Rule), plus plain group/unit tags in navy fill.
 
 ### Inputs / Fields
-- **Style:** `1px` border, `6px` radius, background matches the page background (not the card surface) so fields read as "cut into" the form.
+- **Style:** `1px` border, `6px` radius, background matches the page background (not the card surface) so fields read as "cut into" the form. The same `6px` also covers small interactive/utility elements that share an input's visual weight without being a literal `<input>` — calendar day cells (`.calendario__dia`), file-evidence previews (`.evidencia-preview`), the auto-save status pill (`.entrega__actualizacion-automatica`).
 - **Focus:** shared focus-visible ring (turquoise dark mode / navy light mode), `3px` outline, `2px` offset.
 - **Custom checkbox** (checklist): `20×20px`, `5px` radius, `2px` border; unchecked is outline-only, checked fills solid (turquoise/mint dark mode, navy light mode) with a hand-drawn checkmark built from two rotated border segments rather than an icon font or SVG.
 
@@ -223,6 +248,8 @@ Buttons, cards, and badges share one tactile, rounded language: soft shadows, pi
 
 ### Modals
 Native `<dialog>` throughout (detail modal, group-switch modal, profile modal) — `12–16px` radius, ambient shadow, `55%`-black backdrop. Deliberately never overrides `position`, since the browser's own `dialog:modal` centering (`fixed` + `inset:0` + `margin:auto`) already does the job; overriding it breaks the focus-on-open scroll behavior.
+
+The mobile bottom-sheet pattern (`.bottom-sheet`/`.sheet-backdrop`) reuses the same black-scrim principle at lower opacities (`25%`/`50%`) rather than the dialog's `55%` — same idea, lighter touch for a partial-height sheet that shares the screen with visible content instead of fully covering it.
 
 ### Accordion (rúbricas / FAQ)
 `<details>/<summary>` native disclosure, no JS state management needed. A turquoise chevron rotates `180deg` on open; rubric levels inside get their own left-border color per level (excelente/bueno/regular/deficiente), reusing the same status-color logic as everywhere else in the system.
