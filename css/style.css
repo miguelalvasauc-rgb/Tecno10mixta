@@ -1001,7 +1001,7 @@ a {
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: filter 0.2s ease;
+  transition: filter 0.2s ease, transform 90ms ease;
 }
 
 .boton-tema:hover,
@@ -1221,6 +1221,36 @@ summary:focus-visible {
 :root[data-theme="claro"] textarea:focus-visible,
 :root[data-theme="claro"] summary:focus-visible {
   outline-color: var(--color-primario);
+}
+
+/* Transición propia de <summary>, para el feedback :active de más abajo.
+   El resto de su apariencia vive en las clases __resumen de cada variante
+   de acordeón (.temario-grupo__resumen, .tarjeta-tarea__resumen, etc.). */
+summary {
+  transition: transform 90ms ease;
+}
+
+/* Auditoría 4 skills (2026-08-13): el sitio no tenía ningún feedback de
+   :active — todo dependía de :hover, que no dispara al soltar el dedo en
+   touch (uso principal: alumnos en tablets/celulares). Regla ligera y
+   global de "presión" para botones, tarjetas y navegación clicable.
+   Gateada en prefers-reduced-motion como el resto del sitio: con
+   reducción de movimiento activa, el click sigue funcionando igual, solo
+   sin el efecto visual de escala. */
+@media (prefers-reduced-motion: no-preference) {
+  .boton-tema:active,
+  .boton-ver-detalle:active,
+  .boton-enviar:active,
+  .boton-primario:active,
+  .boton-secundario:active,
+  .riel__boton:active,
+  .tarjeta:active,
+  .tarjeta-trimestre:active,
+  .tarjeta-temario:active,
+  .tarjeta-infografia:active,
+  summary:active {
+    transform: scale(0.97);
+  }
 }
 
 /* Excepción: el header (.encabezado) es navy en AMBOS temas, así que un
@@ -4179,7 +4209,7 @@ summary:focus-visible {
   border: 1px solid var(--color-turquesa);
   border-radius: 999px;
   padding: 0.3rem 0.75rem;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 90ms ease;
 }
 
 .boton-ver-detalle:hover,
@@ -4614,7 +4644,7 @@ summary:focus-visible {
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
-  transition: filter 0.2s ease;
+  transition: filter 0.2s ease, transform 90ms ease;
 }
 
 .boton-enviar:hover,
@@ -4651,7 +4681,7 @@ summary:focus-visible {
   font-weight: 700;
   cursor: pointer;
   text-align: center;
-  transition: filter 0.2s ease;
+  transition: filter 0.2s ease, transform 90ms ease;
 }
 
 .boton-primario:hover,
@@ -6262,7 +6292,7 @@ summary:focus-visible {
   font-size: 1.2rem;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 90ms ease;
 }
 
 /* Glow turquesa (modo oscuro) al pasar el cursor o mientras el flyout de
@@ -7157,6 +7187,7 @@ summary:focus-visible {
   font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
+  transition: transform 90ms ease;
 }
 
 .boton-secundario:hover,
