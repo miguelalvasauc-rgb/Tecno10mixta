@@ -4584,6 +4584,43 @@ summary:focus-visible {
   color: var(--color-primario-texto);
 }
 
+/* Auditoría 4 skills (2026-08-12): usada en cuenta.html ("Crear mi
+   cuenta"/"Iniciar sesión") sin ninguna regla definida — se renderizaba
+   con el botón nativo del navegador. Mismo patrón de color/tipografía que
+   .boton-enviar (turquesa + override a navy en modo claro más abajo);
+   sin "align-self: flex-start" porque aquí el botón SÍ debe llenar el
+   ancho de .cuenta-formulario (columna flex) como CTA principal del
+   formulario, en vez de encogerse a su contenido. */
+.boton-primario {
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: filter 0.2s ease;
+}
+
+.boton-primario:hover,
+.boton-primario:focus-visible {
+  filter: brightness(1.1);
+}
+
+.boton-primario:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mismo bug de contraste turquesa + texto claro en modo claro que
+   .boton-enviar arriba. */
+:root[data-theme="claro"] .boton-primario {
+  background-color: var(--color-primario);
+  color: var(--color-primario-texto);
+}
+
 /* Reutiliza --color-toast-advertencia (#E8A33D + #2A1D02, 7.64:1 AA,
    valor fijo verificado en ambos temas — ver el comentario de
    .contenedor-toast/.toast[data-tipo] más abajo en este archivo) en vez
