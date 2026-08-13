@@ -79,6 +79,12 @@ const PARES_CONTRASTE = [
     tamano: "normal",
     nota: "Texto de cuerpo del banner de privacidad sobre el fondo mezclado del footer (.pie__aviso)",
   },
+  {
+    fg: "--color-error-formulario",
+    bg: "--color-superficie",
+    tamano: "normal",
+    nota: "Mensaje de error de formulario (.campo-formulario__error/.cuenta-error) sobre .cuenta-tarjeta/.formulario-contacto",
+  },
 ];
 
 // Orden del selector de 10 temas (TEMAS_DISPONIBLES en js/main.js).

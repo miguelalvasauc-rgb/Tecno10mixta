@@ -11,6 +11,9 @@
   --color-borde: #223753;
   --color-texto: #E8EEF4;
   --color-texto-suave: #A9BBD1;
+  /* Auditoría 4 skills (2026-08-12): 4.62:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #E85E63;
   --color-primario: #1B3A6B;
   --color-primario-suave: #24467F;
   --color-acento-texto: #04211D;
@@ -40,6 +43,9 @@
   --color-borde: #D6DEE8;
   --color-texto: #1B2A3A;
   --color-texto-suave: #4A5A6C;
+  /* Auditoría 4 skills (2026-08-12): 4.61:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #E1292F;
   --color-primario: #1B3A6B;
   --color-primario-suave: #163058;
   /* Antes #FFFFFF: --color-turquesa no se sobreescribe en este tema (se
@@ -86,6 +92,9 @@
   --color-borde: #362A5C;
   --color-texto: #F1EAFF;
   --color-texto-suave: #B6A8DE;
+  /* Auditoría 4 skills (2026-08-12): 4.63:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #E75358;
   --color-primario: #6C2BD9;
   --color-primario-suave: #8347E8;
   --color-turquesa: #00E5FF;
@@ -117,6 +126,9 @@
   --color-borde: #2A2A38;
   --color-texto: #EDEDF5;
   --color-texto-suave: #A0A0B8;
+  /* Auditoría 4 skills (2026-08-12): 4.64:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #E54A4F;
   --color-primario: #7F5AF0;
   --color-primario-suave: #9376F5;
   --color-turquesa: #39FF14;
@@ -148,6 +160,9 @@
   --color-borde: #2D2D2D;
   --color-texto: #FFFFFF;
   --color-texto-suave: #A0A0A0;
+  /* Auditoría 4 skills (2026-08-12): 4.64:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #E7555A;
   --color-primario: #FFD700;
   --color-primario-suave: #E6C200;
   --color-turquesa: #00F0FF;
@@ -174,6 +189,9 @@
   --color-borde: #1E2C50;
   --color-texto: #E6EAF5;
   --color-texto-suave: #9FA9C4;
+  /* Auditoría 4 skills (2026-08-12): 4.66:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #E64C51;
   --color-primario: #2A3A8C;
   --color-primario-suave: #3C4FB0;
   --color-turquesa: #7DD3FC;
@@ -192,6 +210,9 @@
   --color-borde: #F3D0E0;
   --color-texto: #5A2440;
   --color-texto-suave: #8C5670;
+  /* Auditoría 4 skills (2026-08-12): 4.61:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #E1292F;
   --color-primario: #B23384;
   /* Antes #C4489A: --color-primario (luminancia ~0.135) y el
      --color-primario-suave original (luminancia ~0.187) quedan en lados
@@ -224,6 +245,9 @@
   --color-borde: #D8CBAA;
   --color-texto: #2E3A28;
   --color-texto-suave: #5C6B52;
+  /* Auditoría 4 skills (2026-08-12): 4.63:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #DB1F25;
   --color-primario: #2F5233;
   --color-primario-suave: #3E6B45;
   --color-turquesa: #7C6BA6;
@@ -242,6 +266,9 @@
   --color-borde: #C2E2DB;
   --color-texto: #0F2C28;
   --color-texto-suave: #4A706A;
+  /* Auditoría 4 skills (2026-08-12): 4.61:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #E1292F;
   --color-primario: #0D9488;
   --color-primario-suave: #14B8A6;
   --color-turquesa: #0EA5E9;
@@ -273,6 +300,9 @@
   --color-borde: #D3C5B7;
   --color-texto: #3C2A21;
   --color-texto-suave: #6D5D53;
+  /* Auditoría 4 skills (2026-08-12): 4.67:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #C01B21;
   --color-primario: #1A3C40;
   --color-primario-suave: #2A525A;
   --color-turquesa: #4A7C82;
@@ -303,6 +333,9 @@
   --color-borde: #1E5238;
   --color-texto: #F5F5F0;
   --color-texto-suave: #C3DAC9;
+  /* Auditoría 4 skills (2026-08-12): 4.63:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #EC777B;
   --color-primario: #1E5A3A;
   --color-primario-suave: #2C7A4F;
   --color-turquesa: #D4AF37;
@@ -335,6 +368,9 @@
   --color-borde: #3D2459;
   --color-texto: #F5E6FF;
   --color-texto-suave: #C9AFDD;
+  /* Auditoría 4 skills (2026-08-12): 4.62:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #E7585C;
   --color-primario: #4A1D6B;
   --color-primario-suave: #6B2D8C;
   --color-turquesa: #E4007C;
@@ -371,6 +407,9 @@
      un fondo casi blanco. Se oscurece manteniendo la misma familia
      azul-gris: 6.52:1 y 7.25:1 respectivamente, margen real. */
   --color-texto-suave: #3F5975;
+  /* Auditoría 4 skills (2026-08-12): 4.61:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #E1292F;
   --color-primario: #1D63D8;
   /* Antes #2E7BEF: --color-primario (luminancia ~0.141) y el suave
      original (~0.210) quedan en lados opuestos del punto de cruce WCAG
@@ -411,6 +450,9 @@
   --color-borde: #DDD6C4;
   --color-texto: #1A2E1F;
   --color-texto-suave: #5A6B5C;
+  /* Auditoría 4 skills (2026-08-12): 4.61:1 contra --color-superficie de
+     este tema (mínimo AA 4.5:1) — ver nota junto al valor global arriba. */
+  --color-error-formulario: #E1292F;
   --color-primario: #006341;
   --color-primario-suave: #0B7A4A;
   --color-turquesa: #D4AF37;
@@ -437,8 +479,16 @@
      .cuenta-error, sin variable — promovido a token aquí (Unificación de
      formularios) para reutilizar el MISMO color en el borde de input
      inválido del Commit A, en vez de definirlo dos veces o de inventar
-     uno nuevo. Mismo valor exacto que ya estaba en producción, fijo (no
-     varía por tema) igual que --color-turquesa arriba. */
+     uno nuevo.
+     Auditoría de 4 skills (2026-08-12): este valor fijo medía 3.91:1–3.99:1
+     contra --color-superficie en claro/oscuro (el fondo real de
+     .cuenta-tarjeta, donde vive .campo-formulario__error/.cuenta-error) —
+     bajo el mínimo AA de 4.5:1 para texto normal. Se mide con la misma
+     fórmula WCAG de scripts/validate_palette.js contra --color-superficie
+     de cada uno de los 14 bloques :root[data-theme], y se agrega un
+     override local (misma familia de rojo, solo se mueve el lightness)
+     en cada bloque que lo necesitaba — este valor global queda como
+     fallback para cualquier tema futuro sin override propio. */
   --color-error-formulario: #E5484D;
   /* Stop "bueno" de la franja de 4 segmentos de rúbricas (ver
      .tarjeta-rubrica::after, sección de rúbricas): por defecto es el
