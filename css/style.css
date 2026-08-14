@@ -421,7 +421,15 @@
   --color-turquesa: #7C3AED;
   --color-acento-texto: #FFFFFF;
   --color-primario-texto: #FFFFFF;
-  --color-primario-texto-suave: #E8EEF4;
+  /* Antes #E8EEF4 (el --color-claro-sobre-navy global): contra
+     --pie-aviso-fondo (35%-mezcla de --color-primario-suave/--color-primario,
+     ~#1F67DB) daba 4.47:1 — bajo AA por 0.03. Se aclara ligeramente,
+     manteniendo el mismo tinte azul-blanco, no un blanco puro: 4.55:1
+     contra --pie-aviso-fondo y 4.77:1 (antes 4.69:1) contra
+     --color-primario, el otro consumidor de este token en este tema —
+     ambos con margen real, no al filo. Verificado con
+     scripts/validate_palette.js, no a ojo. */
+  --color-primario-texto-suave: #EAF0F5;
   --sombra: 0 8px 20px rgba(29, 99, 216, 0.12);
   --color-superficie-baja: var(--color-superficie);
   --md-outline-variant: var(--color-borde);
