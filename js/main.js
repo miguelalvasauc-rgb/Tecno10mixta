@@ -3770,7 +3770,7 @@ async function renderizarHorario() {
   const datos = (await obtenerHorario()).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay horario registrado para este grupo.");
+    mostrarSinResultados(contenedor, "No hay horario registrado para este grupo.", "🕐");
     return;
   }
 
@@ -3819,7 +3819,7 @@ async function renderizarAvisos() {
     .sort((a, b) => a.fecha.localeCompare(b.fecha)); // orden cronológico ascendente
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay avisos por el momento.");
+    mostrarSinResultados(contenedor, "No hay avisos por el momento.", "📢");
     return;
   }
 
@@ -3882,7 +3882,7 @@ async function renderizarTemario() {
   const datos = await obtenerTemario(TRIMESTRE_ACTUAL);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "El temario de este trimestre aún no está disponible.");
+    mostrarSinResultados(contenedor, "El temario de este trimestre aún no está disponible.", "📘");
     return;
   }
 
@@ -4070,7 +4070,7 @@ async function renderizarInfografias() {
   const datos = await obtenerInfografias(TRIMESTRE_ACTUAL);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "Las infografías de este trimestre aún no están disponibles.");
+    mostrarSinResultados(contenedor, "Las infografías de este trimestre aún no están disponibles.", "🎨");
     return;
   }
 
@@ -4233,7 +4233,7 @@ async function renderizarRubricas() {
   const datos = (await obtenerRubricas(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay rúbricas registradas para este grupo.");
+    mostrarSinResultados(contenedor, "No hay rúbricas registradas para este grupo.", "📋");
     return;
   }
 
@@ -4632,7 +4632,7 @@ async function renderizarTareas() {
   const datos = (await obtenerTareas(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay tareas registradas para este grupo.");
+    mostrarSinResultados(contenedor, "No hay tareas registradas para este grupo.", "📝");
     actualizarResumenProgreso("resumen-progreso-tareas", datos, "tarea", "tareas");
     return;
   }
@@ -4775,7 +4775,7 @@ async function renderizarActividades() {
   const datos = (await obtenerActividades(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay actividades registradas para este grupo.");
+    mostrarSinResultados(contenedor, "No hay actividades registradas para este grupo.", "🎯");
     actualizarResumenProgreso("resumen-progreso-actividades", datos, "actividad", "actividades");
     return;
   }
@@ -4913,7 +4913,7 @@ async function renderizarProyectos() {
   const datos = (await obtenerProyectos(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay proyectos registrados para este grupo.");
+    mostrarSinResultados(contenedor, "No hay proyectos registrados para este grupo.", "🚀");
     actualizarResumenProgreso("resumen-progreso-proyectos", datos, "proyecto", "proyectos");
     return;
   }
@@ -5081,7 +5081,7 @@ async function renderizarVideos() {
   const datos = (await obtenerVideos(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay videos registrados para este grupo.");
+    mostrarSinResultados(contenedor, "No hay videos registrados para este grupo.", "🎬");
     return;
   }
 
@@ -5121,7 +5121,7 @@ async function renderizarPresentaciones() {
   const datos = await obtenerPresentaciones(TRIMESTRE_ACTUAL);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay presentaciones registradas para este bloque.");
+    mostrarSinResultados(contenedor, "No hay presentaciones registradas para este bloque.", "📽️");
     return;
   }
 
@@ -6219,7 +6219,7 @@ async function renderizarCalendario() {
     .sort((a, b) => a.fecha.localeCompare(b.fecha));
 
   if (proximos.length === 0) {
-    mostrarSinResultados(lista, "No hay próximas fechas para este grupo.");
+    mostrarSinResultados(lista, "No hay próximas fechas para este grupo.", "📅");
     return;
   }
 
