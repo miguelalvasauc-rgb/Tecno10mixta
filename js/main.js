@@ -6207,6 +6207,19 @@ async function renderizarCalendario() {
    "advertencia" (mostrarToastAdvertencia, aún sin conectar a nada).
    Todas comparten crearYMostrarToast()/agendarAutodesaparicion() para no
    repetir la mecánica de pila/entrada/salida.
+
+   ARIA con varios toasts simultáneos: #contenedor-toast (HTML de cada
+   página) es aria-live="polite" aria-atomic="false" — "false" porque
+   con 3 toasts posibles, "true" reanunciaría el texto completo de LOS
+   TRES cada vez que cualquiera cambia (se agrega/actualiza/se quita
+   uno), ruidoso y confuso; "false" anuncia solo el nodo que cambió.
+   role="alert" NO se pone en el contenedor ni en todos los toasts — se
+   agrega SOLO al toast que llega a tipo "error" (ver
+   actualizarToastCarga), el único caso que de verdad necesita
+   interrumpir. Con 2-3 alert simultáneos, lectores de pantalla comunes
+   no garantizan orden de anuncio y pueden cortarse entre sí; reservarlo
+   para un caso raro (a lo sumo 1 toast de error suele estar visible a
+   la vez) evita ese problema sin perder la interrupción donde importa.
    --------------------------------------------------------- */
 
 // Toasts activos, Map<elementoDOM, registro>. Reemplaza al viejo
@@ -6372,6 +6385,17 @@ function mostrarToastCarga(mensaje) {
 // tiene pointer-events:none). "éxito" se autodesaparece a los 2.5s,
 // igual que mostrarToast(); "error" a los 7s, para dar tiempo a leer y
 // decidir si reintentar.
+//
+// role="alert" SOLO aquí, SOLO para "error": es el único punto del
+// módulo donde un toast llega a tipo "error" (crearYMostrarToast nunca
+// recibe "error" directo — mostrarToast/mostrarToastCarga/
+// mostrarToastAdvertencia no lo usan). Con hasta 3 toasts simultáneos,
+// role="alert" en TODOS interrumpiría de forma impredecible (NVDA/
+// VoiceOver no garantizan orden con varios alert a la vez, y pueden
+// cortarse entre sí a media frase) — reservarlo para el único caso que
+// de verdad necesita interrumpir. El resto queda cubierto por
+// aria-live="polite" del contenedor (ver #contenedor-toast en el HTML
+// de cada página), que ya anuncia en cola sin interrumpir.
 function actualizarToastCarga(referencia, opciones) {
   const contenedor = document.getElementById("contenedor-toast");
   if (!contenedor || !referencia || !pilaToasts.has(referencia)) return;
@@ -6379,6 +6403,11 @@ function actualizarToastCarga(referencia, opciones) {
   const { tipo, mensaje, onReintentar } = opciones;
 
   referencia.dataset.tipo = tipo;
+  if (tipo === "error") {
+    referencia.setAttribute("role", "alert");
+  } else {
+    referencia.removeAttribute("role");
+  }
   Object.assign(pilaToasts.get(referencia), { tipo, mensaje });
 
   const iconoEl = referencia.querySelector(".toast__icono");
