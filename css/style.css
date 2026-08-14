@@ -5291,6 +5291,71 @@ summary {
   outline-color: var(--color-primario);
 }
 
+/* ---------- Tooltip flotante (estilo shadcn/ui: pill compacto, sin
+   flecha, una línea de texto, fade/scale sutil) ----------
+   100% decorativo — el title nativo + aria-describedby + .sr-only de
+   .criterio-tarjeta__info (arriba) ya cubren lector de pantalla y no se
+   tocan. Este bloque es el componente genérico, reutilizable en
+   cualquier disparador que agregue la clase .tooltip-disparador;
+   .criterio-tarjeta__info es hoy su único uso. El trigger real
+   (mouseenter/focus/tap + cierre al tocar afuera) vive en
+   activarTooltipsInfo() en js/main.js — este commit solo define la
+   estructura visual y los estados .tooltip-flotante/--visible que esa
+   función alterna. */
+.tooltip-disparador {
+  position: relative;
+}
+
+.tooltip-flotante {
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  left: 50%;
+  z-index: 40;
+  max-width: 220px;
+  width: max-content;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie-alterna);
+  box-shadow: var(--sombra);
+  color: var(--color-texto);
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: left;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px) scale(0.95);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.tooltip-flotante--visible {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+/* Mobile: nada de cálculo dinámico de posición (sin librería de
+   posicionamiento) — se fuerza siempre hacia abajo, así un ícono cerca
+   del borde superior de la pantalla (ej. "Proyectos" en la tarjeta
+   destacada) nunca corta el tooltip contra el borde. */
+@media (max-width: 640px) {
+  .tooltip-flotante {
+    top: calc(100% + 0.4rem);
+    bottom: auto;
+    transform: translate(-50%, -4px) scale(0.95);
+  }
+
+  .tooltip-flotante--visible {
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tooltip-flotante {
+    transition: none;
+  }
+}
+
 .criterio-tarjeta__barra {
   width: 100%;
   height: 8px;
