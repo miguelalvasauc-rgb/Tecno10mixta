@@ -5163,9 +5163,14 @@ async function renderizarPresentaciones() {
 // Tarjeta estática del Encuadre Anual en la portada (#encuadre-anual). No
 // es una lista dinámica como renderizarPresentaciones(), pero usa la misma
 // carga bajo demanda: el iframe de Gamma no se crea hasta el clic.
+// dataset.activado evita adjuntar el listener más de una vez: renderizarTodo()
+// (que llama a esta función) se dispara varias veces en la carga real
+// (DOMContentLoaded + de nuevo al resolver la sesión) — mismo guard que
+// activarExpansionReglamento() más abajo, mismo motivo.
 function activarBotonEncuadreAnual() {
   const boton = document.getElementById("boton-ver-encuadre-anual");
-  if (!boton) return;
+  if (!boton || boton.dataset.activado) return;
+  boton.dataset.activado = "true";
   boton.addEventListener("click", () => {
     const marco = boton.closest(".tarjeta-presentacion__marco");
     const iframe = document.createElement("iframe");
