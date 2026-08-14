@@ -6238,6 +6238,20 @@ function ocultarYQuitarToast(toast) {
   setTimeout(quitarToast, 250);
 }
 
+// Micro-feedback de que un toast duplicado se refrescó (colapsó) en vez
+// de apilarse de nuevo: pulso breve de escala vía @keyframes (ver
+// css/style.css, envuelto en @media prefers-reduced-motion:no-preference
+// — con reduced-motion no pasa nada aquí, ninguna rama que manejar en
+// JS). Quitar y reponer la clase con un reflow forzado en medio (mismo
+// truco que "toast--oculto" en crearYMostrarToast) para que un segundo
+// duplicado seguido también vuelva a pulsar, en vez de no-op porque la
+// clase ya estaba puesta.
+function pulsarToast(toast) {
+  toast.classList.remove("toast--pulso");
+  void toast.offsetWidth;
+  toast.classList.add("toast--pulso");
+}
+
 // Arma e inserta el <div class="toast"> dentro de #contenedor-toast,
 // como primer hijo (el contenedor está anclado arriba-derecha, así que
 // el primer hijo es el que queda arriba de la pila — el más nuevo
@@ -6249,6 +6263,30 @@ function ocultarYQuitarToast(toast) {
 function crearYMostrarToast(tipo, mensaje, { icono = "", spinner = false } = {}) {
   const contenedor = document.getElementById("contenedor-toast");
   if (!contenedor) return null;
+
+  // Colapso de duplicados: mismo texto Y mismo tipo ya visible → no se
+  // crea un nodo nuevo, solo un pulso visual. El llamador (mostrarToast/
+  // mostrarToastAdvertencia) igual llama agendarAutodesaparicion() con
+  // el elemento devuelto, que ya reinicia su timer — no hace falta
+  // repetir esa lógica aquí. mostrarToastCarga() no tiene timer que
+  // reiniciar, así que para "carga" el pulso es el único efecto, que es
+  // exactamente "colapsar en vez de duplicarse".
+  for (const [elementoExistente, registro] of pilaToasts) {
+    if (registro.tipo === tipo && registro.mensaje === mensaje) {
+      pulsarToast(elementoExistente);
+      return elementoExistente;
+    }
+  }
+
+  // Límite de 3 simultáneos: al llegar un 4º, se descarta el más
+  // antiguo de la pila (el último hijo — el contenedor crece hacia
+  // abajo, el más nuevo entra arriba) con su animación de salida normal
+  // (ocultarYQuitarToast), nunca con un remove() de golpe. Sin excepción
+  // para "carga": si el más antiguo resulta ser uno persistente, se
+  // descarta igual.
+  if (pilaToasts.size >= 3 && contenedor.lastElementChild) {
+    ocultarYQuitarToast(contenedor.lastElementChild);
+  }
 
   const toast = document.createElement("div");
   toast.className = "toast toast--oculto";

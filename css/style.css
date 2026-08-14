@@ -6190,6 +6190,28 @@ summary {
   opacity: 0.8;
 }
 
+/* Colapso de duplicados (mismo texto Y mismo tipo mientras ya está
+   visible, ver crearYMostrarToast/pulsarToast en js/main.js): pulso
+   breve de escala en vez de apilar un toast repetido. Envuelto en
+   no-preference a propósito — con reduced-motion no pasa nada, ni la
+   animación ni ningún reemplazo estático, el toast simplemente sigue
+   ahí con su timer reiniciado. */
+@media (prefers-reduced-motion: no-preference) {
+  .toast--pulso {
+    animation: toast-pulso 0.3s ease;
+  }
+}
+
+@keyframes toast-pulso {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.04);
+  }
+}
+
 /* translateY negativo (antes positivo): el toast vive arriba ahora, así
    que entra/sale "cayendo" ligeramente desde arriba en vez de "subiendo"
    desde abajo — mismo desplazamiento de 8px, mismo timing, solo el
