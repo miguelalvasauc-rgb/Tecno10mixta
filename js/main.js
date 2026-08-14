@@ -3611,6 +3611,54 @@ function itemEstaVencido(tipo, item, grupo) {
   return new Date(iso + "T23:59:59") < new Date();
 }
 
+// Fecha (ISO) por la que ordenar un ítem en "Próximas fechas de este
+// trimestre" (ver obtenerProximasFechasTrimestre() abajo). Con
+// grupoActual === "3C"/"3E" es simplemente fechaLimiteISO() de ese
+// grupo; con "todos" un ítem puede tener 2 fechas distintas (3C/3E), así
+// que se ordena por la más próxima de las dos — mismo criterio de "lo
+// primero que alguien tiene que entregar" que ya usa resolverFechaItem()
+// para decidir qué mostrar cuando no hay un solo grupo seleccionado.
+function fechaOrdenTrimestre(tipo, item) {
+  if (grupoActual === "3C" || grupoActual === "3E") {
+    return fechaLimiteISO(tipo, item, grupoActual);
+  }
+  const fecha3C = fechaLimiteISO(tipo, item, "3C");
+  const fecha3E = fechaLimiteISO(tipo, item, "3E");
+  if (fecha3C && fecha3E) return fecha3C < fecha3E ? fecha3C : fecha3E;
+  return fecha3C || fecha3E;
+}
+
+// Fusiona tareas/actividades/proyectos de un trimestre en un solo
+// arreglo ordenado cronológicamente, para "Próximas fechas de este
+// trimestre" en trimestre-1/2/3.html. Cero queries nuevas a Supabase:
+// obtenerTareas/Actividades/Proyectos() ya resuelven fechas_override vía
+// aplicarOverridesFechas() (sección 1) — son las mismas llamadas que ya
+// hacen renderizarTareas/Actividades/Proyectos() para sus propias
+// secciones. El filtro de grupo reutiliza elementoCoincideConGrupo()
+// (mismo criterio sobre grupoActual que usa el resto de la página). Cada
+// item se queda con su forma original — crearChecklistProgreso() la
+// necesita tal cual para el badge de estado — envuelto en { tipo, item },
+// donde "tipo" es "tarea"/"actividad"/"proyecto".
+async function obtenerProximasFechasTrimestre(trimestre) {
+  const [tareas, actividades, proyectos] = await Promise.all([
+    obtenerTareas(trimestre),
+    obtenerActividades(trimestre),
+    obtenerProyectos(trimestre),
+  ]);
+
+  return [
+    ...tareas.map((item) => ({ tipo: "tarea", item })),
+    ...actividades.map((item) => ({ tipo: "actividad", item })),
+    ...proyectos.map((item) => ({ tipo: "proyecto", item })),
+  ]
+    .filter(({ item }) => elementoCoincideConGrupo(item))
+    .sort((a, b) => {
+      const fechaA = fechaOrdenTrimestre(a.tipo, a.item) || "";
+      const fechaB = fechaOrdenTrimestre(b.tipo, b.item) || "";
+      return fechaA.localeCompare(fechaB);
+    });
+}
+
 // Recalcula "X de Y completadas" y la barra de progreso de una sección
 // (tareas o actividades) a partir de su lista actualmente visible (ya
 // filtrada por grupo). "tipo" es el mismo usado al construir la clave de
