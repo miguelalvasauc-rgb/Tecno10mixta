@@ -7509,6 +7509,65 @@ function activarControlEscalaTexto() {
   aplicarEscalaTexto(escalaTextoActual);
 }
 
+// Trigger vanilla del tooltip flotante (.tooltip-disparador +
+// .tooltip-flotante, ver css/style.css) — cubre hover de mouse, foco de
+// teclado, y tap en touch. Ninguna librería de tooltips (Radix, React
+// Aria) soporta las 3 a la vez en touch (el toque las cierra en vez de
+// abrirlas), así que el trigger es propio. El title nativo +
+// aria-describedby + .sr-only del disparador (ya en el HTML) no se
+// tocan aquí: ese es el camino real para lector de pantalla, este
+// tooltip es 100% visual y adicional.
+//
+// Un solo document.addEventListener("click") cierra al tocar/hacer
+// clic afuera — mismo patrón que ya usa activarPanelesConDisparador()
+// (arriba) para los flyouts del riel, con .contains() en vez de un
+// listener por disparador. Un solo "abierto" a la vez, igual que esos
+// paneles: no hace falta rastrear varios tooltips abiertos porque solo
+// uno puede tener foco/hover/tap al mismo tiempo.
+function activarTooltipsInfo() {
+  const disparadores = document.querySelectorAll(".tooltip-disparador");
+  if (disparadores.length === 0) return;
+
+  let abierto = null;
+
+  function cerrar() {
+    if (!abierto) return;
+    abierto.querySelector(".tooltip-flotante")?.classList.remove("tooltip-flotante--visible");
+    abierto = null;
+  }
+
+  function abrir(disparador) {
+    if (abierto === disparador) return;
+    cerrar();
+    disparador.querySelector(".tooltip-flotante")?.classList.add("tooltip-flotante--visible");
+    abierto = disparador;
+  }
+
+  disparadores.forEach((disparador) => {
+    disparador.addEventListener("mouseenter", () => abrir(disparador));
+    disparador.addEventListener("mouseleave", () => {
+      if (abierto === disparador) cerrar();
+    });
+    disparador.addEventListener("focus", () => abrir(disparador));
+    disparador.addEventListener("blur", () => {
+      if (abierto === disparador) cerrar();
+    });
+    // touchstart en vez de click: responde de inmediato al tap, sin
+    // esperar el retraso de ~300ms que algunos navegadores móviles
+    // aplican al evento click. El "click" sintético que sigue a ese
+    // mismo tap sí llega hasta el listener de document de abajo, pero
+    // como el target cae dentro de este mismo disparador, .contains()
+    // lo deja intacto — no se cierra solo al abrirlo.
+    disparador.addEventListener("touchstart", () => abrir(disparador), { passive: true });
+  });
+
+  document.addEventListener("click", (evento) => {
+    if (!abierto) return;
+    if (abierto.contains(evento.target)) return;
+    cerrar();
+  });
+}
+
 // Riel de navegación (Discord/Notion-style, desktop ≥1024px).
 function activarFlyoutsRiel() {
   activarPanelesConDisparador('.riel [aria-haspopup="true"]', "riel-flyout--visible");
@@ -14865,6 +14924,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarFlyoutsRiel();
   activarSheetsMovil();
   activarControlEscalaTexto();
+  activarTooltipsInfo();
   activarResaltadoDeNavegacion();
   activarBotonVolverArriba();
   activarBannerExamenDiagnostico();
