@@ -4992,22 +4992,22 @@ summary {
 }
 
 /* ---------- Portada: bento grid (boceto "Portada Bento" aprobado) ----------
-   6 secciones existentes (examen diagnóstico, horario, progreso, criterios,
-   encuadre anual, reglamento) reagrupadas en un grid de 4 columnas, tamaño
-   de celda según densidad de contenido — no una cuadrícula pareja. Ninguna
-   de esas secciones perdió su id/clases propias, así que
-   actualizarVisibilidadBannerExamenDiagnostico()/activarBotonEncuadreAnual()/
-   renderizarHorario() etc. (js/main.js) siguen funcionando sin cambios; esto
-   solo reposiciona el contenedor. Filas "auto": si #examen-diagnostico se
-   oculta por completo (.hidden), su fila colapsa sola, sin JS extra. */
+   5 secciones existentes (examen diagnóstico, horario, progreso, criterios,
+   reglamento) reagrupadas en un grid de 4 columnas, tamaño de celda según
+   densidad de contenido — no una cuadrícula pareja. Encuadre Anual salió del
+   bento y volvió a ser su propia .seccion (ver index.html). Ninguna de estas
+   secciones perdió su id/clases propias, así que
+   actualizarVisibilidadBannerExamenDiagnostico()/renderizarHorario() etc.
+   (js/main.js) siguen funcionando sin cambios; esto solo reposiciona el
+   contenedor. Filas "auto": si #examen-diagnostico se oculta por completo
+   (.hidden), su fila colapsa sola, sin JS extra. */
 .bento-portada {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-areas:
-    "banner     banner     banner       banner"
-    "horario    horario    progreso     progreso"
-    "criterios  criterios  presentacion presentacion"
-    "reglamento reglamento presentacion presentacion";
+    "banner     banner     banner     banner"
+    "horario    horario    progreso   progreso"
+    "criterios  criterios  reglamento reglamento";
   gap: 1.25rem;
   max-width: 1180px;
   margin: 0 auto;
@@ -5030,7 +5030,6 @@ summary {
 .bento-celda--horario { grid-area: horario; }
 .bento-celda--progreso { grid-area: progreso; }
 .bento-celda--criterios { grid-area: criterios; }
-.bento-celda--presentacion { grid-area: presentacion; }
 .bento-celda--reglamento { grid-area: reglamento; }
 
 /* Encabezado más compacto que en una .seccion de ancho completo: aquí
@@ -5044,48 +5043,17 @@ summary {
   font-size: var(--tamano-fuente-subtitulo-tarjeta);
 }
 
-/* .tarjeta-examen-diagnostico/.tarjeta-presentacion/.reglamento-contenedor
-   ya traen su propio fondo+borde+sombra (se reutilizan tal cual en otras
-   páginas: trimestre-*.html también arma .tarjeta-presentacion vía
-   renderizarPresentaciones()) — dentro de .bento-celda esa caja ya la pone
-   el contenedor, así que se apaga aquí SOLO por selector anidado, nunca en
-   la regla base (evita una caja dentro de otra caja). */
+/* .tarjeta-examen-diagnostico/.reglamento-contenedor ya traen su propio
+   fondo+borde+sombra — dentro de .bento-celda esa caja ya la pone el
+   contenedor, así que se apaga aquí SOLO por selector anidado, nunca en la
+   regla base (evita una caja dentro de otra caja). */
 .bento-celda .tarjeta-examen-diagnostico,
-.bento-celda .tarjeta-presentacion,
 .bento-celda .reglamento-contenedor {
   background: none;
   border: none;
   border-radius: 0;
   box-shadow: none;
   padding: 0;
-}
-
-.bento-celda .tarjeta-presentacion {
-  overflow: visible;
-}
-
-/* El marco del embed pierde el radio/overflow de .tarjeta-presentacion de
-   arriba, pero necesita los suyos propios para no salirse cuadrado del
-   borde redondeado de .bento-celda. */
-.bento-celda .tarjeta-presentacion__marco {
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.bento-celda--presentacion {
-  padding-bottom: 1.25rem;
-}
-
-.bento-celda--presentacion .tarjeta-presentacion {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-}
-
-.bento-celda--presentacion .tarjeta-presentacion__marco {
-  flex: 1;
-  min-height: 260px;
 }
 
 /* ---------- Reglamento: expansión in-place (Commit único, ver
@@ -5161,9 +5129,9 @@ summary {
 
 /* ---------- Colapso a mobile: 1 columna, orden de lectura natural ----------
    Mismo orden que el DOM (examen → horario → progreso → criterios →
-   encuadre anual → reglamento), así que ni siquiera hace falta reordenar
-   por nombre — pero se declara explícito para que quede documentado y no
-   dependa por accidente del orden del HTML si algún día cambia. */
+   reglamento), así que ni siquiera hace falta reordenar por nombre — pero
+   se declara explícito para que quede documentado y no dependa por
+   accidente del orden del HTML si algún día cambia. */
 @media (max-width: 900px) {
   .bento-portada {
     grid-template-columns: 1fr;
@@ -5172,7 +5140,6 @@ summary {
       "horario"
       "progreso"
       "criterios"
-      "presentacion"
       "reglamento";
     padding: 2rem 1.25rem;
   }
