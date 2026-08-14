@@ -6461,6 +6461,44 @@ summary {
   font-size: 0.9rem;
 }
 
+/* Variante con ícono — SOLO para los 11 vacíos reales de alumno que
+   pasan un 3er argumento a mostrarSinResultados() (ver js/main.js);
+   los otros 25 usos (admin denso, "Cargando…", el caso de filtro
+   pendiente) no pasan ícono y siguen renderizando el <p.sin-resultados>
+   de arriba tal cual, sin este contenedor. Sin tarjeta/borde ni botón a
+   propósito — el alumno no crea contenido aquí, sería ruido.
+   color-mix() con --color-borde (no un color nuevo) en vez de
+   --color-superficie-alterna: la caja del ícono vive dentro de
+   contenedores muy distintos (celdas de bento, listas dentro de
+   secciones .seccion--alterna, tarjetas) y un token de superficie fijo
+   se volvería invisible contra un fondo que ya usa ese mismo tono; el
+   mix translúcido siempre contrasta un poco, sea cual sea el fondo
+   real detrás. */
+.sin-resultados-icono {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 1rem;
+  text-align: center;
+}
+
+.sin-resultados-icono__icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--color-borde) 40%, transparent);
+  font-size: 1.25rem;
+  opacity: 0.85;
+}
+
+.sin-resultados-icono__mensaje {
+  margin: 0;
+}
+
 /* =========================================================
    Responsivo
    ========================================================= */

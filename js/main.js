@@ -3646,12 +3646,37 @@ function actualizarResumenProgreso(idResumen, datos, tipo, etiqueta) {
   resumen.append(texto, barra);
 }
 
-function mostrarSinResultados(contenedor, mensaje) {
+// icono es opcional (emoji, ej. "📢") y solo lo pasan los vacíos reales
+// de alumno (ver activarles en cada renderizarX() de la sección de
+// abajo) — el resto de los 36 usos del sitio (paneles densos de admin,
+// "Cargando…", el caso de filtro pendiente en Promedios) no lo pasan y
+// siguen viendo exactamente el <p.sin-resultados> de siempre, sin el
+// contenedor .sin-resultados-icono nuevo (ver css/style.css).
+function mostrarSinResultados(contenedor, mensaje, icono = null) {
   contenedor.innerHTML = "";
+
+  if (!icono) {
+    const parrafo = document.createElement("p");
+    parrafo.className = "sin-resultados";
+    parrafo.textContent = mensaje;
+    contenedor.appendChild(parrafo);
+    return;
+  }
+
+  const envoltura = document.createElement("div");
+  envoltura.className = "sin-resultados-icono";
+
+  const iconoEl = document.createElement("span");
+  iconoEl.className = "sin-resultados-icono__icono";
+  iconoEl.setAttribute("aria-hidden", "true");
+  iconoEl.textContent = icono;
+
   const parrafo = document.createElement("p");
-  parrafo.className = "sin-resultados";
+  parrafo.className = "sin-resultados sin-resultados-icono__mensaje";
   parrafo.textContent = mensaje;
-  contenedor.appendChild(parrafo);
+
+  envoltura.append(iconoEl, parrafo);
+  contenedor.appendChild(envoltura);
 }
 
 // Items (tareas/actividades/proyectos) que tienen "detalleCompleto",
