@@ -1653,7 +1653,7 @@ summary {
 .seccion__encabezado p {
   margin: 0;
   color: var(--color-texto-suave);
-  font-size: 0.95rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .seccion__nota-leyenda {
@@ -3760,7 +3760,7 @@ summary {
 
 .tarjeta-video__info h3 {
   margin: 0 0 0.25rem;
-  font-size: 0.95rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .tarjeta-video__info p {
@@ -3821,7 +3821,7 @@ summary {
   align-items: center;
   gap: 0.5rem;
   font-family: var(--font-cuerpo);
-  font-size: 0.95rem;
+  font-size: var(--tamano-fuente-accion);
   font-weight: 700;
   color: var(--color-primario-texto);
   background-color: var(--color-primario);
@@ -3899,7 +3899,7 @@ summary {
   align-items: center;
   gap: 0.5rem;
   font-family: var(--font-cuerpo);
-  font-size: 0.95rem;
+  font-size: var(--tamano-fuente-accion);
   font-weight: 700;
   color: var(--color-primario-texto);
   background-color: var(--color-primario);
@@ -4727,7 +4727,7 @@ summary {
   border: none;
   border-radius: 999px;
   padding: 0.75rem 1.4rem;
-  font-size: 0.95rem;
+  font-size: var(--tamano-fuente-accion);
   font-weight: 700;
   cursor: pointer;
   text-align: center;
@@ -4811,7 +4811,7 @@ summary {
   border-radius: 50%;
   background-color: transparent;
   color: var(--color-texto-suave);
-  font-size: 0.95rem;
+  font-size: var(--tamano-fuente-accion);
   cursor: pointer;
 }
 
@@ -4957,7 +4957,7 @@ summary {
   background-color: var(--color-fondo);
   border-radius: 0 6px 6px 0;
   font-style: italic;
-  font-size: 0.92rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .tarjeta-docente__datos {
@@ -5491,7 +5491,7 @@ summary {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  font-size: 0.92rem;
+  font-size: var(--tamano-fuente-accion);
   line-height: 1.5;
 }
 
@@ -5532,7 +5532,7 @@ summary {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  font-size: 0.92rem;
+  font-size: var(--tamano-fuente-accion);
   line-height: 1.5;
 }
 
@@ -5663,7 +5663,7 @@ summary {
 .pie__marca-nombre {
   margin: 0 0 0.3rem;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-primario-texto);
 }
 
@@ -6469,7 +6469,7 @@ summary {
 .riel-flyout__titulo {
   margin: 0 0 0.25rem;
   font-family: var(--font-encabezados);
-  font-size: 0.95rem;
+  font-size: var(--tamano-fuente-accion);
   font-weight: 700;
   color: var(--color-texto);
 }
@@ -7325,7 +7325,7 @@ a.boton-secundario {
 
 .panel-progreso__bloque h3 {
   margin: 0 0 0.3rem;
-  font-size: 0.95rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .panel-progreso__bloque p {
@@ -7944,7 +7944,7 @@ a.boton-secundario {
 
 .calificacion-historial__trimestre h4 {
   margin: 0 0 0.4rem;
-  font-size: 0.95rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-texto);
 }
 
@@ -9756,7 +9756,7 @@ button.badge-estado {
 
 .dashboard-ficha__titulo-celda {
   margin: 0 0 0.5rem;
-  font-size: 0.95rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 /* Comparativa 3°C vs 3°E: ocupa las 2 columnas del grid desde el mismo
@@ -10075,7 +10075,7 @@ button.badge-estado {
   border-left: 3px solid var(--color-turquesa);
   background-color: var(--color-superficie);
   border-radius: 0 var(--radio-md) var(--radio-md) 0;
-  font-size: 0.92rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .guia-paso__ejemplo p {
