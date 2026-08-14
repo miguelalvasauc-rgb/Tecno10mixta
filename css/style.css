@@ -5065,7 +5065,7 @@ summary {
 
 .criterio-tarjeta__porcentaje {
   font-family: "Quicksand", sans-serif;
-  font-size: 2.2rem;
+  font-size: var(--tamano-fuente-estadistica);
   font-weight: 700;
   color: var(--color-primario);
 }
@@ -9603,7 +9603,7 @@ button.badge-estado {
 
 .kpi-tarjeta__valor {
   font-family: "Quicksand", sans-serif;
-  font-size: 2.3rem;
+  font-size: var(--tamano-fuente-estadistica);
   font-weight: 700;
   color: var(--color-primario);
   margin-top: 0.3rem;
