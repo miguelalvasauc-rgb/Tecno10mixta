@@ -4991,6 +4991,193 @@ summary {
   }
 }
 
+/* ---------- Portada: bento grid (boceto "Portada Bento" aprobado) ----------
+   6 secciones existentes (examen diagnóstico, horario, progreso, criterios,
+   encuadre anual, reglamento) reagrupadas en un grid de 4 columnas, tamaño
+   de celda según densidad de contenido — no una cuadrícula pareja. Ninguna
+   de esas secciones perdió su id/clases propias, así que
+   actualizarVisibilidadBannerExamenDiagnostico()/activarBotonEncuadreAnual()/
+   renderizarHorario() etc. (js/main.js) siguen funcionando sin cambios; esto
+   solo reposiciona el contenedor. Filas "auto": si #examen-diagnostico se
+   oculta por completo (.hidden), su fila colapsa sola, sin JS extra. */
+.bento-portada {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-areas:
+    "banner     banner     banner       banner"
+    "horario    horario    progreso     progreso"
+    "criterios  criterios  presentacion presentacion"
+    "reglamento reglamento presentacion presentacion";
+  gap: 1.25rem;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2.75rem 1.5rem;
+}
+
+.bento-celda {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra);
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+.bento-celda--banner { grid-area: banner; }
+.bento-celda--horario { grid-area: horario; }
+.bento-celda--progreso { grid-area: progreso; }
+.bento-celda--criterios { grid-area: criterios; }
+.bento-celda--presentacion { grid-area: presentacion; }
+.bento-celda--reglamento { grid-area: reglamento; }
+
+/* Encabezado más compacto que en una .seccion de ancho completo: aquí
+   convive con el resto del contenido dentro de una celda, no abre una
+   franja propia de la página. */
+.bento-celda .seccion__encabezado {
+  margin-bottom: 0.85rem;
+}
+
+.bento-celda .seccion__encabezado h2 {
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
+}
+
+/* .tarjeta-examen-diagnostico/.tarjeta-presentacion/.reglamento-contenedor
+   ya traen su propio fondo+borde+sombra (se reutilizan tal cual en otras
+   páginas: trimestre-*.html también arma .tarjeta-presentacion vía
+   renderizarPresentaciones()) — dentro de .bento-celda esa caja ya la pone
+   el contenedor, así que se apaga aquí SOLO por selector anidado, nunca en
+   la regla base (evita una caja dentro de otra caja). */
+.bento-celda .tarjeta-examen-diagnostico,
+.bento-celda .tarjeta-presentacion,
+.bento-celda .reglamento-contenedor {
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.bento-celda .tarjeta-presentacion {
+  overflow: visible;
+}
+
+/* El marco del embed pierde el radio/overflow de .tarjeta-presentacion de
+   arriba, pero necesita los suyos propios para no salirse cuadrado del
+   borde redondeado de .bento-celda. */
+.bento-celda .tarjeta-presentacion__marco {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bento-celda--presentacion {
+  padding-bottom: 1.25rem;
+}
+
+.bento-celda--presentacion .tarjeta-presentacion {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.bento-celda--presentacion .tarjeta-presentacion__marco {
+  flex: 1;
+  min-height: 260px;
+}
+
+/* ---------- Reglamento: expansión in-place (Commit único, ver
+   activarExpansionReglamento en js/main.js) ----------
+   Mismo truco de grid-template-rows 0fr→1fr que .reglamento-extra del
+   boceto: anima una altura que no se puede calcular con max-height sin
+   adivinar un valor en px. Con reduced-motion, salta directo al estado
+   final (abierta o no), sin la transición. */
+.reglamento-lista__resto {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.reglamento-lista__resto > ul {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.bento-celda--reglamento.reglamento--expandida .reglamento-lista__resto {
+  grid-template-rows: 1fr;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reglamento-lista__resto {
+    transition: none;
+  }
+}
+
+.reglamento-boton-expandir {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: flex-start;
+  margin: 0.25rem 0 1rem;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-cuerpo);
+  font-size: var(--tamano-fuente-accion);
+  font-weight: 700;
+  color: var(--color-primario);
+  cursor: pointer;
+}
+
+:root[data-theme="oscuro"] .reglamento-boton-expandir {
+  color: var(--color-turquesa);
+}
+
+.reglamento-boton-expandir:hover {
+  text-decoration: underline;
+}
+
+.reglamento-boton-expandir:focus-visible {
+  outline: 3px solid var(--color-focus-outline);
+  outline-offset: 2px;
+  text-decoration: underline;
+}
+
+.reglamento-boton-expandir__icono {
+  transition: transform 0.2s ease;
+}
+
+.bento-celda--reglamento.reglamento--expandida .reglamento-boton-expandir__icono {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reglamento-boton-expandir__icono {
+    transition: none;
+  }
+}
+
+/* ---------- Colapso a mobile: 1 columna, orden de lectura natural ----------
+   Mismo orden que el DOM (examen → horario → progreso → criterios →
+   encuadre anual → reglamento), así que ni siquiera hace falta reordenar
+   por nombre — pero se declara explícito para que quede documentado y no
+   dependa por accidente del orden del HTML si algún día cambia. */
+@media (max-width: 900px) {
+  .bento-portada {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "banner"
+      "horario"
+      "progreso"
+      "criterios"
+      "presentacion"
+      "reglamento";
+    padding: 2rem 1.25rem;
+  }
+}
+
 /* ---------- Horario de clases ---------- */
 .horario-contenedor {
   display: grid;

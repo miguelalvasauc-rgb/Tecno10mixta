@@ -342,77 +342,231 @@
       </div>
     </section>
 
-    <!-- ===================== PROGRESO ===================== -->
-    <section id="progreso" class="seccion seccion--alterna">
+    <!-- ===================== TRIMESTRES ===================== -->
+    <section id="trimestres" class="seccion">
       <div class="seccion__encabezado">
-        <h2>Tu progreso</h2>
-        <p>Identifícate para llevar tu propio conteo de tareas y actividades completadas.</p>
+        <h2>Elige tu trimestre</h2>
+        <p>Cada trimestre tiene sus propias rúbricas, tareas, actividades, proyectos y videos.</p>
       </div>
-
-      <div id="progreso-sin-perfil" class="panel-progreso__invitacion">
-        <p>Aún no te has identificado en este dispositivo.</p>
-        <button type="button" id="boton-identificarme-progreso" class="boton-secundario">Identificarme</button>
-      </div>
-
-      <div id="progreso-con-perfil" class="panel-progreso" hidden>
-        <p id="progreso-mensaje" class="panel-progreso__mensaje"></p>
-        <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
-        <div id="progreso-por-trimestre" class="panel-progreso__bloques" aria-live="polite"></div>
-        <a href="progreso.html" class="panel-progreso__enlace">Ver progreso detallado por trimestre →</a>
-      </div>
-    </section>
-
-    <!-- ===================== ENCUADRE ANUAL ===================== -->
-    <section id="encuadre-anual" class="seccion">
-      <div class="seccion__encabezado">
-        <h2>📋 Encuadre Anual 2026-2027</h2>
-        <p>Cómo trabajaremos este ciclo escolar: para alumnos y padres de familia.</p>
-      </div>
-
-      <article class="tarjeta-presentacion borde-acento-estatico">
-        <div class="tarjeta-presentacion__marco">
-          <!-- Placeholder: no se carga el iframe hasta que se hace clic,
-               igual que en renderizarPresentaciones() (js/main.js), para
-               no afectar el rendimiento de la portada. -->
-          <div class="tarjeta-presentacion__placeholder">
-            <button type="button" id="boton-ver-encuadre-anual" class="tarjeta-presentacion__boton-ver">▶ Ver presentación</button>
-          </div>
-        </div>
-
-        <div class="tarjeta-presentacion__info">
-          <div>
-            <h3>Encuadre Anual 2026-2027</h3>
-            <p>Forma de trabajo, sistema de sellos, reglamento de cómputo, uso de IA y cómo se calcula el promedio final.</p>
-          </div>
-          <a class="tarjeta-presentacion__abrir" href="https://gamma.app/embed/d2hobcvjqltc3q7" target="_blank" rel="noopener">Abrir presentación completa ↗</a>
-        </div>
-      </article>
-    </section>
-
-    <!-- ===================== EXAMEN DE DIAGNÓSTICO ===================== -->
-    <section id="examen-diagnostico" class="seccion seccion--alterna">
-      <div class="seccion__encabezado">
-        <h2>📝 Examen de Diagnóstico</h2>
-        <p>Antes de empezar el ciclo, cuéntanos qué sabes y qué te gustaría aprender.</p>
-      </div>
-      <div id="banner-examen-diagnostico" class="tarjeta-examen-diagnostico borde-animado-acento">
-        <div class="tarjeta-examen-diagnostico__texto">
-          <h3>Responde el examen de diagnóstico</h3>
-          <p>Cuestionario sencillo de diagnóstico (15 a 20 minutos) para conocer tus gustos y aprendizajes previos. No requiere estudio previo ni afecta tu calificación.</p>
-        </div>
-        <a href="https://forms.gle/HhGcroSo3gAFbQBn6" target="_blank" rel="noopener"
-           class="tarjeta-examen-diagnostico__boton" id="enlace-examen-diagnostico">
-          Realizar examen ↗
+      <!-- data-estado lo calcula actualizarEstadoTarjetasTrimestre() en
+           js/main.js a partir de ultimoTrimestreVisto (no hay un
+           calendario académico real en los datos de ejemplo). -->
+      <div class="cuadricula-trimestres">
+        <a href="trimestre-1.html" class="tarjeta-trimestre" data-trimestre="1">
+          <span class="tarjeta-trimestre__estado"></span>
+          <span class="tarjeta-trimestre__numero" aria-hidden="true">1</span>
+          <h3>Trimestre 1</h3>
+          <p>Rúbricas, tareas, actividades, proyectos y videos del primer trimestre.</p>
         </a>
-        <button type="button" id="boton-ya-lo-conteste"
-                class="tarjeta-examen-diagnostico__descartar" hidden>
-          Ya lo contesté, no volver a mostrar
-        </button>
-        <p id="texto-inicia-sesion-examen" class="tarjeta-examen-diagnostico__aviso" hidden>
-          Inicia sesión para que esto no se te vuelva a recordar.
-        </p>
+        <a href="trimestre-2.html" class="tarjeta-trimestre" data-trimestre="2">
+          <span class="tarjeta-trimestre__estado"></span>
+          <span class="tarjeta-trimestre__numero" aria-hidden="true">2</span>
+          <h3>Trimestre 2</h3>
+          <p>Rúbricas, tareas, actividades, proyectos y videos del segundo trimestre.</p>
+        </a>
+        <a href="trimestre-3.html" class="tarjeta-trimestre" data-trimestre="3">
+          <span class="tarjeta-trimestre__estado"></span>
+          <span class="tarjeta-trimestre__numero" aria-hidden="true">3</span>
+          <h3>Trimestre 3</h3>
+          <p>Rúbricas, tareas, actividades, proyectos y videos del tercer trimestre.</p>
+        </a>
       </div>
+      <p id="mensaje-trimestre-bloqueado" class="mensaje-trimestre-bloqueado" role="status" aria-live="polite"></p>
     </section>
+
+    <!-- ===================== BENTO: PANEL DE INICIO ===================== -->
+    <!-- 6 secciones reorganizadas en bento grid (boceto "Portada Bento"
+         aprobado). Orden en el DOM = orden de lectura en mobile (examen →
+         horario → progreso → criterios → encuadre anual → reglamento); el
+         orden visual en desktop lo da grid-area (.bento-celda--*), no el
+         orden del DOM — ver .bento-portada en css/style.css. Ningún
+         id/clase/función JS existente cambió, solo el contenedor. -->
+    <div class="bento-portada">
+
+      <!-- Franja completa (4×1) — el <section id="examen-diagnostico">
+           sigue siendo el que actualizarVisibilidadBannerExamenDiagnostico()
+           oculta por completo (.hidden) cuando ya no aplica; con la fila
+           vacía, la fila del grid colapsa sola (auto-size), sin JS extra. -->
+      <section id="examen-diagnostico" class="bento-celda bento-celda--banner">
+        <div class="seccion__encabezado">
+          <h2>📝 Examen de Diagnóstico</h2>
+          <p>Antes de empezar el ciclo, cuéntanos qué sabes y qué te gustaría aprender.</p>
+        </div>
+        <div id="banner-examen-diagnostico" class="tarjeta-examen-diagnostico borde-animado-acento">
+          <div class="tarjeta-examen-diagnostico__texto">
+            <h3>Responde el examen de diagnóstico</h3>
+            <p>Cuestionario sencillo de diagnóstico (15 a 20 minutos) para conocer tus gustos y aprendizajes previos. No requiere estudio previo ni afecta tu calificación.</p>
+          </div>
+          <a href="https://forms.gle/HhGcroSo3gAFbQBn6" target="_blank" rel="noopener"
+             class="tarjeta-examen-diagnostico__boton" id="enlace-examen-diagnostico">
+            Realizar examen ↗
+          </a>
+          <button type="button" id="boton-ya-lo-conteste"
+                  class="tarjeta-examen-diagnostico__descartar" hidden>
+            Ya lo contesté, no volver a mostrar
+          </button>
+          <p id="texto-inicia-sesion-examen" class="tarjeta-examen-diagnostico__aviso" hidden>
+            Inicia sesión para que esto no se te vuelva a recordar.
+          </p>
+        </div>
+      </section>
+
+      <!-- Celda corta (1×1) -->
+      <section id="horario-clases" class="bento-celda bento-celda--horario">
+        <div class="seccion__encabezado">
+          <h2>Horario de clases</h2>
+          <p>Días y horas de Educación Tecnológica según tu grupo.</p>
+        </div>
+        <div id="contenedor-horario" class="horario-contenedor" aria-live="polite"></div>
+      </section>
+
+      <!-- Celda corta (1×1) — resumen; las tarjetas de "Elige tu
+           trimestre" (arriba, #trimestres) NO viven aquí, son su propia
+           sección completa fuera del bento. -->
+      <section id="progreso" class="bento-celda bento-celda--progreso">
+        <div class="seccion__encabezado">
+          <h2>Tu progreso</h2>
+          <p>Identifícate para llevar tu propio conteo de tareas y actividades completadas.</p>
+        </div>
+
+        <div id="progreso-sin-perfil" class="panel-progreso__invitacion">
+          <p>Aún no te has identificado en este dispositivo.</p>
+          <button type="button" id="boton-identificarme-progreso" class="boton-secundario">Identificarme</button>
+        </div>
+
+        <div id="progreso-con-perfil" class="panel-progreso" hidden>
+          <p id="progreso-mensaje" class="panel-progreso__mensaje"></p>
+          <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
+          <div id="progreso-por-trimestre" class="panel-progreso__bloques" aria-live="polite"></div>
+          <a href="progreso.html" class="panel-progreso__enlace">Ver progreso detallado por trimestre →</a>
+        </div>
+      </section>
+
+      <!-- Celda mediana (2×1) -->
+      <section id="criterios-evaluacion" class="bento-celda bento-celda--criterios">
+        <div class="seccion__encabezado">
+          <h2>Criterios de evaluación</h2>
+          <p>Así se calcula tu calificación final de cada trimestre.</p>
+        </div>
+
+        <div class="criterios-contenedor">
+          <div class="criterio-tarjeta">
+            <div class="criterio-tarjeta__porcentaje">30%</div>
+            <h3>
+              Tareas
+              <span class="criterio-tarjeta__info" tabindex="0" title="Entregables para realizar en casa y subir a la plataforma." aria-describedby="criterio-info-tareas">
+                <span aria-hidden="true">ⓘ</span>
+              </span>
+            </h3>
+            <span id="criterio-info-tareas" class="sr-only">Entregables para realizar en casa y subir a la plataforma.</span>
+            <div class="criterio-tarjeta__barra">
+              <div class="criterio-tarjeta__relleno" style="width: 30%;"></div>
+            </div>
+          </div>
+
+          <div class="criterio-tarjeta">
+            <div class="criterio-tarjeta__porcentaje">30%</div>
+            <h3>
+              Actividades
+              <span class="criterio-tarjeta__info" tabindex="0" title="Trabajo continuo en el taller y sistema de sellos en cuaderno." aria-describedby="criterio-info-actividades">
+                <span aria-hidden="true">ⓘ</span>
+              </span>
+            </h3>
+            <span id="criterio-info-actividades" class="sr-only">Trabajo continuo en el taller y sistema de sellos en cuaderno.</span>
+            <div class="criterio-tarjeta__barra">
+              <div class="criterio-tarjeta__relleno" style="width: 30%;"></div>
+            </div>
+          </div>
+
+          <div class="criterio-tarjeta criterio-tarjeta--destacada">
+            <span class="criterio-tarjeta__badge">🏆 Mayor peso</span>
+            <div class="criterio-tarjeta__porcentaje">40%</div>
+            <h3>
+              Proyectos
+              <span class="criterio-tarjeta__info" tabindex="0" title="Prácticas integradoras de mayor peso al final del periodo." aria-describedby="criterio-info-proyectos">
+                <span aria-hidden="true">ⓘ</span>
+              </span>
+            </h3>
+            <span id="criterio-info-proyectos" class="sr-only">Prácticas integradoras de mayor peso al final del periodo.</span>
+            <div class="criterio-tarjeta__barra">
+              <div class="criterio-tarjeta__relleno" style="width: 40%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="criterios-nota">
+          📋 El Examen de Diagnóstico no tiene valor en la calificación; solo sirve para conocer tu punto de partida al inicio del ciclo.
+        </p>
+      </section>
+
+      <!-- Celda grande (2×2) -->
+      <section id="encuadre-anual" class="bento-celda bento-celda--presentacion">
+        <div class="seccion__encabezado">
+          <h2>📋 Encuadre Anual 2026-2027</h2>
+          <p>Cómo trabajaremos este ciclo escolar: para alumnos y padres de familia.</p>
+        </div>
+
+        <article class="tarjeta-presentacion borde-acento-estatico">
+          <div class="tarjeta-presentacion__marco">
+            <!-- Placeholder: no se carga el iframe hasta que se hace clic,
+                 igual que en renderizarPresentaciones() (js/main.js), para
+                 no afectar el rendimiento de la portada. -->
+            <div class="tarjeta-presentacion__placeholder">
+              <button type="button" id="boton-ver-encuadre-anual" class="tarjeta-presentacion__boton-ver">▶ Ver presentación</button>
+            </div>
+          </div>
+
+          <div class="tarjeta-presentacion__info">
+            <div>
+              <h3>Encuadre Anual 2026-2027</h3>
+              <p>Forma de trabajo, sistema de sellos, reglamento de cómputo, uso de IA y cómo se calcula el promedio final.</p>
+            </div>
+            <a class="tarjeta-presentacion__abrir" href="https://gamma.app/embed/d2hobcvjqltc3q7" target="_blank" rel="noopener">Abrir presentación completa ↗</a>
+          </div>
+        </article>
+      </section>
+
+      <!-- Celda mediana (2×1) con expansión in-place: primeras 4 reglas
+           visibles, el resto vive en .reglamento-lista__resto (colapsada
+           por CSS, ver css/style.css) hasta que se activa
+           #boton-expandir-reglamento (js/main.js, activarExpansionReglamento). -->
+      <section id="reglamento-taller" class="bento-celda bento-celda--reglamento">
+        <div class="seccion__encabezado">
+          <h2>Reglamento del salón de cómputo</h2>
+          <p>Normas de convivencia y responsabilidad del equipo. Léelas con atención.</p>
+        </div>
+
+        <div class="reglamento-contenedor">
+          <ul class="reglamento-lista">
+            <li><span aria-hidden="true">🧹</span> El salón es lugar de trabajo, no de juego — se debe mantener limpio y en orden.</li>
+            <li><span aria-hidden="true">⏰</span> Respetar estrictamente el horario asignado; no permanecer fuera de él.</li>
+            <li><span aria-hidden="true">🔢</span> <strong>Acomodo por número de lista:</strong> cada computadora está rotulada del 1 al 40 y corresponde a tu número de lista. Siéntate siempre en tu equipo asignado, nunca en el de un compañero.</li>
+            <li><span aria-hidden="true">👤</span> <strong>Responsabilidad individual:</strong> cada quien responde por su equipo asignado. Si un compañero falta, su computadora debe quedar libre — no se puede usar ni compartir, ya que cualquier daño se atribuye a quien ocupe ese lugar.</li>
+          </ul>
+
+          <div class="reglamento-lista__resto" id="reglamento-resto">
+            <ul class="reglamento-lista">
+              <li><span aria-hidden="true">🖥️</span> Esperar la indicación del profesor antes de usar cualquier equipo.</li>
+              <li><span aria-hidden="true">🚫</span> Prohibido: alimentos/bebidas, desorden, faltas de respeto, groserías, celulares/audífonos sin autorización, videojuegos, redes sociales no autorizadas, dispositivos con virus, instalar o modificar programas/configuración, maltratar el equipo.</li>
+              <li><span aria-hidden="true">🎒</span> Asistir con el material necesario; no ingresan personas ajenas a la clase.</li>
+              <li><span aria-hidden="true">⚠️</span> Reportar cualquier desperfecto del equipo <em>antes</em> de usarlo.</li>
+              <li><span aria-hidden="true">📉</span> Las faltas pueden derivar en: suspensión del uso del salón, reposición/reparación del equipo dañado, y disminución de la calificación.</li>
+            </ul>
+          </div>
+
+          <button type="button" class="reglamento-boton-expandir" id="boton-expandir-reglamento"
+                  aria-expanded="false" aria-controls="reglamento-resto">
+            <span id="texto-boton-expandir-reglamento">Ver las 9 reglas completas</span>
+            <span class="reglamento-boton-expandir__icono" aria-hidden="true">▾</span>
+          </button>
+
+          <a href="https://drive.google.com/file/d/1G8IEl11PSdV7OCcaZ-3UBjR5Q2WPiKtf/view?usp=sharing" target="_blank" rel="noopener noreferrer" class="enlace-instrucciones">
+            📄 Descargar reglamento completo (PDF)
+          </a>
+        </div>
+      </section>
+
+    </div>
 
     <!-- ===================== AVISOS ===================== -->
     <section id="avisos" class="seccion">
@@ -457,38 +611,6 @@
       </div>
     </section>
 
-    <!-- ===================== TRIMESTRES ===================== -->
-    <section id="trimestres" class="seccion">
-      <div class="seccion__encabezado">
-        <h2>Elige tu trimestre</h2>
-        <p>Cada trimestre tiene sus propias rúbricas, tareas, actividades, proyectos y videos.</p>
-      </div>
-      <!-- data-estado lo calcula actualizarEstadoTarjetasTrimestre() en
-           js/main.js a partir de ultimoTrimestreVisto (no hay un
-           calendario académico real en los datos de ejemplo). -->
-      <div class="cuadricula-trimestres">
-        <a href="trimestre-1.html" class="tarjeta-trimestre" data-trimestre="1">
-          <span class="tarjeta-trimestre__estado"></span>
-          <span class="tarjeta-trimestre__numero" aria-hidden="true">1</span>
-          <h3>Trimestre 1</h3>
-          <p>Rúbricas, tareas, actividades, proyectos y videos del primer trimestre.</p>
-        </a>
-        <a href="trimestre-2.html" class="tarjeta-trimestre" data-trimestre="2">
-          <span class="tarjeta-trimestre__estado"></span>
-          <span class="tarjeta-trimestre__numero" aria-hidden="true">2</span>
-          <h3>Trimestre 2</h3>
-          <p>Rúbricas, tareas, actividades, proyectos y videos del segundo trimestre.</p>
-        </a>
-        <a href="trimestre-3.html" class="tarjeta-trimestre" data-trimestre="3">
-          <span class="tarjeta-trimestre__estado"></span>
-          <span class="tarjeta-trimestre__numero" aria-hidden="true">3</span>
-          <h3>Trimestre 3</h3>
-          <p>Rúbricas, tareas, actividades, proyectos y videos del tercer trimestre.</p>
-        </a>
-      </div>
-      <p id="mensaje-trimestre-bloqueado" class="mensaje-trimestre-bloqueado" role="status" aria-live="polite"></p>
-    </section>
-
     <!-- ===================== PERFIL DEL DOCENTE ===================== -->
     <section id="perfil-docente" class="seccion seccion--alterna">
       <div class="seccion__encabezado">
@@ -512,98 +634,6 @@
             <li><span aria-hidden="true">✉️</span> <a href="mailto:hiram.alvarado@jaliscoedu.mx">hiram.alvarado@jaliscoedu.mx</a></li>
           </ul>
         </div>
-      </div>
-    </section>
-
-    <!-- ===================== HORARIO DE CLASES ===================== -->
-    <section id="horario-clases" class="seccion">
-      <div class="seccion__encabezado">
-        <h2>Horario de clases</h2>
-        <p>Días y horas de Educación Tecnológica según tu grupo.</p>
-      </div>
-      <div id="contenedor-horario" class="horario-contenedor" aria-live="polite"></div>
-    </section>
-
-    <!-- ===================== CRITERIOS DE EVALUACIÓN ===================== -->
-    <section id="criterios-evaluacion" class="seccion seccion--alterna">
-      <div class="seccion__encabezado">
-        <h2>Criterios de evaluación</h2>
-        <p>Así se calcula tu calificación final de cada trimestre.</p>
-      </div>
-
-      <div class="criterios-contenedor">
-        <div class="criterio-tarjeta">
-          <div class="criterio-tarjeta__porcentaje">30%</div>
-          <h3>
-            Tareas
-            <span class="criterio-tarjeta__info" tabindex="0" title="Entregables para realizar en casa y subir a la plataforma." aria-describedby="criterio-info-tareas">
-              <span aria-hidden="true">ⓘ</span>
-            </span>
-          </h3>
-          <span id="criterio-info-tareas" class="sr-only">Entregables para realizar en casa y subir a la plataforma.</span>
-          <div class="criterio-tarjeta__barra">
-            <div class="criterio-tarjeta__relleno" style="width: 30%;"></div>
-          </div>
-        </div>
-
-        <div class="criterio-tarjeta">
-          <div class="criterio-tarjeta__porcentaje">30%</div>
-          <h3>
-            Actividades
-            <span class="criterio-tarjeta__info" tabindex="0" title="Trabajo continuo en el taller y sistema de sellos en cuaderno." aria-describedby="criterio-info-actividades">
-              <span aria-hidden="true">ⓘ</span>
-            </span>
-          </h3>
-          <span id="criterio-info-actividades" class="sr-only">Trabajo continuo en el taller y sistema de sellos en cuaderno.</span>
-          <div class="criterio-tarjeta__barra">
-            <div class="criterio-tarjeta__relleno" style="width: 30%;"></div>
-          </div>
-        </div>
-
-        <div class="criterio-tarjeta criterio-tarjeta--destacada">
-          <span class="criterio-tarjeta__badge">🏆 Mayor peso</span>
-          <div class="criterio-tarjeta__porcentaje">40%</div>
-          <h3>
-            Proyectos
-            <span class="criterio-tarjeta__info" tabindex="0" title="Prácticas integradoras de mayor peso al final del periodo." aria-describedby="criterio-info-proyectos">
-              <span aria-hidden="true">ⓘ</span>
-            </span>
-          </h3>
-          <span id="criterio-info-proyectos" class="sr-only">Prácticas integradoras de mayor peso al final del periodo.</span>
-          <div class="criterio-tarjeta__barra">
-            <div class="criterio-tarjeta__relleno" style="width: 40%;"></div>
-          </div>
-        </div>
-      </div>
-
-      <p class="criterios-nota">
-        📋 El Examen de Diagnóstico no tiene valor en la calificación; solo sirve para conocer tu punto de partida al inicio del ciclo.
-      </p>
-    </section>
-
-    <!-- ===================== REGLAMENTO DEL TALLER ===================== -->
-    <section id="reglamento-taller" class="seccion">
-      <div class="seccion__encabezado">
-        <h2>Reglamento del salón de cómputo</h2>
-        <p>Normas de convivencia y responsabilidad del equipo. Léelas con atención.</p>
-      </div>
-
-      <div class="reglamento-contenedor">
-        <ul class="reglamento-lista">
-          <li><span aria-hidden="true">🧹</span> El salón es lugar de trabajo, no de juego — se debe mantener limpio y en orden.</li>
-          <li><span aria-hidden="true">⏰</span> Respetar estrictamente el horario asignado; no permanecer fuera de él.</li>
-          <li><span aria-hidden="true">🔢</span> <strong>Acomodo por número de lista:</strong> cada computadora está rotulada del 1 al 40 y corresponde a tu número de lista. Siéntate siempre en tu equipo asignado, nunca en el de un compañero.</li>
-          <li><span aria-hidden="true">👤</span> <strong>Responsabilidad individual:</strong> cada quien responde por su equipo asignado. Si un compañero falta, su computadora debe quedar libre — no se puede usar ni compartir, ya que cualquier daño se atribuye a quien ocupe ese lugar.</li>
-          <li><span aria-hidden="true">🖥️</span> Esperar la indicación del profesor antes de usar cualquier equipo.</li>
-          <li><span aria-hidden="true">🚫</span> Prohibido: alimentos/bebidas, desorden, faltas de respeto, groserías, celulares/audífonos sin autorización, videojuegos, redes sociales no autorizadas, dispositivos con virus, instalar o modificar programas/configuración, maltratar el equipo.</li>
-          <li><span aria-hidden="true">🎒</span> Asistir con el material necesario; no ingresan personas ajenas a la clase.</li>
-          <li><span aria-hidden="true">⚠️</span> Reportar cualquier desperfecto del equipo <em>antes</em> de usarlo.</li>
-          <li><span aria-hidden="true">📉</span> Las faltas pueden derivar en: suspensión del uso del salón, reposición/reparación del equipo dañado, y disminución de la calificación.</li>
-        </ul>
-
-        <a href="https://drive.google.com/file/d/1G8IEl11PSdV7OCcaZ-3UBjR5Q2WPiKtf/view?usp=sharing" target="_blank" rel="noopener noreferrer" class="enlace-instrucciones">
-          📄 Descargar reglamento completo (PDF)
-        </a>
       </div>
     </section>
 

@@ -5179,6 +5179,33 @@ function activarBotonEncuadreAnual() {
   });
 }
 
+// Expansión in-place de la celda "Reglamento del salón" en el bento de la
+// portada (#reglamento-taller): las primeras 4 reglas están siempre
+// visibles, las 5 restantes viven en .reglamento-lista__resto (colapsada
+// por CSS, ver css/style.css) hasta el clic — misma celda, sin navegar a
+// otra página ni acordeón de toda la fila. Contenido 100% estático (no hay
+// nada que renderizar), así que esto solo alterna clase + aria-expanded +
+// el texto del botón.
+// dataset.activado evita adjuntar el listener más de una vez:
+// renderizarTodo() (que llama a esta función) se dispara varias veces en
+// la carga real (DOMContentLoaded + de nuevo al resolver la sesión, ver
+// los otros llamados a renderizarTodo() en este archivo) — sin este guard,
+// cada llamada agrega OTRO listener al mismo botón estático, y varios
+// clasList.toggle() disparándose en el mismo clic se cancelan entre sí.
+function activarExpansionReglamento() {
+  const celda = document.getElementById("reglamento-taller");
+  const boton = document.getElementById("boton-expandir-reglamento");
+  const texto = document.getElementById("texto-boton-expandir-reglamento");
+  if (!celda || !boton || !texto || boton.dataset.activado) return;
+  boton.dataset.activado = "true";
+
+  boton.addEventListener("click", () => {
+    const expandida = celda.classList.toggle("reglamento--expandida");
+    boton.setAttribute("aria-expanded", String(expandida));
+    texto.textContent = expandida ? "Ver menos" : "Ver las 9 reglas completas";
+  });
+}
+
 function obtenerRegistroExamenDiagnostico() {
   try {
     return JSON.parse(localStorage.getItem(CLAVE_EXAMEN_DIAGNOSTICO_POR_ALUMNO)) || {};
@@ -7839,6 +7866,7 @@ async function renderizarTodo() {
     renderizarProgresoDetallado(),
   ]);
   activarBotonEncuadreAnual();
+  activarExpansionReglamento();
 }
 
 // .selector-grupo-control: hay dos <select> físicos en el DOM (uno en el
