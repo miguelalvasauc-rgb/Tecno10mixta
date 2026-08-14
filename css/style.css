@@ -845,7 +845,7 @@ body {
 .label-sm {
   font-family: var(--font-cuerpo);
   font-weight: 500;
-  font-size: 12px;
+  font-size: var(--tamano-fuente-label-sm);
   line-height: 16px;
 }
 @media (min-width: 1024px) {
@@ -1366,7 +1366,7 @@ summary {
   background-color: var(--color-turquesa);
   color: #04211D;
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: var(--tamano-fuente-label-sm);
   letter-spacing: 0.05em;
   padding: 0.25rem 0.7rem;
   border-radius: 999px;
@@ -4118,7 +4118,7 @@ summary {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.75rem;
+  font-size: var(--tamano-fuente-label-sm);
   color: var(--color-texto-suave);
 }
 
@@ -6733,7 +6733,7 @@ summary {
 .barra-lateral__eyebrow {
   margin: -0.5rem 0 0;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--tamano-fuente-label-sm);
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--color-texto-suave);
@@ -7672,7 +7672,7 @@ a.boton-secundario {
 }
 
 .calificacion-tabla__alumno-numero {
-  font-size: 0.75rem;
+  font-size: var(--tamano-fuente-label-sm);
   color: var(--color-texto-suave);
 }
 
@@ -7698,7 +7698,7 @@ a.boton-secundario {
   position: absolute;
   top: 0.15rem;
   right: 0.15rem;
-  font-size: 0.75rem;
+  font-size: var(--tamano-fuente-label-sm);
 }
 
 /* Ícono superpuesto que marca una entrega completada pero registrada
@@ -7711,7 +7711,7 @@ a.boton-secundario {
   position: absolute;
   top: 0.15rem;
   right: 0.15rem;
-  font-size: 0.75rem;
+  font-size: var(--tamano-fuente-label-sm);
 }
 
 .calificacion-tabla__avance {
@@ -9863,7 +9863,7 @@ button.badge-estado {
    token de contraste distinto por tema como si estuviera pintado sobre
    colorBarra. */
 .dashboard-grafica__valor-barra {
-  font-size: 12px;
+  font-size: var(--tamano-fuente-label-sm);
   font-weight: 700;
   fill: var(--color-texto);
   text-anchor: middle;
