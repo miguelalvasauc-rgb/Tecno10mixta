@@ -1658,7 +1658,7 @@ summary {
 
 .seccion__nota-leyenda {
   margin: 0.5rem 0 0;
-  font-size: 0.78rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -2768,7 +2768,7 @@ summary {
 }
 
 .tablist-secuencias__tab-titulo {
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   color: var(--color-texto);
 }
@@ -3243,7 +3243,7 @@ summary {
 }
 
 .tarjeta__fecha {
-  font-size: 0.78rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
   font-weight: 600;
 }
@@ -3362,7 +3362,7 @@ summary {
 }
 
 .indicador-progreso__aviso-sesion {
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto-suave);
 }
@@ -3459,7 +3459,7 @@ summary {
 }
 
 .nivel-item__puntos {
-  font-size: 0.78rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto-suave);
   white-space: nowrap;
@@ -3467,7 +3467,7 @@ summary {
 
 .nivel-item__descripcion {
   margin: 0.3rem 0 0;
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -3624,7 +3624,7 @@ summary {
 
 .panel-progreso__item-fecha {
   grid-area: fecha;
-  font-size: 0.78rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -3858,7 +3858,7 @@ summary {
 }
 
 .tarjeta-presentacion__abrir {
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   color: var(--color-turquesa);
   text-decoration: none;
@@ -3921,7 +3921,7 @@ summary {
   border: none;
   padding: 0;
   font-family: var(--font-cuerpo);
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
   text-decoration: underline;
   cursor: pointer;
@@ -3934,7 +3934,7 @@ summary {
 
 .tarjeta-examen-diagnostico__aviso {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
   white-space: nowrap;
 }
@@ -4028,7 +4028,7 @@ summary {
   padding: 0.5rem 0.2rem;
   border-radius: 6px;
   border-bottom: 3px solid transparent;
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto);
 }
 
@@ -4218,7 +4218,7 @@ summary {
   gap: 0.4rem;
   align-self: flex-start;
   margin-top: 0.3rem;
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   text-decoration: none;
   background-color: var(--color-turquesa);
@@ -4473,7 +4473,7 @@ summary {
 
 .tema-preview-en-vivo__texto {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--preview-texto, var(--color-texto));
   transition: color 0.15s ease;
 }
@@ -4515,7 +4515,7 @@ summary {
   background-color: var(--color-fondo);
   color: var(--color-texto);
   font-family: inherit;
-  font-size: 0.78rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   text-align: center;
   cursor: pointer;
@@ -4796,7 +4796,7 @@ summary {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -5162,7 +5162,7 @@ summary {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
 }
 
 .criterio-tarjeta__desglose li span:first-child {
@@ -5553,7 +5553,7 @@ summary {
   border: 1px solid var(--color-borde);
   border-radius: 999px;
   color: var(--color-texto-suave);
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   padding: 0.4rem 0.9rem;
   cursor: pointer;
@@ -5602,7 +5602,7 @@ summary {
 
 .materiales-nota {
   margin: 1rem 0 0;
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
   font-style: italic;
 }
@@ -5611,7 +5611,7 @@ summary {
   margin: 0.75rem 0 0;
   padding-left: 0.75rem;
   border-left: 4px solid var(--color-turquesa);
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -8006,7 +8006,7 @@ a.boton-secundario {
 
 .calificacion-historial__nota {
   margin: 0.3rem 0 0;
-  font-size: 0.78rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -8378,7 +8378,7 @@ button.badge-estado {
   border: 1px solid var(--color-borde);
   border-radius: 999px;
   color: var(--color-texto-suave);
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   padding: 0.4rem 0.9rem;
   cursor: pointer;
@@ -8443,7 +8443,7 @@ button.badge-estado {
   border: 1px solid var(--color-borde);
   border-radius: 8px;
   color: var(--color-texto);
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   padding: 0.4rem 0.85rem;
   cursor: pointer;
@@ -9594,7 +9594,7 @@ button.badge-estado {
 
 .kpi-tarjeta__etiqueta {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   color: var(--color-texto-suave);
   text-transform: uppercase;
@@ -9648,7 +9648,7 @@ button.badge-estado {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
 }
 
 .kpi-tarjeta__desglose li span:first-child {
@@ -9699,7 +9699,7 @@ button.badge-estado {
 }
 
 .kpi-tarjeta__tendencia-delta {
-  font-size: 0.78rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -9774,7 +9774,7 @@ button.badge-estado {
    de error. */
 .dashboard-nota-alcance {
   margin: 0 0 0.75rem;
-  font-size: 0.82rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -9822,7 +9822,7 @@ button.badge-estado {
 }
 
 .dashboard-grafica__texto {
-  font-size: 13px;
+  font-size: var(--tamano-fuente-secundario);
   fill: var(--color-texto);
 }
 
@@ -9832,7 +9832,7 @@ button.badge-estado {
    [data-estado="atrasada"] (--color-claro-sobre-navy), reutilizados aquí
    en vez de calcular un tercer par de contraste para el mismo verde/rojo. */
 .dashboard-grafica__texto-segmento {
-  font-size: 13px;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   text-anchor: middle;
 }
@@ -9911,7 +9911,7 @@ button.badge-estado {
    secundario adicional que el space-between del item ya envía a la
    derecha (o abajo, gracias a flex-wrap, en pantallas angostas). */
 .dashboard-riesgo-lista__meta {
-  font-size: 0.78rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
   white-space: nowrap;
 }
