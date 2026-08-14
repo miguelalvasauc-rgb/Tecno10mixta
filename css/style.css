@@ -1353,7 +1353,7 @@ summary {
 
 .hero h2 {
   margin: 0.6rem 0;
-  font-size: 1.8rem;
+  font-size: var(--tamano-fuente-avatar-hero);
 }
 
 .hero p {
@@ -1882,7 +1882,7 @@ summary {
   border-radius: 50%;
   background-color: var(--color-primario);
   color: var(--color-primario-texto);
-  font-size: 1.75rem;
+  font-size: var(--tamano-fuente-avatar-hero);
   font-weight: 800;
 }
 
@@ -4936,7 +4936,7 @@ summary {
   justify-content: center;
   font-family: "Quicksand", sans-serif;
   font-weight: 700;
-  font-size: 1.75rem;
+  font-size: var(--tamano-fuente-avatar-hero);
   letter-spacing: 0.02em;
 }
 
@@ -7084,7 +7084,7 @@ summary {
 }
 
 .sheet-perfil__cabecera span[aria-hidden="true"]:not(.riel__avatar) {
-  font-size: 1.8rem;
+  font-size: var(--tamano-fuente-avatar-hero);
   line-height: 1;
 }
 
