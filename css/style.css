@@ -963,7 +963,7 @@ a {
 
 .encabezado__eyebrow {
   margin: 0;
-  font-size: 0.7rem;
+  font-size: var(--tamano-fuente-meta-micro);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-turquesa);
@@ -1713,7 +1713,7 @@ summary {
 
 .aviso-tarjeta__fecha span {
   display: block;
-  font-size: 0.68rem;
+  font-size: var(--tamano-fuente-meta-micro);
   font-weight: 600;
   color: var(--color-texto-suave);
   text-transform: uppercase;
@@ -2456,7 +2456,7 @@ summary {
 
 .badge-unidad {
   display: inline-block;
-  font-size: 0.7rem;
+  font-size: var(--tamano-fuente-meta-micro);
   font-weight: 700;
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
@@ -3348,7 +3348,7 @@ summary {
 
 .etiqueta-nivel--compacta {
   margin-top: 0;
-  font-size: 0.68rem;
+  font-size: var(--tamano-fuente-meta-micro);
   padding: 0.1rem 0.5rem;
 }
 
@@ -4017,7 +4017,7 @@ summary {
 }
 
 .calendario__dia-nombre {
-  font-size: 0.7rem;
+  font-size: var(--tamano-fuente-meta-micro);
   font-weight: 700;
   color: var(--color-texto-suave);
   padding-bottom: 0.3rem;
@@ -4161,7 +4161,7 @@ summary {
 
 .evento-item__fecha span {
   display: block;
-  font-size: 0.68rem;
+  font-size: var(--tamano-fuente-meta-micro);
   font-weight: 600;
   color: var(--color-texto-suave);
   text-transform: uppercase;
@@ -4545,7 +4545,7 @@ summary {
   border-radius: 50%;
   background-color: var(--color-turquesa);
   color: var(--color-acento-texto);
-  font-size: 0.7rem;
+  font-size: var(--tamano-fuente-meta-micro);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -5864,7 +5864,7 @@ summary {
 }
 
 .mapa-sitio__etiqueta {
-  font-size: 0.65rem;
+  font-size: var(--tamano-fuente-meta-micro);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -6499,7 +6499,7 @@ summary {
   padding: 0.1rem 0.5rem;
   border: 1px solid var(--color-turquesa);
   border-radius: 999px;
-  font-size: 0.65rem;
+  font-size: var(--tamano-fuente-meta-micro);
   font-weight: 700;
   color: var(--color-turquesa);
   white-space: nowrap;
@@ -8496,7 +8496,7 @@ button.badge-estado {
   content: "▶";
   display: inline-block;
   margin-right: 0.5rem;
-  font-size: 0.7rem;
+  font-size: var(--tamano-fuente-meta-micro);
   color: var(--color-texto-suave);
   transition: transform 0.15s ease;
 }
@@ -9302,7 +9302,7 @@ button.badge-estado {
   margin-left: 0.5rem;
   padding: 0.1rem 0.5rem;
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: var(--tamano-fuente-meta-micro);
   font-weight: 700;
   white-space: nowrap;
   /* Evita que ✓/⚠/✕ se rendericen como emoji a color en plataformas que
@@ -9366,7 +9366,7 @@ button.badge-estado {
 }
 
 .tabla-promedios__flecha-orden {
-  font-size: 0.65rem;
+  font-size: var(--tamano-fuente-meta-micro);
 }
 
 /* ---------- Calificar entrega (#modal-calificar) ----------
