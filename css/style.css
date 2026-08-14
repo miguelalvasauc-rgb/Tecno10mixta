@@ -6017,6 +6017,13 @@ summary {
   right: 1.25rem;
   z-index: 95;
   display: flex;
+  /* Pila: hasta 3 toasts simultáneos (ver Commit 2 en js/main.js). El
+     más nuevo se inserta como primer hijo (prepend), así que column +
+     orden normal ya lo deja arriba, sin flex-direction: column-reverse
+     ni ningún truco extra. El reflow al quitar un toast del medio ya lo
+     resuelve flex+gap de forma nativa, sin animación extra. */
+  flex-direction: column;
+  gap: 0.5rem;
   pointer-events: none;
 }
 

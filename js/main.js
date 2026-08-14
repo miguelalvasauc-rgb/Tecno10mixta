@@ -6195,38 +6195,60 @@ async function renderizarCalendario() {
 /* ---------------------------------------------------------
    Toast de confirmación visual — genérico y reutilizable: no es un
    modal (no bloquea nada, no roba el foco), solo confirma que una
-   acción sin resultado visible en pantalla sí surtió efecto. Un solo
-   toast a la vez; #contenedor-toast vive en las 9 páginas del sitio.
+   acción sin resultado visible en pantalla sí surtió efecto. Pila de
+   hasta 3 toasts simultáneos (límite en Commit 2, ver más abajo);
+   #contenedor-toast vive en las 9 páginas del sitio, anclado
+   arriba-derecha — el toast más nuevo se inserta como primer hijo, así
+   que queda visualmente arriba de la pila.
    4 variantes por color (ver --color-toast-* en css/style.css):
    "exito" (mostrarToast, usado en tema/grupo), "carga" (mostrarToastCarga,
    persistente hasta que actualizarToastCarga lo cambie), "error" (solo
    vía actualizarToastCarga, con botón "Reintentar" opcional) y
    "advertencia" (mostrarToastAdvertencia, aún sin conectar a nada).
    Todas comparten crearYMostrarToast()/agendarAutodesaparicion() para no
-   repetir la mecánica de reemplazo-inmediato/entrada/salida.
+   repetir la mecánica de pila/entrada/salida.
    --------------------------------------------------------- */
 
-// Temporizador de autodesaparición del toast actual: se cancela si otro
-// toast lo reemplaza antes de que termine, para no dejar un timeout
-// viejo intentando animar/quitar un toast que ya no es el vigente.
-let temporizadorToastActual = null;
+// Toasts activos, Map<elementoDOM, registro>. Reemplaza al viejo
+// "temporizadorToastActual" único: con varios toasts simultáneos cada
+// uno necesita su propio timerId (autodesaparición independiente), y el
+// Map permite confirmar en O(1) si una referencia DOM sigue siendo un
+// toast vigente — lo usa actualizarToastCarga, que antes comparaba
+// contra "el único toast" (contenedor.querySelector(".toast")), algo
+// que ya no tiene sentido con varios a la vez.
+const pilaToasts = new Map();
+
+// Dispara la animación de salida y quita "toast" del DOM/pila. Único
+// lugar con esta mecánica: la usan tanto la autodesaparición normal
+// (agendarAutodesaparicion) como el descarte forzado por límite de pila
+// (Commit 2) — ambos casos deben salir con la misma animación, nunca un
+// remove() de golpe.
+function ocultarYQuitarToast(toast) {
+  toast.classList.add("toast--oculto");
+  let yaQuitado = false;
+  const quitarToast = () => {
+    if (yaQuitado) return;
+    yaQuitado = true;
+    toast.remove();
+    pilaToasts.delete(toast);
+  };
+  toast.addEventListener("transitionend", quitarToast, { once: true });
+  // Respaldo por si "transitionend" no llega (pestaña en segundo
+  // plano) — 250ms, más que los 200ms de la transición de salida.
+  setTimeout(quitarToast, 250);
+}
 
 // Arma e inserta el <div class="toast"> dentro de #contenedor-toast,
-// reemplazando de inmediato cualquier toast anterior (uno solo a la
-// vez, sin cola) y disparando la animación de entrada. Compartido por
-// todas las funciones mostrarToast*/actualizarToastCarga — el único
-// lugar que toca el DOM del toast, para no duplicar esa mecánica.
-// "spinner: true" pinta el anillo animado de carga en vez de un ícono
-// de texto (ver mostrarToastCarga).
+// como primer hijo (el contenedor está anclado arriba-derecha, así que
+// el primer hijo es el que queda arriba de la pila — el más nuevo
+// siempre entra ahí) y lo registra en pilaToasts. Compartido por todas
+// las funciones mostrarToast*/actualizarToastCarga — el único lugar que
+// toca el DOM del toast, para no duplicar esa mecánica. "spinner: true"
+// pinta el anillo animado de carga en vez de un ícono de texto (ver
+// mostrarToastCarga).
 function crearYMostrarToast(tipo, mensaje, { icono = "", spinner = false } = {}) {
   const contenedor = document.getElementById("contenedor-toast");
   if (!contenedor) return null;
-
-  if (temporizadorToastActual) {
-    clearTimeout(temporizadorToastActual);
-    temporizadorToastActual = null;
-  }
-  contenedor.innerHTML = "";
 
   const toast = document.createElement("div");
   toast.className = "toast toast--oculto";
@@ -6246,7 +6268,8 @@ function crearYMostrarToast(tipo, mensaje, { icono = "", spinner = false } = {})
   textoEl.textContent = mensaje;
 
   toast.append(iconoEl, textoEl);
-  contenedor.appendChild(toast);
+  contenedor.prepend(toast);
+  pilaToasts.set(toast, { timerId: null, tipo, mensaje });
 
   // Fuerza un reflow antes de quitar "toast--oculto": si se agrega y se
   // quita la clase en el mismo tick, el navegador nunca pinta el estado
@@ -6261,10 +6284,9 @@ function crearYMostrarToast(tipo, mensaje, { icono = "", spinner = false } = {})
 }
 
 // Programa la salida (fade-out) y el retiro del DOM de "toast" a los
-// "ms" indicados. "transitionend" cubre el caso normal; el setTimeout
-// de respaldo (250ms, más que los 200ms de la transición) asegura que
-// el toast se quite del DOM aunque ese evento no llegue a disparar
-// (pestaña en segundo plano, ver crearYMostrarToast).
+// "ms" indicados — timer independiente por toast (pilaToasts guarda su
+// propio timerId; ya no hay un solo temporizador global como antes de
+// la pila).
 //
 // --duracion-toast + .toast--con-progreso: arrancan la barra de
 // progreso (::after, css/style.css) con el MISMO "ms" que recibe este
@@ -6273,21 +6295,14 @@ function crearYMostrarToast(tipo, mensaje, { icono = "", spinner = false } = {})
 // desvanecerse. Sin recalcular ni hardcodear nada: es el mismo "ms" que
 // ya trae esta función (2.5s éxito/advertencia, 7s error).
 function agendarAutodesaparicion(toast, ms) {
+  const registro = pilaToasts.get(toast);
+  if (registro?.timerId) clearTimeout(registro.timerId);
+
   toast.style.setProperty("--duracion-toast", ms + "ms");
   toast.classList.add("toast--con-progreso");
 
-  temporizadorToastActual = setTimeout(() => {
-    toast.classList.add("toast--oculto");
-    let yaQuitado = false;
-    const quitarToast = () => {
-      if (yaQuitado) return;
-      yaQuitado = true;
-      toast.remove();
-    };
-    toast.addEventListener("transitionend", quitarToast, { once: true });
-    setTimeout(quitarToast, 250);
-    temporizadorToastActual = null;
-  }, ms);
+  const timerId = setTimeout(() => ocultarYQuitarToast(toast), ms);
+  if (registro) registro.timerId = timerId;
 }
 
 // mensaje: texto corto de una sola línea. opciones.icono: string, por
@@ -6310,21 +6325,23 @@ function mostrarToastCarga(mensaje) {
 
 // Actualiza un toast de carga ya visible a su resultado final.
 // "referencia" es el elemento que devolvió mostrarToastCarga(): si ya
-// no es el toast actualmente visible (el usuario disparó otra acción
-// mientras tanto y ya se reemplazó), no hace nada — nunca "resucita" un
-// toast viejo. opciones: { tipo: "exito" | "error", mensaje,
-// onReintentar } — onReintentar solo aplica con tipo "error" y es
-// opcional; si se pasa, agrega un botón "Reintentar" con su propio
-// pointer-events:auto (el contenedor entero tiene pointer-events:none).
-// "éxito" se autodesaparece a los 2.5s, igual que mostrarToast(); "error"
-// a los 7s, para dar tiempo a leer y decidir si reintentar.
+// no está en pilaToasts (se autodesapareció solo, o el límite de 3 lo
+// descartó mientras la operación seguía en curso — Commit 2), no hace
+// nada — nunca "resucita" un toast que ya salió. opciones: { tipo:
+// "exito" | "error", mensaje, onReintentar } — onReintentar solo aplica
+// con tipo "error" y es opcional; si se pasa, agrega un botón
+// "Reintentar" con su propio pointer-events:auto (el contenedor entero
+// tiene pointer-events:none). "éxito" se autodesaparece a los 2.5s,
+// igual que mostrarToast(); "error" a los 7s, para dar tiempo a leer y
+// decidir si reintentar.
 function actualizarToastCarga(referencia, opciones) {
   const contenedor = document.getElementById("contenedor-toast");
-  if (!contenedor || !referencia || referencia !== contenedor.querySelector(".toast")) return;
+  if (!contenedor || !referencia || !pilaToasts.has(referencia)) return;
 
   const { tipo, mensaje, onReintentar } = opciones;
 
   referencia.dataset.tipo = tipo;
+  Object.assign(pilaToasts.get(referencia), { tipo, mensaje });
 
   const iconoEl = referencia.querySelector(".toast__icono");
   if (iconoEl) {
@@ -6344,9 +6361,10 @@ function actualizarToastCarga(referencia, opciones) {
       // Cancela la autodesaparición pendiente: el resultado del
       // reintento (otro mostrarToastCarga/actualizarToastCarga) decide
       // qué pasa después, no este temporizador viejo.
-      if (temporizadorToastActual) {
-        clearTimeout(temporizadorToastActual);
-        temporizadorToastActual = null;
+      const registro = pilaToasts.get(referencia);
+      if (registro?.timerId) {
+        clearTimeout(registro.timerId);
+        registro.timerId = null;
       }
       onReintentar();
     });
