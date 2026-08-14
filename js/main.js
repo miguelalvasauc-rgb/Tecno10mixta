@@ -5122,6 +5122,62 @@ async function renderizarProyectos() {
   if (TRIMESTRE_ACTUAL === "1") aplicarModoVistaSecuencia("contenedor-proyectos");
 }
 
+// Mismos íconos que ya usa mostrarSinResultados() para las 3 secciones
+// (ver sesión de empty states: 📝 tareas, 🎯 actividades, 🚀 proyectos) —
+// consistencia intencional, no un set de íconos aparte para esta lista.
+const ICONO_PROXIMAS_FECHAS_POR_TIPO = { tarea: "📝", actividad: "🎯", proyecto: "🚀" };
+
+// "Próximas fechas" del trimestre (#proximas-fechas-trimestre en
+// trimestre-1/2/3.html): lista cronológica con línea de tiempo
+// (.linea-tiempo, ver css/style.css — misma clase que ya usa el feed de
+// Actividad reciente del Dashboard). El badge de estado reutiliza
+// crearChecklistProgreso() tal cual — mismo Entregado/Pendiente/Vencido
+// y mismo aviso de "Inicia sesión" sin cuenta activa que ya usan las
+// tarjetas de Tareas/Actividades/Proyectos, nada nuevo que mantener en
+// paralelo.
+async function renderizarProximasFechasTrimestre() {
+  const contenedor = document.getElementById("contenedor-proximas-fechas-trimestre");
+  if (!contenedor) return;
+
+  const datos = await obtenerProximasFechasTrimestre(TRIMESTRE_ACTUAL);
+
+  if (datos.length === 0) {
+    mostrarSinResultados(contenedor, "Aún no hay fechas de entrega registradas para este trimestre.", "📅");
+    return;
+  }
+
+  contenedor.innerHTML = "";
+  const lista = document.createElement("ul");
+  lista.className = "linea-tiempo proximas-fechas-trimestre__lista";
+
+  datos.forEach(({ tipo, item }) => {
+    const li = document.createElement("li");
+    li.className = "linea-tiempo__item proximas-fechas-trimestre__item";
+
+    const icono = document.createElement("span");
+    icono.className = "proximas-fechas-trimestre__icono";
+    icono.setAttribute("aria-hidden", "true");
+    icono.textContent = ICONO_PROXIMAS_FECHAS_POR_TIPO[tipo];
+
+    const info = document.createElement("div");
+    info.className = "proximas-fechas-trimestre__info";
+
+    const titulo = document.createElement("p");
+    titulo.className = "proximas-fechas-trimestre__titulo";
+    titulo.textContent = item.titulo;
+
+    const fecha = document.createElement("p");
+    fecha.className = "proximas-fechas-trimestre__fecha";
+    fecha.textContent = resolverFechaItem(tipo === "actividad" ? item.fecha : item.fechaEntrega);
+
+    info.append(titulo, fecha);
+    li.append(icono, info, crearChecklistProgreso(tipo, item, li));
+    lista.appendChild(li);
+  });
+
+  contenedor.appendChild(lista);
+}
+
 async function renderizarVideos() {
   const contenedor = document.getElementById("contenedor-videos");
   if (!contenedor) return;
@@ -7997,6 +8053,7 @@ async function renderizarTodo() {
     renderizarTareas(),
     renderizarActividades(),
     renderizarProyectos(),
+    renderizarProximasFechasTrimestre(),
     renderizarVideos(),
     renderizarPresentaciones(),
     renderizarProgreso(),

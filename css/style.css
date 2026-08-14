@@ -3375,6 +3375,78 @@ summary {
   color: var(--color-texto-suave);
 }
 
+/* ---------- Próximas fechas del trimestre (#proximas-fechas-trimestre
+   en trimestre-1/2/3.html) ---------- */
+.proximas-fechas-trimestre__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* flex-wrap + min-width en __info (en vez de min-width:0): a diferencia
+   de una fila de solo texto, aquí el vecino que compite por espacio es
+   el badge de crearChecklistProgreso(), que en el aviso sin sesión
+   ("🔑 Inicia sesión para ver tu progreso") es una frase larga con
+   flex-shrink:0 — sin wrap, .info se aplasta a un ancho casi nulo en
+   mobile y el título se parte letra por letra. Mismo patrón que ya
+   usa .dashboard-riesgo-lista__item para el mismo problema (icono +
+   info + meta en pantallas angostas). */
+.proximas-fechas-trimestre__item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie);
+}
+
+.proximas-fechas-trimestre__icono {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--color-borde) 40%, transparent);
+  font-size: 1rem;
+}
+
+.proximas-fechas-trimestre__info {
+  flex: 1;
+  min-width: 140px;
+}
+
+.proximas-fechas-trimestre__titulo {
+  margin: 0;
+  font-weight: 600;
+}
+
+.proximas-fechas-trimestre__fecha {
+  margin: 0.15rem 0 0;
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto-suave);
+}
+
+/* crearChecklistProgreso() (js/main.js) ya trae su propio margin-top/
+   padding-top/border-top en .indicador-progreso (pensado como fila
+   inferior de una tarjeta vertical, ver esa regla arriba) — aquí vive
+   como un elemento más de esta fila horizontal, así que se apaga solo
+   por selector anidado, sin tocar la regla base (mismo criterio que ya
+   usa .bento-celda .tarjeta-presentacion en otra sección de este
+   archivo). */
+.proximas-fechas-trimestre__item .indicador-progreso {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
 /* ---------- Rúbricas expandibles (acordeón con <details>/<summary>) ---------- */
 .tarjeta-rubrica {
   position: relative;
