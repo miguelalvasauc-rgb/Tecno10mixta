@@ -10207,6 +10207,7 @@ button.badge-estado {
 }
 
 .guia-wizard__stepper-numero {
+  position: relative;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -10234,6 +10235,37 @@ button.badge-estado {
   background-color: var(--color-primario);
   border-color: var(--color-primario);
   color: var(--color-primario-texto);
+}
+
+/* Riel conector entre círculos: no hay una clase "completado" aparte —
+   se deriva con :has() qué círculos vienen antes del --activo (mismo
+   truco que ya usa .trimestre-opcion:has(input:checked) más abajo en
+   este archivo), así que basta con la clase --activo que ya alterna
+   activarGuiaAlumno() en js/main.js, sin JS nuevo. El segmento vive en el
+   ::after de cada círculo (menos el último) y ocupa exactamente el mismo
+   "gap" de .guia-wizard__stepper, así que nunca se monta encima de un
+   círculo ni le roba klicks (pointer-events: none). */
+.guia-wizard__stepper-numero:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 0.4rem;
+  height: 3px;
+  background-color: var(--color-borde);
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: background-color 0.15s ease;
+}
+
+.guia-wizard__stepper-numero--activo::after,
+.guia-wizard__stepper-numero:has(~ .guia-wizard__stepper-numero--activo)::after {
+  background-color: var(--color-turquesa);
+}
+
+:root[data-theme="claro"] .guia-wizard__stepper-numero--activo::after,
+:root[data-theme="claro"] .guia-wizard__stepper-numero:has(~ .guia-wizard__stepper-numero--activo)::after {
+  background-color: var(--color-primario);
 }
 
 /* Cada una de las 9 pantallas (bienvenida, paso-1..paso-7, cierre): solo
