@@ -12801,7 +12801,77 @@ function crearChipRangoPromedio(promedioFinal) {
   return chip;
 }
 
-// Alumno sin cuenta activa: "—" en las 4 columnas numéricas, sin
+// Sparkline de 4 puntos FIJOS (Tareas→Actividades→Proyectos→Promedio
+// final) — no confundir con construirTendenciaKPI/construirSparklineSVG
+// (esas son tendencia semanal, con eje de tiempo y escala relativa
+// min/max). Aquí la escala es fija 0-10 (rango real de calificación,
+// igual que construirFiguraBarrasVerticales con escalaMax:10) a
+// propósito, NO relativa a min/max de la fila: así las líneas de filas
+// distintas son comparables entre sí al recorrer la columna de arriba a
+// abajo — con escala relativa, un alumno con 7/7.5/8/7.7 se vería con
+// un quiebre tan dramático como uno con 2/9/4/6.
+const ETIQUETAS_TENDENCIA_PROMEDIOS = ["Tareas", "Actividades", "Proyectos", "Promedio"];
+
+function construirSparklinePromedios(valores) {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const ANCHO = 60;
+  const ALTO = 20;
+  const PAD = 3;
+  const ESCALA_MAX = 10;
+
+  const puntosTexto = valores
+    .map((valor, indice) => {
+      const x = PAD + (indice / (valores.length - 1)) * (ANCHO - PAD * 2);
+      const y = ALTO - PAD - (Math.min(valor, ESCALA_MAX) / ESCALA_MAX) * (ALTO - PAD * 2);
+      return x + "," + y;
+    })
+    .join(" ");
+
+  // Un solo <svg> + <title> + <polyline> por fila (mismo patrón barato
+  // que construirSparklineSVG: los 4 puntos van en un solo atributo
+  // "points", sin crear un nodo por punto) — 30-60 filas por grupo no
+  // deben sentirse lentas al renderizar.
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 " + ANCHO + " " + ALTO);
+  svg.setAttribute("role", "img");
+  svg.classList.add("tabla-promedios__tendencia-svg");
+
+  const titulo = document.createElementNS(svgNS, "title");
+  titulo.textContent = ETIQUETAS_TENDENCIA_PROMEDIOS.map(
+    (etiqueta, indice) => etiqueta + ": " + valores[indice].toFixed(1)
+  ).join(" · ");
+  svg.appendChild(titulo);
+
+  const linea = document.createElementNS(svgNS, "polyline");
+  linea.setAttribute("points", puntosTexto);
+  linea.classList.add("tabla-promedios__tendencia-linea");
+  svg.appendChild(linea);
+
+  return svg;
+}
+
+// "—" en vez de un path roto/vacío si algún valor no es un número finito
+// (no debería pasar — calcularPromedioTrimestre ya devuelve 0, nunca
+// NaN, para un tipo sin ítems — pero esta celda no debe depender
+// silenciosamente de ese invariante ajeno).
+function construirCeldaTendenciaPromedios(promedio) {
+  const celda = document.createElement("td");
+  celda.className = "tabla-promedios__celda-tendencia";
+  const valores = [
+    promedio.promedioTarea,
+    promedio.promedioActividad,
+    promedio.promedioProyecto,
+    promedio.promedioFinal,
+  ];
+  if (valores.some((valor) => !Number.isFinite(valor))) {
+    celda.textContent = "—";
+    return celda;
+  }
+  celda.appendChild(construirSparklinePromedios(valores));
+  return celda;
+}
+
+// Alumno sin cuenta activa: "—" en las 5 columnas numéricas/gráfica, sin
 // intentar promediar nada (no hay progreso real que leer para él).
 function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, trimestre) {
   const fila = document.createElement("tr");
@@ -12835,7 +12905,7 @@ function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, t
   );
 
   if (sinCuenta || !tieneAlgunaCalificacion) {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       const celda = document.createElement("td");
       celda.textContent = "—";
       fila.appendChild(celda);
@@ -12875,6 +12945,8 @@ function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, t
   numeroFinal.textContent = promedio.promedioFinal.toFixed(1);
   celdaFinal.append(numeroFinal, crearChipRangoPromedio(promedio.promedioFinal));
   fila.appendChild(celdaFinal);
+
+  fila.appendChild(construirCeldaTendenciaPromedios(promedio));
 
   return fila;
 }
@@ -12917,7 +12989,7 @@ function compararFilasPromedios(filaA, filaB, indiceColumna, tipo, direccion) {
 // Reutiliza la clase "tabla-calificacion" (no solo "tabla-promedios")
 // para heredar gratis el mismo look (bordes, encabezado sticky) y las
 // mismas reglas @media print en blanco y negro que ya apuntan a esa
-// clase — sin sticky de columna "Alumno" (aquí solo son 5 columnas,
+// clase — sin sticky de columna "Alumno" (aquí solo son 6 columnas,
 // caben sin scroll horizontal, a diferencia de la tabla de captura).
 //
 // Ordenamiento (Commit C) SOLO vive aquí, dentro de esta función — no
@@ -12991,6 +13063,12 @@ function construirTablaPromedios(alumnos, itemsPorTipo, mapaProgresoPorAlumno, t
     th.appendChild(boton);
     filaEncabezado.appendChild(th);
   });
+
+  // No es sortable (un sparkline de 4 puntos no es un solo número
+  // comparable) — <th> simple, fuera de COLUMNAS_ORDENABLES_PROMEDIOS.
+  const thTendencia = document.createElement("th");
+  thTendencia.textContent = "Tendencia";
+  filaEncabezado.appendChild(thTendencia);
 
   thead.appendChild(filaEncabezado);
   tabla.appendChild(thead);
@@ -13126,7 +13204,7 @@ function activarExportarCSVPromedios() {
 }
 
 // Sin división "por tipo" (a diferencia de activarImpresionTablaCalificacion):
-// esta tabla siempre tiene las mismas 5 columnas fijas, así que no hace
+// esta tabla siempre tiene las mismas 6 columnas fijas, así que no hace
 // falta partirla ni forzar landscape para que quepan. El contenedor ya
 // comparte la clase "calificacion-tabla-contenedor", así que las reglas
 // @media print de "Impresión de la tabla general" (css/style.css) ya

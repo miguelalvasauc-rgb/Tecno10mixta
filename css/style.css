@@ -9369,6 +9369,39 @@ button.badge-estado {
   font-size: var(--tamano-fuente-meta-micro);
 }
 
+/* Columna "Tendencia" — sparkline de 4 puntos fijos por alumno (ver
+   construirSparklinePromedios, js/main.js). Centrado a diferencia del
+   resto de .tabla-calificacion td (text-align:left), porque el glifo es
+   angosto y de ancho fijo, no texto que fluya con la columna. */
+.tabla-promedios__celda-tendencia {
+  text-align: center;
+}
+
+.tabla-promedios__tendencia-svg {
+  display: block;
+  width: 60px;
+  height: 20px;
+  overflow: visible;
+}
+
+/* Navy por defecto / turquesa solo en oscuro: mismo criterio ya
+   validado AA que .kpi-tarjeta__tendencia-linea (turquesa liso falla
+   contraste no-textual en al menos un tema de superficie clara —
+   rosa-pastel, ver --color-nivel-bueno-franja más arriba). Es una línea
+   fina de 1.5px, más sensible a esto que un relleno grande como el de
+   construirFiguraBarrasVerticales. */
+.tabla-promedios__tendencia-linea {
+  fill: none;
+  stroke: var(--color-primario);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+:root[data-theme="oscuro"] .tabla-promedios__tendencia-linea {
+  stroke: var(--color-turquesa);
+}
+
 /* ---------- Calificar entrega (#modal-calificar) ----------
    Mismo patrón visual angosto que #modal-editar-fecha: un solo campo
    numérico. #modal-calificar-archivo (enlace opcional) reutiliza
