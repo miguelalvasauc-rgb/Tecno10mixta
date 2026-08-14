@@ -181,6 +181,40 @@ The theme picker's own preview card (`.tema-tarjeta__swatch`) uses a `rgba(0,0,0
 - **Body** (400, 16px, line-height 24px): default running text, rubric descriptions, task copy.
 - **Label** (600, 14px, line-height 20px): sidebar nav links, form labels, small UI text; a smaller 12px/500-weight label variant exists for badges and micro-copy.
 
+### Type Scale — `--tamano-fuente-*` / `--tamano-icono-*` tokens
+
+The four roles above were prose-only for most of the project's life: the values existed as a convention, but every one of the 289 `font-size` declarations in `css/style.css` was a hand-typed literal, including the ones that already matched the documented ramp. A later audit found 34% of all `font-size` usages had drifted off that ramp into near-duplicate values competing for the same visual role. This session turned the ramp into an actual token system — all `rem`-based (never `px`) so every role keeps scaling with `--escala-texto`, the site's text-size accessibility control:
+
+| Token | Value | Role |
+|---|---|---|
+| `--tamano-fuente-contador-insignia` | 0.6rem (9.6px) | Circular badge counter (sidebar) |
+| `--tamano-fuente-meta-micro` | 0.6875rem (11px) | Micro-chrome: eyebrows, small dates, tiny badges |
+| `--tamano-fuente-encabezado-tabla` | 0.72rem (11.5px) | Admin table headers (6 tables) |
+| `--tamano-fuente-label-sm` | 0.75rem (12px) | Badges / micro-copy (`.label-sm`) |
+| `--tamano-fuente-secundario` | 0.8rem (12.8px) | De facto secondary text — the single most-used role on the site |
+| `--tamano-fuente-accion` | 0.95rem (15.2px) | Action buttons + assorted sub-headers |
+| `--tamano-fuente-cuerpo` | 1rem (16px) | Body |
+| `--tamano-fuente-subtitulo-tarjeta` | 1.05rem (16.8px) | `h3`/`h4` across 8 card families |
+| `--tamano-fuente-titulo-modal` | 1.1rem (17.6px) | Modal titles (12 modals) |
+| `--tamano-fuente-cuerpo-lg` | 1.125rem (18px) | Large body (`.body-lg`) |
+| `--tamano-fuente-titular` | 1.25rem (20px) | Headline (`.headline-sm`) |
+| `--tamano-fuente-avatar-hero` | 1.8rem (28.8px) | Hero `h2` + avatar fallback initial |
+| `--tamano-fuente-display` | 2rem (32px) | Display — top of the ramp, `.headline-lg` at ≥1024px |
+| `--tamano-fuente-estadistica` | 2.3rem (36.8px) | Large stat numbers (KPI cards, criteria cards) |
+| `--tamano-icono-md` | 1.2rem (19.2px) | Medium icon glyph |
+| `--tamano-icono-lg` | 1.3rem (20.8px) | Large icon glyph |
+
+Several near-duplicates that were competing for the same role got consolidated into one canonical token in the process:
+- `--tamano-fuente-secundario` absorbs what used to be three separate values for the same "secondary text" role: `0.82rem`, `0.78rem`, and `13px`.
+- `--tamano-fuente-meta-micro` absorbs `0.7rem`, `0.65rem`, and `0.68rem`.
+- `--tamano-fuente-accion` absorbs `0.92rem` (formerly a "dense-content" one-off).
+- `--tamano-fuente-subtitulo-tarjeta` absorbs `1.15rem`.
+- `--tamano-fuente-avatar-hero` absorbs `1.75rem`.
+- `--tamano-fuente-estadistica`: `.kpi-tarjeta__valor` (2.3rem) and `.criterio-tarjeta__porcentaje` (2.2rem) were two independent values for the same "big stat number" role. 2.3rem won as canonical — it's the admin Dashboard's value, and the ~1.6px difference was confirmed visually indistinguishable on `.criterio-tarjeta__porcentaje` before switching.
+- `--tamano-icono-md` absorbs the sitewide `1.2rem` icon glyph size, with one deliberate exception: `.alumnos-codigo__valor` (the Cascadia Code monospace access-code display) happens to share the same `1.2rem` value by coincidence — it's text, not an icon, so it keeps its own literal rather than being folded into the icon token.
+
+Not every `font-size` literal in the file was tokenized — only these 16 roles. Values that appear once or twice and don't repeat a shared role (e.g. `.headline-lg`/`.headline-md` at 24px, one-off component sizes) are left as literals; folding those into a token would just be indirection with no reuse behind it.
+
 Headings use sentence case, never Title Case or full uppercase — the conversational-academic tone is preserved by how copy is written, not forced with `text-transform`. Small labels (eyebrow text, priority badges) are the deliberate exception: uppercase with slight letter-spacing (`0.05–0.08em`) to read as tags rather than prose.
 
 ## Layout
