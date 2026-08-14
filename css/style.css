@@ -972,7 +972,7 @@ a {
 
 .encabezado__titulo {
   margin: 0.1rem 0;
-  font-size: 1.15rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -1734,7 +1734,7 @@ summary {
 
 .aviso-tarjeta__cabecera h3 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
   color: var(--color-texto);
 }
 
@@ -1888,7 +1888,7 @@ summary {
 
 .tarjeta-trimestre h3 {
   margin: 0.3rem 0 0;
-  font-size: 1.15rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
   color: var(--color-texto);
 }
 
@@ -2092,7 +2092,7 @@ summary {
 
 .tarjeta-temario__info h3 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
   color: var(--color-texto);
 }
 
@@ -3023,7 +3023,7 @@ summary {
 
 .tarjeta-rubrica h4 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
   color: var(--color-texto);
 }
 
@@ -3131,7 +3131,7 @@ summary {
 
 .tarjeta h3 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
   color: var(--color-texto);
 }
 
@@ -3662,7 +3662,7 @@ summary {
 
 .faq-item__pregunta {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
   font-weight: 700;
   color: var(--color-texto);
 }
@@ -3847,7 +3847,7 @@ summary {
 
 .tarjeta-presentacion__info h3 {
   margin: 0 0 0.3rem;
-  font-size: 1.05rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
   color: var(--color-texto);
 }
 
@@ -3884,7 +3884,7 @@ summary {
 
 .tarjeta-examen-diagnostico__texto h3 {
   margin: 0 0 0.3rem;
-  font-size: 1.05rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
   color: var(--color-texto);
 }
 
@@ -4100,7 +4100,7 @@ summary {
 
 .calendario__eventos h3 {
   margin-top: 0;
-  font-size: 1.05rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
 }
 
 /* ---------- Leyenda de tipos de día ---------- */
@@ -10208,7 +10208,7 @@ button.badge-estado {
   }
 
   .impresion-progreso__trimestre h3 {
-    font-size: 1.15rem;
+    font-size: var(--tamano-fuente-subtitulo-tarjeta);
     margin: 0 0 0.5rem;
     border-bottom: 2px solid #000;
     padding-bottom: 0.25rem;
