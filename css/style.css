@@ -5974,7 +5974,7 @@ summary {
     bottom: 1rem;
     width: 44px;
     height: 44px;
-    font-size: 1.2rem;
+    font-size: var(--tamano-icono-md);
   }
 }
 
@@ -6336,7 +6336,7 @@ summary {
   border: none;
   border-radius: var(--radio-md);
   color: var(--color-texto-suave);
-  font-size: 1.2rem;
+  font-size: var(--tamano-icono-md);
   text-decoration: none;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease, transform 90ms ease;
@@ -6403,7 +6403,7 @@ summary {
   width: 40px;
   height: 40px;
   margin-bottom: 0.5rem;
-  font-size: 1.2rem;
+  font-size: var(--tamano-icono-md);
 }
 
 /* Avatar con inicial (ver actualizarAvatarPerfil() en js/main.js):
@@ -6986,7 +6986,7 @@ summary {
 }
 
 .barra-inferior__icono {
-  font-size: 1.2rem;
+  font-size: var(--tamano-icono-md);
   line-height: 1;
 }
 
