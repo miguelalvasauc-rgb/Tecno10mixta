@@ -647,6 +647,32 @@
   --font-encabezados: "Quicksand", var(--fuente-titulos);
   --font-cuerpo: "Inter", var(--fuente-base);
 
+  /* Tamaños de fuente — sistema real de tokens (antes 152 literales sin
+     reutilizar, ver DESIGN.md). Todos en rem para escalar con
+     --escala-texto de arriba; NUNCA usar px aquí aunque el rol ya
+     existiera antes en px (ese es el caso de cuerpo/cuerpo-lg/titular/
+     display, que vivían en .body-md/.body-lg/.headline-sm/.headline-lg
+     como px sueltos, fuera del control de escala de texto). */
+  --tamano-fuente-contador-insignia: 0.6rem;
+  --tamano-fuente-meta-micro: 0.6875rem;
+  --tamano-fuente-encabezado-tabla: 0.72rem;
+  --tamano-fuente-label-sm: 0.75rem;
+  --tamano-fuente-secundario: 0.8rem;
+  --tamano-fuente-accion: 0.95rem;
+  --tamano-fuente-cuerpo: 1rem;
+  --tamano-fuente-subtitulo-tarjeta: 1.05rem;
+  --tamano-fuente-titulo-modal: 1.1rem;
+  --tamano-fuente-cuerpo-lg: 1.125rem;
+  --tamano-fuente-titular: 1.25rem;
+  --tamano-fuente-avatar-hero: 1.8rem;
+  --tamano-fuente-display: 2rem;
+  /* Fusiona .criterio-tarjeta__porcentaje (2.2rem) y .kpi-tarjeta__valor
+     (2.3rem, canónico elegido: dashboard admin, cambio visualmente
+     indiferente verificado en navegador). */
+  --tamano-fuente-estadistica: 2.3rem;
+  --tamano-icono-md: 1.2rem;
+  --tamano-icono-lg: 1.3rem;
+
   /* Radios de borde */
   --radio-sm: 0.25rem;
   --radio-default: 0.5rem;
