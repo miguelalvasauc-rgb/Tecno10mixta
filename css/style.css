@@ -5020,7 +5020,7 @@ summary {
   color: var(--color-texto-suave);
   font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   letter-spacing: 0.03em;
 }
 
@@ -5595,7 +5595,7 @@ summary {
   color: var(--color-texto-suave);
   font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   letter-spacing: 0.03em;
   white-space: nowrap;
 }
@@ -7634,7 +7634,7 @@ a.boton-secundario {
   color: var(--color-texto-suave);
   font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   letter-spacing: 0.03em;
 }
 
@@ -8573,7 +8573,7 @@ button.badge-estado {
   color: var(--color-texto-suave);
   font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   letter-spacing: 0.03em;
 }
 
@@ -8721,7 +8721,7 @@ button.badge-estado {
   color: var(--color-texto-suave);
   font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   letter-spacing: 0.03em;
 }
 
@@ -9061,7 +9061,7 @@ button.badge-estado {
   color: var(--color-texto-suave);
   font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   letter-spacing: 0.03em;
 }
 
