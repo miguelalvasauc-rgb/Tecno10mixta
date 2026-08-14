@@ -4307,7 +4307,7 @@ summary {
 
 #modal-detalle-titulo {
   margin: 0 1.8rem 0.75rem 0;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
@@ -4392,7 +4392,7 @@ summary {
 
 #modal-tema-titulo {
   margin: 0 1.8rem 1rem 0;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
@@ -7928,7 +7928,7 @@ a.boton-secundario {
 
 #modal-historial-titulo {
   margin: 0 1.8rem 0.2rem 0;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
@@ -8087,7 +8087,7 @@ button.badge-estado {
 
 #modal-editar-entrega-titulo {
   margin: 0 1.8rem 0.2rem 0;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
@@ -8627,7 +8627,7 @@ button.badge-estado {
 
 #modal-nuevo-alumno-titulo {
   margin: 0 1.8rem 0.2rem 0;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
@@ -8679,7 +8679,7 @@ button.badge-estado {
 
 #modal-codigo-invitacion-titulo {
   margin: 0 1.8rem 0.2rem 0;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
@@ -8782,7 +8782,7 @@ button.badge-estado {
 
 #modal-aviso-titulo {
   margin: 0 1.8rem 0.2rem 0;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
@@ -9034,7 +9034,7 @@ button.badge-estado {
 
 #modal-confirmar-trimestre-titulo {
   margin: 0 1.8rem 0.2rem 0;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
@@ -9111,7 +9111,7 @@ button.badge-estado {
 
 #modal-editar-fecha-titulo {
   margin: 0 1.8rem 0.2rem 0;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
@@ -9159,7 +9159,7 @@ button.badge-estado {
 
 #modal-confirmar-fecha-titulo {
   margin: 0 1.8rem 0.2rem 0;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
@@ -9227,7 +9227,7 @@ button.badge-estado {
 
 #modal-recorrido-fechas-titulo {
   margin: 0 1.8rem 0.2rem 0;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
@@ -9391,7 +9391,7 @@ button.badge-estado {
 
 #modal-calificar-titulo {
   margin: 0 1.8rem 0.2rem 0;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
