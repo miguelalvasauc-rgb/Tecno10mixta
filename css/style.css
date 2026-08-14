@@ -10140,6 +10140,53 @@ button.badge-estado {
   white-space: nowrap;
 }
 
+/* Punto + línea de estado, SOLO en el feed de Actividad reciente
+   (#dashboard-feed-actividad) — .dashboard-riesgo-lista se reutiliza tal
+   cual en el Top 5 en riesgo (#dashboard-top-riesgo), que es un ranking,
+   no una secuencia cronológica, así que el scoping por id evita que el
+   riel se dibuje ahí también. Sin JS nuevo: el orden ya viene de
+   obtenerActividadRecienteDashboard() (ORDER BY actualizado_en DESC).
+   Punto sólido fijo, sin animación/glow — .borde-animado-acento ya es el
+   lenguaje visual de "atención" del sitio; duplicarlo aquí competiría
+   con esa señal. */
+#dashboard-feed-actividad .dashboard-riesgo-lista {
+  padding-left: 1rem;
+}
+
+#dashboard-feed-actividad .dashboard-riesgo-lista__item {
+  position: relative;
+}
+
+#dashboard-feed-actividad .dashboard-riesgo-lista__item::before {
+  content: "";
+  position: absolute;
+  top: calc(0.65rem + 0.6em);
+  left: -0.7rem;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background-color: var(--color-turquesa);
+}
+
+/* La línea vive en el ::after del item ANTERIOR y solo cubre el "gap"
+   (0.6rem, mismo valor que .dashboard-riesgo-lista) hasta el borde
+   superior de la siguiente tarjeta — no hace falta calcular la altura
+   real de cada tarjeta (varía si el meta se envuelve en pantallas
+   angostas). :last-child se excluye a propósito: sin esto, quedaría un
+   segmento de línea colgando después del último punto, con la lista ya
+   terminada. */
+#dashboard-feed-actividad .dashboard-riesgo-lista__item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: calc(0.65rem + 0.6em + 4px);
+  bottom: -0.6rem;
+  left: -0.7rem;
+  width: 2px;
+  margin-left: -1px;
+  background-color: var(--color-borde);
+}
+
 .dashboard-cronograma__etiqueta {
   margin: 0 0 0.5rem;
   color: var(--color-texto-suave);
