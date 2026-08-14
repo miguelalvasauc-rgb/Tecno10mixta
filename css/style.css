@@ -6377,7 +6377,7 @@ summary {
   border-radius: 999px;
   background-color: var(--color-primario);
   color: var(--color-primario-texto);
-  font-size: 0.6rem;
+  font-size: var(--tamano-fuente-contador-insignia);
   font-weight: 700;
   line-height: 1;
 }
