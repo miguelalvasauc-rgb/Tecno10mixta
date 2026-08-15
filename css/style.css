@@ -6668,6 +6668,13 @@ body.modo-demo-toast-visible .migas-de-pan {
   padding-top: calc(0.5rem + var(--alto-toast-modo-demo));
 }
 
+/* #contenedor-toast (pila de toasts normales) tiene `top: 1.25rem` fijo,
+   no compensado por defecto — con la franja de Modo Demo visible (z-index
+   999, mayor) se solapan. Se corre hacia abajo igual que .migas-de-pan. */
+body.modo-demo-toast-visible .contenedor-toast {
+  top: calc(1.25rem + var(--alto-toast-modo-demo));
+}
+
 @media (min-width: 1024px) {
   /* .migas-de-pan ya es position:sticky; top:3px acá arriba (ver esa
      regla en la media query de escritorio) — se corre hacia abajo el
