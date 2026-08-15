@@ -3948,6 +3948,21 @@ function activarCierreModalDemo() {
   });
 }
 
+// Enlace real de "Entrega de trabajos" (#entrega en trimestre-1/2/3.html,
+// hacia un Google Form externo — no hay <iframe> que interceptar, es un
+// <a target="_blank"> normal). Con demoModeActivo() en false no toca el
+// listener en nada: el enlace navega exactamente igual que hoy.
+function activarInterceptorEntregaDemo() {
+  const enlace = document.querySelector("#entrega .enlace-instrucciones");
+  if (!enlace) return; // no es una página de trimestre
+
+  enlace.addEventListener("click", (evento) => {
+    if (!demoModeActivo()) return;
+    evento.preventDefault();
+    abrirModalDemo();
+  });
+}
+
 /* =========================================================
    5. RENDERIZADO DE SECCIONES
    ========================================================= */
@@ -15338,6 +15353,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarSpotlightTarjetas();
   activarCierreModalDetalle();
   activarCierreModalDemo();
+  activarInterceptorEntregaDemo();
 
   // El formulario de contacto solo existe en la portada (index.html).
   const formularioContacto = document.getElementById("formulario-contacto");
