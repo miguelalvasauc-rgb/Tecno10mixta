@@ -14954,9 +14954,13 @@ function renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias, riesgoE
   // vez de tratarlos como 0 — un solo null en la suma sin filtrar
   // contagiaba de NaN el "Promedio general" de TODO el grupo.
   const resumenConPromedio = resumenAlumnos.filter((r) => r.promedioFinal != null);
+  // null (no 0) cuando nadie del grupo tiene promedioFinal todavía —
+  // 0 aquí se convertía en "0.0" al pasar por .toFixed(1) más abajo,
+  // mostrando una calificación real donde debía decir "—" (bug
+  // encontrado en producción: T1/T3 de 3°C recién arrancados).
   const promedioGeneral =
     resumenConPromedio.length === 0
-      ? 0
+      ? null
       : resumenConPromedio.reduce((suma, r) => suma + r.promedioFinal, 0) / resumenConPromedio.length;
   const avancePromedio =
     total === 0 ? 0 : Math.round(resumenAlumnos.reduce((suma, r) => suma + r.avance, 0) / total);
@@ -14973,7 +14977,7 @@ function renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias, riesgoE
     construirTarjetaKPISimple({
       icono: "📈",
       titulo: "Promedio general",
-      valor: promedioGeneral.toFixed(1),
+      valor: promedioGeneral == null ? "—" : promedioGeneral.toFixed(1),
       tendencia: tendencias?.promedioSemanal,
       unidad: "decimal",
     }),
@@ -15277,20 +15281,24 @@ function renderizarTop5RiesgoDashboard(resumenAlumnos) {
 // pctTardeOFaltante/riesgo que esa función ya deja listos por alumno.
 function metricasGrupoDashboard(resumenAlumnos) {
   const total = resumenAlumnos.length;
-  if (total === 0) return { promedio: 0, pctATiempo: 0, pctEnRiesgo: 0 };
+  // promedio:null (no 0) tanto sin alumnos como sin nadie con
+  // promedioFinal todavía — el consumidor (renderizarComparativaGruposDashboard)
+  // decide entre "—" y .toFixed(1), mismo criterio que promedioGeneral
+  // en renderizarKPIsDashboard.
+  if (total === 0) return { promedio: null, pctATiempo: 0, pctEnRiesgo: 0 };
 
   // Mismo criterio que renderizarKPIsDashboard: excluye del promedio a
   // los alumnos sin dato (promedioFinal null), no los cuenta como 0.
   const resumenConPromedio = resumenAlumnos.filter((r) => r.promedioFinal != null);
   const promedio =
     resumenConPromedio.length === 0
-      ? 0
+      ? null
       : resumenConPromedio.reduce((suma, r) => suma + r.promedioFinal, 0) / resumenConPromedio.length;
   const promedioTarde = resumenAlumnos.reduce((suma, r) => suma + r.pctTardeOFaltante, 0) / total;
   const enRiesgo = resumenAlumnos.filter((r) => r.riesgo >= UMBRAL_RIESGO_ZONA_ROJA).length;
 
   return {
-    promedio: Math.round(promedio * 10) / 10,
+    promedio: promedio == null ? null : Math.round(promedio * 10) / 10,
     pctATiempo: Math.round(100 - promedioTarde),
     pctEnRiesgo: Math.round((enRiesgo / total) * 100),
   };
@@ -15320,7 +15328,11 @@ function renderizarComparativaGruposDashboard(resumenPorGrupo) {
   const metricas3E = metricasGrupoDashboard(resumenPorGrupo["3E"]);
 
   const filas = [
-    { etiqueta: "Promedio general", valor3C: metricas3C.promedio.toFixed(1), valor3E: metricas3E.promedio.toFixed(1) },
+    {
+      etiqueta: "Promedio general",
+      valor3C: metricas3C.promedio == null ? "—" : metricas3C.promedio.toFixed(1),
+      valor3E: metricas3E.promedio == null ? "—" : metricas3E.promedio.toFixed(1),
+    },
     { etiqueta: "% a tiempo", valor3C: metricas3C.pctATiempo + "%", valor3E: metricas3E.pctATiempo + "%" },
     { etiqueta: "% en riesgo", valor3C: metricas3C.pctEnRiesgo + "%", valor3E: metricas3E.pctEnRiesgo + "%" },
   ];
