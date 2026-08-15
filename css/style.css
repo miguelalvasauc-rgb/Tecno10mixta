@@ -6586,6 +6586,97 @@ summary {
   }
 }
 
+/* ---------- Toast persistente "Modo Demo" (admin.html, Fase 5) ----------
+   A diferencia de .toast (píldora angosta, pila de hasta 3, con
+   autodesaparición), este vive FUERA del sistema de pila/#contenedor-
+   toast: un único elemento persistente, franja de ancho completo,
+   revelado/ocultado con activarToastModoDemo() en js/main.js — nunca
+   por crearYMostrarToast()/agendarAutodesaparicion().
+   position:fixed + z-index:999 (justo debajo del skip link, que usa
+   1000) + compensación de padding-top en #main-content/.migas-de-pan:
+   mismo patrón exacto que ya usa la franja tricolor del tema
+   Independencia más abajo en este archivo, aquí scopeado a
+   body.modo-demo-toast-visible en vez de a un data-theme. #2A1D02 (el
+   mismo texto oscuro que .badge-estado[data-estado="pendiente"]/
+   .toast[data-tipo="advertencia"] ya usan sobre --color-toast-
+   advertencia) se deja como valor fijo, no una variable nueva: un solo
+   uso, no un token que otros componentes vayan a compartir. */
+#toast-modo-demo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1.5rem;
+  background-color: var(--color-toast-advertencia);
+  color: #2A1D02;
+  font-family: var(--font-cuerpo);
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: var(--sombra);
+}
+
+.toast-modo-demo__icono {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.toast-modo-demo__texto {
+  text-align: center;
+}
+
+.toast-modo-demo__boton {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: var(--radio-full);
+  padding: 0.25rem 0.75rem;
+  color: inherit;
+  font-family: var(--font-cuerpo);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toast-modo-demo__boton:hover,
+.toast-modo-demo__boton:focus-visible {
+  background-color: rgba(42, 29, 2, 0.1);
+}
+
+/* --alto-toast-modo-demo: no es un valor medido a mano (a diferencia
+   de --alto-franja-independencia, que sí puede serlo porque es una
+   línea de 8px fija) — el toast crece con el texto según viewport, así
+   que 3.25rem es una estimación conservadora para una sola línea de
+   texto + padding; si el texto llega a partirse en 2 líneas en una
+   pantalla muy angosta, el toast igual queda visible completo (el
+   padding-top de abajo solo evita que TAPE contenido, no necesita ser
+   milimétricamente exacto). */
+body.modo-demo-toast-visible {
+  --alto-toast-modo-demo: 3.25rem;
+}
+
+body.modo-demo-toast-visible #main-content {
+  padding-top: var(--alto-toast-modo-demo);
+}
+
+body.modo-demo-toast-visible .migas-de-pan {
+  padding-top: calc(0.5rem + var(--alto-toast-modo-demo));
+}
+
+@media (min-width: 1024px) {
+  /* .migas-de-pan ya es position:sticky; top:3px acá arriba (ver esa
+     regla en la media query de escritorio) — se corre hacia abajo el
+     alto del toast para no quedar tapado al hacer scroll. */
+  body.modo-demo-toast-visible .migas-de-pan {
+    top: calc(var(--alto-toast-modo-demo) + 3px);
+  }
+}
+
 /* ---------- Mensaje "sin resultados" ---------- */
 .sin-resultados {
   color: var(--color-texto-suave);

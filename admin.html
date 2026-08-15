@@ -115,6 +115,20 @@
     </a>
   </nav>
 
+  <!-- "Modo Demo" (Fase 5): franja fija superior, persistente (SIN
+       autodesaparición, fuera del sistema de pila de #contenedor-toast)
+       — se revela con JS al cargar cualquier pestaña de admin.html si
+       demoModeActivo() (ver activarToastModoDemo() en js/main.js).
+       Mismo patrón de compensación de layout que ya usa la franja
+       tricolor del tema Independencia (ver css/style.css): position:fixed
+       + padding-top compensatorio en #main-content/.migas-de-pan vía
+       body.modo-demo-toast-visible, para nunca tapar contenido. -->
+  <div id="toast-modo-demo" hidden>
+    <span class="toast-modo-demo__icono" aria-hidden="true">🧪</span>
+    <span class="toast-modo-demo__texto">Modo Demo activo — estás viendo datos ficticios</span>
+    <button type="button" id="boton-desactivar-modo-demo" class="toast-modo-demo__boton">Desactivar</button>
+  </div>
+
   <nav aria-label="breadcrumb" class="migas-de-pan">
     <ol>
       <li><a href="index.html">Inicio</a></li>

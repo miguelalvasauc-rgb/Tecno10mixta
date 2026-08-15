@@ -85,6 +85,18 @@ const PARES_CONTRASTE = [
     tamano: "normal",
     nota: "Mensaje de error de formulario (.campo-formulario__error/.cuenta-error) sobre .cuenta-tarjeta/.formulario-contacto",
   },
+  {
+    // fg literal (no una variable --color-*): #2A1D02 no está formalizado
+    // como token porque es un solo uso (ver comentario junto a
+    // #toast-modo-demo en css/style.css) — mismo texto oscuro que ya usa
+    // .toast[data-tipo="advertencia"]/.badge-estado[data-estado="pendiente"]
+    // sobre este mismo fondo, así que no es un color nuevo sin precedente,
+    // solo uno que nunca se guardó en una variable.
+    fg: "#2A1D02",
+    bg: "--color-toast-advertencia",
+    tamano: "normal",
+    nota: "Texto del toast persistente de Modo Demo (#toast-modo-demo) sobre --color-toast-advertencia",
+  },
 ];
 
 // Orden del selector de 10 temas (TEMAS_DISPONIBLES en js/main.js).
@@ -197,6 +209,15 @@ function resolverToken(nombreToken, mapa) {
   return resolverValor(mapa[nombreToken], mapa);
 }
 
+// PARES_CONTRASTE normalmente trae nombres de variable ("--color-x"),
+// pero también acepta un hex literal ("#2A1D02") para el caso de un
+// color de un solo uso que nunca se formalizó como token — mismo valor
+// en los 10 temas por definición (no varía por tema porque no es var()).
+function resolverTokenOLiteral(tokenOLiteral, mapa) {
+  if (tokenOLiteral.startsWith("#")) return tokenOLiteral;
+  return resolverToken(tokenOLiteral, mapa);
+}
+
 // ---------------------------------------------------------------------
 // Contraste WCAG (luminancia relativa real, no aproximación)
 // ---------------------------------------------------------------------
@@ -246,8 +267,8 @@ function ratioContraste(hex1, hex2) {
 function evaluarTema(nombreTema, mapaFusionado) {
   const filas = [];
   for (const par of PARES_CONTRASTE) {
-    const fgValor = resolverToken(par.fg, mapaFusionado);
-    const bgValor = resolverToken(par.bg, mapaFusionado);
+    const fgValor = resolverTokenOLiteral(par.fg, mapaFusionado);
+    const bgValor = resolverTokenOLiteral(par.bg, mapaFusionado);
 
     if (!fgValor || !bgValor) {
       filas.push({
