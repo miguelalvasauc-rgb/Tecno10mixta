@@ -4419,6 +4419,26 @@ async function renderizarRubricas() {
   });
 }
 
+// Estado de progreso personal (Entregado/Pendiente/Vencido/sin sesión) de
+// una tarea, actividad o proyecto — extraído de crearChecklistProgreso()
+// para que #proximas-fechas-trimestre pueda pintar su propio badge
+// compacto (solo emoji + tooltip) sin duplicar esta lógica. Devuelve null
+// cuando no hay sesión activa (mismo caso que el aviso "Inicia sesión..."
+// de abajo); si no, { estado, texto } con el mismo texto exacto que ya
+// mostraba el badge completo.
+function calcularEstadoProgresoItem(tipo, item) {
+  const perfil = obtenerPerfilActivo();
+  if (!perfil) return null;
+
+  if (itemEstaCompletado(tipo, item.id)) {
+    return { estado: "completada", texto: "🟢 Entregado" };
+  }
+  if (itemEstaVencido(tipo, item, perfil.grupo)) {
+    return { estado: "atrasada", texto: "🔒 Vencido sin entregar" };
+  }
+  return { estado: "pendiente", texto: "🟡 Pendiente" };
+}
+
 // Indicador de solo lectura del progreso personal de una tarjeta de tarea,
 // actividad o proyecto: el progreso ya no lo marca el alumno con un
 // checkbox, se calcula automático a partir de progresoCache (tabla
@@ -4428,8 +4448,8 @@ function crearChecklistProgreso(tipo, item, tarjeta) {
   const indicador = document.createElement("div");
   indicador.className = "indicador-progreso";
 
-  const perfil = obtenerPerfilActivo();
-  if (!perfil) {
+  const resultado = calcularEstadoProgresoItem(tipo, item);
+  if (!resultado) {
     const aviso = document.createElement("span");
     aviso.className = "indicador-progreso__aviso-sesion";
     aviso.textContent = "🔑 Inicia sesión para ver tu progreso";
@@ -4437,21 +4457,12 @@ function crearChecklistProgreso(tipo, item, tarjeta) {
     return indicador;
   }
 
-  const completada = itemEstaCompletado(tipo, item.id);
-  tarjeta.classList.toggle("tarjeta--completada", completada);
+  tarjeta.classList.toggle("tarjeta--completada", resultado.estado === "completada");
 
   const badge = document.createElement("span");
   badge.className = "badge-estado";
-  if (completada) {
-    badge.dataset.estado = "completada";
-    badge.textContent = "🟢 Entregado";
-  } else if (itemEstaVencido(tipo, item, perfil.grupo)) {
-    badge.dataset.estado = "atrasada";
-    badge.textContent = "🔒 Vencido sin entregar";
-  } else {
-    badge.dataset.estado = "pendiente";
-    badge.textContent = "🟡 Pendiente";
-  }
+  badge.dataset.estado = resultado.estado;
+  badge.textContent = resultado.texto;
   indicador.appendChild(badge);
 
   return indicador;
@@ -5127,14 +5138,60 @@ async function renderizarProyectos() {
 // consistencia intencional, no un set de íconos aparte para esta lista.
 const ICONO_PROXIMAS_FECHAS_POR_TIPO = { tarea: "📝", actividad: "🎯", proyecto: "🚀" };
 
+// Badge de estado COMPACTO (solo emoji, ver .badge-estado--compacto ya
+// usado en el panel de calificaciones) para una fila de
+// #proximas-fechas-trimestre: a diferencia de las tarjetas de Tareas/
+// Actividades/Proyectos, aquí no hay espacio para el texto completo del
+// badge sin volver la fila demasiado alta con 21+ items reales. Reutiliza
+// calcularEstadoProgresoItem() (misma lógica exacta que
+// crearChecklistProgreso()) y expone el texto completo vía tooltip +
+// aria-describedby, nunca solo visualmente: mismo criterio que ya usan
+// los íconos ⓘ de criterio-tarjeta__info (activarTooltipsInfo(), más
+// abajo). "sin-cuenta" reutiliza el mismo data-estado/color que ya usa
+// tabla-calificacion para alumnos sin cuenta — mismo eje semántico
+// (progreso no disponible), no un token nuevo.
+function crearBadgeEstadoCompacto(tipo, item, idBase, li) {
+  const resultado = calcularEstadoProgresoItem(tipo, item);
+  li.classList.toggle("tarjeta--completada", resultado?.estado === "completada");
+
+  const estado = resultado ? resultado.estado : "sin-cuenta";
+  const texto = resultado ? resultado.texto.slice(resultado.texto.indexOf(" ") + 1) : "Inicia sesión para ver tu progreso";
+  const emoji = resultado ? resultado.texto.slice(0, resultado.texto.indexOf(" ")) : "🔑";
+  const idTexto = "proximas-fechas-estado-" + idBase;
+
+  const disparador = document.createElement("span");
+  disparador.className = "badge-estado badge-estado--compacto tooltip-disparador";
+  disparador.dataset.estado = estado;
+  disparador.tabIndex = 0;
+  disparador.title = texto;
+  disparador.setAttribute("aria-describedby", idTexto);
+
+  const iconoVisible = document.createElement("span");
+  iconoVisible.setAttribute("aria-hidden", "true");
+  iconoVisible.textContent = emoji;
+
+  const tooltip = document.createElement("span");
+  tooltip.className = "tooltip-flotante";
+  tooltip.setAttribute("aria-hidden", "true");
+  tooltip.textContent = texto;
+
+  disparador.append(iconoVisible, tooltip);
+
+  const textoSR = document.createElement("span");
+  textoSR.id = idTexto;
+  textoSR.className = "sr-only";
+  textoSR.textContent = texto;
+
+  return [disparador, textoSR];
+}
+
 // "Próximas fechas" del trimestre (#proximas-fechas-trimestre en
 // trimestre-1/2/3.html): lista cronológica con línea de tiempo
 // (.linea-tiempo, ver css/style.css — misma clase que ya usa el feed de
-// Actividad reciente del Dashboard). El badge de estado reutiliza
-// crearChecklistProgreso() tal cual — mismo Entregado/Pendiente/Vencido
-// y mismo aviso de "Inicia sesión" sin cuenta activa que ya usan las
-// tarjetas de Tareas/Actividades/Proyectos, nada nuevo que mantener en
-// paralelo.
+// Actividad reciente del Dashboard). El badge de estado es compacto
+// (crearBadgeEstadoCompacto arriba) — NO reutiliza crearChecklistProgreso()
+// directamente, esa función sigue intacta para Tareas/Actividades/
+// Proyectos, que sí tienen espacio para el texto completo.
 async function renderizarProximasFechasTrimestre() {
   const contenedor = document.getElementById("contenedor-proximas-fechas-trimestre");
   if (!contenedor) return;
@@ -5171,7 +5228,7 @@ async function renderizarProximasFechasTrimestre() {
     fecha.textContent = resolverFechaItem(tipo === "actividad" ? item.fecha : item.fechaEntrega);
 
     info.append(titulo, fecha);
-    li.append(icono, info, crearChecklistProgreso(tipo, item, li));
+    li.append(icono, info, ...crearBadgeEstadoCompacto(tipo, item, tipo + "-" + item.id, li));
     lista.appendChild(li);
   });
 
@@ -7647,39 +7704,45 @@ function activarControlEscalaTexto() {
 // tocan aquí: ese es el camino real para lector de pantalla, este
 // tooltip es 100% visual y adicional.
 //
-// Un solo document.addEventListener("click") cierra al tocar/hacer
-// clic afuera — mismo patrón que ya usa activarPanelesConDisparador()
-// (arriba) para los flyouts del riel, con .contains() en vez de un
-// listener por disparador. Un solo "abierto" a la vez, igual que esos
-// paneles: no hace falta rastrear varios tooltips abiertos porque solo
-// uno puede tener foco/hover/tap al mismo tiempo.
+// "abierto" vive a nivel de módulo (no local a activarTooltipsInfo) y el
+// listener de document se registra una sola vez con
+// tooltipsDocumentListenerActivo: esta función necesita poder llamarse
+// varias veces sin re-adjuntar ese listener ni perder de vista el
+// tooltip abierto por una llamada anterior. Motivo: los disparadores de
+// los 3 íconos ⓘ (criterio-tarjeta__info) son estáticos y solo se
+// wirean una vez al cargar, pero los de #proximas-fechas-trimestre
+// (crearBadgeEstadoCompacto) se reconstruyen en cada renderizarTodo()
+// (cambio de grupo/sesión) — dataset.tooltipActivado evita
+// re-adjuntar listeners a un disparador que ya los tiene, igual que
+// dataset.activado en otras funciones de este archivo.
+let tooltipAbierto = null;
+let tooltipsDocumentListenerActivo = false;
+
+function cerrarTooltipInfo() {
+  if (!tooltipAbierto) return;
+  tooltipAbierto.querySelector(".tooltip-flotante")?.classList.remove("tooltip-flotante--visible");
+  tooltipAbierto = null;
+}
+
+function abrirTooltipInfo(disparador) {
+  if (tooltipAbierto === disparador) return;
+  cerrarTooltipInfo();
+  disparador.querySelector(".tooltip-flotante")?.classList.add("tooltip-flotante--visible");
+  tooltipAbierto = disparador;
+}
+
 function activarTooltipsInfo() {
-  const disparadores = document.querySelectorAll(".tooltip-disparador");
-  if (disparadores.length === 0) return;
-
-  let abierto = null;
-
-  function cerrar() {
-    if (!abierto) return;
-    abierto.querySelector(".tooltip-flotante")?.classList.remove("tooltip-flotante--visible");
-    abierto = null;
-  }
-
-  function abrir(disparador) {
-    if (abierto === disparador) return;
-    cerrar();
-    disparador.querySelector(".tooltip-flotante")?.classList.add("tooltip-flotante--visible");
-    abierto = disparador;
-  }
+  const disparadores = document.querySelectorAll(".tooltip-disparador:not([data-tooltip-activado])");
 
   disparadores.forEach((disparador) => {
-    disparador.addEventListener("mouseenter", () => abrir(disparador));
+    disparador.dataset.tooltipActivado = "true";
+    disparador.addEventListener("mouseenter", () => abrirTooltipInfo(disparador));
     disparador.addEventListener("mouseleave", () => {
-      if (abierto === disparador) cerrar();
+      if (tooltipAbierto === disparador) cerrarTooltipInfo();
     });
-    disparador.addEventListener("focus", () => abrir(disparador));
+    disparador.addEventListener("focus", () => abrirTooltipInfo(disparador));
     disparador.addEventListener("blur", () => {
-      if (abierto === disparador) cerrar();
+      if (tooltipAbierto === disparador) cerrarTooltipInfo();
     });
     // touchstart en vez de click: responde de inmediato al tap, sin
     // esperar el retraso de ~300ms que algunos navegadores móviles
@@ -7687,13 +7750,21 @@ function activarTooltipsInfo() {
     // mismo tap sí llega hasta el listener de document de abajo, pero
     // como el target cae dentro de este mismo disparador, .contains()
     // lo deja intacto — no se cierra solo al abrirlo.
-    disparador.addEventListener("touchstart", () => abrir(disparador), { passive: true });
+    disparador.addEventListener("touchstart", () => abrirTooltipInfo(disparador), { passive: true });
   });
 
+  // Un solo document.addEventListener("click") cierra al tocar/hacer
+  // clic afuera — mismo patrón que ya usa activarPanelesConDisparador()
+  // (arriba) para los flyouts del riel, con .contains() en vez de un
+  // listener por disparador. Un solo "abierto" a la vez, igual que esos
+  // paneles: no hace falta rastrear varios tooltips abiertos porque solo
+  // uno puede tener foco/hover/tap al mismo tiempo.
+  if (tooltipsDocumentListenerActivo) return;
+  tooltipsDocumentListenerActivo = true;
   document.addEventListener("click", (evento) => {
-    if (!abierto) return;
-    if (abierto.contains(evento.target)) return;
-    cerrar();
+    if (!tooltipAbierto) return;
+    if (tooltipAbierto.contains(evento.target)) return;
+    cerrarTooltipInfo();
   });
 }
 
@@ -8102,6 +8173,11 @@ async function alCambiarGrupo(evento) {
   sincronizarSelectorGrupo(grupoActual);
   mostrarToast("Mostrando contenido de " + textoGrupo(grupoActual));
   await renderizarTodo();
+  // Re-wirea los badges compactos de #proximas-fechas-trimestre, que se
+  // reconstruyen desde cero en cada renderizarTodo() — ver comentario en
+  // activarTooltipsInfo() (arriba). Los ⓘ estáticos ya wireados no se
+  // tocan de nuevo (dataset.tooltipActivado).
+  activarTooltipsInfo();
 }
 
 /* =========================================================
@@ -8709,6 +8785,10 @@ clienteSupabase.auth.onAuthStateChange(async (evento) => {
   await sincronizarPerfilActivo();
   await actualizarUISesion();
   await renderizarTodo();
+  // Mismo motivo que en alCambiarGrupo(): re-wirea los badges compactos
+  // dinámicos de #proximas-fechas-trimestre tras el re-render tras
+  // iniciar/cerrar sesión.
+  activarTooltipsInfo();
   actualizarVisibilidadBannerExamenDiagnostico();
   // Mismo caso que el comentario de arriba: "INITIAL_SESSION" puede
   // disparar este renderizarTodo() DESPUÉS del de DOMContentLoaded (por

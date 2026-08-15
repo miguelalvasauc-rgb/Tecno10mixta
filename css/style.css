@@ -3377,6 +3377,10 @@ summary {
 
 /* ---------- Próximas fechas del trimestre (#proximas-fechas-trimestre
    en trimestre-1/2/3.html) ---------- */
+/* max-height/overflow-y: con los 21 items reales de un trimestre completo
+   esta lista supera ~1300px de alto (medido en vivo con Commits 1+2 ya
+   aplicados) — el fade de los bordes vive en el contenedor de afuera, ver
+   #contenedor-proximas-fechas-trimestre más abajo. */
 .proximas-fechas-trimestre__lista {
   list-style: none;
   margin: 0;
@@ -3384,6 +3388,10 @@ summary {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  max-height: 24rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* flex-wrap + min-width en __info (en vez de min-width:0): a diferencia
@@ -3399,7 +3407,7 @@ summary {
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem 0.85rem;
-  padding: 0.75rem 0.9rem;
+  padding: 0.45rem 0.9rem;
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-md);
   background-color: var(--color-superficie);
@@ -3410,11 +3418,11 @@ summary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: 50%;
   background-color: color-mix(in srgb, var(--color-borde) 40%, transparent);
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .proximas-fechas-trimestre__info {
@@ -3425,26 +3433,58 @@ summary {
 .proximas-fechas-trimestre__titulo {
   margin: 0;
   font-weight: 600;
+  line-height: 1.25;
 }
 
 .proximas-fechas-trimestre__fecha {
-  margin: 0.15rem 0 0;
+  margin: 0.1rem 0 0;
   font-size: var(--tamano-fuente-secundario);
+  line-height: 1.25;
   color: var(--color-texto-suave);
 }
 
-/* crearChecklistProgreso() (js/main.js) ya trae su propio margin-top/
-   padding-top/border-top en .indicador-progreso (pensado como fila
-   inferior de una tarjeta vertical, ver esa regla arriba) — aquí vive
-   como un elemento más de esta fila horizontal, así que se apaga solo
-   por selector anidado, sin tocar la regla base (mismo criterio que ya
-   usa .bento-celda .tarjeta-presentacion en otra sección de este
-   archivo). */
-.proximas-fechas-trimestre__item .indicador-progreso {
+/* crearBadgeEstadoCompacto() (js/main.js) ya pone .badge-estado--compacto
+   a tamaño fijo (1.7rem); solo falta que no se aplaste en la fila
+   horizontal si el título es largo, mismo criterio que ya usa
+   .proximas-fechas-trimestre__icono arriba. */
+.proximas-fechas-trimestre__item .badge-estado--compacto {
   flex-shrink: 0;
-  margin-top: 0;
-  padding-top: 0;
-  border-top: none;
+}
+
+/* Fade en los bordes del scroll de arriba: vive en el contenedor
+   ESTÁTICO de afuera (#contenedor-proximas-fechas-trimestre, que no
+   scrollea él mismo — el scroll vive en la lista) para no depender de
+   position:sticky dentro de su propio scroll container. :has() ya es un
+   patrón establecido en este archivo (ver body:has(.riel) etc.) — sin
+   él, el fade también aparecería sobre el mensaje de "sin resultados"
+   cuando no hay fechas. El color real de fondo aquí es
+   --color-superficie-alterna (esta sección usa .seccion--alterna en las
+   3 páginas de trimestre), no --color-superficie: con el token
+   equivocado el fade se notaría como un rectángulo en vez de un
+   degradado invisible. */
+#contenedor-proximas-fechas-trimestre:has(.proximas-fechas-trimestre__lista) {
+  position: relative;
+}
+
+#contenedor-proximas-fechas-trimestre:has(.proximas-fechas-trimestre__lista)::before,
+#contenedor-proximas-fechas-trimestre:has(.proximas-fechas-trimestre__lista)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1.5rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+#contenedor-proximas-fechas-trimestre:has(.proximas-fechas-trimestre__lista)::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--color-superficie-alterna), transparent);
+}
+
+#contenedor-proximas-fechas-trimestre:has(.proximas-fechas-trimestre__lista)::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--color-superficie-alterna), transparent);
 }
 
 /* ---------- Rúbricas expandibles (acordeón con <details>/<summary>) ---------- */
