@@ -10,7 +10,7 @@
    100% autocontenido: no depende de que js/main.js se haya cargado
    antes, y no lo modifica ni le agrega variables.
 
-   Las 3 formas reales que replica son las de Supabase:
+   Las formas reales que replica son las de Supabase:
      - alumnos_registro: id, nombre, grupo, numero_lista,
        codigo_invitacion, activo, usado, auth_user_id
      - perfiles: id (= auth_user_id), nombre, grupo, tema_preferido, rol
@@ -19,11 +19,14 @@
        actualizado_en
      - avisos: id, titulo, descripcion, fecha, grupo, prioridad,
        fecha_expiracion
-   (columnas confirmadas leyendo los .from(...)/.insert(...)/.update(...)
-   reales en js/main.js — no son un esquema inventado).
+     - fechas_override: id, trimestre, tipo, item_id, grupo, fecha,
+       nota, creado_por (agregada en la Fase 6 de "Modo Demo", ver
+       DEMO_FECHAS_OVERRIDE más abajo)
+   (columnas confirmadas leyendo los .from(...)/.insert(...)/.update(...)/
+   .upsert(...) reales en js/main.js — no son un esquema inventado).
 
-   Todos los IDs de alumno/registro/progreso/aviso empiezan con "demo-"
-   a propósito: nunca deben poder confundirse con un id real de
+   Todos los IDs de alumno/registro/progreso/aviso/override empiezan con
+   "demo-" a propósito: nunca deben poder confundirse con un id real de
    Supabase (que son UUID/serial), y Fase 2 puede filtrar por ese
    prefijo si necesita distinguir origen en algún punto de depuración.
    ========================================================= */
@@ -341,5 +344,56 @@ const DEMO_AVISOS = [
     grupo: "todos",
     prioridad: "urgente",
     fecha_expiracion: "2026-09-22",
+  },
+];
+
+/* ---------------------------------------------------------
+   fechas_override (Fase 6 de "Modo Demo") — 3 overrides de ejemplo
+   sobre items reales de T1 (mismos ids que ya usa
+   DEMO_ITEMS_POR_TRIMESTRE/DEMO_FECHAS_ENTREGA_POR_TRIMESTRE más
+   arriba), para que la demo muestre la funcionalidad "🖊️ Override" en
+   acción y no solo un estado vacío. Cubre ambos casos de la jerarquía
+   que resuelve aplicarOverridesFechas() en js/main.js:
+     - t6 (grupo "3C"): override de grupo específico — mueve la fecha
+       base (2026-09-07) 3 días, "3E" conserva la fecha original.
+     - a7 (grupo "todos"): override que aplica a ambos grupos por
+       igual — mueve la fecha base (2026-09-28) 4 días.
+     - p3 (grupo "3E"): override de grupo específico sobre un
+       proyecto, cuyo campo de fecha es un objeto {3C,3E} en vez de un
+       string — ejercita esa otra rama de aplicarOverridesFechas() que
+       t6/a7 no cubren. Mueve la fecha base (2026-09-21) 4 días.
+   Ninguna fecha cae en el pasado ni se aleja de forma poco creíble de
+   su fecha base real. --------------------------------------------- */
+
+const DEMO_FECHAS_OVERRIDE = [
+  {
+    id: "demo-override-01",
+    trimestre: 1,
+    tipo: "tarea",
+    item_id: "t6",
+    grupo: "3C",
+    fecha: "2026-09-10",
+    nota: "Extensión por evento escolar",
+    creado_por: null,
+  },
+  {
+    id: "demo-override-02",
+    trimestre: 1,
+    tipo: "actividad",
+    item_id: "a7",
+    grupo: "todos",
+    fecha: "2026-10-02",
+    nota: "Recorrido general de fechas",
+    creado_por: null,
+  },
+  {
+    id: "demo-override-03",
+    trimestre: 1,
+    tipo: "proyecto",
+    item_id: "p3",
+    grupo: "3E",
+    fecha: "2026-09-25",
+    nota: "Ajuste puntual para 3°E",
+    creado_por: null,
   },
 ];
