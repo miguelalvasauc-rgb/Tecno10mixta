@@ -607,6 +607,31 @@
               </div>
             </div>
           </div>
+
+          <!-- "Modo Demo": 100% local a este navegador (localStorage, ver
+               demoModeActivo()/activarModoDemo()/desactivarModoDemo() en
+               js/main.js) — a diferencia de los 2 switches de arriba,
+               este NUNCA toca config_sitio, no se sincroniza entre
+               dispositivos, y no es visible para alumnos reales. Sin
+               span "Cargando…" (como sí tiene Patrones de fondo):
+               localStorage es síncrono, no hay estado intermedio que
+               mostrar. Fase 1: solo la bandera + este toggle — ningún
+               módulo lee demoModeActivo() todavía. -->
+          <div class="apariencia-seccion">
+            <h3>🧪 Modo Demo</h3>
+            <div class="apariencia-opcion">
+              <div class="apariencia-opcion__texto">
+                <span id="apariencia-demo-titulo" class="apariencia-opcion__titulo">Modo Demo (solo esta sesión)</span>
+                <p class="apariencia-opcion__descripcion">Solo afecta a tu navegador — nunca a los alumnos. Al activarlo o desactivarlo, la página se recarga.</p>
+              </div>
+              <div class="apariencia-opcion__control">
+                <label class="interruptor" aria-labelledby="apariencia-demo-titulo">
+                  <input type="checkbox" id="apariencia-demo-switch" class="interruptor__input" disabled>
+                  <span class="interruptor__riel" aria-hidden="true"></span>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </section>

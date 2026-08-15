@@ -11909,6 +11909,27 @@ function activarSwitchApariencia() {
   });
 }
 
+// A diferencia de activarSwitchApariencia() (Patrones de fondo), este
+// switch no pasa por Supabase: demoModeActivo() ya es síncrono, así que
+// el valor inicial se pinta de una vez, sin "Cargando…" ni revertir en
+// error — activarModoDemo()/desactivarModoDemo() (sección 2) recargan
+// la página solas, no hace falta actualizar el DOM desde acá después.
+function activarSwitchModoDemo() {
+  const switchDemo = document.getElementById("apariencia-demo-switch");
+  if (!switchDemo) return;
+
+  switchDemo.checked = demoModeActivo();
+  switchDemo.disabled = false;
+
+  switchDemo.addEventListener("change", (evento) => {
+    if (evento.target.checked) {
+      activarModoDemo();
+    } else {
+      desactivarModoDemo();
+    }
+  });
+}
+
 // Arma las <option> del selector desde EVENTOS_DISPONIBLES — un futuro
 // evento solo agrega una entrada a ese array (sección 7), esta función
 // no necesita cambiar.
@@ -11997,6 +12018,11 @@ async function inicializarModuloApariencia() {
   activarSwitchApariencia();
 
   await inicializarSelectorEventoAdmin();
+
+  // Modo Demo no depende de config_sitio ni del guard de arriba (es
+  // localStorage puro), pero se inicializa aquí mismo por ser del mismo
+  // módulo/tab — así solo hay un punto de entrada para "Apariencia".
+  activarSwitchModoDemo();
 }
 
 /* ---------------------------------------------------------
