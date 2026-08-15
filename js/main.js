@@ -9290,6 +9290,14 @@ async function obtenerMapaProgresoCalificacion(trimestre, tipos, alumnoIds) {
 // siempre, sin problema (ver pintarBadgeCalificacion, que solo pinta el
 // ícono ⏰ cuando a_tiempo === false).
 async function calcularYGuardarATiempo(mapaProgreso, trimestre) {
+  // Guard de modo demo (Fase 6): red de seguridad explícita — hoy ya
+  // está protegida "gratis" porque datos-demo.js siempre genera
+  // a_tiempo como booleano (nunca null, ver demoGenerarProgresoAlumno),
+  // así que el filtro de abajo nunca encuentra pendientes en modo demo.
+  // Sin modal: esta función corre sola en cada render, sin que el
+  // docente haya hecho clic en nada — el toast persistente ya avisa.
+  if (demoModeActivo()) return;
+
   const pendientes = [...mapaProgreso.values()].filter(
     (fila) => fila.completado === true && fila.a_tiempo === null && fila.origen !== "manual-docente"
   );
@@ -10201,6 +10209,14 @@ function activarFormularioEditarEntrega() {
 
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
+    if (demoModeActivo()) {
+      // Cierra este dialog antes de abrir modal-demo: sin esto, los dos
+      // <dialog> quedarían apilados uno encima del otro (ambos usan
+      // showModal(), que no cierra el anterior solo).
+      modal.close();
+      abrirModalDemo();
+      return;
+    }
     if (!contextoEdicionEntrega) return;
 
     const { alumno, item, trimestre, filaProgreso, alGuardar } = contextoEdicionEntrega;
@@ -10237,6 +10253,11 @@ function activarFormularioEditarEntrega() {
 
   document.getElementById("editar-entrega-deshacer").addEventListener("click", async () => {
     if (!contextoEdicionEntrega?.filaProgreso) return;
+    if (demoModeActivo()) {
+      modal.close();
+      abrirModalDemo();
+      return;
+    }
     if (!window.confirm("¿Seguro que quieres deshacer esta marca manual? Se eliminará el registro de progreso."))
       return;
 
@@ -11127,6 +11148,10 @@ async function actualizarActivoAlumno(alumno, activo) {
 }
 
 async function darDeBajaAlumno(alumno, fila) {
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
   if (!window.confirm("¿Seguro que quieres dar de baja a " + alumno.nombre + "?")) return;
 
   try {
@@ -11145,6 +11170,10 @@ async function darDeBajaAlumno(alumno, fila) {
 // baja o de "Deshacer marca manual" en Calificación, que sí eliminan/
 // desactivan algo de forma menos evidente a simple vista).
 async function reactivarAlumno(alumno, fila) {
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
   try {
     await actualizarActivoAlumno(alumno, true);
   } catch (error) {
@@ -11208,6 +11237,10 @@ function activarCopiarCodigoInvitacion() {
 // eso pide confirmación antes. Solo tiene sentido mientras usado===false
 // (ver el botón condicional en crearFilaAlumno).
 async function regenerarCodigoAlumno(alumno, fila) {
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
   if (
     !window.confirm(
       "¿Seguro que quieres regenerar el código de invitación de " +
@@ -11425,6 +11458,11 @@ function activarFormularioNuevoAlumno() {
 
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
+    if (demoModeActivo()) {
+      modal.close();
+      abrirModalDemo();
+      return;
+    }
 
     const nombre = document.getElementById("nuevo-alumno-nombre").value.trim();
     const grupo = document.getElementById("nuevo-alumno-grupo").value;
@@ -11694,6 +11732,11 @@ function activarFormularioAviso() {
 
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
+    if (demoModeActivo()) {
+      modal.close();
+      abrirModalDemo();
+      return;
+    }
 
     const titulo = document.getElementById("aviso-titulo").value.trim();
     const descripcion = document.getElementById("aviso-descripcion").value.trim();
@@ -11779,6 +11822,10 @@ function activarFormularioAviso() {
 // aquí no hay soft-delete: la expiración ya cubre el caso de "ocultar
 // sin perder", esto es intencional y definitivo).
 async function eliminarAviso(aviso, fila) {
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
   if (!window.confirm('¿Seguro que quieres eliminar el aviso "' + aviso.titulo + '"? Esta acción no se puede deshacer.')) return;
 
   try {
@@ -12095,6 +12142,16 @@ function actualizarUISwitchApariencia(activo) {
 }
 
 async function ejecutarCambioPatronesFondo(activo) {
+  // El checkbox nativo ya cambió visualmente (evento "change" dispara
+  // después de que el navegador actualiza .checked) — hay que revertirlo
+  // explícitamente antes de mostrar modal-demo, igual que ya hace el
+  // catch de abajo cuando el guardado real falla.
+  if (demoModeActivo()) {
+    actualizarUISwitchApariencia(!activo);
+    abrirModalDemo();
+    return;
+  }
+
   const switchPatrones = document.getElementById("apariencia-patrones-switch");
   if (switchPatrones) switchPatrones.disabled = true;
 
@@ -12174,6 +12231,16 @@ function poblarSelectEventoAdmin(select) {
 // visible — mismo criterio que actualizarUISwitchApariencia(!activo) ya
 // usa para el switch de Patrones de fondo.
 async function ejecutarCambioEvento(nuevoSlug, valorAnterior) {
+  // El <select> nativo ya cambió de valor visualmente (evento "change"
+  // dispara después) — hay que revertirlo antes de mostrar modal-demo,
+  // igual que ya hace el catch de abajo cuando el guardado real falla.
+  if (demoModeActivo()) {
+    const select = document.getElementById("apariencia-evento-select");
+    if (select) select.value = valorAnterior;
+    abrirModalDemo();
+    return;
+  }
+
   const select = document.getElementById("apariencia-evento-select");
   if (select) select.disabled = true;
 
@@ -12575,6 +12642,11 @@ function activarFormularioEditarFecha() {
 
   formulario.addEventListener("submit", (evento) => {
     evento.preventDefault();
+    if (demoModeActivo()) {
+      modal.close();
+      abrirModalDemo();
+      return;
+    }
     if (!fechaEditando) return;
 
     const cambios = [];
@@ -12697,6 +12769,10 @@ function activarConfirmarFecha() {
 // es una reversión completa al dato original de main.js, no una
 // reversión parcial.
 async function quitarOverrideFecha(item, campoFecha, fila) {
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
   if (!window.confirm('Esto regresará la fecha de "' + item.titulo + '" a su valor original. ¿Confirmas?')) return;
 
   try {
@@ -12801,6 +12877,10 @@ function activarRecorridoFechas() {
   input.addEventListener("input", actualizarEstadoBotonVistaPreviaRecorrido);
 
   botonVistaPrevia.addEventListener("click", () => {
+    if (demoModeActivo()) {
+      abrirModalDemo();
+      return;
+    }
     const dias = Number(input.value);
     if (!dias) return;
 
@@ -13363,6 +13443,11 @@ function activarFormularioCalificar() {
 
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
+    if (demoModeActivo()) {
+      modal.close();
+      abrirModalDemo();
+      return;
+    }
     if (!contextoCalificar) return;
 
     const { filaProgreso, alGuardar } = contextoCalificar;
