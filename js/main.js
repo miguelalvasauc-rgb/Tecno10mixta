@@ -3391,6 +3391,94 @@ function desactivarModoDemo() {
   window.location.reload();
 }
 
+// Capa de mock para "Modo Demo" (Fase 2). Único punto de entrada que las
+// funciones de lectura de alumnos_registro/progreso/avisos usan en vez
+// de clienteSupabase.from(tabla)... directo. Con demoModeActivo()=false
+// arma la MISMA cadena de Supabase que ya existía antes de esta fase
+// (mismo resultado, mismo shape {data,error}/{count,error}); con
+// demoModeActivo()=true, filtra/ordena las tablas ficticias de
+// datos-demo.js con la misma lógica de opciones, sin tocar Supabase.
+// Los INSERT/UPDATE/DELETE no pasan por aquí — siguen yendo directo a
+// clienteSupabase, sin cambios (Fase 3/4 deciden qué hacer con los
+// botones de entrega y la calificación dual en modo demo).
+//
+// opciones no es un mini-ORM genérico: cubre exactamente los filtros
+// que las funciones de lectura ya usaban hoy, ni uno más.
+//   select: string ("*" por default)
+//   eq: { columna: valor, ... }         -- AND de igualdades
+//   in: { columna: [valores], ... }     -- AND de "IN"
+//   noNulo: ["columna", ...]            -- AND de "IS NOT NULL"
+//   esNulo: { columna: true, ... }      -- AND de "IS NULL"
+//   order: { columna, ascending }
+//   limit: number
+//   count: "exact", head: true          -- devuelve {count,error} en vez de {data,error}
+async function obtenerDatos(tabla, opciones = {}) {
+  if (demoModeActivo()) return obtenerDatosDemo(tabla, opciones);
+
+  let consulta = clienteSupabase
+    .from(tabla)
+    .select(opciones.select || "*", opciones.count ? { count: opciones.count, head: !!opciones.head } : undefined);
+
+  if (opciones.eq) for (const [columna, valor] of Object.entries(opciones.eq)) consulta = consulta.eq(columna, valor);
+  if (opciones.in) for (const [columna, valores] of Object.entries(opciones.in)) consulta = consulta.in(columna, valores);
+  if (opciones.noNulo) for (const columna of opciones.noNulo) consulta = consulta.not(columna, "is", null);
+  if (opciones.esNulo) for (const columna of Object.keys(opciones.esNulo)) consulta = consulta.is(columna, null);
+  if (opciones.order) consulta = consulta.order(opciones.order.columna, { ascending: opciones.order.ascending });
+  if (typeof opciones.limit === "number") consulta = consulta.limit(opciones.limit);
+
+  return await consulta;
+}
+
+// DEMO_ALUMNOS/DEMO_PERFILES/DEMO_PROGRESO/DEMO_AVISOS vienen de
+// datos-demo.js (cargado antes que este archivo solo en admin.html, ver
+// esa etiqueta <script>) — si ese archivo no está cargado (demo
+// desactivado en el resto del sitio) estas funciones nunca se llaman,
+// así que no hace falta un guard de "variable no definida" aquí.
+const DEMO_TABLAS = {
+  alumnos_registro: () => DEMO_ALUMNOS,
+  perfiles: () => DEMO_PERFILES,
+  progreso: () => DEMO_PROGRESO,
+  avisos: () => DEMO_AVISOS,
+};
+
+function obtenerDatosDemo(tabla, opciones) {
+  let filas = (DEMO_TABLAS[tabla]?.() || []).slice();
+
+  if (opciones.eq) {
+    for (const [columna, valor] of Object.entries(opciones.eq)) filas = filas.filter((fila) => fila[columna] === valor);
+  }
+  if (opciones.in) {
+    for (const [columna, valores] of Object.entries(opciones.in)) {
+      const conjunto = new Set(valores);
+      filas = filas.filter((fila) => conjunto.has(fila[columna]));
+    }
+  }
+  if (opciones.noNulo) {
+    for (const columna of opciones.noNulo) filas = filas.filter((fila) => fila[columna] != null);
+  }
+  if (opciones.esNulo) {
+    for (const columna of Object.keys(opciones.esNulo)) filas = filas.filter((fila) => fila[columna] == null);
+  }
+  if (opciones.order) {
+    const { columna, ascending } = opciones.order;
+    filas = filas.slice().sort((a, b) => (a[columna] < b[columna] ? -1 : a[columna] > b[columna] ? 1 : 0) * (ascending ? 1 : -1));
+  }
+  if (typeof opciones.limit === "number") filas = filas.slice(0, opciones.limit);
+
+  // Proyección de columnas: replica el recorte real de Supabase cuando
+  // select pide menos que "*" (ver obtenerTendenciasSemanalesDashboard/
+  // obtenerActividadRecienteDashboard) — sin esto, código que dependiera
+  // de que una columna NO seleccionada venga undefined se comportaría
+  // distinto en demo que en real.
+  if (opciones.select && opciones.select !== "*") {
+    const columnas = opciones.select.split(",").map((c) => c.trim());
+    filas = filas.map((fila) => Object.fromEntries(columnas.map((columna) => [columna, fila[columna]])));
+  }
+
+  if (opciones.count === "exact" && opciones.head) return { count: filas.length, error: null };
+  return { data: filas, error: null };
+}
+
 // Trimestre de la página actual ('1', '2' o '3'), tomado de
 // <body data-trimestre="…">. En la portada (index.html) no existe
 // ese atributo, por lo que queda en null.
