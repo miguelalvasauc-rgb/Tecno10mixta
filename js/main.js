@@ -9794,24 +9794,39 @@ function actualizarNotaHistorial(li, filaProgreso) {
 }
 
 // Promedio del trimestre para el modal de historial (30% tareas, 30%
-// actividades, 40% proyectos). itemsPorTipo = { tarea, actividad,
-// proyecto }, cada array con los items del trimestre tal cual los
-// devuelve obtenerEntregablesPorTipo (con su "secuencia" ya incluida).
+// actividades, 40% proyectos, renormalizado entre los tipos con dato —
+// ver más abajo). itemsPorTipo = { tarea, actividad, proyecto }, cada
+// array con los items del trimestre tal cual los devuelve
+// obtenerEntregablesPorTipo (con su "secuencia" y fechaEntrega/fecha ya
+// con overrides de grupo aplicados, vía aplicarOverridesFechas()).
 // mapaProgreso ya viene scoped a un solo alumno (misma clave
 // "tipo-item_id-trimestre" que usa crearSeccionTrimestreHistorial), así
 // que alumnoId no participa en ningún lookup — se recibe solo para que
-// la firma documente de quién es el mapaProgreso que se le pasa.
+// la firma documente de quién es el mapaProgreso que se le pasa. "grupo"
+// (alumno.grupo, "3C"/"3E") es del alumno dueño de mapaProgreso, no del
+// filtro de la página — lo necesita itemEstaVencido() para resolver la
+// fecha límite real de cada item.
 //
 // Fórmula, por tipo: se agrupan los items por "secuencia" (string
-// exacto); cada secuencia promedia sus calificaciones (null o sin fila
-// en progreso cuenta como 0, no se excluye del promedio); el
-// promedio_tipo es el promedio de esos promedios de secuencia. Un tipo
-// sin ningún item en el trimestre cuenta como 0 (no se excluye la
-// ponderación 30/30/40).
-function calcularPromedioTrimestre(alumnoId, trimestre, itemsPorTipo, mapaProgreso) {
+// exacto); SOLO entran al promedio del tipo las secuencias donde TODOS
+// sus items ya vencieron (itemEstaVencido() true para cada uno) — una
+// secuencia con algún item todavía no vencido queda fuera completa (no
+// cuenta como 0, no participa; calificar un item antes de que venza no
+// lo mete al cálculo). Dentro de una secuencia YA vencida, cada
+// calificación (null o sin fila en progreso) sigue contando como 0, sin
+// excluirse del promedio — ese sub-cálculo no cambia. Un tipo sin
+// ninguna secuencia vencida queda SIN dato (null, no 0): "no aplica
+// todavía", no "reprobado".
+//
+// promedioFinal = suma ponderada (0.3/0.3/0.4) SOLO de los tipos con
+// dato, renormalizando esos pesos entre sí (ej. solo tarea+actividad →
+// 0.5/0.5 en vez de 0.3/0.3 sobre un total de 0.6). Sin ningún tipo con
+// dato, promedioFinal es null — mismo "—" que ya existe hoy cuando no
+// hay ninguna calificación capturada (tieneAlgunaCalificacionCapturada,
+// guard EXTERNO e independiente de este: un trimestre puede quedar en
+// "—" por cualquiera de los dos motivos).
+function calcularPromedioTrimestre(alumnoId, trimestre, itemsPorTipo, mapaProgreso, grupo) {
   function promedioDeTipo(items, tipo) {
-    if (items.length === 0) return 0;
-
     const itemsPorSecuencia = new Map();
     items.forEach((item) => {
       const clave = claveSecuenciaDeEntregable(item);
@@ -9819,23 +9834,41 @@ function calcularPromedioTrimestre(alumnoId, trimestre, itemsPorTipo, mapaProgre
       itemsPorSecuencia.get(clave).push(item);
     });
 
-    const promediosPorSecuencia = Array.from(itemsPorSecuencia.values()).map((itemsSecuencia) => {
-      const suma = itemsSecuencia.reduce((acumulado, item) => {
-        const calificacion = mapaProgreso.get(tipo + "-" + item.id + "-" + trimestre)?.calificacion;
-        return acumulado + (calificacion == null ? 0 : Number(calificacion));
-      }, 0);
-      return suma / itemsSecuencia.length;
-    });
+    const promediosPorSecuenciaVencida = Array.from(itemsPorSecuencia.values())
+      .filter((itemsSecuencia) => itemsSecuencia.every((item) => itemEstaVencido(tipo, item, grupo)))
+      .map((itemsSecuencia) => {
+        const suma = itemsSecuencia.reduce((acumulado, item) => {
+          const calificacion = mapaProgreso.get(tipo + "-" + item.id + "-" + trimestre)?.calificacion;
+          return acumulado + (calificacion == null ? 0 : Number(calificacion));
+        }, 0);
+        return suma / itemsSecuencia.length;
+      });
 
-    return promediosPorSecuencia.reduce((acumulado, valor) => acumulado + valor, 0) / promediosPorSecuencia.length;
+    if (promediosPorSecuenciaVencida.length === 0) return null;
+    return (
+      promediosPorSecuenciaVencida.reduce((acumulado, valor) => acumulado + valor, 0) /
+      promediosPorSecuenciaVencida.length
+    );
   }
 
-  const redondear1Decimal = (valor) => Math.round(valor * 10) / 10;
+  const redondear1Decimal = (valor) => (valor == null ? null : Math.round(valor * 10) / 10);
 
   const promedioTarea = promedioDeTipo(itemsPorTipo.tarea || [], "tarea");
   const promedioActividad = promedioDeTipo(itemsPorTipo.actividad || [], "actividad");
   const promedioProyecto = promedioDeTipo(itemsPorTipo.proyecto || [], "proyecto");
-  const promedioFinal = 0.3 * promedioTarea + 0.3 * promedioActividad + 0.4 * promedioProyecto;
+
+  const PESO_BASE_POR_TIPO = { tarea: 0.3, actividad: 0.3, proyecto: 0.4 };
+  const tiposConDato = [
+    { tipo: "tarea", valor: promedioTarea },
+    { tipo: "actividad", valor: promedioActividad },
+    { tipo: "proyecto", valor: promedioProyecto },
+  ].filter((t) => t.valor != null);
+
+  let promedioFinal = null;
+  if (tiposConDato.length > 0) {
+    const sumaPesos = tiposConDato.reduce((s, t) => s + PESO_BASE_POR_TIPO[t.tipo], 0);
+    promedioFinal = tiposConDato.reduce((s, t) => s + (PESO_BASE_POR_TIPO[t.tipo] / sumaPesos) * t.valor, 0);
+  }
 
   return {
     promedioFinal: redondear1Decimal(promedioFinal),
@@ -9937,7 +9970,7 @@ function crearSeccionTrimestreHistorial(trimestre, entregables, mapaProgreso, al
     textoPromedioFinal.textContent = "Promedio del trimestre: —";
     textoDesglose.textContent = "Tareas: — · Actividades: — · Proyectos: —";
   } else {
-    const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgreso);
+    const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgreso, alumno.grupo);
     textoPromedioFinal.textContent = "Promedio del trimestre: " + formatearCalificacion(promedio.promedioFinal, formatoCalificacionActivo);
     textoDesglose.textContent =
       "Tareas: " +
@@ -13691,9 +13724,10 @@ function construirSparklinePromedios(valores) {
 }
 
 // "—" en vez de un path roto/vacío si algún valor no es un número finito
-// (no debería pasar — calcularPromedioTrimestre ya devuelve 0, nunca
-// NaN, para un tipo sin ítems — pero esta celda no debe depender
-// silenciosamente de ese invariante ajeno).
+// — ahora un caso real, no solo defensivo: calcularPromedioTrimestre()
+// devuelve null (Number.isFinite(null) === false) para un tipo sin
+// ninguna secuencia ya vencida, o para el trimestre completo si ningún
+// tipo tiene dato todavía.
 function construirCeldaTendenciaPromedios(promedio) {
   const celda = document.createElement("td");
   celda.className = "tabla-promedios__celda-tendencia";
@@ -13755,9 +13789,10 @@ function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, t
   // "Sin nada que promediar" cubre dos casos con el mismo "—": sin cuenta
   // activa, o con cuenta pero SIN NINGUNA calificación capturada en todo
   // el trimestre (sin importar tipo/secuencia) — para no confundir un
-  // trimestre vacío con un 0.0 real. calcularPromedioTrimestre() no
-  // cambia: sigue tratando cada item sin calificar como 0 dentro de su
-  // propio cálculo, esto solo decide si se llega a llamarla.
+  // trimestre vacío con un 0.0 real. Guard INDEPENDIENTE del que ahora
+  // vive dentro de calcularPromedioTrimestre() (secuencias/tipos aún sin
+  // vencer): un trimestre puede quedar en "—" por cualquiera de los dos
+  // motivos, este solo decide si se llega a llamarla.
   const tieneAlgunaCalificacion = tieneAlgunaCalificacionCapturada(mapaProgresoAlumno);
 
   if (sinCuenta || !tieneAlgunaCalificacion) {
@@ -13769,7 +13804,7 @@ function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, t
     return fila;
   }
 
-  const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAlumno);
+  const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAlumno, alumno.grupo);
 
   fila.appendChild(construirCeldaPromedioTipo(promedio.promedioTarea));
   fila.appendChild(construirCeldaPromedioTipo(promedio.promedioActividad));
@@ -14009,7 +14044,7 @@ function calcularPromediosPorTrimestreDeAlumno(alumno, datosPorTrimestre) {
     const mapaProgresoAlumno = sinCuenta ? new Map() : mapaProgresoPorAlumno.get(alumno.auth_user_id) || new Map();
     if (sinCuenta || !tieneAlgunaCalificacionCapturada(mapaProgresoAlumno)) return;
 
-    const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAlumno);
+    const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAlumno, alumno.grupo);
     promediosPorTrimestre[trimestre] = promedio.promedioFinal;
   });
 
@@ -14582,7 +14617,7 @@ async function construirResumenAlumnosDashboard(trimestre, grupoFiltro) {
     // chequeo, y ese null/0 podía contagiar de NaN el promedio del grupo
     // completo en renderizarKPIsDashboard/metricasGrupoDashboard.
     const promedio = tieneAlgunaCalificacionCapturadaEnItems(itemsPorTipo, trimestre, mapaProgresoAdaptado)
-      ? calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAdaptado)
+      ? calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAdaptado, alumno.grupo)
       : null;
 
     const detalleAvance = await calcularAvanceGeneralAlumnoDetallado(
