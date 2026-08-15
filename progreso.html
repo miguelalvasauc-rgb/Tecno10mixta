@@ -441,6 +441,18 @@
 
   <div id="contenedor-toast" class="contenedor-toast" aria-live="polite" aria-atomic="false"></div>
 
+  <!-- Datos ficticios de "Modo Demo" (Fase 6: el cálculo de avance/
+       atraso de esta página pasa por aplicarOverridesFechas(), que
+       ahora usa obtenerDatos() y en modo demo lee
+       DEMO_FECHAS_OVERRIDE de este archivo — ver js/main.js) — se
+       carga siempre, pero solo se lee cuando demoModeActivo(); con el
+       modo apagado este archivo no tiene ningún efecto. Antes de
+       main.js porque este último ya referencia esos globales al
+       cargar. Mismo criterio que ya usan admin.html/index.html. Esta
+       página no tiene el toast persistente de Fase 5 (nunca se
+       extendió aquí), así que el efecto solo es interno a los
+       cálculos, no visual. -->
+  <script src="datos-demo.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
