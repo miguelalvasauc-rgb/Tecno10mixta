@@ -3444,13 +3444,22 @@ const DEMO_TABLAS = {
 function obtenerDatosDemo(tabla, opciones) {
   let filas = (DEMO_TABLAS[tabla]?.() || []).slice();
 
+  // String(...) en vez de === / Set nativo: PostgREST coerciona el tipo
+  // del lado del servidor (una columna entera como "trimestre" acepta
+  // .eq("trimestre","1") desde un <select>, cuyo .value siempre es
+  // string, contra datos-demo.js que guarda trimestre:1 como número) —
+  // sin esto, cualquier filtro numérico-contra-string se queda en 0
+  // filas de forma silenciosa (bug real encontrado al verificar en
+  // navegador: Calificación mostraba 0% de avance para todos).
   if (opciones.eq) {
-    for (const [columna, valor] of Object.entries(opciones.eq)) filas = filas.filter((fila) => fila[columna] === valor);
+    for (const [columna, valor] of Object.entries(opciones.eq)) {
+      filas = filas.filter((fila) => String(fila[columna]) === String(valor));
+    }
   }
   if (opciones.in) {
     for (const [columna, valores] of Object.entries(opciones.in)) {
-      const conjunto = new Set(valores);
-      filas = filas.filter((fila) => conjunto.has(fila[columna]));
+      const conjunto = new Set(valores.map(String));
+      filas = filas.filter((fila) => conjunto.has(String(fila[columna])));
     }
   }
   if (opciones.noNulo) {

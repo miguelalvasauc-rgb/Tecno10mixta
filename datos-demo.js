@@ -169,7 +169,14 @@ function demoGenerarProgresoAlumno({ authUserId, porcentajeAvance, calificacionM
       completado: true,
       calificacion,
       a_tiempo: !tardia,
-      origen: "alumno",
+      // "formulario", no "alumno": es el valor real que usa el resto del
+      // código para distinguir una entrega normal de una marcada a mano
+      // por el docente (ver "origen === 'formulario'" en
+      // renderizarFeedActividadDashboard/pintarBadgeCalificacion,
+      // js/main.js) — encontrado al verificar en vivo que el feed de
+      // Actividad reciente del Dashboard etiquetaba las 25 entregas
+      // ficticias como "🧑‍🏫 Registro manual" en vez de "📝 Formulario".
+      origen: "formulario",
       fecha_entrega_manual: null,
       nota: null,
       actualizado_en: fechaEntregaReal + "T18:00:00.000Z",
