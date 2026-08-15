@@ -9132,10 +9132,10 @@ async function obtenerEntregablesPorTipo(tipo, trimestre) {
 // solo los que ya reclamaron su cuenta — eso se distingue por celda, no
 // excluyendo filas.
 async function obtenerAlumnosParaCalificacion(grupo) {
-  let consulta = clienteSupabase.from("alumnos_registro").select("*").order("numero_lista", { ascending: true });
-  if (grupo !== "todos") consulta = consulta.eq("grupo", grupo);
+  const opciones = { order: { columna: "numero_lista", ascending: true } };
+  if (grupo !== "todos") opciones.eq = { grupo };
 
-  const { data, error } = await consulta;
+  const { data, error } = await obtenerDatos("alumnos_registro", opciones);
   if (error) return [];
   return data;
 }
@@ -9148,12 +9148,10 @@ async function obtenerMapaProgresoCalificacion(trimestre, tipos, alumnoIds) {
   const mapa = new Map();
   if (alumnoIds.length === 0) return mapa;
 
-  const { data, error } = await clienteSupabase
-    .from("progreso")
-    .select("*")
-    .eq("trimestre", trimestre)
-    .in("tipo", tipos)
-    .in("alumno_id", alumnoIds);
+  const { data, error } = await obtenerDatos("progreso", {
+    eq: { trimestre },
+    in: { tipo: tipos, alumno_id: alumnoIds },
+  });
 
   if (error) return mapa;
 
@@ -9902,7 +9900,7 @@ async function abrirModalHistorialAlumno(alumno) {
   const trimestres = ["1", "2", "3"];
   const [entregablesPorTrimestre, resultadoProgreso] = await Promise.all([
     Promise.all(trimestres.map((trimestre) => obtenerEntregablesPorTipo("todos", trimestre))),
-    clienteSupabase.from("progreso").select("*").eq("alumno_id", alumno.auth_user_id),
+    obtenerDatos("progreso", { eq: { alumno_id: alumno.auth_user_id } }),
   ]);
 
   // El docente pudo cerrar este modal y abrir el de otro alumno mientras
