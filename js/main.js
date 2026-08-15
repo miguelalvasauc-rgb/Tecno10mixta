@@ -14511,6 +14511,28 @@ function calcularPctTardeOFaltantePorTipo(entregablesDelAlumno, mapaProgresoTrim
   return resultado;
 }
 
+// KPI 🚩 "Riesgo de extraordinario" del Dashboard — concepto DISTINTO de
+// "Alumnos en riesgo" (🚨, calcularRiesgoAlumno: avance/puntualidad de UN
+// trimestre): este cuenta alumnos con 2 trimestres reprobados del ciclo,
+// vía la MISMA calcularEstadoFinalAlumno() que ya usa la vista
+// "Calificación Final" de Evaluación. Ignora a propósito el filtro de
+// Trimestre del Dashboard (estadoDashboard.trimestre): siempre mira los
+// 3 trimestres completos, sea cual sea el trimestre elegido ahí.
+// "alumnos" ya viene filtrado por grupo y con auth_user_id (mismo filtro
+// que construirResumenAlumnosDashboard), así que no vuelve a consultar
+// alumnos_registro.
+async function contarAlumnosRiesgoExtraordinario(grupo, alumnos) {
+  if (alumnos.length === 0) return 0;
+
+  const idsAlumnos = alumnos.map((alumno) => alumno.auth_user_id);
+  const datosPorTrimestre = await obtenerDatosPorTrimestreParaFinal(grupo, idsAlumnos);
+
+  return alumnos.filter((alumno) => {
+    const promediosPorTrimestre = calcularPromediosPorTrimestreDeAlumno(alumno, datosPorTrimestre);
+    return ESTADOS_RIESGO_EXTRAORDINARIO.includes(calcularEstadoFinalAlumno(promediosPorTrimestre).estado);
+  }).length;
+}
+
 // Núcleo del módulo: UNA sola consulta de alumnos + progreso (3
 // trimestres en paralelo) para derivar todo lo que necesitan los KPIs,
 // el semáforo, la tasa de entrega y el Top 5 — evita repetir esas
@@ -14860,7 +14882,7 @@ function construirTarjetaAvanceCiclo(avancePromedio, porTipoPromedio, tendencia)
   return tarjeta;
 }
 
-function renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias) {
+function renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias, riesgoExtraordinario) {
   const contenedor = document.getElementById("dashboard-kpis");
   if (!contenedor) return;
   contenedor.innerHTML = "";
@@ -14912,6 +14934,19 @@ function renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias) {
       // tendenciaDisponible:false le pone a la tarjeta el mensaje
       // correcto ("no disponible todavía") en vez de "necesitas más
       // semanas", que prometería algo que más historial no va a resolver.
+      tendenciaDisponible: false,
+    }),
+    construirTarjetaKPISimple({
+      icono: "🚩",
+      titulo: "Riesgo de extraordinario",
+      valor: String(riesgoExtraordinario),
+      tendencia: null,
+      unidad: null,
+      // Mismo motivo que "Alumnos en riesgo": calcularEstadoFinalAlumno
+      // es por alumno y mira los 3 trimestres completos, reconstruirlo
+      // semana a semana no aplica aquí (no hay un "avance parcial del
+      // ciclo" que trackear por semana, a diferencia del avance/promedio
+      // de un solo trimestre).
       tendenciaDisponible: false,
     })
   );
@@ -15614,8 +15649,12 @@ async function renderizarDashboard() {
   const idsAlumnos = resumenAlumnos.map((r) => r.alumno.auth_user_id);
   const pendientes = await contarPendientesPorCalificar(trimestre, idsAlumnos);
   const tendencias = await obtenerTendenciasSemanalesDashboard(trimestre, grupo, idsAlumnos);
+  const riesgoExtraordinario = await contarAlumnosRiesgoExtraordinario(
+    grupo,
+    resumenAlumnos.map((r) => r.alumno)
+  );
 
-  renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias);
+  renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias, riesgoExtraordinario);
   renderizarSemaforoDashboard(resumenAlumnos);
   renderizarTasaEntregaDashboard(resumenAlumnos);
   renderizarTop5RiesgoDashboard(resumenAlumnos);
