@@ -9879,18 +9879,18 @@ function crearSeccionTrimestreHistorial(trimestre, entregables, mapaProgreso, al
 
   const textoPromedioFinal = document.createElement("p");
   textoPromedioFinal.className = "calificacion-historial__promedio-final";
-  textoPromedioFinal.textContent = "Promedio del trimestre: " + promedio.promedioFinal.toFixed(1);
+  textoPromedioFinal.textContent = "Promedio del trimestre: " + formatearCalificacion(promedio.promedioFinal, formatoCalificacionActivo);
   bloquePromedio.appendChild(textoPromedioFinal);
 
   const textoDesglose = document.createElement("p");
   textoDesglose.className = "calificacion-historial__promedio-desglose";
   textoDesglose.textContent =
     "Tareas: " +
-    promedio.promedioTarea.toFixed(1) +
+    formatearCalificacion(promedio.promedioTarea, formatoCalificacionActivo) +
     " · Actividades: " +
-    promedio.promedioActividad.toFixed(1) +
+    formatearCalificacion(promedio.promedioActividad, formatoCalificacionActivo) +
     " · Proyectos: " +
-    promedio.promedioProyecto.toFixed(1);
+    formatearCalificacion(promedio.promedioProyecto, formatoCalificacionActivo);
   bloquePromedio.appendChild(textoDesglose);
 
   seccion.appendChild(bloquePromedio);
@@ -13022,7 +13022,7 @@ function pintarCeldaEvaluacion(contenedor, contexto) {
   boton.type = "button";
   boton.className = "badge-calificacion";
   boton.dataset.estado = estado;
-  boton.textContent = "🟢 " + (estado === "calificada" ? formatearCalificacion(filaProgreso.calificacion) : "Sin calificar");
+  boton.textContent = "🟢 " + (estado === "calificada" ? formatearCalificacion(filaProgreso.calificacion, formatoCalificacionActivo) : "Sin calificar");
   boton.addEventListener("click", () => {
     abrirModalCalificar({
       alumno,
@@ -13553,17 +13553,17 @@ function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, t
   // fuente numérica limpia para el ordenamiento por columna (Commit C),
   // sin depender de parsear el texto de la celda.
   const celdaTarea = document.createElement("td");
-  celdaTarea.textContent = promedio.promedioTarea.toFixed(1);
+  celdaTarea.textContent = formatearCalificacion(promedio.promedioTarea, formatoCalificacionActivo);
   celdaTarea.dataset.valor = String(promedio.promedioTarea);
   fila.appendChild(celdaTarea);
 
   const celdaActividad = document.createElement("td");
-  celdaActividad.textContent = promedio.promedioActividad.toFixed(1);
+  celdaActividad.textContent = formatearCalificacion(promedio.promedioActividad, formatoCalificacionActivo);
   celdaActividad.dataset.valor = String(promedio.promedioActividad);
   fila.appendChild(celdaActividad);
 
   const celdaProyecto = document.createElement("td");
-  celdaProyecto.textContent = promedio.promedioProyecto.toFixed(1);
+  celdaProyecto.textContent = formatearCalificacion(promedio.promedioProyecto, formatoCalificacionActivo);
   celdaProyecto.dataset.valor = String(promedio.promedioProyecto);
   fila.appendChild(celdaProyecto);
 
@@ -13572,11 +13572,13 @@ function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, t
   // dataset.valor: fuente numérica limpia para exportarCSVPromedios() y
   // el ordenamiento por columna — el chip de abajo agrega texto visible
   // (ícono + palabra) dentro de la misma celda, así que .textContent ya
-  // no alcanza para leer el número solo.
+  // no alcanza para leer el número solo. El chip queda igual en ambos
+  // formatos (no forma parte de "el número que alterna", ya existía
+  // antes de esta fase) — solo el número de al lado cambia.
   celdaFinal.dataset.valor = String(promedio.promedioFinal);
   const numeroFinal = document.createElement("span");
   numeroFinal.className = "tabla-promedios__promedio-final-numero";
-  numeroFinal.textContent = promedio.promedioFinal.toFixed(1);
+  numeroFinal.textContent = formatearCalificacion(promedio.promedioFinal, formatoCalificacionActivo);
   celdaFinal.append(numeroFinal, crearChipRangoPromedio(promedio.promedioFinal));
   fila.appendChild(celdaFinal);
 
