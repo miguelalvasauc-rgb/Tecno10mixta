@@ -886,10 +886,14 @@ a {
 
 /* Skip link: oculto fuera de pantalla por defecto, visible al recibir foco
    por teclado (Tab). Debe ser el primer elemento enfocable de cada página.
-   z-index 1100: siempre por encima de TODO lo demás en el sitio, incluido
-   el riel lateral (1000, ver .riel) — si empataran o el riel quedara más
-   alto, el riel (con fondo sólido) taparía el skip link enfocado, que cae
-   dentro de su misma franja horizontal (left:1rem, ancho del riel 60px). */
+   z-index 1100: por encima de todas las franjas/navegación fijas del
+   sitio, incluido el riel lateral (1000, ver .riel) — si empataran o el
+   riel quedara más alto, el riel (con fondo sólido) taparía el skip link
+   enfocado, que cae dentro de su misma franja horizontal (left:1rem,
+   ancho del riel 60px). Única excepción real: .overlay-carga-trimestre
+   (9999), que bloquea toda la página mientras resuelve el guard de
+   trimestre — no hay nada enfocable detrás de él en ese momento, así
+   que no compite por este mismo motivo de accesibilidad. */
 .enlace-saltar {
   position: fixed;
   top: -60px;
