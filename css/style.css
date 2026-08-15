@@ -6680,6 +6680,15 @@ body.modo-demo-toast-visible .contenedor-toast {
   top: calc(1.25rem + var(--alto-toast-modo-demo));
 }
 
+/* .barra-progreso-lectura (index.html/trimestre-1/2/3.html, ampliación a
+   páginas públicas) comparte top:0 con el toast — mismo criterio que ya
+   usa la franja tricolor de Independencia con esta misma barra: se corre
+   hacia abajo el alto del toast para que no queden empatadas en z-index
+   y una tape a la otra. */
+body.modo-demo-toast-visible .barra-progreso-lectura {
+  top: var(--alto-toast-modo-demo);
+}
+
 @media (min-width: 1024px) {
   /* .migas-de-pan ya es position:sticky; top:3px acá arriba (ver esa
      regla en la media query de escritorio) — se corre hacia abajo el

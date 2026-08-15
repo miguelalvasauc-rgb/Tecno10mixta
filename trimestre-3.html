@@ -326,6 +326,20 @@
     </button>
   </div>
 
+  <!-- "Modo Demo" (Fase 5, ampliación a páginas públicas): franja fija
+       superior, persistente (SIN autodesaparición, fuera del sistema de
+       pila de #contenedor-toast) — se revela con JS al cargar la página
+       si demoModeActivo() (ver activarToastModoDemo() en js/main.js).
+       Mismo patrón de compensación de layout que ya usa la franja
+       tricolor del tema Independencia (ver css/style.css): position:fixed
+       + padding-top compensatorio en #main-content/.migas-de-pan vía
+       body.modo-demo-toast-visible, para nunca tapar contenido. -->
+  <div id="toast-modo-demo" hidden>
+    <span class="toast-modo-demo__icono" aria-hidden="true">🧪</span>
+    <span class="toast-modo-demo__texto">Modo Demo activo — estás viendo datos ficticios</span>
+    <button type="button" id="boton-desactivar-modo-demo" class="toast-modo-demo__boton">Desactivar</button>
+  </div>
+
 <!-- ===================== MIGAS DE PAN ===================== -->
   <!-- El tercer nivel (sección) se completa por JS conforme se hace scroll,
        reutilizando la misma detección de sección visible del menú (ver
