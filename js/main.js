@@ -9073,6 +9073,44 @@ function activarCierreSesionAdmin() {
   });
 }
 
+// Modo Demo (Fase 4): "numero"|"emoji" — en memoria, sin localStorage
+// propio. Se resetea a "numero" en cada carga de página, igual que el
+// resto del modo demo ya se resetea con location.reload() al activarse/
+// desactivarse (ver activarModoDemo()/desactivarModoDemo(), sección 2).
+let formatoCalificacionActivo = "numero";
+
+// Switch global (no vive dentro de un módulo particular): el modal de
+// historial de alumno se abre desde Alumnos/Calificación/Evaluación por
+// igual, así que un switch anidado en un solo módulo no lo cubriría en
+// los otros dos. Solo se muestra en modo demo — con el modo apagado
+// queda oculto y formatoCalificacionActivo nunca deja de ser "numero",
+// así que formatearCalificacion() se comporta exactamente igual que
+// antes de esta fase.
+function activarSwitchFormatoCalificacion() {
+  const contenedor = document.getElementById("calificacion-switch-formato");
+  const input = document.getElementById("calificacion-switch-formato-input");
+  const estadoTexto = document.getElementById("calificacion-switch-formato-estado");
+  if (!contenedor || !input) return; // no es admin.html
+
+  contenedor.hidden = !demoModeActivo();
+  if (!demoModeActivo()) return;
+
+  input.addEventListener("change", (evento) => {
+    formatoCalificacionActivo = evento.target.checked ? "emoji" : "numero";
+    estadoTexto.textContent = evento.target.checked ? "Emoji" : "Números";
+
+    // Vuelve a pintar las tablas de Evaluación con el formato nuevo, sin
+    // recargar la página — ambas ya traen su propio guard
+    // "if (!contenedor) return", así que llamarlas sin verificar qué
+    // pestaña está activa es seguro (mismo patrón que el resto del
+    // panel). El modal de historial, si está abierto, se actualiza solo
+    // la próxima vez que se abra (siempre reconstruye su contenido
+    // desde cero).
+    renderizarTablaEvaluacion();
+    renderizarTablaPromedios();
+  });
+}
+
 /* ---------------------------------------------------------
    Módulo "Calificación y progreso" (tab-calificacion)
 
@@ -12931,7 +12969,21 @@ async function actualizarOpcionesSecuenciaEvaluacion() {
   select.value = estadoEvaluacion.secuencia || "";
 }
 
-function formatearCalificacion(valor) {
+// Modo Demo (Fase 4): "formato" es "numero" (default, comportamiento de
+// siempre) o "emoji" — alterna vía el switch global en
+// .admin-header__acciones (ver formatoCalificacionActivo/
+// activarSwitchFormatoCalificacion más abajo), solo visible en modo
+// demo. rangoPromedio() (más abajo, function hoisted) ya define los
+// umbrales reales (UMBRAL_PROMEDIO_APROBATORIO/BUEN_NIVEL) que también
+// usa crearChipRangoPromedio() — se reutiliza tal cual para que el chip
+// y el emoji nunca puedan desalinearse por tener dos fuentes de umbral
+// distintas. valor null/undefined es "sin calificar": mismo "—" en
+// ambos formatos, nunca un emoji falso de calificación.
+const EMOJI_RANGO_CALIFICACION = { aprobado: "✅", riesgo: "⚠️", reprobado: "❌" };
+
+function formatearCalificacion(valor, formato = "numero") {
+  if (valor == null) return "—";
+  if (formato === "emoji") return EMOJI_RANGO_CALIFICACION[rangoPromedio(Number(valor))];
   return Number(valor).toFixed(1);
 }
 
@@ -15334,6 +15386,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarBannerExamenDiagnostico();
   activarTabsAdmin();
   activarCierreSesionAdmin();
+  activarSwitchFormatoCalificacion();
   activarGuiaAlumno();
   activarTabsMateriales();
   await inicializarModuloCalificacion();

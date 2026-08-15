@@ -7941,6 +7941,26 @@ a.boton-secundario {
   gap: 0.75rem;
 }
 
+/* Modo Demo (Fase 4) — reutiliza .interruptor/.interruptor__riel tal
+   cual (mismo componente que Apariencia); solo aporta el layout en
+   fila del label + estado + interruptor dentro de .admin-header__acciones. */
+.admin-header__switch-calificacion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-header__switch-calificacion-titulo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+}
+
+.admin-header__switch-calificacion-estado {
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+}
+
 .admin-tabs {
   display: flex;
   flex-wrap: wrap;

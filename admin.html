@@ -131,6 +131,20 @@
           <p>Sesión iniciada como: <span id="admin-nombre-docente">Cargando…</span></p>
         </div>
         <div class="admin-header__acciones">
+          <!-- Modo Demo (Fase 4): global (no vive dentro de un módulo
+               particular) porque el modal de historial de alumno se abre
+               desde Alumnos/Calificación/Evaluación por igual — un switch
+               anidado en un solo módulo no lo cubriría en los otros dos.
+               Oculto por defecto; solo se revela con demoModeActivo() en
+               activarSwitchFormatoCalificacion() (js/main.js). -->
+          <div id="calificacion-switch-formato" class="admin-header__switch-calificacion" hidden>
+            <span id="calificacion-switch-formato-titulo" class="admin-header__switch-calificacion-titulo">Calificación</span>
+            <span id="calificacion-switch-formato-estado" class="admin-header__switch-calificacion-estado">Números</span>
+            <label class="interruptor" aria-labelledby="calificacion-switch-formato-titulo">
+              <input type="checkbox" id="calificacion-switch-formato-input" class="interruptor__input">
+              <span class="interruptor__riel" aria-hidden="true"></span>
+            </label>
+          </div>
           <button id="boton-tema" class="boton-tema" type="button" aria-haspopup="dialog" aria-label="Elegir tema">
             <span class="boton-tema__icono" aria-hidden="true">🌙</span>
             <span class="boton-tema__texto">Elegir tema</span>
