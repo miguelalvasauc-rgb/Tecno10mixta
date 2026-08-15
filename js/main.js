@@ -13069,9 +13069,10 @@ async function inicializarModuloFechas() {
 
 const estadoEvaluacion = { trimestre: null, grupo: "todos", tipo: "todos", secuencia: null };
 
-// "captura" (tabla individual, la de siempre) o "promedios" (tabla
-// concentrada nueva) — decide cuál de las dos tablas refrescan los
-// cambios de Trimestre/Grupo (ver activarVistaPromedios()).
+// "captura" (tabla individual, la de siempre), "promedios" (tabla
+// concentrada de un trimestre) o "final" (calificación final del ciclo,
+// combinando los 3) — decide cuál de las 3 tablas refrescan los cambios
+// de Trimestre/Grupo (ver activarVistasEvaluacion()).
 let vistaEvaluacionActiva = "captura";
 
 // Copia adaptada de actualizarOpcionesSecuenciaCalificacion(), apuntando
@@ -13515,7 +13516,7 @@ function activarFormularioCalificar() {
    calcularPromedioTrimestre() que ya usa el modal de historial — aquí
    se llama una vez por alumno en vez de una sola vez para uno solo.
    Solo Trimestre/Grupo aplican (Tipo/Secuencia se ocultan mientras esta
-   vista está activa, ver activarVistaPromedios()); "todos" los grupos a
+   vista está activa, ver activarVistasEvaluacion()); "todos" los grupos a
    la vez no se soporta a propósito (ver mensaje en renderizarTablaPromedios). --------- */
 
 // Mismo patrón que obtenerMapaProgresoCalificacion, pero sin filtrar por
@@ -13577,6 +13578,68 @@ function crearChipRangoPromedio(promedioFinal) {
   chip.textContent = texto;
   return chip;
 }
+
+/* ---------- Calificación final del ciclo (combina los 3 trimestres) ----------
+   Regla acordada con Hiram: reprobar 2 de los 3 trimestres manda a
+   extraordinario, sin importar el promedio de los 3 combinados; reprobar
+   solo 1 (o ninguno) se resuelve con el promedio simple de los
+   trimestres capturados. Con exactamente 2 trimestres capturados y
+   ambos reprobados, el 3° trimestre define si el extraordinario ya es
+   matemáticamente seguro o si el alumno todavía puede evitarlo. --------- */
+
+// promediosPorTrimestre: {1: number|null, 2: number|null, 3: number|null}
+// null = ese trimestre no tiene NINGUNA calificación capturada (mismo
+// criterio "tieneAlgunaCalificacion" que ya usa crearFilaAlumnoPromedios).
+function calcularEstadoFinalAlumno(promediosPorTrimestre) {
+  const trimestres = [1, 2, 3];
+  const conDatos = trimestres
+    .map((t) => ({ trimestre: t, valor: promediosPorTrimestre[t] }))
+    .filter((p) => p.valor != null);
+
+  if (conDatos.length === 0) return { estado: "sin_datos", calificacionFinal: null };
+
+  const reprobados = conDatos.filter((p) => p.valor < UMBRAL_PROMEDIO_APROBATORIO);
+  const calificacionFinal = Math.round((conDatos.reduce((s, p) => s + p.valor, 0) / conDatos.length) * 10) / 10;
+
+  if (reprobados.length < 2) {
+    return {
+      estado: conDatos.length < 3 ? "provisional" : rangoPromedio(calificacionFinal),
+      calificacionFinal,
+    };
+  }
+
+  if (conDatos.length === 3) {
+    return {
+      estado: calificacionFinal < UMBRAL_PROMEDIO_APROBATORIO ? "extraordinario" : rangoPromedio(calificacionFinal),
+      calificacionFinal,
+    };
+  }
+
+  // Exactamente 2 capturados y ambos reprobados; el 3° sigue pendiente.
+  const sumaReprobados = reprobados.reduce((s, p) => s + p.valor, 0);
+  const trimestrePendiente = trimestres.find((t) => promediosPorTrimestre[t] == null);
+  const necesario = Math.round((18 - sumaReprobados) * 10) / 10; // 6.0 × 3 = 18
+
+  return {
+    estado: necesario > 10 ? "extraordinario_seguro" : "riesgo_extraordinario",
+    calificacionFinal,
+    trimestrePendiente,
+    necesario: Math.min(Math.max(necesario, 0), 10),
+  };
+}
+
+// Mismo triplete verde/ámbar/rojo que CHIP_RANGO_PROMEDIO (Status-Color
+// Exclusivity Rule: nunca turquesa) más un estado neutro para
+// "provisional" (todavía no hay 3 trimestres capturados y no hay riesgo).
+const CHIP_ESTADO_FINAL = {
+  aprobado: { texto: "✓ Aprobado", clase: "chip-rango-promedio--verde" },
+  riesgo: { texto: "⚠ En riesgo", clase: "chip-rango-promedio--ambar" },
+  provisional: { texto: "… En curso", clase: "chip-rango-promedio--neutro" },
+  riesgo_extraordinario: { texto: "⚠ Riesgo de extraordinario", clase: "chip-rango-promedio--ambar" },
+  extraordinario_seguro: { texto: "✕ Extraordinario (matemáticamente)", clase: "chip-rango-promedio--rojo" },
+  extraordinario: { texto: "✕ Extraordinario", clase: "chip-rango-promedio--rojo" },
+  sin_datos: { texto: "—", clase: null },
+};
 
 // Sparkline de 4 puntos FIJOS (Tareas→Actividades→Proyectos→Promedio
 // final) — no confundir con construirTendenciaKPI/construirSparklineSVG
@@ -13896,74 +13959,287 @@ async function renderizarTablaPromedios() {
   );
 }
 
-// Alterna entre #evaluacion-captura-vista y #evaluacion-promedios-vista
-// (nunca ambas visibles) y oculta Tipo/Secuencia mientras la vista de
-// promedios está activa — esos dos filtros no aplican ahí (el promedio
-// siempre usa el trimestre completo, sin filtrar por secuencia/tipo).
-function activarVistaPromedios() {
-  const botonVer = document.getElementById("evaluacion-boton-vista-promedios");
-  const botonVolver = document.getElementById("evaluacion-boton-vista-captura");
-  const vistaCaptura = document.getElementById("evaluacion-captura-vista");
-  const vistaPromedios = document.getElementById("evaluacion-promedios-vista");
-  if (!botonVer || !botonVolver || !vistaCaptura || !vistaPromedios) return;
+/* ---------- Tabla de calificación final (dentro de Evaluación) ----------
+   Tercera vía del toggle, junto a captura y promedios: una fila por
+   alumno con su promedio de cada uno de los 3 trimestres y el estado
+   final del ciclo vía calcularEstadoFinalAlumno(). A diferencia de la
+   vista de promedios, esta SIEMPRE usa los 3 trimestres (el filtro
+   Trimestre se oculta mientras está activa, ver activarVistasEvaluacion()). --------- */
 
-  const filtroTipo = document.getElementById("evaluacion-filtro-tipo")?.closest(".calificacion-filtro");
-  const filtroSecuencia = document.getElementById("evaluacion-filtro-secuencia")?.closest(".calificacion-filtro");
+// Un {itemsPorTipo, mapaProgresoPorAlumno} por trimestre (1/2/3, en ese
+// orden), ya filtrado por el grupo elegido — misma forma que ya
+// construyen renderizarTablaPromedios()/construirResumenAlumnosDashboard
+// para UN trimestre, aquí para los 3 a la vez.
+async function obtenerDatosPorTrimestreParaFinal(grupo, idsParaProgreso) {
+  const trimestres = [1, 2, 3];
+  const [entregablesPorTrimestre, mapasProgresoPorTrimestre] = await Promise.all([
+    Promise.all(trimestres.map((t) => obtenerEntregablesPorTipo("todos", String(t)))),
+    Promise.all(trimestres.map((t) => obtenerMapaProgresoPorAlumno(String(t), idsParaProgreso))),
+  ]);
 
-  botonVer.addEventListener("click", async () => {
-    vistaEvaluacionActiva = "promedios";
-    vistaCaptura.hidden = true;
-    vistaPromedios.hidden = false;
-    if (filtroTipo) filtroTipo.hidden = true;
-    if (filtroSecuencia) filtroSecuencia.hidden = true;
-    await renderizarTablaPromedios();
-  });
-
-  botonVolver.addEventListener("click", () => {
-    vistaEvaluacionActiva = "captura";
-    vistaPromedios.hidden = true;
-    vistaCaptura.hidden = false;
-    if (filtroTipo) filtroTipo.hidden = false;
-    if (filtroSecuencia) filtroSecuencia.hidden = false;
+  return trimestres.map((t, indice) => {
+    const entregables = entregablesPorTrimestre[indice].filter(
+      (item) => item.grupo === "todos" || item.grupo === grupo
+    );
+    const itemsPorTipo = { tarea: [], actividad: [], proyecto: [] };
+    entregables.forEach((item) => itemsPorTipo[item.tipoEntregable]?.push(item));
+    return { itemsPorTipo, mapaProgresoPorAlumno: mapasProgresoPorTrimestre[indice] };
   });
 }
 
-// Mismo patrón que exportarCSVCalificacion() (BOM UTF-8 + Blob), pero
-// leyendo la tabla de promedios ya renderizada: Alumno y N.° lista van
-// en columnas separadas (a diferencia de la otra tabla, que las junta
-// en una sola), pedido así para esta vista.
-function exportarCSVPromedios() {
-  const contenedor = document.getElementById("evaluacion-promedios-contenedor");
-  const tabla = contenedor?.querySelector(".tabla-promedios");
-  if (!tabla) return;
+// datosPorTrimestre[i] corresponde al trimestre i+1 (ver
+// obtenerDatosPorTrimestreParaFinal). Mismo criterio "sin cuenta/sin
+// calificación capturada" que crearFilaAlumnoPromedios, aplicado trimestre
+// por trimestre — un trimestre vacío queda null, nunca 0, para no
+// confundirlo con un extraordinario real. Pura (sin DOM): la reutiliza
+// tanto crearFilaAlumnoFinal (tabla de Evaluación) como
+// contarAlumnosRiesgoExtraordinario (KPI del Dashboard).
+function calcularPromediosPorTrimestreDeAlumno(alumno, datosPorTrimestre) {
+  const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
+  const promediosPorTrimestre = { 1: null, 2: null, 3: null };
 
-  const encabezados = ["Alumno", "N.° lista", "Tareas", "Actividades", "Proyectos", "Promedio final"];
-  const lineas = [encabezados.map(escaparValorCSV).join(",")];
+  [1, 2, 3].forEach((trimestre, indice) => {
+    const { itemsPorTipo, mapaProgresoPorAlumno } = datosPorTrimestre[indice];
+    const mapaProgresoAlumno = sinCuenta ? new Map() : mapaProgresoPorAlumno.get(alumno.auth_user_id) || new Map();
+    if (sinCuenta || !tieneAlgunaCalificacionCapturada(mapaProgresoAlumno)) return;
 
-  tabla.querySelectorAll("tbody tr").forEach((fila) => {
-    const celdas = Array.from(fila.querySelectorAll("td"));
-    const nombre = celdas[0].querySelector(".calificacion-tabla__alumno-nombre")?.textContent || "";
-    const valores = [
-      nombre,
-      fila.dataset.numeroLista || "",
-      celdas[1]?.textContent || "",
-      celdas[2]?.textContent || "",
-      celdas[3]?.textContent || "",
-      // Promedio final: .textContent ya no es solo el número (trae el
-      // chip de rango pegado, ver crearFilaAlumnoPromedios) — dataset.valor
-      // es la fuente numérica limpia; "—" (alumno sin cuenta/sin
-      // calificación) no lo trae, ahí cae al textContent normal.
-      celdas[4]?.dataset.valor
-        ? Number(celdas[4].dataset.valor).toFixed(1)
-        : celdas[4]?.textContent || "",
-    ];
-    lineas.push(valores.map(escaparValorCSV).join(","));
+    const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAlumno);
+    promediosPorTrimestre[trimestre] = promedio.promedioFinal;
   });
 
+  return promediosPorTrimestre;
+}
+
+function crearFilaAlumnoFinal(alumno, datosPorTrimestre) {
+  const fila = document.createElement("tr");
+  if (alumno.activo === false) fila.classList.add("fila-alumno--inactivo");
+  fila.dataset.numeroLista = String(alumno.numero_lista);
+
+  const celdaAlumno = document.createElement("td");
+  const envoltura = document.createElement("div");
+  envoltura.className = "calificacion-tabla__alumno";
+  const nombre = document.createElement("span");
+  nombre.className = "calificacion-tabla__alumno-nombre";
+  nombre.textContent = alumno.nombre;
+  const numero = document.createElement("span");
+  numero.className = "calificacion-tabla__alumno-numero";
+  numero.textContent = "N.° " + alumno.numero_lista;
+  envoltura.append(nombre, numero);
+  celdaAlumno.appendChild(envoltura);
+  fila.appendChild(celdaAlumno);
+
+  const promediosPorTrimestre = calcularPromediosPorTrimestreDeAlumno(alumno, datosPorTrimestre);
+
+  [1, 2, 3].forEach((trimestre) => {
+    const celda = document.createElement("td");
+    const valor = promediosPorTrimestre[trimestre];
+    if (valor == null) {
+      celda.textContent = "—";
+    } else {
+      celda.textContent = formatearCalificacion(valor, formatoCalificacionActivo);
+      celda.dataset.valor = String(valor);
+    }
+    fila.appendChild(celda);
+  });
+
+  const estadoInfo = calcularEstadoFinalAlumno(promediosPorTrimestre);
+
+  const celdaFinal = document.createElement("td");
+  celdaFinal.className = "tabla-promedios__promedio-final";
+  if (estadoInfo.calificacionFinal != null) {
+    celdaFinal.dataset.valor = String(estadoInfo.calificacionFinal);
+    celdaFinal.textContent = formatearCalificacion(estadoInfo.calificacionFinal, formatoCalificacionActivo);
+  } else {
+    celdaFinal.textContent = "—";
+  }
+  fila.appendChild(celdaFinal);
+
+  const celdaEstado = document.createElement("td");
+  const { texto, clase } = CHIP_ESTADO_FINAL[estadoInfo.estado];
+  if (clase) {
+    const chip = document.createElement("span");
+    chip.className = "chip-rango-promedio " + clase;
+    chip.textContent =
+      estadoInfo.estado === "riesgo_extraordinario"
+        ? texto + " — necesita " + estadoInfo.necesario.toFixed(1) + " en T" + estadoInfo.trimestrePendiente
+        : texto;
+    celdaEstado.appendChild(chip);
+  } else {
+    celdaEstado.textContent = texto;
+  }
+  fila.appendChild(celdaEstado);
+
+  return { fila, alumno, estadoInfo };
+}
+
+const ESTADOS_RIESGO_EXTRAORDINARIO = ["riesgo_extraordinario", "extraordinario_seguro", "extraordinario"];
+
+// Reutiliza "tabla-calificacion" + "tabla-promedios" (mismo look/reglas
+// print que construirTablaPromedios) — sin ordenamiento por columna, a
+// diferencia de esa tabla: 6 filas fijas y pocos alumnos por grupo, no
+// hace falta.
+function construirTablaFinal(alumnos, datosPorTrimestre) {
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-calificacion tabla-promedios";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  ["Alumno", "T1", "T2", "T3", "Calificación Final", "Estado"].forEach((texto) => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  const alumnosEnRiesgo = [];
+  alumnos.forEach((alumno) => {
+    const { fila, estadoInfo } = crearFilaAlumnoFinal(alumno, datosPorTrimestre);
+    tbody.appendChild(fila);
+    if (ESTADOS_RIESGO_EXTRAORDINARIO.includes(estadoInfo.estado)) alumnosEnRiesgo.push({ alumno, estadoInfo });
+  });
+  tabla.appendChild(tbody);
+
+  return { tabla, alumnosEnRiesgo };
+}
+
+// Banner de #evaluacion-final-alertas: oculto sin alumnos en riesgo,
+// listando solo los 3 estados de riesgo de extraordinario (nunca
+// aprobado/en riesgo/provisional — esos ya se ven en la tabla).
+function actualizarAlertasFinal(contenedor, alumnosEnRiesgo) {
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  if (alumnosEnRiesgo.length === 0) {
+    contenedor.hidden = true;
+    return;
+  }
+
+  contenedor.hidden = false;
+
+  const titulo = document.createElement("p");
+  titulo.className = "evaluacion-final-alertas__titulo";
+  titulo.textContent =
+    "⚠ " + alumnosEnRiesgo.length + (alumnosEnRiesgo.length === 1 ? " alumno" : " alumnos") + " en riesgo de extraordinario";
+  contenedor.appendChild(titulo);
+
+  const lista = document.createElement("ul");
+  lista.className = "evaluacion-final-alertas__lista";
+  alumnosEnRiesgo.forEach(({ alumno, estadoInfo }) => {
+    const item = document.createElement("li");
+    const { texto } = CHIP_ESTADO_FINAL[estadoInfo.estado];
+    item.textContent =
+      alumno.nombre +
+      " — " +
+      (estadoInfo.estado === "riesgo_extraordinario"
+        ? texto + " (necesita " + estadoInfo.necesario.toFixed(1) + " en T" + estadoInfo.trimestrePendiente + ")"
+        : texto);
+    lista.appendChild(item);
+  });
+  contenedor.appendChild(lista);
+}
+
+async function renderizarTablaFinal() {
+  const contenedor = document.getElementById("evaluacion-final-contenedor");
+  const alertas = document.getElementById("evaluacion-final-alertas");
+  if (!contenedor) return;
+
+  // Mismo motivo que renderizarTablaPromedios: "todos" los grupos a la
+  // vez mezclaría alumnos de 3°C y 3°E en una sola tabla sin poder
+  // distinguirlos.
+  if (estadoEvaluacion.grupo === "todos") {
+    mostrarSinResultados(contenedor, "Selecciona un grupo específico (3°C o 3°E) para ver la calificación final.");
+    if (alertas) alertas.hidden = true;
+    return;
+  }
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  const alumnos = await obtenerAlumnosParaCalificacion(estadoEvaluacion.grupo);
+  if (alumnos.length === 0) {
+    mostrarSinResultados(contenedor, "No hay alumnos registrados para este grupo.");
+    if (alertas) alertas.hidden = true;
+    return;
+  }
+
+  const idsParaProgreso = alumnos.filter((alumno) => alumno.auth_user_id != null).map((alumno) => alumno.auth_user_id);
+  const datosPorTrimestre = await obtenerDatosPorTrimestreParaFinal(estadoEvaluacion.grupo, idsParaProgreso);
+
+  const { tabla, alumnosEnRiesgo } = construirTablaFinal(alumnos, datosPorTrimestre);
+  contenedor.innerHTML = "";
+  contenedor.appendChild(tabla);
+  actualizarAlertasFinal(alertas, alumnosEnRiesgo);
+}
+
+// Alterna entre #evaluacion-captura-vista, #evaluacion-promedios-vista y
+// #evaluacion-final-vista (nunca más de una visible) y oculta Tipo/
+// Secuencia mientras promedios o final están activos — esos dos filtros
+// no aplican ahí. Trimestre TAMBIÉN se oculta en 'final' (siempre usa
+// los 3, a diferencia de promedios que usa el trimestre elegido).
+function activarVistasEvaluacion() {
+  const botonVerPromedios = document.getElementById("evaluacion-boton-vista-promedios");
+  const botonVerFinal = document.getElementById("evaluacion-boton-vista-final");
+  const botonVolverPromedios = document.getElementById("evaluacion-boton-vista-captura");
+  const botonVolverFinal = document.getElementById("evaluacion-final-boton-volver");
+  const vistaCaptura = document.getElementById("evaluacion-captura-vista");
+  const vistaPromedios = document.getElementById("evaluacion-promedios-vista");
+  const vistaFinal = document.getElementById("evaluacion-final-vista");
+  if (
+    !botonVerPromedios ||
+    !botonVerFinal ||
+    !botonVolverPromedios ||
+    !botonVolverFinal ||
+    !vistaCaptura ||
+    !vistaPromedios ||
+    !vistaFinal
+  )
+    return;
+
+  const filtroTipo = document.getElementById("evaluacion-filtro-tipo")?.closest(".calificacion-filtro");
+  const filtroSecuencia = document.getElementById("evaluacion-filtro-secuencia")?.closest(".calificacion-filtro");
+  const filtroTrimestre = document.getElementById("evaluacion-filtro-trimestre")?.closest(".calificacion-filtro");
+
+  async function mostrarVista(vista) {
+    vistaEvaluacionActiva = vista;
+    vistaCaptura.hidden = vista !== "captura";
+    vistaPromedios.hidden = vista !== "promedios";
+    vistaFinal.hidden = vista !== "final";
+    if (filtroTipo) filtroTipo.hidden = vista !== "captura";
+    if (filtroSecuencia) filtroSecuencia.hidden = vista !== "captura";
+    if (filtroTrimestre) filtroTrimestre.hidden = vista === "final";
+
+    if (vista === "promedios") await renderizarTablaPromedios();
+    else if (vista === "final") await renderizarTablaFinal();
+  }
+
+  botonVerPromedios.addEventListener("click", () => mostrarVista("promedios"));
+  botonVerFinal.addEventListener("click", () => mostrarVista("final"));
+  botonVolverPromedios.addEventListener("click", () => mostrarVista("captura"));
+  botonVolverFinal.addEventListener("click", () => mostrarVista("captura"));
+}
+
+// Compartido entre exportarCSVPromedios/exportarCSVFinal: ambas tablas
+// tienen la misma primera celda (nombre + N.° lista en un solo <td>) y la
+// necesitan como 2 columnas CSV separadas.
+function extraerNombreYNumeroListaDeFila(fila) {
+  const nombre = fila.querySelector(".calificacion-tabla__alumno-nombre")?.textContent || "";
+  return [nombre, fila.dataset.numeroLista || ""];
+}
+
+// dataset.valor es la fuente numérica limpia de una celda cuyo
+// .textContent ya no es solo el número (trae un chip de rango pegado,
+// ver crearFilaAlumnoPromedios/crearFilaAlumnoFinal); "—" (alumno sin
+// cuenta/sin calificación) no lo trae, ahí cae al textContent normal.
+function extraerValorCeldaCSV(celda) {
+  return celda?.dataset.valor ? Number(celda.dataset.valor).toFixed(1) : celda?.textContent || "";
+}
+
+// Mismo patrón que exportarCSVCalificacion() (BOM UTF-8 + Blob) —
+// compartido por exportarCSVPromedios/exportarCSVFinal.
+function descargarCSV(lineas, nombreArchivo) {
   const blob = new Blob(["﻿" + lineas.join("\r\n")], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
-
-  const nombreArchivo = "promedios_" + estadoEvaluacion.grupo + "_trimestre" + estadoEvaluacion.trimestre + ".csv";
 
   const enlace = document.createElement("a");
   enlace.href = url;
@@ -13974,20 +14250,85 @@ function exportarCSVPromedios() {
   URL.revokeObjectURL(url);
 }
 
+// Lee la tabla de promedios ya renderizada: Alumno y N.° lista van en
+// columnas separadas (a diferencia de la otra tabla, que las junta en
+// una sola), pedido así para esta vista.
+function exportarCSVPromedios() {
+  const contenedor = document.getElementById("evaluacion-promedios-contenedor");
+  const tabla = contenedor?.querySelector(".tabla-promedios");
+  if (!tabla) return;
+
+  const encabezados = ["Alumno", "N.° lista", "Tareas", "Actividades", "Proyectos", "Promedio final"];
+  const lineas = [encabezados.map(escaparValorCSV).join(",")];
+
+  tabla.querySelectorAll("tbody tr").forEach((fila) => {
+    const celdas = Array.from(fila.querySelectorAll("td"));
+    const [nombre, numeroLista] = extraerNombreYNumeroListaDeFila(fila);
+    const valores = [
+      nombre,
+      numeroLista,
+      celdas[1]?.textContent || "",
+      celdas[2]?.textContent || "",
+      celdas[3]?.textContent || "",
+      extraerValorCeldaCSV(celdas[4]),
+    ];
+    lineas.push(valores.map(escaparValorCSV).join(","));
+  });
+
+  descargarCSV(lineas, "promedios_" + estadoEvaluacion.grupo + "_trimestre" + estadoEvaluacion.trimestre + ".csv");
+}
+
 function activarExportarCSVPromedios() {
   const boton = document.getElementById("evaluacion-promedios-boton-csv");
   if (!boton) return;
   boton.addEventListener("click", exportarCSVPromedios);
 }
 
+// Mismas 2 columnas iniciales que exportarCSVPromedios (ver
+// extraerNombreYNumeroListaDeFila); T1/T2/T3 y Calificación final leen
+// dataset.valor cuando existe (celda con chip pegado o "—" sin él).
+function exportarCSVFinal() {
+  const contenedor = document.getElementById("evaluacion-final-contenedor");
+  const tabla = contenedor?.querySelector(".tabla-promedios");
+  if (!tabla) return;
+
+  const encabezados = ["Alumno", "N.° lista", "T1", "T2", "T3", "Calificación final", "Estado"];
+  const lineas = [encabezados.map(escaparValorCSV).join(",")];
+
+  tabla.querySelectorAll("tbody tr").forEach((fila) => {
+    const celdas = Array.from(fila.querySelectorAll("td"));
+    const [nombre, numeroLista] = extraerNombreYNumeroListaDeFila(fila);
+    const valores = [
+      nombre,
+      numeroLista,
+      extraerValorCeldaCSV(celdas[1]),
+      extraerValorCeldaCSV(celdas[2]),
+      extraerValorCeldaCSV(celdas[3]),
+      extraerValorCeldaCSV(celdas[4]),
+      celdas[5]?.textContent || "",
+    ];
+    lineas.push(valores.map(escaparValorCSV).join(","));
+  });
+
+  descargarCSV(lineas, "calificacion_final_" + estadoEvaluacion.grupo + ".csv");
+}
+
+function activarExportarCSVFinal() {
+  const boton = document.getElementById("evaluacion-final-boton-csv");
+  if (!boton) return;
+  boton.addEventListener("click", exportarCSVFinal);
+}
+
 // Sin división "por tipo" (a diferencia de activarImpresionTablaCalificacion):
-// esta tabla siempre tiene las mismas 6 columnas fijas, así que no hace
-// falta partirla ni forzar landscape para que quepan. El contenedor ya
-// comparte la clase "calificacion-tabla-contenedor", así que las reglas
-// @media print de "Impresión de la tabla general" (css/style.css) ya
-// saben mostrar solo esto al imprimir.
-function activarImpresionTablaPromedios() {
-  const boton = document.getElementById("evaluacion-promedios-boton-imprimir");
+// las tablas de promedios/calificación final siempre tienen las mismas
+// columnas fijas, así que no hace falta partirlas ni forzar landscape
+// para que quepan. Su contenedor ya comparte la clase
+// "calificacion-tabla-contenedor", así que las reglas @media print de
+// "Impresión de la tabla general" (css/style.css) ya saben mostrar solo
+// esto al imprimir — window.print() no necesita saber cuál de las dos
+// vistas disparó el botón.
+function activarImpresionTabla(idBoton) {
+  const boton = document.getElementById(idBoton);
   if (!boton) return;
   boton.addEventListener("click", () => window.print());
 }
@@ -14008,15 +14349,19 @@ async function inicializarModuloEvaluacion() {
   activarNavegacionMovilTablaEvaluacion();
   activarBuscadorEvaluacion();
   activarFormularioCalificar();
-  activarVistaPromedios();
+  activarVistasEvaluacion();
   activarExportarCSVPromedios();
-  activarImpresionTablaPromedios();
+  activarExportarCSVFinal();
+  activarImpresionTabla("evaluacion-promedios-boton-imprimir");
+  activarImpresionTabla("evaluacion-final-boton-imprimir");
 
   selectTrimestre.addEventListener("change", async () => {
     estadoEvaluacion.trimestre = selectTrimestre.value;
     await actualizarOpcionesSecuenciaEvaluacion();
     if (vistaEvaluacionActiva === "promedios") {
       await renderizarTablaPromedios();
+    } else if (vistaEvaluacionActiva === "final") {
+      await renderizarTablaFinal();
     } else {
       await renderizarTablaEvaluacion();
     }
@@ -14027,6 +14372,8 @@ async function inicializarModuloEvaluacion() {
     estadoEvaluacion.grupo = selectGrupo.value;
     if (vistaEvaluacionActiva === "promedios") {
       await renderizarTablaPromedios();
+    } else if (vistaEvaluacionActiva === "final") {
+      await renderizarTablaFinal();
     } else {
       await renderizarTablaEvaluacion();
     }

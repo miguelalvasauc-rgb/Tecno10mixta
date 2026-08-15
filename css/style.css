@@ -9908,6 +9908,51 @@ button.badge-estado {
   color: var(--color-claro-sobre-navy);
 }
 
+/* Estado neutro (Calificación Final "provisional": todavía no hay 3
+   trimestres capturados y no hay riesgo) — mismo par de tokens que ya
+   usa .tarjeta-trimestre__estado para su badge neutro, en vez de
+   inventar uno nuevo. */
+.chip-rango-promedio--neutro {
+  background-color: var(--color-superficie-baja);
+  color: var(--color-texto-suave);
+}
+
+/* Banner de alerta de #evaluacion-final-alertas (vista "Calificación
+   Final" de Evaluación) — listado de alumnos en riesgo/seguro de
+   extraordinario. Acento rojo (--color-estado-vencido, el peor de los 3
+   estados que puede listar) en vez de fondo teñido: no hay un patrón de
+   fondo teñido ya validado AA en los 10 temas para reutilizar, así que
+   se queda con el mismo par superficie/borde que .kpi-tarjeta. Oculto
+   por completo (JS controla [hidden]) cuando no hay alumnos en riesgo. */
+.evaluacion-final-alertas {
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--color-borde);
+  border-left: 4px solid var(--color-estado-vencido);
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie);
+  box-shadow: var(--sombra);
+}
+
+.evaluacion-final-alertas__titulo {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.evaluacion-final-alertas__lista {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.evaluacion-final-alertas__lista li {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-fuente-secundario);
+}
+
 /* Ordenamiento por columna (Commit C) — SOLO dentro de .tabla-promedios,
    scoped al <button> que construirTablaPromedios() mete dentro de cada
    <th>; .tabla-calificacion thead th genérico (las otras 4 vistas que

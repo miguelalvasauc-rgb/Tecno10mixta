@@ -460,12 +460,14 @@
           </div>
         </div>
 
-        <!-- Toggle a la tabla concentrada de promedios del trimestre (solo
-             Trimestre/Grupo aplican ahí; Tipo/Secuencia se ocultan
-             mientras esta vista está activa) — ver activarVistaPromedios()
-             en js/main.js. Nunca ambas vistas visibles a la vez. -->
+        <!-- Toggle de 3 vías: captura individual ↔ tabla de promedios del
+             trimestre ↔ calificación final del ciclo (solo Trimestre/
+             Grupo aplican en promedios; en final solo Grupo, siempre usa
+             los 3 trimestres) — ver activarVistasEvaluacion() en
+             js/main.js. Nunca más de una vista visible a la vez. -->
         <div class="calificacion-acciones">
           <button type="button" id="evaluacion-boton-vista-promedios" class="boton-secundario">📊 Ver tabla de promedios</button>
+          <button type="button" id="evaluacion-boton-vista-final" class="boton-secundario">🏁 Ver calificación final</button>
         </div>
 
         <div id="evaluacion-captura-vista">
@@ -506,6 +508,25 @@
           </div>
 
           <div id="evaluacion-promedios-contenedor" class="calificacion-tabla-contenedor" aria-live="polite"></div>
+        </div>
+
+        <!-- Vista "Calificación Final": combina los 3 trimestres del
+             ciclo con la regla de 2 reprobados → extraordinario — ver
+             calcularEstadoFinalAlumno()/renderizarTablaFinal() en
+             js/main.js. Oculta por defecto; reutiliza
+             .calificacion-tabla-contenedor tal cual, igual que la vista
+             de promedios. El filtro Trimestre se oculta mientras esta
+             vista está activa (siempre usa los 3). -->
+        <div id="evaluacion-final-vista" hidden>
+          <div class="calificacion-acciones">
+            <button type="button" id="evaluacion-final-boton-volver" class="boton-secundario">← Volver a captura individual</button>
+            <button type="button" id="evaluacion-final-boton-csv" class="boton-secundario">⬇️ Exportar CSV</button>
+            <button type="button" id="evaluacion-final-boton-imprimir" class="boton-secundario">🖨️ Imprimir calificación final</button>
+          </div>
+
+          <div id="evaluacion-final-alertas" class="evaluacion-final-alertas" role="alert" hidden></div>
+
+          <div id="evaluacion-final-contenedor" class="calificacion-tabla-contenedor" aria-live="polite"></div>
         </div>
       </section>
 
