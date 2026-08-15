@@ -909,6 +909,12 @@
 
   <div id="contenedor-toast" class="contenedor-toast" aria-live="polite" aria-atomic="false"></div>
 
+  <!-- Datos ficticios de "Modo Demo" (ver obtenerDatos()/demoModeActivo()
+       en js/main.js) — se carga siempre, pero DEMO_ALUMNOS/etc. solo se
+       leen cuando el toggle de Apariencia está activo; con el toggle
+       apagado este archivo no tiene ningún efecto. Antes de main.js
+       porque este último ya referencia esos globales al cargar. -->
+  <script src="datos-demo.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
