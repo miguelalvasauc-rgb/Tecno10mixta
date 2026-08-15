@@ -9111,6 +9111,25 @@ function activarSwitchFormatoCalificacion() {
   });
 }
 
+// Toast persistente "Modo Demo" (Fase 5) — global, mismo criterio que
+// activarSwitchFormatoCalificacion(): se revela una sola vez al cargar
+// la página si demoModeActivo(), sin lógica de "ocultar en vivo" — el
+// único camino para desactivar el modo demo (este botón, o el switch
+// de Apariencia) ya recarga la página vía desactivarModoDemo(), así
+// que el toast desaparece solo en la siguiente carga, igual que el
+// resto del sistema de modo demo.
+function activarToastModoDemo() {
+  const toast = document.getElementById("toast-modo-demo");
+  if (!toast) return; // no es admin.html
+  if (!demoModeActivo()) return;
+
+  toast.hidden = false;
+  document.body.classList.add("modo-demo-toast-visible");
+
+  const boton = document.getElementById("boton-desactivar-modo-demo");
+  boton?.addEventListener("click", desactivarModoDemo);
+}
+
 /* ---------------------------------------------------------
    Módulo "Calificación y progreso" (tab-calificacion)
 
@@ -15412,6 +15431,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarTabsAdmin();
   activarCierreSesionAdmin();
   activarSwitchFormatoCalificacion();
+  activarToastModoDemo();
   activarGuiaAlumno();
   activarTabsMateriales();
   await inicializarModuloCalificacion();
