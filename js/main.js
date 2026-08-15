@@ -13965,13 +13965,13 @@ async function construirResumenAlumnosDashboard(trimestre, grupoFiltro) {
 async function contarPendientesPorCalificar(trimestre, idsAlumnos) {
   if (idsAlumnos.length === 0) return 0;
 
-  const { count, error } = await clienteSupabase
-    .from("progreso")
-    .select("*", { count: "exact", head: true })
-    .eq("trimestre", trimestre)
-    .eq("completado", true)
-    .is("calificacion", null)
-    .in("alumno_id", idsAlumnos);
+  const { count, error } = await obtenerDatos("progreso", {
+    count: "exact",
+    head: true,
+    eq: { trimestre, completado: true },
+    esNulo: { calificacion: true },
+    in: { alumno_id: idsAlumnos },
+  });
 
   return error ? 0 : count || 0;
 }
@@ -14004,13 +14004,13 @@ async function obtenerTendenciasSemanalesDashboard(trimestre, grupo, idsAlumnos)
   if (idsAlumnos.length === 0) return vacio;
 
   const [{ data, error }, entregablesTodos] = await Promise.all([
-    clienteSupabase
-      .from("progreso")
-      .select("calificacion, completado, actualizado_en")
-      .eq("trimestre", trimestre)
-      .in("alumno_id", idsAlumnos)
-      .not("actualizado_en", "is", null)
-      .order("actualizado_en", { ascending: true }),
+    obtenerDatos("progreso", {
+      select: "calificacion, completado, actualizado_en",
+      eq: { trimestre },
+      in: { alumno_id: idsAlumnos },
+      noNulo: ["actualizado_en"],
+      order: { columna: "actualizado_en", ascending: true },
+    }),
     obtenerEntregablesPorTipo("todos", trimestre),
   ]);
 
@@ -14910,15 +14910,14 @@ async function obtenerActividadRecienteDashboard(trimestre, resumenAlumnos, limi
   const idsAlumnos = resumenAlumnos.map((r) => r.alumno.auth_user_id);
   if (idsAlumnos.length === 0) return [];
 
-  const { data, error } = await clienteSupabase
-    .from("progreso")
-    .select("alumno_id, tipo, item_id, origen, actualizado_en")
-    .eq("trimestre", trimestre)
-    .eq("completado", true)
-    .in("alumno_id", idsAlumnos)
-    .not("actualizado_en", "is", null)
-    .order("actualizado_en", { ascending: false })
-    .limit(limite);
+  const { data, error } = await obtenerDatos("progreso", {
+    select: "alumno_id, tipo, item_id, origen, actualizado_en",
+    eq: { trimestre, completado: true },
+    in: { alumno_id: idsAlumnos },
+    noNulo: ["actualizado_en"],
+    order: { columna: "actualizado_en", ascending: false },
+    limit: limite,
+  });
   if (error || !data) return [];
 
   const mapaAlumnos = new Map(resumenAlumnos.map((r) => [r.alumno.auth_user_id, r.alumno]));
