@@ -13275,11 +13275,10 @@ async function obtenerMapaProgresoPorAlumno(trimestre, alumnoIds) {
   const mapaPorAlumno = new Map();
   if (alumnoIds.length === 0) return mapaPorAlumno;
 
-  const { data, error } = await clienteSupabase
-    .from("progreso")
-    .select("*")
-    .eq("trimestre", trimestre)
-    .in("alumno_id", alumnoIds);
+  const { data, error } = await obtenerDatos("progreso", {
+    eq: { trimestre },
+    in: { alumno_id: alumnoIds },
+  });
 
   if (error) return mapaPorAlumno;
 
