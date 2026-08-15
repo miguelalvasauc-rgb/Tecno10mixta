@@ -6696,6 +6696,21 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   body.modo-demo-toast-visible .migas-de-pan {
     top: calc(var(--alto-toast-modo-demo) + 3px);
   }
+
+  /* .banner-trimestre (trimestre-1/2/3.html, ampliación a páginas
+     públicas): también sticky, con su propio top base (calc(3px +
+     --alto-migas-de-pan-1linea), ver la pila fija más arriba en este
+     archivo) que no hereda el ajuste de .migas-de-pan de arriba por ser
+     un elemento hermano independiente, no un descendiente — sin esta
+     regla queda "stuck" más arriba de lo debido y se solapa con
+     .migas-de-pan al hacer scroll. Misma fórmula (× 2) que ya usa
+     .banner-trimestre bajo el tema Independencia más abajo en este
+     archivo, y por la misma razón: una vez por el corrimiento que migas-
+     de-pan hereda de la franja/toast, otra por el crecimiento propio de
+     migas-de-pan por su padding-top compensatorio. */
+  body.modo-demo-toast-visible .banner-trimestre {
+    top: calc(var(--alto-toast-modo-demo) * 2 + 3px + var(--alto-migas-de-pan-1linea, 2.2rem + 1px));
+  }
 }
 
 /* ---------- Mensaje "sin resultados" ---------- */
