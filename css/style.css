@@ -885,12 +885,16 @@ a {
 }
 
 /* Skip link: oculto fuera de pantalla por defecto, visible al recibir foco
-   por teclado (Tab). Debe ser el primer elemento enfocable de cada página. */
+   por teclado (Tab). Debe ser el primer elemento enfocable de cada página.
+   z-index 1100: siempre por encima de TODO lo demás en el sitio, incluido
+   el riel lateral (1000, ver .riel) — si empataran o el riel quedara más
+   alto, el riel (con fondo sólido) taparía el skip link enfocado, que cae
+   dentro de su misma franja horizontal (left:1rem, ancho del riel 60px). */
 .enlace-saltar {
   position: fixed;
   top: -60px;
   left: 1rem;
-  z-index: 1000;
+  z-index: 1100;
   background-color: var(--color-primario);
   color: var(--color-primario-texto);
   padding: 0.75rem 1.25rem;
@@ -926,7 +930,7 @@ a {
   left: 0;
   right: 0;
   height: 3px;
-  z-index: 999; /* justo debajo del skip link, que usa 1000 */
+  z-index: 999; /* justo debajo del skip link, que usa 1100 */
   transform-origin: left center;
   transform: scaleX(0);
   background: linear-gradient(90deg, var(--color-primario), var(--color-turquesa));
@@ -6592,8 +6596,9 @@ summary {
    toast: un único elemento persistente, franja de ancho completo,
    revelado/ocultado con activarToastModoDemo() en js/main.js — nunca
    por crearYMostrarToast()/agendarAutodesaparicion().
-   position:fixed + z-index:999 (justo debajo del skip link, que usa
-   1000) + compensación de padding-top en #main-content/.migas-de-pan:
+   position:fixed + z-index:999 (justo debajo del riel, que usa 1000 —
+   ver .riel — y del skip link, que usa 1100) + compensación de
+   padding-top en #main-content/.migas-de-pan:
    mismo patrón exacto que ya usa la franja tricolor del tema
    Independencia más abajo en este archivo, aquí scopeado a
    body.modo-demo-toast-visible en vez de a un data-theme. #2A1D02 (el
@@ -6818,7 +6823,12 @@ body.modo-demo-toast-visible .contenedor-toast {
   border-right: 1px solid var(--md-outline-variant);
   padding: 0.75rem 0;
   overflow-y: auto;
-  z-index: 80;
+  /* 1000: por encima de las franjas fijas de ancho completo que usan 999
+     (#toast-modo-demo, .franja-tricolor-independencia, .barra-progreso-
+     lectura) para que nunca tapen el logo/avatar del riel — debajo del
+     skip link (1100, ver .enlace-saltar), que debe seguir siendo siempre
+     lo más alto. */
+  z-index: 1000;
 }
 
 .riel__logo {
@@ -6977,7 +6987,7 @@ body.modo-demo-toast-visible .contenedor-toast {
   box-shadow: var(--sombra);
   padding: 1rem var(--espacio-base);
   overflow-y: auto;
-  z-index: 85;
+  z-index: 1010; /* por encima de .riel (1000), misma relación que antes (85 > 80) */
   opacity: 0;
   transform: translateX(-6px);
   transition: opacity 0.18s ease, transform 0.18s ease;
@@ -11488,11 +11498,12 @@ button.badge-estado {
   left: 0;
   right: 0;
   height: var(--alto-franja-independencia, 8px);
-  /* Por encima de TODO lo que ya usa z-index en el sitio (riel: sin
-     z-index propio, ver .riel; barra-inferior: 80) para cruzar el
-     viewport completo, incluida la columna del riel en escritorio —
-     justo debajo del skip link, que usa 1000 y debe seguir siendo
-     siempre lo más alto para no perder accesibilidad por teclado. */
+  /* Por encima de casi todo lo que usa z-index en el sitio, para cruzar
+     el viewport completo — pero por debajo del riel (1000, ver .riel),
+     que desde Fase 5 del Modo Demo tiene z-index propio y se dibuja
+     encima de esta franja en su columna de 60px, y del skip link
+     (1100), que debe seguir siendo siempre lo más alto para no perder
+     accesibilidad por teclado. */
   z-index: 999;
   display: flex;
   pointer-events: none;
