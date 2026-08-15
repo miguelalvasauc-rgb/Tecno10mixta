@@ -3095,22 +3095,16 @@ async function obtenerRubricas(trimestre) {
 // original. resolverFechaItem() y fechaLimiteISO() no cambian: ambas solo
 // leen item.fecha/item.fechaEntrega, que aquí ya llega corregido.
 async function aplicarOverridesFechas(items, tipo, trimestre) {
-  let overrides;
-  try {
-    const { data, error } = await clienteSupabase
-      .from("fechas_override")
-      .select("*")
-      .eq("trimestre", trimestre)
-      .eq("tipo", tipo);
+  // Modo Demo (Fase 6): pasa por obtenerDatos() en vez de
+  // clienteSupabase directo, mismo criterio que el resto de las
+  // lecturas — con demoModeActivo()=false arma la misma consulta que
+  // ya hacía antes de esta fase, mismo shape {data,error}.
+  const { data: overrides, error } = await obtenerDatos("fechas_override", {
+    eq: { trimestre, tipo },
+  });
 
-    if (error) throw error;
-    overrides = data;
-  } catch (error) {
-    // Sin red o tabla no accesible: se queda con las fechas originales.
-    return items;
-  }
-
-  if (!overrides || overrides.length === 0) return items;
+  // Sin red o tabla no accesible: se queda con las fechas originales.
+  if (error || !overrides || overrides.length === 0) return items;
 
   // item_id -> filas de override de ese item (puede haber una por grupo:
   // "3C", "3E" y/o "todos").
@@ -3436,16 +3430,20 @@ async function obtenerDatos(tabla, opciones = {}) {
   return await consulta;
 }
 
-// DEMO_ALUMNOS/DEMO_PERFILES/DEMO_PROGRESO/DEMO_AVISOS vienen de
-// datos-demo.js (cargado antes que este archivo solo en admin.html, ver
-// esa etiqueta <script>) — si ese archivo no está cargado (demo
-// desactivado en el resto del sitio) estas funciones nunca se llaman,
-// así que no hace falta un guard de "variable no definida" aquí.
+// DEMO_ALUMNOS/DEMO_PERFILES/DEMO_PROGRESO/DEMO_AVISOS/
+// DEMO_FECHAS_OVERRIDE vienen de datos-demo.js (cargado antes que este
+// archivo, ver esa etiqueta <script> — hoy en admin.html, index.html,
+// trimestre-1/2/3.html y progreso.html, las páginas que realmente
+// llaman a obtenerDatos() con demoModeActivo()) — si ese archivo no
+// está cargado (demo desactivado, o una página que nunca necesita
+// datos ficticios) estas funciones nunca se llaman, así que no hace
+// falta un guard de "variable no definida" aquí.
 const DEMO_TABLAS = {
   alumnos_registro: () => DEMO_ALUMNOS,
   perfiles: () => DEMO_PERFILES,
   progreso: () => DEMO_PROGRESO,
   avisos: () => DEMO_AVISOS,
+  fechas_override: () => DEMO_FECHAS_OVERRIDE,
 };
 
 function obtenerDatosDemo(tabla, opciones) {
@@ -12416,11 +12414,11 @@ async function actualizarOpcionesSecuenciaFechas() {
 async function obtenerOverridesPorItem(trimestre, tipo) {
   const mapa = new Map();
 
-  const { data, error } = await clienteSupabase
-    .from("fechas_override")
-    .select("*")
-    .eq("trimestre", Number(trimestre))
-    .eq("tipo", tipo);
+  // Modo Demo (Fase 6): mismo criterio que aplicarOverridesFechas() —
+  // pasa por obtenerDatos() en vez de clienteSupabase directo.
+  const { data, error } = await obtenerDatos("fechas_override", {
+    eq: { trimestre: Number(trimestre), tipo },
+  });
 
   if (error || !data) return mapa;
 
