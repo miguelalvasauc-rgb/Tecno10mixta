@@ -3035,18 +3035,28 @@ const DATOS_TEMARIO = {
 // Sheets, por ejemplo:
 //   const resp = await fetch(URL_API_SHEETS + "Avisos");
 //   return await resp.json();
+// Modo Demo (Fase 6): pasa por obtenerDatos() en vez de clienteSupabase
+// directo, igual que el resto de las lecturas de avisos/alumnos_registro/
+// progreso — hasta esta fase quedó fuera del inventario original de
+// Fase 2 porque es una función distinta a la que usa el CRUD de avisos
+// del panel (esa sí ya pasaba por obtenerDatos(), ver
+// renderizarTablaAvisos()). El filtro de expiración se mueve de un
+// .or() del lado del servidor a un filtro en JS después de traer los
+// datos: obtenerDatos()/obtenerDatosDemo() no soportan condiciones OR
+// (su "opciones" cubre exactamente eq/in/noNulo/esNulo/order/limit, ver
+// su comentario en sección 2), y agregar esa capacidad solo para este
+// caso habría tocado la capa compartida por los otros 8 puntos ya
+// verificados — el resultado final es idéntico, solo cambia dónde se
+// aplica el filtro.
 async function obtenerAvisos() {
-  try {
-    const fechaHoyISO = new Date().toISOString().slice(0, 10);
-    const { data, error } = await clienteSupabase
-      .from("avisos")
-      .select("*")
-      .or(`fecha_expiracion.is.null,fecha_expiracion.gte.${fechaHoyISO}`)
-      .order("fecha", { ascending: true });
+  const fechaHoyISO = new Date().toISOString().slice(0, 10);
+  const { data, error } = await obtenerDatos("avisos", { order: { columna: "fecha", ascending: true } });
 
-    if (error) throw error;
+  if (error || !data) return DATOS_AVISOS;
 
-    return data.map((aviso) => ({
+  return data
+    .filter((aviso) => !aviso.fecha_expiracion || aviso.fecha_expiracion >= fechaHoyISO)
+    .map((aviso) => ({
       id: aviso.id,
       grupo: aviso.grupo,
       fecha: aviso.fecha,
@@ -3054,9 +3064,6 @@ async function obtenerAvisos() {
       descripcion: aviso.descripcion,
       prioridad: aviso.prioridad,
     }));
-  } catch (error) {
-    return DATOS_AVISOS;
-  }
 }
 
 async function obtenerEventos() {
