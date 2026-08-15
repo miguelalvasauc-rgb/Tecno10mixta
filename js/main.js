@@ -11497,7 +11497,7 @@ async function renderizarTablaAvisos() {
 
   mostrarSinResultados(contenedor, "Cargando…");
 
-  const { data, error } = await clienteSupabase.from("avisos").select("*").order("fecha", { ascending: false });
+  const { data, error } = await obtenerDatos("avisos", { order: { columna: "fecha", ascending: false } });
 
   if (error || !data || data.length === 0) {
     mostrarSinResultados(contenedor, "No hay avisos registrados.");
