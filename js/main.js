@@ -12038,6 +12038,15 @@ function activarFormularioTrimestre() {
 
   formulario.addEventListener("submit", (evento) => {
     evento.preventDefault();
+    // Guard de modo demo (Fase 6) — la escritura más sensible de las 15:
+    // trimestre_desbloqueado es un gate real que afecta a alumnos reales
+    // de inmediato (ver ejecutarCambioTrimestre). Se corta aquí, en el
+    // disparador más temprano, antes de que se abra siquiera
+    // #modal-confirmar-trimestre.
+    if (demoModeActivo()) {
+      abrirModalDemo();
+      return;
+    }
 
     const seleccionado = formulario.querySelector('input[name="trimestre-nuevo"]:checked');
     if (!seleccionado) return;
