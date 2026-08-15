@@ -884,6 +884,14 @@
 
   <div id="contenedor-toast" class="contenedor-toast" aria-live="polite" aria-atomic="false"></div>
 
+  <!-- Datos ficticios de "Modo Demo" (Fase 6: obtenerAvisos() del feed
+       público de arriba ahora pasa por obtenerDatos(), que en modo demo
+       lee DEMO_AVISOS de este archivo — ver js/main.js) — se carga
+       siempre, pero solo se lee cuando demoModeActivo(); con el modo
+       apagado este archivo no tiene ningún efecto. Antes de main.js
+       porque este último ya referencia esos globales al cargar. Mismo
+       criterio que ya usa admin.html. -->
+  <script src="datos-demo.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
