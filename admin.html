@@ -923,6 +923,22 @@
     </form>
   </dialog>
 
+  <!-- "Modo Demo" (Fase 3 en páginas públicas, agregado aquí en Fase 6):
+       aparece al intentar cualquier escritura real del panel (calificar,
+       alumnos, avisos, fechas, apariencia/trimestre) mientras
+       demoModeActivo() — ver abrirModalDemo()/activarCierreModalDemo()
+       en js/main.js. Mismo markup que ya usan index.html/trimestre-
+       1/2/3.html tal cual, sin variantes por página ni por acción; caja/
+       backdrop ya son CSS global vía el selector compuesto con
+       #modal-detalle, así que no hace falta ninguna regla nueva. -->
+  <dialog id="modal-demo" aria-labelledby="modal-demo-titulo">
+    <button type="button" class="modal-demo__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-demo-titulo">🎬 Esto es una demostración</h3>
+    <div id="modal-demo-contenido">
+      <p>Estás viendo el sitio en modo demo. Ninguna acción se guarda de verdad mientras este modo esté activo: ni los formularios de entrega y contacto, ni los cambios que hagas en el panel docente (calificaciones, alumnos, avisos, fechas de entrega o apariencia).</p>
+    </div>
+  </dialog>
+
   <!-- Toast de confirmación visual genérico (no modal, no bloquea nada,
        se autodesaparece solo) — ver mostrarToast() en js/main.js. Aquí
        solo el contenedor: sin ninguna acción de admin.html cableada

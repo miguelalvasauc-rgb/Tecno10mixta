@@ -540,16 +540,20 @@
     <div id="modal-detalle-contenido"></div>
   </dialog>
 
-  <!-- "Modo Demo" (Fase 3): aparece al intentar abrir el formulario real
-       de entrega de trabajos mientras demoModeActivo() — ver
+  <!-- "Modo Demo" (Fase 3, texto generalizado en Fase 6): aparece al
+       intentar cualquier acción real (formulario de entrega aquí;
+       contacto en index.html; calificar, alumnos, avisos, fechas y
+       apariencia en admin.html) mientras demoModeActivo() — ver
        abrirModalDemo()/activarCierreModalDemo() en js/main.js. Mismo
        criterio de caja que #modal-detalle (CSS compartido vía selector
-       compuesto, sin fijar "position" en el <dialog>). -->
+       compuesto, sin fijar "position" en el <dialog>). Mismo <dialog>/
+       markup replicado tal cual en las 4 páginas públicas y en
+       admin.html — un solo mensaje genérico, sin variantes por acción. -->
   <dialog id="modal-demo" aria-labelledby="modal-demo-titulo">
     <button type="button" class="modal-demo__cerrar" aria-label="Cerrar">✕</button>
     <h3 id="modal-demo-titulo">🎬 Esto es una demostración</h3>
     <div id="modal-demo-contenido">
-      <p>Estás viendo el sitio en modo demo. Ningún envío real se procesa mientras este modo esté activo — ni el formulario de entrega, ni el de contacto.</p>
+      <p>Estás viendo el sitio en modo demo. Ninguna acción se guarda de verdad mientras este modo esté activo: ni los formularios de entrega y contacto, ni los cambios que hagas en el panel docente (calificaciones, alumnos, avisos, fechas de entrega o apariencia).</p>
     </div>
   </dialog>
 
