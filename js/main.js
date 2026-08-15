@@ -3367,6 +3367,30 @@ async function obtenerTemaEventoActivo() {
 // personal.
 const promesaTemaEventoActivo = obtenerTemaEventoActivo();
 
+// "Modo Demo" (panel docente, módulo Apariencia) — a diferencia de los 3
+// flags de arriba, esto NUNCA toca Supabase/config_sitio bajo ninguna
+// circunstancia: es 100% local al navegador de quien lo activa, nunca
+// visible para alumnos reales ni sincronizado entre dispositivos.
+// localStorage es síncrono, así que no hace falta un patrón de promesa
+// como el resto de esta sección. Fase 1 solo deja la bandera + el
+// toggle del panel admin listos — ningún módulo llama a
+// demoModeActivo() todavía (eso es Fase 2).
+const CLAVE_DEMO_ACTIVO = "tecno10mixta_demo_activo";
+
+function demoModeActivo() {
+  return localStorage.getItem(CLAVE_DEMO_ACTIVO) === "true";
+}
+
+function activarModoDemo() {
+  localStorage.setItem(CLAVE_DEMO_ACTIVO, "true");
+  window.location.reload();
+}
+
+function desactivarModoDemo() {
+  localStorage.setItem(CLAVE_DEMO_ACTIVO, "false");
+  window.location.reload();
+}
+
 // Trimestre de la página actual ('1', '2' o '3'), tomado de
 // <body data-trimestre="…">. En la portada (index.html) no existe
 // ese atributo, por lo que queda en null.
