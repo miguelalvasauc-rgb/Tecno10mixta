@@ -256,14 +256,37 @@ const DEMO_CONFIG_AVANCE_ALUMNOS = [
   { authUserId: "demo-uid-10", porcentajeAvance: 17 / 21, calificacionMin: 7.8, calificacionMax: 9.4, numeroEntregasTardias: 0 }, // Fernanda — verde 81.0%
   { authUserId: "demo-uid-11", porcentajeAvance: 18 / 21, calificacionMin: 8.0, calificacionMax: 9.5, numeroEntregasTardias: 1 }, // Rodrigo — verde 85.7%
   { authUserId: "demo-uid-12", porcentajeAvance: 16 / 21, calificacionMin: 7.5, calificacionMax: 9.0, numeroEntregasTardias: 2 }, // Isabela — verde 76.2%
-  { authUserId: "demo-uid-13", porcentajeAvance: 19 / 21, calificacionMin: 8.3, calificacionMax: 9.7, numeroEntregasTardias: 0 }, // Mateo — verde 90.5%
+  // Caso "2 reprobados pero aprueba en definitivo" (Calificación Final):
+  // calificacionMin/Max bajado a propósito (de 8.3-9.7 original a
+  // 4.6-5.4) y porcentajeAvance subido a 100% (mismo motivo que
+  // demo-uid-06: con 19/21 entregaba solo 0-2 de 3 proyectos por
+  // trimestre, y esa secuencia sin entregar cuenta como 0 al 40% de
+  // peso, hundiendo T1/T2 muy por debajo del rango configurado) para que
+  // T1/T2 aterricen reprobados en el rango limpio 4.6-5.4. Su trimestre 3
+  // recibe la ÚNICA excepción del dataset a "mismo rango en los 3
+  // trimestres" vía DEMO_OVERRIDE_CALIFICACION_POR_TRIMESTRE más abajo
+  // (8.6-9.4, 100% avance), simulando que remontó en el último trimestre.
+  { authUserId: "demo-uid-13", porcentajeAvance: 1, calificacionMin: 4.6, calificacionMax: 5.4, numeroEntregasTardias: 0 }, // Mateo — 2 reprobados, aprueba en definitivo (remonta en T3)
   { authUserId: "demo-uid-14", porcentajeAvance: 11 / 21, calificacionMin: 6.0, calificacionMax: 7.5, numeroEntregasTardias: 1 }, // Regina — ámbar 52.4%
   { authUserId: "demo-uid-15", porcentajeAvance: 13 / 21, calificacionMin: 6.3, calificacionMax: 7.8, numeroEntregasTardias: 0, sinCalificar: true }, // Leonardo — ámbar 61.9%, sin calificar
   { authUserId: "demo-uid-16", porcentajeAvance: 2 / 21, calificacionMin: 3.5, calificacionMax: 5.0, numeroEntregasTardias: 0 }, // Antonia — rojo 9.5%
   { authUserId: "demo-uid-17", porcentajeAvance: 8 / 21, calificacionMin: 4.5, calificacionMax: 6.0, numeroEntregasTardias: 3 }, // Joaquín — rojo 38.1%
 
   // --- 3E (12) ---
-  { authUserId: "demo-uid-06", porcentajeAvance: 19 / 21, calificacionMin: 8.0, calificacionMax: 9.8, numeroEntregasTardias: 0 }, // Santiago — verde 90.5%
+  // Caso "riesgo_extraordinario" (Calificación Final de Evaluación, ver
+  // calcularEstadoFinalAlumno() en js/main.js): calificacionMin/Max
+  // bajado a propósito (de 8.0-9.8 original a 4.6-5.4) y porcentajeAvance
+  // subido a 100% (de 19/21 original) SOLO en este alumno — con 19/21
+  // entregaba 9 tareas + 9 actividades + apenas 1 de 3 proyectos, y como
+  // calcularPromedioTrimestre() cuenta cada secuencia sin entregar como
+  // 0 (proyecto pesa 40%), eso arrastraba T1/T2 muy por debajo del rango
+  // configurado (~3.7, no ~5.0). Con 100% de avance entrega los 21
+  // items reales y T1/T2 aterrizan limpios en el rango. Sus filas de
+  // progreso del trimestre 3 se filtran más abajo (ver DEMO_PROGRESO)
+  // para simular que ese trimestre aún no se ha capturado — con T1+T2
+  // reprobados y T3 pendiente, muestra el chip "⚠ Riesgo de
+  // extraordinario — necesita X en T3".
+  { authUserId: "demo-uid-06", porcentajeAvance: 1, calificacionMin: 4.6, calificacionMax: 5.4, numeroEntregasTardias: 0 }, // Santiago — riesgo de extraordinario (T3 pendiente)
   { authUserId: "demo-uid-07", porcentajeAvance: 12 / 21, calificacionMin: 6.0, calificacionMax: 8.0, numeroEntregasTardias: 1 }, // Renata — ámbar 57.1%
   { authUserId: "demo-uid-08", porcentajeAvance: 3 / 21, calificacionMin: 4.0, calificacionMax: 5.5, numeroEntregasTardias: 2 }, // Diego — rojo 14.3%
   { authUserId: "demo-uid-09", porcentajeAvance: 14 / 21, calificacionMin: 6.5, calificacionMax: 8.5, numeroEntregasTardias: 0 }, // Paulina — ámbar 66.7%
@@ -298,18 +321,46 @@ function demoOffsetAvancePorTrimestre(indice, trimestre) {
 
 const TOTAL_ITEMS_POR_TRIMESTRE = 21; // igual en los 3 (9 tareas + 9 actividades + 3 proyectos)
 
+// ÚNICA excepción a la regla de "mismo calificacionMin/Max en T1/T2/T3"
+// documentada junto a demoOffsetAvancePorTrimestre: demo-uid-13 (Mateo)
+// remonta en el trimestre 3 tras reprobar T1/T2, para poder mostrar el
+// caso "2 reprobados pero aprueba en definitivo" de la vista Calificación
+// Final (calcularEstadoFinalAlumno() en js/main.js: <2 reprobados o
+// promedio de los 3 ≥6.0 sigue contando como aprobado/en riesgo, nunca
+// extraordinario). Consultado en el flatMap de abajo antes de usar el
+// calificacionMin/Max/porcentajeAvance base del alumno — incluye
+// porcentajeAvance:1 (no solo la calificación) porque con su avance base
+// (19/21) el trimestre 3 solo entregaba 0-2 de los 3 proyectos reales; al
+// contar cada secuencia sin entregar como 0 (proyecto pesa 40% del
+// promedio), eso hundía el "remonte" muy por debajo de 8.6-9.4 pese al
+// override de calificación. 100% de avance = entrega los 21 items reales
+// del trimestre, así el remonte se refleja limpio en el promedio final.
+const DEMO_OVERRIDE_CALIFICACION_POR_TRIMESTRE = {
+  "demo-uid-13": { 3: { calificacionMin: 8.6, calificacionMax: 9.4, porcentajeAvance: 1 } },
+};
+
 const DEMO_PROGRESO = DEMO_CONFIG_AVANCE_ALUMNOS
   .flatMap((config, indice) =>
     [1, 2, 3].flatMap((trimestre) => {
       const kBase = Math.round(TOTAL_ITEMS_POR_TRIMESTRE * config.porcentajeAvance);
       const k = Math.max(0, Math.min(TOTAL_ITEMS_POR_TRIMESTRE, kBase + demoOffsetAvancePorTrimestre(indice, trimestre)));
+      const overrideTrimestre = DEMO_OVERRIDE_CALIFICACION_POR_TRIMESTRE[config.authUserId]?.[trimestre];
       return demoGenerarProgresoAlumno({
         ...config,
+        ...overrideTrimestre,
         trimestre,
-        porcentajeAvance: k / TOTAL_ITEMS_POR_TRIMESTRE,
+        // overrideTrimestre.porcentajeAvance (si existe) gana sobre el
+        // avance calculado con el offset cíclico normal — el spread de
+        // arriba no basta porque esta línea también necesita pisar la
+        // versión "sin override" en el caso contrario.
+        porcentajeAvance: overrideTrimestre?.porcentajeAvance ?? k / TOTAL_ITEMS_POR_TRIMESTRE,
       });
     })
   )
+  // Caso "riesgo_extraordinario" (demo-uid-06/Santiago, ver su entrada en
+  // DEMO_CONFIG_AVANCE_ALUMNOS): descarta sus filas de trimestre 3 para
+  // simular que ese trimestre aún no se ha capturado.
+  .filter((fila) => !(fila.alumno_id === "demo-uid-06" && fila.trimestre === 3))
   .map((fila, indice) => ({ id: "demo-prog-" + (indice + 1), ...fila }));
 
 /* ---------------------------------------------------------
