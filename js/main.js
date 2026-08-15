@@ -8421,6 +8421,13 @@ function activarEvidenciaContacto(formulario) {
 async function alEnviarContacto(evento) {
   evento.preventDefault();
 
+  // Modo Demo (Fase 3): ningún envío real a Netlify Forms mientras esté
+  // activo — antes de validar evidencia o tocar el estado del botón.
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
+
   const formulario = evento.target;
   const boton = formulario.querySelector("button[type='submit']");
   const estado = document.getElementById("contacto-estado");
