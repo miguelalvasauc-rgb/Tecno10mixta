@@ -8647,7 +8647,10 @@ function activarFormulariosCuenta() {
       return;
     }
 
-    window.location.href = "index.html";
+    // A guia.html (guía de primeros pasos), no a index.html: solo aquí,
+    // en el éxito de CREAR cuenta — "Iniciar sesión" (abajo) sigue yendo
+    // a index.html sin cambios.
+    window.location.href = "guia.html";
   });
 
   const formLogin = document.getElementById("formulario-login");
