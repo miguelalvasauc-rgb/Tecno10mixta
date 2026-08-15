@@ -13713,6 +13713,24 @@ function construirCeldaTendenciaPromedios(promedio) {
 
 // Alumno sin cuenta activa: "—" en las 5 columnas numéricas/gráfica, sin
 // intentar promediar nada (no hay progreso real que leer para él).
+// "—" (sin dataset.valor) cuando valor es null, en vez de String(null)
+// = "null" — mismo criterio null-safe que ya usa crearFilaAlumnoFinal
+// (Calificación Final) para promediosPorTrimestre[trimestre]. Antes de
+// este fix, un valor null aquí corrompía dataset.valor con el string
+// literal "null" (rompía extraerValorCeldaCSV()/el ordenamiento por
+// columna) y crearChipRangoPromedio(null) clasificaba el trimestre como
+// "✕ Reprobado" por coerción de JS (null < 6.0 es true).
+function construirCeldaPromedioTipo(valor) {
+  const celda = document.createElement("td");
+  if (valor == null) {
+    celda.textContent = "—";
+  } else {
+    celda.textContent = formatearCalificacion(valor, formatoCalificacionActivo);
+    celda.dataset.valor = String(valor);
+  }
+  return celda;
+}
+
 function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, trimestre) {
   const fila = document.createElement("tr");
   if (alumno.activo === false) fila.classList.add("fila-alumno--inactivo");
@@ -13753,37 +13771,25 @@ function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, t
 
   const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAlumno);
 
-  // dataset.valor en las 3: mismo motivo que en celdaFinal más abajo —
-  // fuente numérica limpia para el ordenamiento por columna (Commit C),
-  // sin depender de parsear el texto de la celda.
-  const celdaTarea = document.createElement("td");
-  celdaTarea.textContent = formatearCalificacion(promedio.promedioTarea, formatoCalificacionActivo);
-  celdaTarea.dataset.valor = String(promedio.promedioTarea);
-  fila.appendChild(celdaTarea);
+  fila.appendChild(construirCeldaPromedioTipo(promedio.promedioTarea));
+  fila.appendChild(construirCeldaPromedioTipo(promedio.promedioActividad));
+  fila.appendChild(construirCeldaPromedioTipo(promedio.promedioProyecto));
 
-  const celdaActividad = document.createElement("td");
-  celdaActividad.textContent = formatearCalificacion(promedio.promedioActividad, formatoCalificacionActivo);
-  celdaActividad.dataset.valor = String(promedio.promedioActividad);
-  fila.appendChild(celdaActividad);
-
-  const celdaProyecto = document.createElement("td");
-  celdaProyecto.textContent = formatearCalificacion(promedio.promedioProyecto, formatoCalificacionActivo);
-  celdaProyecto.dataset.valor = String(promedio.promedioProyecto);
-  fila.appendChild(celdaProyecto);
-
-  const celdaFinal = document.createElement("td");
+  // El chip de rango solo tiene sentido con un número real detrás —
+  // crearChipRangoPromedio(null) clasificaría por coerción (null < 6.0)
+  // como "✕ Reprobado" en vez de "sin datos". construirCeldaPromedioTipo
+  // ya deja "—" sin dataset.valor cuando promedioFinal es null; el chip
+  // (+ su clase propia para diferenciar la celda) solo se agrega encima
+  // en el caso con dato.
+  const celdaFinal = construirCeldaPromedioTipo(promedio.promedioFinal);
   celdaFinal.className = "tabla-promedios__promedio-final";
-  // dataset.valor: fuente numérica limpia para exportarCSVPromedios() y
-  // el ordenamiento por columna — el chip de abajo agrega texto visible
-  // (ícono + palabra) dentro de la misma celda, así que .textContent ya
-  // no alcanza para leer el número solo. El chip queda igual en ambos
-  // formatos (no forma parte de "el número que alterna", ya existía
-  // antes de esta fase) — solo el número de al lado cambia.
-  celdaFinal.dataset.valor = String(promedio.promedioFinal);
-  const numeroFinal = document.createElement("span");
-  numeroFinal.className = "tabla-promedios__promedio-final-numero";
-  numeroFinal.textContent = formatearCalificacion(promedio.promedioFinal, formatoCalificacionActivo);
-  celdaFinal.append(numeroFinal, crearChipRangoPromedio(promedio.promedioFinal));
+  if (promedio.promedioFinal != null) {
+    const numeroFinal = document.createElement("span");
+    numeroFinal.className = "tabla-promedios__promedio-final-numero";
+    numeroFinal.textContent = celdaFinal.textContent;
+    celdaFinal.textContent = "";
+    celdaFinal.append(numeroFinal, crearChipRangoPromedio(promedio.promedioFinal));
+  }
   fila.appendChild(celdaFinal);
 
   fila.appendChild(construirCeldaTendenciaPromedios(promedio));
@@ -14466,6 +14472,20 @@ function crearMapaProgresoAdaptadoParaPromedio(mapasPorTrimestre, alumno) {
   };
 }
 
+// Equivalente a tieneAlgunaCalificacionCapturada(), pero para una fuente
+// de progreso que solo expone .get() (ver crearMapaProgresoAdaptadoParaPromedio
+// arriba) — esa fuente no tiene .values() para recorrer, así que en vez de
+// iterar el mapa se recorre el catálogo real de items y se consulta cada
+// clave. Recorre como máximo los ~21 items del trimestre, mismo orden de
+// magnitud que ya recorre calcularPromedioTrimestre() para el mismo alumno.
+function tieneAlgunaCalificacionCapturadaEnItems(itemsPorTipo, trimestre, mapaProgreso) {
+  return ["tarea", "actividad", "proyecto"].some((tipo) =>
+    (itemsPorTipo[tipo] || []).some(
+      (item) => mapaProgreso.get(tipo + "-" + item.id + "-" + trimestre)?.calificacion != null
+    )
+  );
+}
+
 // % de entregables YA VENCIDOS de "entregables" (del trimestre/grupo del
 // alumno) que llegaron tarde o nunca llegaron. Reutiliza
 // fechaLimiteISO()/resolverValorFechaPorGrupo() para la fecha límite —
@@ -14556,7 +14576,14 @@ async function construirResumenAlumnosDashboard(trimestre, grupoFiltro) {
     const itemsPorTipo = { tarea: [], actividad: [], proyecto: [] };
     entregablesDelAlumno.forEach((item) => itemsPorTipo[item.tipoEntregable]?.push(item));
     const mapaProgresoAdaptado = crearMapaProgresoAdaptadoParaPromedio(mapasPorTrimestre, alumno);
-    const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAdaptado);
+    // Mismo guard que ya usan crearFilaAlumnoPromedios/crearFilaAlumnoFinal:
+    // sin ninguna calificación capturada, promedioFinal queda null (nunca
+    // 0) — antes de este fix se llamaba calcularPromedioTrimestre() sin
+    // chequeo, y ese null/0 podía contagiar de NaN el promedio del grupo
+    // completo en renderizarKPIsDashboard/metricasGrupoDashboard.
+    const promedio = tieneAlgunaCalificacionCapturadaEnItems(itemsPorTipo, trimestre, mapaProgresoAdaptado)
+      ? calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAdaptado)
+      : null;
 
     const detalleAvance = await calcularAvanceGeneralAlumnoDetallado(
       { grupo: alumno.grupo },
@@ -14571,7 +14598,7 @@ async function construirResumenAlumnosDashboard(trimestre, grupoFiltro) {
       alumno,
       avance,
       avancePorTipo: detalleAvance.porTipo,
-      promedioFinal: promedio.promedioFinal,
+      promedioFinal: promedio?.promedioFinal ?? null,
       pctTardeOFaltante,
       pctTardeOFaltantePorTipo,
       riesgo: calcularRiesgoAlumno(avance, pctTardeOFaltante),
@@ -14888,8 +14915,14 @@ function renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias, riesgoE
   contenedor.innerHTML = "";
 
   const total = resumenAlumnos.length;
+  // Excluye del promedio a los alumnos sin dato (promedioFinal null) en
+  // vez de tratarlos como 0 — un solo null en la suma sin filtrar
+  // contagiaba de NaN el "Promedio general" de TODO el grupo.
+  const resumenConPromedio = resumenAlumnos.filter((r) => r.promedioFinal != null);
   const promedioGeneral =
-    total === 0 ? 0 : resumenAlumnos.reduce((suma, r) => suma + r.promedioFinal, 0) / total;
+    resumenConPromedio.length === 0
+      ? 0
+      : resumenConPromedio.reduce((suma, r) => suma + r.promedioFinal, 0) / resumenConPromedio.length;
   const avancePromedio =
     total === 0 ? 0 : Math.round(resumenAlumnos.reduce((suma, r) => suma + r.avance, 0) / total);
   const enRiesgo = resumenAlumnos.filter((r) => r.riesgo >= UMBRAL_RIESGO_ZONA_ROJA).length;
@@ -15211,7 +15244,13 @@ function metricasGrupoDashboard(resumenAlumnos) {
   const total = resumenAlumnos.length;
   if (total === 0) return { promedio: 0, pctATiempo: 0, pctEnRiesgo: 0 };
 
-  const promedio = resumenAlumnos.reduce((suma, r) => suma + r.promedioFinal, 0) / total;
+  // Mismo criterio que renderizarKPIsDashboard: excluye del promedio a
+  // los alumnos sin dato (promedioFinal null), no los cuenta como 0.
+  const resumenConPromedio = resumenAlumnos.filter((r) => r.promedioFinal != null);
+  const promedio =
+    resumenConPromedio.length === 0
+      ? 0
+      : resumenConPromedio.reduce((suma, r) => suma + r.promedioFinal, 0) / resumenConPromedio.length;
   const promedioTarde = resumenAlumnos.reduce((suma, r) => suma + r.pctTardeOFaltante, 0) / total;
   const enRiesgo = resumenAlumnos.filter((r) => r.riesgo >= UMBRAL_RIESGO_ZONA_ROJA).length;
 
