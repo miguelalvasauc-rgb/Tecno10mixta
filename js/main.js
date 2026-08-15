@@ -9813,6 +9813,19 @@ function calcularPromedioTrimestre(alumnoId, trimestre, itemsPorTipo, mapaProgre
   };
 }
 
+// "Sin nada que promediar" (mapaProgreso ya scoped a un solo alumno):
+// ni una sola fila con calificacion capturada en todo el trimestre, sin
+// importar tipo/secuencia — distinto de "0.0 real", que
+// calcularPromedioTrimestre() sí produciría porque trata cada item sin
+// calificar como 0 dentro de su propio cálculo (documentado arriba).
+// Antes vivía solo como una constante local duplicada dentro de la
+// tabla de promedios de Evaluación (crearFilaAlumnoPromedios); extraída
+// aquí para que el modal de historial de alumno use exactamente la
+// misma regla, sin una segunda definición que pudiera desalinearse.
+function tieneAlgunaCalificacionCapturada(mapaProgreso) {
+  return Array.from(mapaProgreso.values()).some((filaProgreso) => filaProgreso.calificacion != null);
+}
+
 // Una sección <section> por trimestre dentro del modal de historial:
 // barra de avance + lista de TODOS los items de ese trimestre (tareas,
 // actividades y proyectos juntos, en ese orden — el mismo orden de
@@ -9872,27 +9885,39 @@ function crearSeccionTrimestreHistorial(trimestre, entregables, mapaProgreso, al
   entregables.forEach((item) => {
     itemsPorTipo[item.tipoEntregable]?.push(item);
   });
-  const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgreso);
 
   const bloquePromedio = document.createElement("div");
   bloquePromedio.className = "calificacion-historial__promedio";
 
   const textoPromedioFinal = document.createElement("p");
   textoPromedioFinal.className = "calificacion-historial__promedio-final";
-  textoPromedioFinal.textContent = "Promedio del trimestre: " + formatearCalificacion(promedio.promedioFinal, formatoCalificacionActivo);
-  bloquePromedio.appendChild(textoPromedioFinal);
 
   const textoDesglose = document.createElement("p");
   textoDesglose.className = "calificacion-historial__promedio-desglose";
-  textoDesglose.textContent =
-    "Tareas: " +
-    formatearCalificacion(promedio.promedioTarea, formatoCalificacionActivo) +
-    " · Actividades: " +
-    formatearCalificacion(promedio.promedioActividad, formatoCalificacionActivo) +
-    " · Proyectos: " +
-    formatearCalificacion(promedio.promedioProyecto, formatoCalificacionActivo);
-  bloquePromedio.appendChild(textoDesglose);
 
+  // Mismo criterio que la tabla de promedios de Evaluación
+  // (crearFilaAlumnoPromedios, vía tieneAlgunaCalificacionCapturada()):
+  // sin ninguna calificación capturada en el trimestre, "—" en las 4
+  // columnas — nunca 0.0 real, que calcularPromedioTrimestre() sí
+  // produciría porque trata cada item sin calificar como 0 dentro de su
+  // propio cálculo.
+  if (!tieneAlgunaCalificacionCapturada(mapaProgreso)) {
+    textoPromedioFinal.textContent = "Promedio del trimestre: —";
+    textoDesglose.textContent = "Tareas: — · Actividades: — · Proyectos: —";
+  } else {
+    const promedio = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgreso);
+    textoPromedioFinal.textContent = "Promedio del trimestre: " + formatearCalificacion(promedio.promedioFinal, formatoCalificacionActivo);
+    textoDesglose.textContent =
+      "Tareas: " +
+      formatearCalificacion(promedio.promedioTarea, formatoCalificacionActivo) +
+      " · Actividades: " +
+      formatearCalificacion(promedio.promedioActividad, formatoCalificacionActivo) +
+      " · Proyectos: " +
+      formatearCalificacion(promedio.promedioProyecto, formatoCalificacionActivo);
+  }
+
+  bloquePromedio.appendChild(textoPromedioFinal);
+  bloquePromedio.appendChild(textoDesglose);
   seccion.appendChild(bloquePromedio);
 
   const lista = document.createElement("ul");
@@ -13534,9 +13559,7 @@ function crearFilaAlumnoPromedios(alumno, itemsPorTipo, mapaProgresoPorAlumno, t
   // trimestre vacío con un 0.0 real. calcularPromedioTrimestre() no
   // cambia: sigue tratando cada item sin calificar como 0 dentro de su
   // propio cálculo, esto solo decide si se llega a llamarla.
-  const tieneAlgunaCalificacion = Array.from(mapaProgresoAlumno.values()).some(
-    (filaProgreso) => filaProgreso.calificacion != null
-  );
+  const tieneAlgunaCalificacion = tieneAlgunaCalificacionCapturada(mapaProgresoAlumno);
 
   if (sinCuenta || !tieneAlgunaCalificacion) {
     for (let i = 0; i < 5; i++) {
