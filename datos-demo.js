@@ -1,13 +1,14 @@
 /* =========================================================
-   datos-demo.js — Dataset ficticio para "Modo Demo" (Fase 1)
+   datos-demo.js — Dataset ficticio para "Modo Demo"
 
-   Fase 1 de "Modo Demo": esta estructura existe y está lista, pero
-   TODAVÍA NO se carga desde ninguna página ni se conecta a ningún
-   módulo (eso es Fase 2, que sustituirá las llamadas reales a
-   Supabase por estos datos cuando demoModeActivo() === true, ver
-   js/main.js sección 2). Por eso este archivo es 100% autocontenido:
-   no depende de que js/main.js se haya cargado antes, y no lo
-   modifica ni le agrega variables.
+   Creado en Fase 1, conectado a los módulos admin en Fase 2 (ver
+   obtenerDatos()/obtenerDatosDemo() en js/main.js, que lo consultan
+   solo cuando demoModeActivo() === true). Progreso ficticio en los 3
+   trimestres (originalmente solo T1; T2/T3 agregados después,
+   manteniendo el mismo progreso relativo por alumno — ver
+   demoOffsetAvancePorTrimestre() más abajo). Este archivo sigue siendo
+   100% autocontenido: no depende de que js/main.js se haya cargado
+   antes, y no lo modifica ni le agrega variables.
 
    Las 3 formas reales que replica son las de Supabase:
      - alumnos_registro: id, nombre, grupo, numero_lista,
@@ -81,34 +82,76 @@ const DEMO_PERFILES = DEMO_ALUMNOS.map((alumno) => ({
 }));
 
 /* ---------------------------------------------------------
-   progreso — generado a partir de los 21 items REALES de trimestre 1
+   progreso — generado a partir de los 21 items REALES de cada trimestre
    (9 tareas + 9 actividades + 3 proyectos, ver DATOS_TAREAS/
-   DATOS_ACTIVIDADES/DATOS_PROYECTOS[1] en js/main.js) para que Fase 2
-   pueda mezclar este progreso con el catálogo real sin inventar items
-   nuevos que no existen en el temario.
+   DATOS_ACTIVIDADES/DATOS_PROYECTOS[1|2|3] en js/main.js) para que
+   Fase 2 pueda mezclar este progreso con el catálogo real sin inventar
+   items nuevos que no existen en el temario. Los 3 trimestres tienen la
+   misma forma (9+9+3=21) por diseño del temario real, así que el mismo
+   generador sirve para los tres sin cambios.
    --------------------------------------------------------- */
 
-const DEMO_ITEMS_TRIMESTRE_1 = {
-  tarea: ["t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13"],
-  actividad: ["a4", "a5", "a6", "a7", "a8", "a9", "a10", "a11", "a12"],
-  proyecto: ["p3", "p4", "p5"],
+const DEMO_ITEMS_POR_TRIMESTRE = {
+  1: {
+    tarea: ["t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13"],
+    actividad: ["a4", "a5", "a6", "a7", "a8", "a9", "a10", "a11", "a12"],
+    proyecto: ["p3", "p4", "p5"],
+  },
+  2: {
+    tarea: ["t-s4-1", "t-s4-2", "t-s4-3", "t-s5-1", "t-s5-2", "t-s5-3", "t-s6-1", "t-s6-2", "t-s6-3"],
+    actividad: ["a-s4-1", "a-s4-2", "a-s4-3", "a-s5-1", "a-s5-2", "a-s5-3", "a-s6-1", "a-s6-2", "a-s6-3"],
+    proyecto: ["p-s4", "p-s5", "p-s6"],
+  },
+  3: {
+    tarea: ["t-s7-1", "t-s7-2", "t-s7-3", "t-s8-1", "t-s8-2", "t-s8-3", "t-s9-1", "t-s9-2", "t-s9-3"],
+    actividad: ["a-s7-1", "a-s7-2", "a-s7-3", "a-s8-1", "a-s8-2", "a-s8-3", "a-s9-1", "a-s9-2", "a-s9-3"],
+    proyecto: ["p-s7", "p-s8", "p-s9"],
+  },
 };
 
-// Fecha de entrega real de cada item en trimestre 1 (columna "3C" de
+// Fecha de entrega real de cada item por trimestre (columna "3C" de
 // fechaEntrega/fecha en js/main.js) — copiada aquí porque este archivo
 // debe poder existir sin cargar main.js todavía (Fase 1). Si esas
 // fechas cambian ahí, hay que actualizarlas aquí también para que
 // Fase 2 siga siendo realista.
-const DEMO_FECHAS_ENTREGA_T1 = {
-  tarea: {
-    t5: "2026-08-31", t6: "2026-09-07", t7: "2026-09-14", t8: "2026-09-22", t9: "2026-09-29",
-    t10: "2026-10-13", t11: "2026-10-19", t12: "2026-10-26", t13: "2026-11-03",
+const DEMO_FECHAS_ENTREGA_POR_TRIMESTRE = {
+  1: {
+    tarea: {
+      t5: "2026-08-31", t6: "2026-09-07", t7: "2026-09-14", t8: "2026-09-22", t9: "2026-09-29",
+      t10: "2026-10-13", t11: "2026-10-19", t12: "2026-10-26", t13: "2026-11-03",
+    },
+    actividad: {
+      a4: "2026-09-01", a5: "2026-09-08", a6: "2026-09-15", a7: "2026-09-28", a8: "2026-10-05",
+      a9: "2026-10-06", a10: "2026-10-20", a11: "2026-10-27", a12: "2026-11-09",
+    },
+    proyecto: { p3: "2026-09-21", p4: "2026-10-12", p5: "2026-11-10" },
   },
-  actividad: {
-    a4: "2026-09-01", a5: "2026-09-08", a6: "2026-09-15", a7: "2026-09-28", a8: "2026-10-05",
-    a9: "2026-10-06", a10: "2026-10-20", a11: "2026-10-27", a12: "2026-11-09",
+  2: {
+    tarea: {
+      "t-s4-1": "2026-11-17", "t-s4-2": "2026-11-23", "t-s4-3": "2026-11-24",
+      "t-s5-1": "2026-12-15", "t-s5-2": "2027-01-12", "t-s5-3": "2027-01-25",
+      "t-s6-1": "2027-02-09", "t-s6-2": "2027-02-16", "t-s6-3": "2027-03-01",
+    },
+    actividad: {
+      "a-s4-1": "2026-11-30", "a-s4-2": "2026-12-07", "a-s4-3": "2026-12-08",
+      "a-s5-1": "2027-01-11", "a-s5-2": "2027-01-18", "a-s5-3": "2027-01-26",
+      "a-s6-1": "2027-02-08", "a-s6-2": "2027-02-15", "a-s6-3": "2027-02-23",
+    },
+    proyecto: { "p-s4": "2026-12-14", "p-s5": "2027-02-02", "p-s6": "2027-03-02" },
   },
-  proyecto: { p3: "2026-09-21", p4: "2026-10-12", p5: "2026-11-10" },
+  3: {
+    tarea: {
+      "t-s7-1": "2027-03-09", "t-s7-2": "2027-04-06", "t-s7-3": "2027-04-19",
+      "t-s8-1": "2027-05-03", "t-s8-2": "2027-05-11", "t-s8-3": "2027-05-24",
+      "t-s9-1": "2027-06-07", "t-s9-2": "2027-06-14", "t-s9-3": "2027-06-22",
+    },
+    actividad: {
+      "a-s7-1": "2027-03-08", "a-s7-2": "2027-04-05", "a-s7-3": "2027-04-13",
+      "a-s8-1": "2027-04-27", "a-s8-2": "2027-05-04", "a-s8-3": "2027-05-17",
+      "a-s9-1": "2027-05-31", "a-s9-2": "2027-06-08", "a-s9-3": "2027-06-21",
+    },
+    proyecto: { "p-s7": "2027-04-20", "p-s8": "2027-05-25", "p-s9": "2027-06-29" },
+  },
 };
 
 function demoSumarDias(fechaISO, dias) {
@@ -138,11 +181,13 @@ function demoSumarDias(fechaISO, dias) {
 // (entregó, pero el docente aún no calificó nada) — para probar que la
 // tabla de promedios muestre "—" en vez de "0.0" cuando no hay ninguna
 // calificacion numérica que promediar.
-function demoGenerarProgresoAlumno({ authUserId, porcentajeAvance, calificacionMin, calificacionMax, numeroEntregasTardias = 0, sinCalificar = false }) {
+function demoGenerarProgresoAlumno({ authUserId, trimestre, porcentajeAvance, calificacionMin, calificacionMax, numeroEntregasTardias = 0, sinCalificar = false }) {
+  const itemsDelTrimestre = DEMO_ITEMS_POR_TRIMESTRE[trimestre];
+  const fechasDelTrimestre = DEMO_FECHAS_ENTREGA_POR_TRIMESTRE[trimestre];
   const todosLosItems = [
-    ...DEMO_ITEMS_TRIMESTRE_1.tarea.map((id) => ({ tipo: "tarea", id })),
-    ...DEMO_ITEMS_TRIMESTRE_1.actividad.map((id) => ({ tipo: "actividad", id })),
-    ...DEMO_ITEMS_TRIMESTRE_1.proyecto.map((id) => ({ tipo: "proyecto", id })),
+    ...itemsDelTrimestre.tarea.map((id) => ({ tipo: "tarea", id })),
+    ...itemsDelTrimestre.actividad.map((id) => ({ tipo: "actividad", id })),
+    ...itemsDelTrimestre.proyecto.map((id) => ({ tipo: "proyecto", id })),
   ];
 
   const cantidadEntregada = Math.round(todosLosItems.length * porcentajeAvance);
@@ -154,7 +199,7 @@ function demoGenerarProgresoAlumno({ authUserId, porcentajeAvance, calificacionM
   );
 
   return itemsEntregados.map(({ tipo, id }) => {
-    const fechaLimite = DEMO_FECHAS_ENTREGA_T1[tipo][id];
+    const fechaLimite = fechasDelTrimestre[tipo][id];
     const tardia = idsEntregasTardias.has(id);
     const fechaEntregaReal = demoSumarDias(fechaLimite, tardia ? 3 : -1);
     const calificacion = sinCalificar
@@ -165,7 +210,7 @@ function demoGenerarProgresoAlumno({ authUserId, porcentajeAvance, calificacionM
       alumno_id: authUserId,
       tipo,
       item_id: id,
-      trimestre: 1,
+      trimestre,
       completado: true,
       calificacion,
       a_tiempo: !tardia,
@@ -229,8 +274,39 @@ const DEMO_CONFIG_AVANCE_ALUMNOS = [
   { authUserId: "demo-uid-25", porcentajeAvance: 9 / 21, calificacionMin: 4.8, calificacionMax: 6.2, numeroEntregasTardias: 2 }, // Iker — rojo 42.9%
 ];
 
+// T2/T3: MISMO progreso relativo por alumno que en T1 (mismo
+// calificacionMin/Max, mismo numeroEntregasTardias, mismo
+// sinCalificar) — nunca trimestres independientes al azar, porque el
+// Dashboard "Avance del ciclo"/Ficha de Análisis promedia los 3 y un
+// alumno que salta de 95% a 20% de un trimestre a otro se vería como
+// dos personas distintas, no una real. Solo el AVANCE (cuántos de los
+// 21 items entregó) recibe un ajuste chico y determinista por
+// trimestre — ±1 item sobre su nivel base de T1, en un patrón cíclico
+// por posición en el arreglo (no aleatorio, para que el dataset sea
+// reproducible y auditable) — así T2/T3 no son un calco exacto de T1
+// pero tampoco un alumno distinto: sigue siendo reconociblemente la
+// misma persona con leves altibajos entre trimestres.
+function demoOffsetAvancePorTrimestre(indice, trimestre) {
+  if (trimestre === 1) return 0;
+  const ciclo = [-1, 0, 1];
+  const fase = trimestre === 2 ? indice : indice + 1;
+  return ciclo[fase % 3];
+}
+
+const TOTAL_ITEMS_POR_TRIMESTRE = 21; // igual en los 3 (9 tareas + 9 actividades + 3 proyectos)
+
 const DEMO_PROGRESO = DEMO_CONFIG_AVANCE_ALUMNOS
-  .flatMap((config) => demoGenerarProgresoAlumno(config))
+  .flatMap((config, indice) =>
+    [1, 2, 3].flatMap((trimestre) => {
+      const kBase = Math.round(TOTAL_ITEMS_POR_TRIMESTRE * config.porcentajeAvance);
+      const k = Math.max(0, Math.min(TOTAL_ITEMS_POR_TRIMESTRE, kBase + demoOffsetAvancePorTrimestre(indice, trimestre)));
+      return demoGenerarProgresoAlumno({
+        ...config,
+        trimestre,
+        porcentajeAvance: k / TOTAL_ITEMS_POR_TRIMESTRE,
+      });
+    })
+  )
   .map((fila, indice) => ({ id: "demo-prog-" + (indice + 1), ...fila }));
 
 /* ---------------------------------------------------------
