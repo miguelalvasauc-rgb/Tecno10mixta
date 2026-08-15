@@ -3922,6 +3922,32 @@ function activarCierreModalDetalle() {
   });
 }
 
+// "Modo Demo" (Fase 3, ver demoModeActivo() en sección 2): reemplaza un
+// envío real (entrega de trabajos, formulario de contacto) por este
+// aviso mientras el modo demo esté activo. Contenido estático — a
+// diferencia de #modal-detalle, este <dialog> no se llena dinámicamente,
+// ya viene con su texto fijo en el HTML de cada página.
+function abrirModalDemo() {
+  const modal = document.getElementById("modal-demo");
+  if (!modal) return;
+  modal.showModal();
+}
+
+// Mismo patrón exacto que activarCierreModalDetalle().
+function activarCierreModalDemo() {
+  const modal = document.getElementById("modal-demo");
+  if (!modal) return;
+
+  const botonCerrar = modal.querySelector(".modal-demo__cerrar");
+  if (botonCerrar) {
+    botonCerrar.addEventListener("click", () => modal.close());
+  }
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.close();
+  });
+}
+
 /* =========================================================
    5. RENDERIZADO DE SECCIONES
    ========================================================= */
@@ -15311,6 +15337,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarDelegacionInfografias();
   activarSpotlightTarjetas();
   activarCierreModalDetalle();
+  activarCierreModalDemo();
 
   // El formulario de contacto solo existe en la portada (index.html).
   const formularioContacto = document.getElementById("formulario-contacto");

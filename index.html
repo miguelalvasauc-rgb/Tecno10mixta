@@ -849,6 +849,20 @@
     <div id="modal-tema-grid" class="modal-tema__grid"></div>
   </dialog>
 
+  <!-- "Modo Demo" (Fase 3): aparece al intentar un envío real (formulario
+       de contacto aquí; entrega de trabajos en trimestre-1/2/3.html)
+       mientras demoModeActivo() — ver abrirModalDemo()/
+       activarCierreModalDemo() en js/main.js. Mismo criterio de caja que
+       #modal-detalle/#modal-tema (CSS compartido vía selector compuesto,
+       sin fijar "position" en el <dialog>). -->
+  <dialog id="modal-demo" aria-labelledby="modal-demo-titulo">
+    <button type="button" class="modal-demo__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-demo-titulo">🎬 Esto es una demostración</h3>
+    <div id="modal-demo-contenido">
+      <p>Estás viendo el sitio en modo demo. Ningún envío real se procesa mientras este modo esté activo — ni el formulario de entrega, ni el de contacto.</p>
+    </div>
+  </dialog>
+
   <div id="contenedor-toast" class="contenedor-toast" aria-live="polite" aria-atomic="false"></div>
 
   <script src="js/main.js"></script>

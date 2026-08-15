@@ -4406,8 +4406,16 @@ summary {
    Sobrescribirlo (p. ej. con position:relative) saca al modal de ese
    overlay fijo y lo deja en el flujo normal del documento; al abrir,
    showModal() enfoca el botón de cerrar y el navegador hace scroll
-   para mostrarlo, lo que se siente como un salto de scroll inesperado. */
-#modal-detalle {
+   para mostrarlo, lo que se siente como un salto de scroll inesperado.
+
+   #modal-demo (Fase 3 de "Modo Demo", ver abrirModalDemo() en
+   js/main.js) comparte esta misma caja/backdrop/botón-cerrar vía
+   selector compuesto — mismo criterio que ya usa el resto del sitio
+   para variantes de un mismo componente (ej.
+   #dashboard-feed-actividad .dashboard-riesgo-lista, .linea-tiempo),
+   sin duplicar ninguna regla. */
+#modal-detalle,
+#modal-demo {
   width: 92%;
   max-width: 640px;
   max-height: 85vh;
@@ -4421,41 +4429,50 @@ summary {
   box-shadow: var(--sombra);
 }
 
-#modal-detalle::backdrop {
+#modal-detalle::backdrop,
+#modal-demo::backdrop {
   background-color: rgba(0, 0, 0, 0.55);
 }
 
-#modal-detalle-titulo {
+#modal-detalle-titulo,
+#modal-demo-titulo {
   margin: 0 1.8rem 0.75rem 0;
   font-size: var(--tamano-fuente-titulo-modal);
   color: var(--color-texto);
 }
 
-#modal-detalle-contenido {
+#modal-detalle-contenido,
+#modal-demo-contenido {
   font-size: 0.9rem;
   line-height: 1.6;
   color: var(--color-texto-suave);
 }
 
-#modal-detalle-contenido p {
+#modal-detalle-contenido p,
+#modal-demo-contenido p {
   margin: 0 0 0.75rem;
 }
 
-#modal-detalle-contenido ul {
+#modal-detalle-contenido ul,
+#modal-demo-contenido ul {
   margin: 0 0 0.75rem;
   padding-left: 1.25rem;
 }
 
-#modal-detalle-contenido li {
+#modal-detalle-contenido li,
+#modal-demo-contenido li {
   margin-bottom: 0.25rem;
 }
 
 #modal-detalle-contenido p:last-child,
-#modal-detalle-contenido ul:last-child {
+#modal-detalle-contenido ul:last-child,
+#modal-demo-contenido p:last-child,
+#modal-demo-contenido ul:last-child {
   margin-bottom: 0;
 }
 
-.modal-detalle__cerrar {
+.modal-detalle__cerrar,
+.modal-demo__cerrar {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
@@ -4475,13 +4492,16 @@ summary {
 }
 
 .modal-detalle__cerrar:hover,
-.modal-detalle__cerrar:focus-visible {
+.modal-detalle__cerrar:focus-visible,
+.modal-demo__cerrar:hover,
+.modal-demo__cerrar:focus-visible {
   background-color: var(--color-superficie-alterna);
   color: var(--color-texto);
 }
 
 @media (min-width: 640px) {
-  #modal-detalle {
+  #modal-detalle,
+  #modal-demo {
     width: 100%;
     padding: 1.6rem 1.8rem;
   }
