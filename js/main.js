@@ -12133,6 +12133,55 @@ async function inicializarFormularioPopupBienvenida() {
   activarFormularioPopupBienvenida();
 }
 
+// Lectura para el show REAL en index.html — a diferencia del formulario
+// admin de arriba (que siempre lee/edita el valor real de Supabase,
+// mismo criterio que Trimestre/Apariencia), ESTA sí respeta Modo Demo.
+// config_sitio no pasa por obtenerDatos()/DEMO_TABLAS (esa capa mockea
+// tablas-lista filtradas por opciones, no una fila clave/valor puntual
+// leída con .single()), así que la intercepción vive aquí mismo: con
+// demoModeActivo()=true devuelve DEMO_POPUP_BIENVENIDA (datos-demo.js)
+// tal cual, sin tocar Supabase.
+async function obtenerPopupBienvenida() {
+  if (demoModeActivo()) return DEMO_POPUP_BIENVENIDA;
+  try {
+    const valor = await leerValorConfigSitio("popup_bienvenida");
+    return valor ? JSON.parse(valor) : POPUP_BIENVENIDA_DEFECTO;
+  } catch {
+    return POPUP_BIENVENIDA_DEFECTO;
+  }
+}
+
+const CLAVE_POPUP_BIENVENIDA_VISTO = "tecno10mixta_popup_bienvenida_visto";
+
+// Una sola vez por sesión de navegador: sessionStorage (no localStorage)
+// se limpia solo al cerrar el navegador por completo, nunca "para
+// siempre" como sí pasaría con localStorage. Independiente de
+// CLAVE_DEMO_ACTIVO (localStorage, Modo Demo — sección 2): storage y
+// clave distintos, sin interferencia entre sí — activar/desactivar Modo
+// Demo recarga la página (ver activarModoDemo()/desactivarModoDemo())
+// pero eso no toca sessionStorage, así que "ya visto" sobrevive ese
+// reload igual que cualquier otro. Guard de data-pagina="index" (no solo
+// "¿existe #popup-bienvenida?"): admin.html tiene el MISMO <dialog> para
+// su Vista previa, así que esa sola comprobación no bastaría para
+// distinguir las dos páginas.
+async function inicializarPopupBienvenidaIndex() {
+  if (document.body.dataset.pagina !== "index") return;
+
+  const dialogo = document.getElementById("popup-bienvenida");
+  if (!dialogo) return;
+
+  activarPopupBienvenida();
+
+  if (sessionStorage.getItem(CLAVE_POPUP_BIENVENIDA_VISTO)) return;
+
+  const datos = await obtenerPopupBienvenida();
+  if (datos.activo !== true) return;
+
+  mostrarPopupBienvenida(datos, () => {
+    sessionStorage.setItem(CLAVE_POPUP_BIENVENIDA_VISTO, "1");
+  });
+}
+
 /* ---------------------------------------------------------
    Módulo "Trimestre" (tab-trimestre)
 
@@ -16227,6 +16276,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarCierreModalDetalle();
   activarCierreModalDemo();
   activarInterceptorEntregaDemo();
+  await inicializarPopupBienvenidaIndex();
 
   // El formulario de contacto solo existe en la portada (index.html).
   const formularioContacto = document.getElementById("formulario-contacto");

@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
-<body>
+<body data-pagina="index">
   <a href="#main-content" class="enlace-saltar">Saltar al contenido principal</a>
 
   <!-- Barra de progreso de lectura: mejora progresiva solo-CSS
@@ -879,6 +879,33 @@
     <h3 id="modal-demo-titulo">🎬 Esto es una demostración</h3>
     <div id="modal-demo-contenido">
       <p>Estás viendo el sitio en modo demo. Ninguna acción se guarda de verdad mientras este modo esté activo: ni los formularios de entrega y contacto, ni los cambios que hagas en el panel docente (calificaciones, alumnos, avisos, fechas de entrega o apariencia).</p>
+    </div>
+  </dialog>
+
+  <!-- Popup de bienvenida (config_sitio, clave "popup_bienvenida",
+       configurable desde admin.html → Avisos) — aparece SOLO aquí (ver
+       data-pagina="index" en el <body> y inicializarPopupBienvenidaIndex()
+       en js/main.js), una vez por sesión de navegador
+       (sessionStorage, no localStorage: se resetea al cerrar el
+       navegador). Mismo <dialog>/markup replicado tal cual en admin.html
+       para su botón "Vista previa" (mismo criterio ya usado arriba por
+       #modal-demo) — mostrarPopupBienvenida()/activarPopupBienvenida()
+       en js/main.js son las únicas dueñas de su contenido/comportamiento.
+       A diferencia de #modal-tema/#modal-demo, este NUNCA se cierra con
+       Escape ni con clic en el backdrop — decisión intencional, no un
+       descuido de accesibilidad (ver el comentario junto a
+       activarPopupBienvenida() en js/main.js): solo el botón "Entendido"
+       lo cierra. -->
+  <dialog id="popup-bienvenida" role="dialog" aria-modal="true" aria-label="Aviso de bienvenida" aria-describedby="popup-bienvenida-mensaje-texto">
+    <div id="popup-bienvenida-imagen-wrap" hidden>
+      <img id="popup-bienvenida-imagen-el" alt="">
+    </div>
+    <div class="popup-bienvenida__cuerpo">
+      <h3 id="popup-bienvenida-titulo-texto" hidden></h3>
+      <p id="popup-bienvenida-mensaje-texto"></p>
+      <div class="modal-editar-entrega__acciones">
+        <button type="button" class="modal-editar-entrega__confirmar" id="popup-bienvenida-cerrar" autofocus>Entendido</button>
+      </div>
     </div>
   </dialog>
 
