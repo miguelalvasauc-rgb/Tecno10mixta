@@ -9484,9 +9484,15 @@ button.badge-estado {
   -webkit-backdrop-filter: blur(6px);
 }
 
+/* aspect-ratio 3:2 (no un alto fijo en px) define el marco; contain (no
+   cover) adentro para que la imagen SIEMPRE se vea completa, sin
+   recortar texto cercano a los bordes (bug real: una imagen con texto
+   "EXAMEN…" quedaba cortada a la mitad con cover). El fondo del wrap
+   —mismo token de superficie ya usado, nunca un color fijo— es lo que
+   se ve en las franjas cuando la imagen no calza exacto en 3:2. */
 #popup-bienvenida-imagen-wrap {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 3 / 2;
   overflow: hidden;
   background-color: var(--color-superficie-baja);
   border-radius: 12px 12px 0 0;
@@ -9496,7 +9502,7 @@ button.badge-estado {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .popup-bienvenida__cuerpo {
