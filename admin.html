@@ -350,6 +350,72 @@
         </div>
 
         <div id="avisos-tabla-contenedor" aria-live="polite"></div>
+
+        <!-- Popup de bienvenida configurable (config_sitio, clave
+             "popup_bienvenida" — requiere el INSERT manual de esa fila en
+             el SQL Editor de Supabase antes de que Guardar funcione en
+             producción, mismo requisito ya conocido de
+             tema_evento_activo/trimestre_desbloqueado: las políticas
+             anon/authenticated de config_sitio solo permiten UPDATE).
+             Aparece SOLO en index.html, una vez por sesión de navegador —
+             ver activarFormularioPopupBienvenida()/mostrarPopupBienvenida()
+             en js/main.js. Tarjeta separada de la lista de avisos: no es
+             un aviso más, es el control de una sola pieza de UI pública
+             distinta. -->
+        <div class="avisos-popup-tarjeta">
+          <h3>🪧 Popup de bienvenida (index.html)</h3>
+          <p class="apariencia-opcion__descripcion">Aparece una sola vez por sesión de navegador a quien visite la portada. Mientras esté inactivo, nadie lo ve.</p>
+
+          <form id="formulario-popup-bienvenida" novalidate>
+            <div class="apariencia-opcion">
+              <div class="apariencia-opcion__texto">
+                <span id="popup-bienvenida-form-activo-titulo" class="apariencia-opcion__titulo">Activo</span>
+              </div>
+              <div class="apariencia-opcion__control">
+                <label class="interruptor" aria-labelledby="popup-bienvenida-form-activo-titulo">
+                  <input type="checkbox" id="popup-bienvenida-form-activo" class="interruptor__input">
+                  <span class="interruptor__riel" aria-hidden="true"></span>
+                </label>
+              </div>
+            </div>
+
+            <label for="popup-bienvenida-form-titulo">Título (opcional)</label>
+            <input type="text" id="popup-bienvenida-form-titulo" autocomplete="off">
+
+            <label for="popup-bienvenida-form-mensaje">Mensaje</label>
+            <textarea id="popup-bienvenida-form-mensaje" rows="4"></textarea>
+
+            <label for="popup-bienvenida-form-imagen">Imagen (ruta en assets/ o URL — opcional)</label>
+            <input type="text" id="popup-bienvenida-form-imagen" autocomplete="off" placeholder="assets/logo-10mixta.jpg">
+
+            <p id="popup-bienvenida-form-error" class="cuenta-error" role="alert" hidden></p>
+
+            <div class="modal-editar-entrega__acciones">
+              <button type="button" class="boton-secundario" id="popup-bienvenida-boton-vista-previa">👁 Vista previa</button>
+              <button type="submit" class="modal-editar-entrega__confirmar" id="popup-bienvenida-boton-guardar">Guardar</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Popup real — mismo <dialog>/markup que index.html (ver su
+             comentario ahí), duplicado aquí SOLO para que "Vista previa"
+             de arriba lo muestre tal cual se vería sin salir del panel
+             admin (mismo criterio ya usado por #modal-demo, replicado en
+             las páginas públicas y en admin.html). Nunca se conecta a
+             sessionStorage desde aquí — ver el onCerrar que le pasa el
+             botón de Vista previa en activarFormularioPopupBienvenida(). -->
+        <dialog id="popup-bienvenida" role="dialog" aria-modal="true" aria-label="Aviso de bienvenida" aria-describedby="popup-bienvenida-mensaje-texto">
+          <div id="popup-bienvenida-imagen-wrap" hidden>
+            <img id="popup-bienvenida-imagen-el" alt="">
+          </div>
+          <div class="popup-bienvenida__cuerpo">
+            <h3 id="popup-bienvenida-titulo-texto" hidden></h3>
+            <p id="popup-bienvenida-mensaje-texto"></p>
+            <div class="modal-editar-entrega__acciones">
+              <button type="button" class="modal-editar-entrega__confirmar" id="popup-bienvenida-cerrar" autofocus>Entendido</button>
+            </div>
+          </div>
+        </dialog>
       </section>
 
       <section id="panel-trimestre" class="admin-panel" role="tabpanel" aria-labelledby="tab-trimestre" hidden>

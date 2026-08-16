@@ -11888,6 +11888,7 @@ async function inicializarModuloAvisos() {
   await renderizarTablaAvisos();
   activarBotonNuevoAviso();
   activarFormularioAviso();
+  await inicializarFormularioPopupBienvenida();
 }
 
 // Lectura/escritura genéricas de una fila de config_sitio (columnas
@@ -11934,6 +11935,202 @@ async function escribirValorConfigSitio(clave, valor) {
       `La clave "${clave}" no existe en config_sitio. Pide que la agreguen ahí antes de poder guardar este valor.`
     );
   }
+}
+
+/* ---------------------------------------------------------
+   Popup de bienvenida (config_sitio, clave "popup_bienvenida")
+
+   Overlay configurable desde el admin (tab-avisos) que aparece SOLO en
+   index.html, una vez por sesión de navegador. El "valor" de la fila es
+   un JSON stringificado con la forma { activo, titulo, mensaje,
+   imagenUrl } — mismo patrón clave/valor que tema_evento_activo/
+   trimestre_desbloqueado, vía leerValorConfigSitio()/
+   escribirValorConfigSitio() de arriba. La clave "popup_bienvenida"
+   necesita el INSERT manual de su fila en el SQL Editor de Supabase
+   (rol postgres) antes de que el formulario de abajo pueda guardar en
+   producción — las políticas anon/authenticated de config_sitio solo
+   permiten UPDATE, nunca INSERT (misma lección ya conocida de
+   tema_evento_activo/trimestre_desbloqueado).
+
+   mostrarPopupBienvenida()/activarPopupBienvenida() son compartidas por
+   dos consumidores con el MISMO <dialog id="popup-bienvenida"> markup
+   (duplicado tal cual entre admin.html e index.html, mismo criterio ya
+   usado por #modal-demo): la Vista previa de este módulo (abajo) y el
+   show real en index.html (ver inicializarPopupBienvenidaIndex()).
+   --------------------------------------------------------- */
+
+// activo:false por defecto/seguro — hasta que se guarde explícito desde
+// el admin, nadie ve nada (ni siquiera si la fila de Supabase no
+// existiera todavía).
+const POPUP_BIENVENIDA_DEFECTO = { activo: false, titulo: "", mensaje: "", imagenUrl: "" };
+
+// Nunca se cierra con Escape: <dialog> dispara "cancel" antes de
+// cerrarse por Escape, y aquí se bloquea a propósito con
+// preventDefault() — decisión intencional (no un descuido de
+// accesibilidad): el aviso de bienvenida solo se descarta con el botón
+// explícito, para asegurar que se lea antes de cerrarse. Tampoco cierra
+// con clic en el backdrop: a diferencia de #modal-demo/#modal-tema
+// (activarCierreModalDemo()), este <dialog> nunca recibe ese listener.
+// Idempotente en la práctica (una sola vez por página, desde
+// activarFormularioPopupBienvenida()/inicializarPopupBienvenidaIndex()),
+// pero no pasa nada si se llamara dos veces: preventDefault() repetido
+// no tiene efecto secundario.
+function activarPopupBienvenida() {
+  const dialogo = document.getElementById("popup-bienvenida");
+  if (!dialogo) return;
+  dialogo.addEventListener("cancel", (evento) => evento.preventDefault());
+}
+
+// Puebla y muestra #popup-bienvenida con "datos" ({activo, titulo,
+// mensaje, imagenUrl} — activo no se lee aquí, ya lo filtró el
+// llamador). onCerrar se invoca SOLO al cerrar (nunca al abrir): el show
+// real en index.html pasa una función que marca sessionStorage como
+// visto; la Vista previa del admin pasa null para no "gastar" el show
+// real de un visitante. .onclick (no addEventListener) en el botón de
+// cerrar para no acumular un listener nuevo cada vez que se llama esta
+// función (ej. cada clic de "Vista previa").
+function mostrarPopupBienvenida(datos, onCerrar) {
+  const dialogo = document.getElementById("popup-bienvenida");
+  if (!dialogo) return;
+
+  const tituloEl = document.getElementById("popup-bienvenida-titulo-texto");
+  const mensajeEl = document.getElementById("popup-bienvenida-mensaje-texto");
+  const imagenWrap = document.getElementById("popup-bienvenida-imagen-wrap");
+  const imagenEl = document.getElementById("popup-bienvenida-imagen-el");
+
+  if (datos.titulo) {
+    tituloEl.textContent = datos.titulo;
+    tituloEl.hidden = false;
+  } else {
+    tituloEl.hidden = true;
+  }
+  mensajeEl.textContent = datos.mensaje || "";
+
+  if (datos.imagenUrl) {
+    // onerror ANTES de asignar src: si la ruta está mal (assets/ local
+    // inexistente o URL externa caída), oculta el wrapper en silencio en
+    // vez de dejar el ícono de imagen rota — nunca rompe el popup.
+    imagenEl.onerror = () => {
+      imagenWrap.hidden = true;
+    };
+    imagenEl.src = datos.imagenUrl;
+    imagenWrap.hidden = false;
+  } else {
+    imagenEl.removeAttribute("src");
+    imagenWrap.hidden = true;
+  }
+
+  const botonCerrar = document.getElementById("popup-bienvenida-cerrar");
+  botonCerrar.onclick = () => {
+    dialogo.close();
+    if (onCerrar) onCerrar();
+  };
+
+  dialogo.showModal();
+}
+
+function poblarFormularioPopupBienvenida(datos) {
+  document.getElementById("popup-bienvenida-form-activo").checked = !!datos.activo;
+  document.getElementById("popup-bienvenida-form-titulo").value = datos.titulo || "";
+  document.getElementById("popup-bienvenida-form-mensaje").value = datos.mensaje || "";
+  document.getElementById("popup-bienvenida-form-imagen").value = datos.imagenUrl || "";
+}
+
+function leerFormularioPopupBienvenida() {
+  return {
+    activo: document.getElementById("popup-bienvenida-form-activo").checked,
+    titulo: document.getElementById("popup-bienvenida-form-titulo").value.trim(),
+    mensaje: document.getElementById("popup-bienvenida-form-mensaje").value.trim(),
+    imagenUrl: document.getElementById("popup-bienvenida-form-imagen").value.trim(),
+  };
+}
+
+// UPDATE real en config_sitio, vía escribirValorConfigSitio() — mismo
+// patrón que guardarTrimestreDesbloqueado()/ejecutarCambioEvento() más
+// abajo/arriba.
+async function guardarPopupBienvenida(datos) {
+  await escribirValorConfigSitio("popup_bienvenida", JSON.stringify(datos));
+}
+
+// Guarda con feedback por toast (carga → éxito/error+Reintentar), mismo
+// patrón que ejecutarCambioTrimestre()/ejecutarCambioEvento().
+async function ejecutarGuardarPopupBienvenida() {
+  const error = document.getElementById("popup-bienvenida-form-error");
+  const botonGuardar = document.getElementById("popup-bienvenida-boton-guardar");
+  error.hidden = true;
+
+  const datos = leerFormularioPopupBienvenida();
+  if (datos.activo && !datos.mensaje) {
+    error.textContent = "El mensaje no puede estar vacío mientras el popup esté activo.";
+    error.hidden = false;
+    return;
+  }
+
+  botonGuardar.disabled = true;
+  const referenciaToast = mostrarToastCarga("Guardando popup de bienvenida…");
+  try {
+    await guardarPopupBienvenida(datos);
+    actualizarToastCarga(referenciaToast, { tipo: "exito", mensaje: "Popup de bienvenida actualizado" });
+  } catch (err) {
+    actualizarToastCarga(referenciaToast, {
+      tipo: "error",
+      mensaje:
+        err instanceof ErrorClaveConfigSitioInexistente
+          ? err.message
+          : "No se pudo guardar. Revisa tu conexión.",
+      onReintentar: () => ejecutarGuardarPopupBienvenida(),
+    });
+  } finally {
+    botonGuardar.disabled = false;
+  }
+}
+
+function activarFormularioPopupBienvenida() {
+  const formulario = document.getElementById("formulario-popup-bienvenida");
+  if (!formulario) return;
+
+  activarPopupBienvenida();
+
+  formulario.addEventListener("submit", (evento) => {
+    evento.preventDefault();
+    // Guard de modo demo, mismo criterio que activarFormularioTrimestre()/
+    // ejecutarCambioEvento(): se corta en el disparador más temprano, antes
+    // de intentar ningún UPDATE real.
+    if (demoModeActivo()) {
+      abrirModalDemo();
+      return;
+    }
+    ejecutarGuardarPopupBienvenida();
+  });
+
+  const botonVistaPrevia = document.getElementById("popup-bienvenida-boton-vista-previa");
+  if (botonVistaPrevia) {
+    // Sin chequeo de "activo": la vista previa muestra los campos del
+    // formulario tal cual están AHORA mismo, sin importar si el switch
+    // está prendido — es una vista de diseño, no una simulación de "esto
+    // se mostraría hoy". onCerrar:null → nunca toca sessionStorage.
+    botonVistaPrevia.addEventListener("click", () => {
+      mostrarPopupBienvenida(leerFormularioPopupBienvenida(), null);
+    });
+  }
+}
+
+async function inicializarFormularioPopupBienvenida() {
+  const formulario = document.getElementById("formulario-popup-bienvenida");
+  if (!formulario) return; // no es admin.html
+
+  try {
+    const valorGuardado = await leerValorConfigSitio("popup_bienvenida");
+    poblarFormularioPopupBienvenida(valorGuardado ? JSON.parse(valorGuardado) : POPUP_BIENVENIDA_DEFECTO);
+  } catch {
+    // Sin fila todavía en config_sitio (INSERT manual pendiente) o sin
+    // red: arranca en el valor seguro. Guardar SÍ fallará hasta que la
+    // fila exista (ver ErrorClaveConfigSitioInexistente), pero precargar
+    // el formulario no debe romperse por eso.
+    poblarFormularioPopupBienvenida(POPUP_BIENVENIDA_DEFECTO);
+  }
+
+  activarFormularioPopupBienvenida();
 }
 
 /* ---------------------------------------------------------

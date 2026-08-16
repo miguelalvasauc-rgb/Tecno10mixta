@@ -448,3 +448,25 @@ const DEMO_FECHAS_OVERRIDE = [
     creado_por: null,
   },
 ];
+
+/* ---------------------------------------------------------
+   popup_bienvenida (config_sitio) — a diferencia de todo lo demás en
+   este archivo, esta clave NO pasa por obtenerDatos()/obtenerDatosDemo()
+   (esas funciones mockean tablas con forma de lista, filtradas por
+   opciones eq/in/etc.); config_sitio se lee con leerValorConfigSitio(),
+   una fila clave/valor puntual vía .single(). Por eso la intercepción
+   para Modo Demo vive directo en obtenerPopupBienvenida() (js/main.js,
+   sección del popup de bienvenida): con demoModeActivo()=true devuelve
+   este objeto tal cual, sin tocar Supabase; con el modo apagado, la
+   MISMA función usa leerValorConfigSitio("popup_bienvenida") como
+   siempre. activo:true a propósito (a diferencia del valor real por
+   defecto, que es false) — así la demo puede mostrar la funcionalidad
+   en acción sin que Hiram tenga que activarla primero. imagenUrl usa un
+   asset real ya en el repo (el logo), no una ruta inventada que
+   fallaría el fallback silencioso a propósito. */
+const DEMO_POPUP_BIENVENIDA = {
+  activo: true,
+  titulo: "¡Bienvenido a Tecno10mixta!",
+  mensaje: "Aquí encontrarás tareas, actividades y proyectos de Educación Tecnológica para 3°C y 3°E. Explora el sitio y revisa tu progreso cuando quieras.",
+  imagenUrl: "assets/logo-10mixta.jpg",
+};

@@ -9395,6 +9395,138 @@ button.badge-estado {
   resize: vertical;
 }
 
+/* ---------- Tarjeta "Popup de bienvenida" (tab-avisos) ----------
+   Mismo par borde/radio que .apariencia-opcion (Apariencia), aplicado a
+   todo un bloque en vez de una sola fila texto+control — la fila
+   "Activo" de adentro SÍ reutiliza .apariencia-opcion/.interruptor tal
+   cual. Campos del formulario con el mismo tratamiento que
+   #formulario-aviso, solo que escapado a este id específico (mismo
+   criterio de "un form, sus propios estilos" que ya usa el resto del
+   panel). */
+.avisos-popup-tarjeta {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie);
+}
+
+.avisos-popup-tarjeta h3 {
+  margin: 0 0 0.4rem;
+}
+
+.avisos-popup-tarjeta > .apariencia-opcion__descripcion {
+  margin: 0 0 1rem;
+}
+
+#formulario-popup-bienvenida {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#formulario-popup-bienvenida > .apariencia-opcion {
+  margin-bottom: 0.75rem;
+}
+
+#formulario-popup-bienvenida label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+}
+
+#formulario-popup-bienvenida input,
+#formulario-popup-bienvenida textarea {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--font-cuerpo);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  resize: vertical;
+}
+
+/* ---------- Popup de bienvenida real (index.html, config_sitio
+   "popup_bienvenida") ----------
+   Mismo <dialog> nativo sin position fija que el resto del sitio (ver
+   nota junto a #modal-detalle/#modal-demo más arriba) — el navegador ya
+   lo centra como overlay vía dialog:modal. A diferencia de esos
+   modales, agrega backdrop-filter:blur() sobre el mismo scrim
+   rgba(0,0,0,.55) que ya usan sus otros ~12 ::backdrop (no hay token
+   CSS para ese color — es un valor fijo intencional, theme-agnostic,
+   igual en todos los overlays existentes del sitio; no se inventa uno
+   nuevo aquí). Sin padding en el <dialog> mismo (a diferencia de
+   #modal-detalle/#modal-demo): la imagen debe llegar al borde de la
+   tarjeta, así que el padding vive en .popup-bienvenida__cuerpo. Markup
+   duplicado tal cual en admin.html para la Vista previa del formulario
+   (mismo criterio ya usado por #modal-demo) — mostrarPopupBienvenida()/
+   activarPopupBienvenida() en js/main.js son las únicas dueñas de su
+   contenido/comportamiento. */
+#popup-bienvenida {
+  width: 92%;
+  max-width: 460px;
+  max-height: 85vh;
+  overflow-y: auto;
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#popup-bienvenida::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+#popup-bienvenida-imagen-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: var(--color-superficie-baja);
+  border-radius: 12px 12px 0 0;
+}
+
+#popup-bienvenida-imagen-el {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.popup-bienvenida__cuerpo {
+  padding: 1.4rem 1.4rem 1.5rem;
+}
+
+#popup-bienvenida-titulo-texto {
+  margin: 0 0 0.5rem;
+  font-size: var(--tamano-fuente-titulo-modal);
+  color: var(--color-texto);
+}
+
+#popup-bienvenida-mensaje-texto {
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--color-texto-suave);
+  white-space: pre-line;
+}
+
+#popup-bienvenida-mensaje-texto:last-of-type {
+  margin-bottom: 0;
+}
+
+@media (min-width: 640px) {
+  #popup-bienvenida {
+    width: 100%;
+  }
+}
+
 /* ---------- Módulo "Trimestre" (tab-trimestre) ----------
    3 opciones fijas (no una tabla ni una lista de tamaño variable como
    Avisos/Alumnos), así que van hardcodeadas en admin.html en vez de
