@@ -9077,24 +9077,30 @@ async function actualizarUISesion() {
 // cuenta.html (se buscan por id y, si no están, la función no hace nada
 // en el resto de páginas).
 function activarFormulariosCuenta() {
-  const tabCrear = document.getElementById("tab-crear");
-  const tabLogin = document.getElementById("tab-login");
-  const panelCrear = document.getElementById("panel-crear");
-  const panelLogin = document.getElementById("panel-login");
-  if (!tabCrear || !tabLogin) return;
+  // 3 pestañas (Crear cuenta / Iniciar sesión / Recuperar, Fase 4): mismo
+  // patrón genérico por id + aria-controls que ya usa activarTabsAdmin()
+  // para los 5 módulos del panel docente, en vez del if/else de 2 ramas
+  // que había aquí antes (no escalaba a una 3ra pestaña sin repetirse).
+  const tabsCuenta = Array.from(document.querySelectorAll(".cuenta-tabs__boton"));
+  if (tabsCuenta.length === 0) return;
 
-  function mostrarTab(activo) {
-    const esCrear = activo === "crear";
-    tabCrear.classList.toggle("cuenta-tabs__boton--activo", esCrear);
-    tabLogin.classList.toggle("cuenta-tabs__boton--activo", !esCrear);
-    tabCrear.setAttribute("aria-selected", String(esCrear));
-    tabLogin.setAttribute("aria-selected", String(!esCrear));
-    panelCrear.hidden = !esCrear;
-    panelLogin.hidden = esCrear;
+  function mostrarTab(idActivo) {
+    tabsCuenta.forEach((tab) => {
+      const activo = tab.id === idActivo;
+      tab.classList.toggle("cuenta-tabs__boton--activo", activo);
+      tab.setAttribute("aria-selected", String(activo));
+      const panel = document.getElementById(tab.getAttribute("aria-controls"));
+      if (panel) panel.hidden = !activo;
+    });
   }
 
-  tabCrear.addEventListener("click", () => mostrarTab("crear"));
-  tabLogin.addEventListener("click", () => mostrarTab("login"));
+  tabsCuenta.forEach((tab) => {
+    tab.addEventListener("click", () => mostrarTab(tab.id));
+  });
+
+  // "¿Olvidaste tu contraseña?" (dentro de #panel-login) cambia a la
+  // pestaña Recuperar sin navegar — mismo mostrarTab() de arriba.
+  document.getElementById("boton-ir-recuperar")?.addEventListener("click", () => mostrarTab("tab-recuperar"));
 
   // Validación inline por campo (WCAG 3.3.1): cada <input required> de
   // cuenta.html trae su propio <p class="campo-formulario__error"
@@ -9233,6 +9239,108 @@ function activarFormulariosCuenta() {
     }
     window.location.href = "index.html";
   });
+
+  // Paso 1 de recuperación de contraseña (Fase 4): pide el correo y
+  // dispara resetPasswordForEmail(). Supabase nunca revela si ese correo
+  // tiene cuenta o no (mismo criterio de seguridad que "Correo o
+  // contraseña incorrectos" en Iniciar sesión), así que el mensaje de
+  // éxito es genérico y se muestra incluso si Supabase devuelve error —
+  // salvo un correo mal formado, que ya se atrapa antes de llamarlo.
+  const formRecuperar = document.getElementById("formulario-recuperar");
+  const errorRecuperar = document.getElementById("recuperar-error");
+  const exitoRecuperar = document.getElementById("recuperar-exito");
+  const campoCorreoRecuperar = document.getElementById("recuperar-correo");
+
+  formRecuperar?.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    errorRecuperar.hidden = true;
+    exitoRecuperar.hidden = true;
+    limpiarCampoInvalido(campoCorreoRecuperar);
+
+    const correo = campoCorreoRecuperar.value.trim();
+    if (!campoCorreoRecuperar.checkValidity()) {
+      marcarCampoInvalido(campoCorreoRecuperar, "Ingresa un correo válido, por ejemplo: nombre@ejemplo.com");
+      return;
+    }
+
+    const botonEnviar = formRecuperar.querySelector("button[type=submit]");
+    botonEnviar.disabled = true;
+    const { error } = await clienteSupabase.auth.resetPasswordForEmail(correo, {
+      redirectTo: "https://tecno10mixta.netlify.app/cuenta.html",
+    });
+    botonEnviar.disabled = false;
+
+    if (error) {
+      errorRecuperar.textContent = "No pudimos procesar tu solicitud en este momento. Intenta de nuevo en unos minutos.";
+      errorRecuperar.hidden = false;
+      return;
+    }
+    exitoRecuperar.hidden = false;
+    formRecuperar.reset();
+  });
+
+  // Paso 2 de recuperación de contraseña: solo se ve tras
+  // mostrarPanelRestablecer() (ver el listener de PASSWORD_RECOVERY más
+  // abajo) — el formulario existe siempre en el HTML pero #panel-restablecer
+  // empieza "hidden", así que este listener no hace nada hasta entonces.
+  const formRestablecer = document.getElementById("formulario-restablecer");
+  const errorRestablecer = document.getElementById("restablecer-error");
+  const exitoRestablecer = document.getElementById("restablecer-exito");
+  const campoNuevaContrasena = document.getElementById("restablecer-contrasena");
+  const campoNuevaContrasenaConfirmar = document.getElementById("restablecer-contrasena-confirmar");
+
+  formRestablecer?.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    errorRestablecer.hidden = true;
+    [campoNuevaContrasena, campoNuevaContrasenaConfirmar].forEach(limpiarCampoInvalido);
+
+    const contrasena = campoNuevaContrasena.value;
+    const confirmar = campoNuevaContrasenaConfirmar.value;
+
+    let huboError = false;
+    if (contrasena.length < 8) {
+      marcarCampoInvalido(campoNuevaContrasena, "La contraseña debe tener al menos 8 caracteres.");
+      huboError = true;
+    }
+    if (contrasena !== confirmar) {
+      marcarCampoInvalido(campoNuevaContrasenaConfirmar, "Las contraseñas no coinciden.");
+      huboError = true;
+    }
+    if (huboError) return;
+
+    const { error } = await clienteSupabase.auth.updateUser({ password: contrasena });
+    if (error) {
+      errorRestablecer.textContent = "No se pudo actualizar la contraseña: " + error.message;
+      errorRestablecer.hidden = false;
+      return;
+    }
+
+    formRestablecer.hidden = true;
+    exitoRestablecer.hidden = false;
+  });
+}
+
+// Recuperación de contraseña (Fase 4), paso 2: Supabase resuelve el
+// token de recuperación del enlace del correo apenas carga la página y
+// dispara el evento PASSWORD_RECOVERY (ver el listener de
+// onAuthStateChange más abajo) — se llama desde ahí, nunca por clic
+// directo. Mismo patrón que activarPanelSesionCuenta(): oculta el resto
+// de paneles de #cuenta y muestra solo este.
+function mostrarPanelRestablecer() {
+  const panelRestablecer = document.getElementById("panel-restablecer");
+  if (!panelRestablecer) return;
+
+  const tabs = document.querySelector(".cuenta-tabs");
+  const panelCrear = document.getElementById("panel-crear");
+  const panelLogin = document.getElementById("panel-login");
+  const panelRecuperar = document.getElementById("panel-recuperar");
+  const panelSesion = document.getElementById("panel-sesion-activa");
+  if (tabs) tabs.hidden = true;
+  if (panelCrear) panelCrear.hidden = true;
+  if (panelLogin) panelLogin.hidden = true;
+  if (panelRecuperar) panelRecuperar.hidden = true;
+  if (panelSesion) panelSesion.hidden = true;
+  panelRestablecer.hidden = false;
 }
 
 // Solo existe #panel-sesion-activa en cuenta.html. Si ya hay sesión al
@@ -9339,6 +9447,13 @@ clienteSupabase.auth.onAuthStateChange(async (evento) => {
   // pestaña deep-linkeada sí sorprendería al alumno si ya había
   // cambiado de pestaña él mismo.
   if (evento === "INITIAL_SESSION" && TRIMESTRE_ACTUAL === "1") activarPestanaDesdeHash();
+
+  // Recuperación de contraseña (Fase 4): el enlace del correo trae un
+  // token que Supabase resuelve al cargar cuenta.html, disparando este
+  // evento con una sesión de recuperación ya activa. Solo existe
+  // #panel-restablecer ahí — en el resto de páginas mostrarPanelRestablecer()
+  // no hace nada.
+  if (evento === "PASSWORD_RECOVERY") mostrarPanelRestablecer();
 });
 
 /* =========================================================

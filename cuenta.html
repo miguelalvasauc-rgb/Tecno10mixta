@@ -213,6 +213,10 @@
                   id="tab-login" role="tab" aria-selected="false" aria-controls="panel-login">
             Iniciar sesión
           </button>
+          <button type="button" class="cuenta-tabs__boton"
+                  id="tab-recuperar" role="tab" aria-selected="false" aria-controls="panel-recuperar">
+            Recuperar
+          </button>
         </div>
 
         <div id="panel-crear" class="cuenta-panel" role="tabpanel" aria-labelledby="tab-crear">
@@ -280,9 +284,37 @@
             <button type="submit" class="boton-primario">Iniciar sesión</button>
           </form>
           <p class="cuenta-ayuda">
-            ¿Olvidaste tu contraseña? Contacta a tu profesor:
-            <a href="mailto:hiram.alvarado@jaliscoedu.mx">hiram.alvarado@jaliscoedu.mx</a>
+            ¿Olvidaste tu contraseña?
+            <button type="button" id="boton-ir-recuperar" class="cuenta-ayuda__enlace">Recupérala aquí</button>
           </p>
+        </div>
+
+        <!-- Recuperación de contraseña (Fase 4): resetPasswordForEmail()
+             no revela si el correo existe o no (por seguridad, mismo
+             criterio que "Correo o contraseña incorrectos" en Iniciar
+             sesión) — un solo mensaje genérico tras enviar, sin importar
+             el resultado real. Ver activarFormulariosCuenta() en
+             js/main.js. -->
+        <div id="panel-recuperar" class="cuenta-panel" role="tabpanel" aria-labelledby="tab-recuperar" hidden>
+          <p class="cuenta-mensaje">
+            Ingresa el correo con el que creaste tu cuenta. Si existe, te
+            enviaremos un enlace para elegir una nueva contraseña.
+          </p>
+          <form id="formulario-recuperar" class="cuenta-formulario" novalidate>
+            <div class="campo-formulario">
+              <label for="recuperar-correo">Correo</label>
+              <input type="email" id="recuperar-correo" name="correo" autocomplete="email" required
+                     aria-describedby="recuperar-correo-error">
+              <p id="recuperar-correo-error" class="campo-formulario__error" role="alert" hidden></p>
+            </div>
+
+            <p id="recuperar-error" class="cuenta-error" role="alert" hidden></p>
+            <p id="recuperar-exito" class="cuenta-mensaje" role="status" hidden>
+              📧 Si ese correo tiene una cuenta, te enviamos un enlace para elegir una nueva contraseña. Revisa tu bandeja de entrada, incluyendo la carpeta de spam o no deseados.
+            </p>
+
+            <button type="submit" class="boton-primario">Enviar enlace de recuperación</button>
+          </form>
         </div>
 
         <div id="panel-sesion-activa" class="cuenta-panel" hidden>
@@ -316,6 +348,44 @@
               Elige el tema visual del sitio. Se guarda en tu cuenta y se aplica en cualquier dispositivo donde inicies sesión.
             </p>
             <div id="cuenta-tema-grid" class="tema-tarjeta__grid"></div>
+          </div>
+        </div>
+
+        <!-- Recuperación de contraseña (Fase 4), paso 2: NO es un tab —
+             mismo patrón que #panel-sesion-activa (oculto por defecto,
+             activado por JS, nunca por clic directo). Se muestra cuando
+             clienteSupabase.auth.onAuthStateChange() detecta el evento
+             PASSWORD_RECOVERY (el enlace del correo trae un token que
+             Supabase resuelve solo al cargar la página) — ver
+             mostrarPanelRestablecer() en js/main.js. -->
+        <div id="panel-restablecer" class="cuenta-panel" hidden>
+          <p class="cuenta-mensaje">
+            Elige tu nueva contraseña. En cuanto la guardes, podrás iniciar sesión con ella.
+          </p>
+          <form id="formulario-restablecer" class="cuenta-formulario" novalidate>
+            <div class="campo-formulario">
+              <label for="restablecer-contrasena">Nueva contraseña</label>
+              <input type="password" id="restablecer-contrasena" name="contrasena" minlength="8"
+                     autocomplete="new-password" required aria-describedby="restablecer-contrasena-error">
+              <p id="restablecer-contrasena-error" class="campo-formulario__error" role="alert" hidden></p>
+            </div>
+
+            <div class="campo-formulario">
+              <label for="restablecer-contrasena-confirmar">Confirmar nueva contraseña</label>
+              <input type="password" id="restablecer-contrasena-confirmar" name="contrasenaConfirmar"
+                     minlength="8" autocomplete="new-password" required
+                     aria-describedby="restablecer-contrasena-confirmar-error">
+              <p id="restablecer-contrasena-confirmar-error" class="campo-formulario__error" role="alert" hidden></p>
+            </div>
+
+            <p id="restablecer-error" class="cuenta-error" role="alert" hidden></p>
+
+            <button type="submit" class="boton-primario">Guardar nueva contraseña</button>
+          </form>
+
+          <div id="restablecer-exito" class="cuenta-mensaje" role="status" hidden>
+            <p>✅ Tu contraseña se actualizó correctamente.</p>
+            <a href="index.html" class="boton-secundario">Ir a Inicio</a>
           </div>
         </div>
       </div>

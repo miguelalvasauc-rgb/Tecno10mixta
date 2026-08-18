@@ -6109,6 +6109,25 @@ summary {
   text-align: center;
 }
 
+/* Botón "Recupérala aquí" (Fase 4): cambia al tab Recuperar sin navegar
+   a otra página, por eso es <button>, no <a> — se ve como un enlace de
+   texto con el mismo par turquesa/navy ya validado en
+   .panel-progreso__item-enlace, no un color nuevo. */
+.cuenta-ayuda__enlace {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--color-turquesa);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+:root[data-theme="claro"] .cuenta-ayuda__enlace {
+  color: var(--color-primario);
+}
+
 /* ---------- Reglamento del taller ---------- */
 .reglamento-contenedor {
   background-color: var(--color-superficie);
