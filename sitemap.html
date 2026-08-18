@@ -122,22 +122,19 @@
       <a href="trimestre-2.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="2">2°</a>
       <a href="trimestre-3.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="3">3°</a>
     </div>
-    <div id="submenu-trimestre" class="riel-flyout__lista nav-anclas">
-      <a href="trimestre-1.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
-        <span aria-hidden="true">📝</span><span>Tareas</span>
-      </a>
-      <a href="trimestre-1.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
-        <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
-      </a>
-      <a href="trimestre-1.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
-        <span aria-hidden="true">📋</span><span>Rúbricas</span>
-      </a>
-      <a href="trimestre-1.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
-        <span aria-hidden="true">🎯</span><span>Actividades</span>
-      </a>
-      <a href="trimestre-1.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
-        <span aria-hidden="true">🚀</span><span>Proyectos</span>
-      </a>
+    <div class="riel-flyout__modo-selector" role="group" aria-label="Elige Teoría o Práctica" data-modo-defecto="practica">
+      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="teoria" aria-pressed="false">
+        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">📖</span>
+        <span class="riel-flyout__modo-tarjeta__titulo">Teoría</span>
+        <span class="riel-flyout__modo-tarjeta__conteo">4 secciones</span>
+      </button>
+      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="practica" aria-pressed="false">
+        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">✍️</span>
+        <span class="riel-flyout__modo-tarjeta__titulo">Práctica</span>
+        <span class="riel-flyout__modo-tarjeta__conteo">6 secciones</span>
+      </button>
+    </div>
+    <div class="riel-flyout__lista nav-anclas" data-modo-lista="teoria" hidden>
       <a href="trimestre-1.html#temario" data-enlace="temario" class="riel-flyout__enlace">
         <span aria-hidden="true">📘</span><span>Temario</span>
       </a>
@@ -149,6 +146,26 @@
       </a>
       <a href="trimestre-1.html#videos" data-enlace="videos" class="riel-flyout__enlace">
         <span aria-hidden="true">🎬</span><span>Videos</span>
+      </a>
+    </div>
+    <div id="submenu-trimestre" class="riel-flyout__lista nav-anclas" data-modo-lista="practica">
+      <a href="trimestre-1-practica.html#proximas-fechas-trimestre" data-enlace="proximas-fechas-trimestre" class="riel-flyout__enlace">
+        <span aria-hidden="true">📅</span><span>Próximas fechas</span>
+      </a>
+      <a href="trimestre-1-practica.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
+        <span aria-hidden="true">📝</span><span>Tareas</span>
+      </a>
+      <a href="trimestre-1-practica.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
+        <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
+      </a>
+      <a href="trimestre-1-practica.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
+        <span aria-hidden="true">📋</span><span>Rúbricas</span>
+      </a>
+      <a href="trimestre-1-practica.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
+        <span aria-hidden="true">🎯</span><span>Actividades</span>
+      </a>
+      <a href="trimestre-1-practica.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
+        <span aria-hidden="true">🚀</span><span>Proyectos</span>
       </a>
     </div>
   </div>
@@ -260,22 +277,19 @@
       <a href="trimestre-2.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="2">2°</a>
       <a href="trimestre-3.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="3">3°</a>
     </div>
-    <div class="riel-flyout__lista nav-anclas">
-      <a href="trimestre-1.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
-        <span aria-hidden="true">📝</span><span>Tareas</span>
-      </a>
-      <a href="trimestre-1.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
-        <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
-      </a>
-      <a href="trimestre-1.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
-        <span aria-hidden="true">📋</span><span>Rúbricas</span>
-      </a>
-      <a href="trimestre-1.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
-        <span aria-hidden="true">🎯</span><span>Actividades</span>
-      </a>
-      <a href="trimestre-1.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
-        <span aria-hidden="true">🚀</span><span>Proyectos</span>
-      </a>
+    <div class="riel-flyout__modo-selector" role="group" aria-label="Elige Teoría o Práctica" data-modo-defecto="practica">
+      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="teoria" aria-pressed="false">
+        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">📖</span>
+        <span class="riel-flyout__modo-tarjeta__titulo">Teoría</span>
+        <span class="riel-flyout__modo-tarjeta__conteo">4 secciones</span>
+      </button>
+      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="practica" aria-pressed="false">
+        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">✍️</span>
+        <span class="riel-flyout__modo-tarjeta__titulo">Práctica</span>
+        <span class="riel-flyout__modo-tarjeta__conteo">6 secciones</span>
+      </button>
+    </div>
+    <div class="riel-flyout__lista nav-anclas" data-modo-lista="teoria" hidden>
       <a href="trimestre-1.html#temario" data-enlace="temario" class="riel-flyout__enlace">
         <span aria-hidden="true">📘</span><span>Temario</span>
       </a>
@@ -287,6 +301,26 @@
       </a>
       <a href="trimestre-1.html#videos" data-enlace="videos" class="riel-flyout__enlace">
         <span aria-hidden="true">🎬</span><span>Videos</span>
+      </a>
+    </div>
+    <div class="riel-flyout__lista nav-anclas" data-modo-lista="practica">
+      <a href="trimestre-1-practica.html#proximas-fechas-trimestre" data-enlace="proximas-fechas-trimestre" class="riel-flyout__enlace">
+        <span aria-hidden="true">📅</span><span>Próximas fechas</span>
+      </a>
+      <a href="trimestre-1-practica.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
+        <span aria-hidden="true">📝</span><span>Tareas</span>
+      </a>
+      <a href="trimestre-1-practica.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
+        <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
+      </a>
+      <a href="trimestre-1-practica.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
+        <span aria-hidden="true">📋</span><span>Rúbricas</span>
+      </a>
+      <a href="trimestre-1-practica.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
+        <span aria-hidden="true">🎯</span><span>Actividades</span>
+      </a>
+      <a href="trimestre-1-practica.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
+        <span aria-hidden="true">🚀</span><span>Proyectos</span>
       </a>
     </div>
   </div>
@@ -379,7 +413,7 @@
 
           <li class="mapa-sitio__pagina-item">
             <a href="trimestre-1.html" class="mapa-sitio__pagina">
-              <span aria-hidden="true">📘</span> Trimestre 1
+              <span aria-hidden="true">📖</span> Trimestre 1 · Teoría
             </a>
             <ul class="mapa-sitio__nivel-2">
               <li>
@@ -401,38 +435,52 @@
                 </a>
               </li>
               <li>
-                <a href="trimestre-1.html#rubricas">
-                  <span aria-hidden="true">📋</span> Rúbricas
-                  <span class="mapa-sitio__etiqueta">sección</span>
-                </a>
-              </li>
-              <li>
-                <a href="trimestre-1.html#tareas">
-                  <span aria-hidden="true">📝</span> Tareas
-                  <span class="mapa-sitio__etiqueta">sección</span>
-                </a>
-              </li>
-              <li>
-                <a href="trimestre-1.html#actividades">
-                  <span aria-hidden="true">🎯</span> Actividades
-                  <span class="mapa-sitio__etiqueta">sección</span>
-                </a>
-              </li>
-              <li>
-                <a href="trimestre-1.html#proyectos">
-                  <span aria-hidden="true">🚀</span> Proyectos
-                  <span class="mapa-sitio__etiqueta">sección</span>
-                </a>
-              </li>
-              <li>
                 <a href="trimestre-1.html#videos">
                   <span aria-hidden="true">🎬</span> Videos
                   <span class="mapa-sitio__etiqueta">sección</span>
                 </a>
               </li>
+            </ul>
+          </li>
+
+          <li class="mapa-sitio__pagina-item">
+            <a href="trimestre-1-practica.html" class="mapa-sitio__pagina">
+              <span aria-hidden="true">✍️</span> Trimestre 1 · Práctica
+            </a>
+            <ul class="mapa-sitio__nivel-2">
               <li>
-                <a href="trimestre-1.html#entrega">
+                <a href="trimestre-1-practica.html#proximas-fechas-trimestre">
+                  <span aria-hidden="true">📅</span> Próximas fechas
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-1-practica.html#tareas">
+                  <span aria-hidden="true">📝</span> Tareas
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-1-practica.html#entrega">
                   <span aria-hidden="true">📤</span> Entrega de trabajos
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-1-practica.html#rubricas">
+                  <span aria-hidden="true">📋</span> Rúbricas
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-1-practica.html#actividades">
+                  <span aria-hidden="true">🎯</span> Actividades
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-1-practica.html#proyectos">
+                  <span aria-hidden="true">🚀</span> Proyectos
                   <span class="mapa-sitio__etiqueta">sección</span>
                 </a>
               </li>
@@ -441,7 +489,7 @@
 
           <li class="mapa-sitio__pagina-item">
             <a href="trimestre-2.html" class="mapa-sitio__pagina">
-              <span aria-hidden="true">📘</span> Trimestre 2
+              <span aria-hidden="true">📖</span> Trimestre 2 · Teoría
             </a>
             <ul class="mapa-sitio__nivel-2">
               <li>
@@ -463,38 +511,52 @@
                 </a>
               </li>
               <li>
-                <a href="trimestre-2.html#rubricas">
-                  <span aria-hidden="true">📋</span> Rúbricas
-                  <span class="mapa-sitio__etiqueta">sección</span>
-                </a>
-              </li>
-              <li>
-                <a href="trimestre-2.html#tareas">
-                  <span aria-hidden="true">📝</span> Tareas
-                  <span class="mapa-sitio__etiqueta">sección</span>
-                </a>
-              </li>
-              <li>
-                <a href="trimestre-2.html#actividades">
-                  <span aria-hidden="true">🎯</span> Actividades
-                  <span class="mapa-sitio__etiqueta">sección</span>
-                </a>
-              </li>
-              <li>
-                <a href="trimestre-2.html#proyectos">
-                  <span aria-hidden="true">🚀</span> Proyectos
-                  <span class="mapa-sitio__etiqueta">sección</span>
-                </a>
-              </li>
-              <li>
                 <a href="trimestre-2.html#videos">
                   <span aria-hidden="true">🎬</span> Videos
                   <span class="mapa-sitio__etiqueta">sección</span>
                 </a>
               </li>
+            </ul>
+          </li>
+
+          <li class="mapa-sitio__pagina-item">
+            <a href="trimestre-2-practica.html" class="mapa-sitio__pagina">
+              <span aria-hidden="true">✍️</span> Trimestre 2 · Práctica
+            </a>
+            <ul class="mapa-sitio__nivel-2">
               <li>
-                <a href="trimestre-2.html#entrega">
+                <a href="trimestre-2-practica.html#proximas-fechas-trimestre">
+                  <span aria-hidden="true">📅</span> Próximas fechas
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-2-practica.html#tareas">
+                  <span aria-hidden="true">📝</span> Tareas
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-2-practica.html#entrega">
                   <span aria-hidden="true">📤</span> Entrega de trabajos
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-2-practica.html#rubricas">
+                  <span aria-hidden="true">📋</span> Rúbricas
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-2-practica.html#actividades">
+                  <span aria-hidden="true">🎯</span> Actividades
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-2-practica.html#proyectos">
+                  <span aria-hidden="true">🚀</span> Proyectos
                   <span class="mapa-sitio__etiqueta">sección</span>
                 </a>
               </li>
@@ -503,7 +565,7 @@
 
           <li class="mapa-sitio__pagina-item">
             <a href="trimestre-3.html" class="mapa-sitio__pagina">
-              <span aria-hidden="true">📘</span> Trimestre 3
+              <span aria-hidden="true">📖</span> Trimestre 3 · Teoría
             </a>
             <ul class="mapa-sitio__nivel-2">
               <li>
@@ -525,38 +587,52 @@
                 </a>
               </li>
               <li>
-                <a href="trimestre-3.html#rubricas">
-                  <span aria-hidden="true">📋</span> Rúbricas
-                  <span class="mapa-sitio__etiqueta">sección</span>
-                </a>
-              </li>
-              <li>
-                <a href="trimestre-3.html#tareas">
-                  <span aria-hidden="true">📝</span> Tareas
-                  <span class="mapa-sitio__etiqueta">sección</span>
-                </a>
-              </li>
-              <li>
-                <a href="trimestre-3.html#actividades">
-                  <span aria-hidden="true">🎯</span> Actividades
-                  <span class="mapa-sitio__etiqueta">sección</span>
-                </a>
-              </li>
-              <li>
-                <a href="trimestre-3.html#proyectos">
-                  <span aria-hidden="true">🚀</span> Proyectos
-                  <span class="mapa-sitio__etiqueta">sección</span>
-                </a>
-              </li>
-              <li>
                 <a href="trimestre-3.html#videos">
                   <span aria-hidden="true">🎬</span> Videos
                   <span class="mapa-sitio__etiqueta">sección</span>
                 </a>
               </li>
+            </ul>
+          </li>
+
+          <li class="mapa-sitio__pagina-item">
+            <a href="trimestre-3-practica.html" class="mapa-sitio__pagina">
+              <span aria-hidden="true">✍️</span> Trimestre 3 · Práctica
+            </a>
+            <ul class="mapa-sitio__nivel-2">
               <li>
-                <a href="trimestre-3.html#entrega">
+                <a href="trimestre-3-practica.html#proximas-fechas-trimestre">
+                  <span aria-hidden="true">📅</span> Próximas fechas
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-3-practica.html#tareas">
+                  <span aria-hidden="true">📝</span> Tareas
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-3-practica.html#entrega">
                   <span aria-hidden="true">📤</span> Entrega de trabajos
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-3-practica.html#rubricas">
+                  <span aria-hidden="true">📋</span> Rúbricas
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-3-practica.html#actividades">
+                  <span aria-hidden="true">🎯</span> Actividades
+                  <span class="mapa-sitio__etiqueta">sección</span>
+                </a>
+              </li>
+              <li>
+                <a href="trimestre-3-practica.html#proyectos">
+                  <span aria-hidden="true">🚀</span> Proyectos
                   <span class="mapa-sitio__etiqueta">sección</span>
                 </a>
               </li>

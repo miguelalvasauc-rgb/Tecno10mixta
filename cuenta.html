@@ -117,22 +117,19 @@
       <a href="trimestre-2.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="2">2°</a>
       <a href="trimestre-3.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="3">3°</a>
     </div>
-    <div id="submenu-trimestre" class="riel-flyout__lista nav-anclas">
-      <a href="trimestre-1.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
-        <span aria-hidden="true">📝</span><span>Tareas</span>
-      </a>
-      <a href="trimestre-1.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
-        <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
-      </a>
-      <a href="trimestre-1.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
-        <span aria-hidden="true">📋</span><span>Rúbricas</span>
-      </a>
-      <a href="trimestre-1.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
-        <span aria-hidden="true">🎯</span><span>Actividades</span>
-      </a>
-      <a href="trimestre-1.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
-        <span aria-hidden="true">🚀</span><span>Proyectos</span>
-      </a>
+    <div class="riel-flyout__modo-selector" role="group" aria-label="Elige Teoría o Práctica" data-modo-defecto="practica">
+      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="teoria" aria-pressed="false">
+        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">📖</span>
+        <span class="riel-flyout__modo-tarjeta__titulo">Teoría</span>
+        <span class="riel-flyout__modo-tarjeta__conteo">4 secciones</span>
+      </button>
+      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="practica" aria-pressed="false">
+        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">✍️</span>
+        <span class="riel-flyout__modo-tarjeta__titulo">Práctica</span>
+        <span class="riel-flyout__modo-tarjeta__conteo">6 secciones</span>
+      </button>
+    </div>
+    <div class="riel-flyout__lista nav-anclas" data-modo-lista="teoria" hidden>
       <a href="trimestre-1.html#temario" data-enlace="temario" class="riel-flyout__enlace">
         <span aria-hidden="true">📘</span><span>Temario</span>
       </a>
@@ -144,6 +141,26 @@
       </a>
       <a href="trimestre-1.html#videos" data-enlace="videos" class="riel-flyout__enlace">
         <span aria-hidden="true">🎬</span><span>Videos</span>
+      </a>
+    </div>
+    <div id="submenu-trimestre" class="riel-flyout__lista nav-anclas" data-modo-lista="practica">
+      <a href="trimestre-1-practica.html#proximas-fechas-trimestre" data-enlace="proximas-fechas-trimestre" class="riel-flyout__enlace">
+        <span aria-hidden="true">📅</span><span>Próximas fechas</span>
+      </a>
+      <a href="trimestre-1-practica.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
+        <span aria-hidden="true">📝</span><span>Tareas</span>
+      </a>
+      <a href="trimestre-1-practica.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
+        <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
+      </a>
+      <a href="trimestre-1-practica.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
+        <span aria-hidden="true">📋</span><span>Rúbricas</span>
+      </a>
+      <a href="trimestre-1-practica.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
+        <span aria-hidden="true">🎯</span><span>Actividades</span>
+      </a>
+      <a href="trimestre-1-practica.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
+        <span aria-hidden="true">🚀</span><span>Proyectos</span>
       </a>
     </div>
   </div>
@@ -422,22 +439,19 @@
       <a href="trimestre-2.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="2">2°</a>
       <a href="trimestre-3.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="3">3°</a>
     </div>
-    <div class="riel-flyout__lista nav-anclas">
-      <a href="trimestre-1.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
-        <span aria-hidden="true">📝</span><span>Tareas</span>
-      </a>
-      <a href="trimestre-1.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
-        <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
-      </a>
-      <a href="trimestre-1.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
-        <span aria-hidden="true">📋</span><span>Rúbricas</span>
-      </a>
-      <a href="trimestre-1.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
-        <span aria-hidden="true">🎯</span><span>Actividades</span>
-      </a>
-      <a href="trimestre-1.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
-        <span aria-hidden="true">🚀</span><span>Proyectos</span>
-      </a>
+    <div class="riel-flyout__modo-selector" role="group" aria-label="Elige Teoría o Práctica" data-modo-defecto="practica">
+      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="teoria" aria-pressed="false">
+        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">📖</span>
+        <span class="riel-flyout__modo-tarjeta__titulo">Teoría</span>
+        <span class="riel-flyout__modo-tarjeta__conteo">4 secciones</span>
+      </button>
+      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="practica" aria-pressed="false">
+        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">✍️</span>
+        <span class="riel-flyout__modo-tarjeta__titulo">Práctica</span>
+        <span class="riel-flyout__modo-tarjeta__conteo">6 secciones</span>
+      </button>
+    </div>
+    <div class="riel-flyout__lista nav-anclas" data-modo-lista="teoria" hidden>
       <a href="trimestre-1.html#temario" data-enlace="temario" class="riel-flyout__enlace">
         <span aria-hidden="true">📘</span><span>Temario</span>
       </a>
@@ -449,6 +463,26 @@
       </a>
       <a href="trimestre-1.html#videos" data-enlace="videos" class="riel-flyout__enlace">
         <span aria-hidden="true">🎬</span><span>Videos</span>
+      </a>
+    </div>
+    <div class="riel-flyout__lista nav-anclas" data-modo-lista="practica">
+      <a href="trimestre-1-practica.html#proximas-fechas-trimestre" data-enlace="proximas-fechas-trimestre" class="riel-flyout__enlace">
+        <span aria-hidden="true">📅</span><span>Próximas fechas</span>
+      </a>
+      <a href="trimestre-1-practica.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
+        <span aria-hidden="true">📝</span><span>Tareas</span>
+      </a>
+      <a href="trimestre-1-practica.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
+        <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
+      </a>
+      <a href="trimestre-1-practica.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
+        <span aria-hidden="true">📋</span><span>Rúbricas</span>
+      </a>
+      <a href="trimestre-1-practica.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
+        <span aria-hidden="true">🎯</span><span>Actividades</span>
+      </a>
+      <a href="trimestre-1-practica.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
+        <span aria-hidden="true">🚀</span><span>Proyectos</span>
       </a>
     </div>
   </div>
