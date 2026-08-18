@@ -7246,6 +7246,85 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   color: var(--color-primario-texto);
 }
 
+/* Selector Teoría/Práctica (Opción B: tarjetas grandes) — vive dentro de
+   #flyout-trimestre y #sheet-trimestre, entre los tabs 1°/2°/3° y la
+   lista de enlaces. Alterna qué mitad de esa lista se muestra (ver
+   activarSelectorModoTrimestre() en js/main.js); son <button>, no <a>,
+   porque no navegan por sí solos. */
+.riel-flyout__modo-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.riel-flyout__modo-tarjeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  text-align: left;
+  font-family: var(--font-cuerpo);
+  background-color: var(--color-superficie-baja);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: 0.6rem 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.riel-flyout__modo-tarjeta:hover {
+  border-color: var(--color-turquesa);
+}
+
+.riel-flyout__modo-tarjeta__icono {
+  font-size: 1.1rem;
+}
+
+.riel-flyout__modo-tarjeta__titulo {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.riel-flyout__modo-tarjeta__conteo {
+  font-size: var(--tamano-fuente-meta-micro);
+  color: var(--color-texto-suave);
+}
+
+/* Estado activo: mismo par turquesa/navy que .riel-flyout__trimestre-tab--activo
+   (ver arriba), para que tabs de trimestre + tarjetas de modo lean como
+   un único lenguaje visual, reusando el mismo par de tokens ya validado
+   contra AA en los 10 temas. */
+.riel-flyout__modo-tarjeta--activo {
+  background-color: var(--color-turquesa);
+  border-color: var(--color-turquesa);
+}
+
+.riel-flyout__modo-tarjeta--activo .riel-flyout__modo-tarjeta__titulo,
+.riel-flyout__modo-tarjeta--activo .riel-flyout__modo-tarjeta__conteo {
+  color: var(--color-acento-texto);
+}
+
+:root[data-theme="claro"] .riel-flyout__modo-tarjeta--activo {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+:root[data-theme="claro"] .riel-flyout__modo-tarjeta--activo .riel-flyout__modo-tarjeta__titulo,
+:root[data-theme="claro"] .riel-flyout__modo-tarjeta--activo .riel-flyout__modo-tarjeta__conteo {
+  color: var(--color-primario-texto);
+}
+
+.riel-flyout__modo-tarjeta:focus-visible {
+  outline: 2px solid var(--color-turquesa);
+  outline-offset: 2px;
+}
+
+.riel-flyout__lista[hidden] {
+  display: none;
+}
+
 .riel-flyout__campo {
   flex-direction: column;
   align-items: stretch;

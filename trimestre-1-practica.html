@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trimestre 2 · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
-  <meta name="description" content="Trimestre 2 de Educación Tecnológica para los grupos 3°C y 3°E: rúbricas, tareas, actividades, proyectos, videos y entrega de trabajos.">
+  <title>Trimestre 1 · Práctica · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
+  <meta name="description" content="Trimestre 1 de Educación Tecnológica para los grupos 3°C y 3°E: próximas fechas, tareas, rúbricas, actividades, proyectos y entrega de trabajos.">
   <script>
     // Aplica el tema lo antes posible (antes de cargar css/style.css) para
     // evitar el flash del tema por defecto al cargar la página. Autocontenido
@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
-<body data-trimestre="2">
+<body data-trimestre="1">
   <a href="#main-content" class="enlace-saltar">Saltar al contenido principal</a>
 
   <!-- Barra de progreso de lectura: mejora progresiva solo-CSS
@@ -43,7 +43,7 @@
        aria-hidden porque es puramente decorativa. -->
   <div class="barra-progreso-lectura" aria-hidden="true"></div>
 
-  <!-- ===================== BARRA LATERAL (desktop ≥1024px) ===================== -->
+  <!-- ===================== RIEL DE NAVEGACIÓN (desktop ≥1024px) ===================== -->
   <aside class="riel" aria-label="Navegación principal">
     <a href="index.html" class="riel__logo" aria-label="Ir a la portada">
       <img
@@ -60,7 +60,7 @@
 
       <button type="button" id="riel-boton-trimestre" class="riel__boton" aria-haspopup="true" aria-expanded="false" aria-controls="flyout-trimestre" aria-label="Trimestre">
         <span aria-hidden="true">📘</span>
-        <span id="riel-badge-trimestre" class="riel__badge trimestre-badge" aria-hidden="true">2</span>
+        <span id="riel-badge-trimestre" class="riel__badge trimestre-badge" aria-hidden="true">1</span>
       </button>
 
       <a href="faq.html" class="riel__boton" aria-label="FAQ">
@@ -113,19 +113,21 @@
     </div>
   </div>
 
-  <!-- Página de Trimestre 2: mini-tabs y anclas son locales; no dependen
-       de actualizarEnlacesTrimestreEnSidebar (TRIMESTRE_ACTUAL="2"). -->
+  <!-- Página de Trimestre 1 · Práctica: mini-tabs y anclas de Práctica son
+       locales; no dependen de actualizarEnlacesTrimestreEnSidebar
+       (TRIMESTRE_ACTUAL="1"). Las anclas de Teoría sí cruzan a
+       trimestre-1.html, hardcodeadas (ver ANCLAS_TEORIA en js/main.js). -->
   <div id="flyout-trimestre" class="riel-flyout" role="group" aria-label="Trimestre" hidden>
     <div class="riel-flyout__titulo-fila">
-      <p class="riel-flyout__titulo" data-texto-trimestre>Trimestre 2</p>
+      <p class="riel-flyout__titulo" data-texto-trimestre>Trimestre 1</p>
       <span class="riel-flyout__pill-activo pill-activo-trimestre" hidden>Activo</span>
     </div>
     <div class="riel-flyout__trimestre-tabs" role="tablist" aria-label="Selector de trimestre">
-      <a href="trimestre-1.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="1">1°</a>
-      <a href="trimestre-2.html" class="riel-flyout__trimestre-tab riel-flyout__trimestre-tab--activo" role="tab" aria-selected="true" aria-current="page" data-trimestre-tab="2">2°</a>
+      <a href="trimestre-1.html" class="riel-flyout__trimestre-tab riel-flyout__trimestre-tab--activo" role="tab" aria-selected="true" aria-current="page" data-trimestre-tab="1">1°</a>
+      <a href="trimestre-2.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="2">2°</a>
       <a href="trimestre-3.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="3">3°</a>
     </div>
-    <div class="riel-flyout__modo-selector" role="group" aria-label="Elige Teoría o Práctica" data-modo-defecto="teoria">
+    <div class="riel-flyout__modo-selector" role="group" aria-label="Elige Teoría o Práctica" data-modo-defecto="practica">
       <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="teoria" aria-pressed="false">
         <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">📖</span>
         <span class="riel-flyout__modo-tarjeta__titulo">Teoría</span>
@@ -137,37 +139,37 @@
         <span class="riel-flyout__modo-tarjeta__conteo">6 secciones</span>
       </button>
     </div>
-    <div id="submenu-trimestre" class="riel-flyout__lista nav-anclas" data-modo-lista="teoria">
-      <a href="#temario" data-enlace="temario" class="riel-flyout__enlace">
+    <div class="riel-flyout__lista nav-anclas" data-modo-lista="teoria" hidden>
+      <a href="trimestre-1.html#temario" data-enlace="temario" class="riel-flyout__enlace">
         <span aria-hidden="true">📘</span><span>Temario</span>
       </a>
-      <a href="#infografias" data-enlace="infografias" class="riel-flyout__enlace">
+      <a href="trimestre-1.html#infografias" data-enlace="infografias" class="riel-flyout__enlace">
         <span aria-hidden="true">🎨</span><span>Infografías</span>
       </a>
-      <a href="#presentaciones" data-enlace="presentaciones" class="riel-flyout__enlace">
+      <a href="trimestre-1.html#presentaciones" data-enlace="presentaciones" class="riel-flyout__enlace">
         <span aria-hidden="true">📽️</span><span>Presentaciones</span>
       </a>
-      <a href="#videos" data-enlace="videos" class="riel-flyout__enlace">
+      <a href="trimestre-1.html#videos" data-enlace="videos" class="riel-flyout__enlace">
         <span aria-hidden="true">🎬</span><span>Videos</span>
       </a>
     </div>
-    <div class="riel-flyout__lista nav-anclas" data-modo-lista="practica" hidden>
-      <a href="trimestre-2-practica.html#proximas-fechas-trimestre" data-enlace="proximas-fechas-trimestre" class="riel-flyout__enlace">
+    <div id="submenu-trimestre" class="riel-flyout__lista nav-anclas" data-modo-lista="practica">
+      <a href="#proximas-fechas-trimestre" data-enlace="proximas-fechas-trimestre" class="riel-flyout__enlace">
         <span aria-hidden="true">📅</span><span>Próximas fechas</span>
       </a>
-      <a href="trimestre-2-practica.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
+      <a href="#tareas" data-enlace="tareas" class="riel-flyout__enlace">
         <span aria-hidden="true">📝</span><span>Tareas</span>
       </a>
-      <a href="trimestre-2-practica.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
+      <a href="#entrega" data-enlace="entrega" class="riel-flyout__enlace">
         <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
       </a>
-      <a href="trimestre-2-practica.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
+      <a href="#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
         <span aria-hidden="true">📋</span><span>Rúbricas</span>
       </a>
-      <a href="trimestre-2-practica.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
+      <a href="#actividades" data-enlace="actividades" class="riel-flyout__enlace">
         <span aria-hidden="true">🎯</span><span>Actividades</span>
       </a>
-      <a href="trimestre-2-practica.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
+      <a href="#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
         <span aria-hidden="true">🚀</span><span>Proyectos</span>
       </a>
     </div>
@@ -212,7 +214,7 @@
       <span class="barra-inferior__texto">Inicio</span>
     </button>
 
-    <a href="trimestre-2-practica.html#tareas" data-enlace="tareas" class="barra-inferior__item">
+    <a href="#tareas" data-enlace="tareas" class="barra-inferior__item">
       <span class="barra-inferior__icono" aria-hidden="true">📝</span>
       <span class="barra-inferior__texto">Tareas</span>
     </a>
@@ -225,7 +227,7 @@
     <button type="button" id="boton-inferior-trimestre" class="barra-inferior__item" aria-haspopup="true" aria-expanded="false" aria-controls="sheet-trimestre" aria-label="Curso">
       <span class="barra-inferior__icono-envoltura">
         <span class="barra-inferior__icono" aria-hidden="true">📘</span>
-        <span class="riel__badge trimestre-badge" aria-hidden="true">2</span>
+        <span class="riel__badge trimestre-badge" aria-hidden="true">1</span>
       </span>
       <span class="barra-inferior__texto">Curso</span>
     </button>
@@ -272,15 +274,15 @@
   <div id="sheet-trimestre" class="bottom-sheet" role="group" aria-label="Trimestre" hidden>
     <div class="bottom-sheet__manija" aria-hidden="true"></div>
     <div class="riel-flyout__titulo-fila">
-      <p class="riel-flyout__titulo" data-texto-trimestre>Trimestre 2</p>
+      <p class="riel-flyout__titulo" data-texto-trimestre>Trimestre 1</p>
       <span class="riel-flyout__pill-activo pill-activo-trimestre" hidden>Activo</span>
     </div>
     <div class="riel-flyout__trimestre-tabs" role="tablist" aria-label="Selector de trimestre">
-      <a href="trimestre-1.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="1">1°</a>
-      <a href="trimestre-2.html" class="riel-flyout__trimestre-tab riel-flyout__trimestre-tab--activo" role="tab" aria-selected="true" aria-current="page" data-trimestre-tab="2">2°</a>
+      <a href="trimestre-1.html" class="riel-flyout__trimestre-tab riel-flyout__trimestre-tab--activo" role="tab" aria-selected="true" aria-current="page" data-trimestre-tab="1">1°</a>
+      <a href="trimestre-2.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="2">2°</a>
       <a href="trimestre-3.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="3">3°</a>
     </div>
-    <div class="riel-flyout__modo-selector" role="group" aria-label="Elige Teoría o Práctica" data-modo-defecto="teoria">
+    <div class="riel-flyout__modo-selector" role="group" aria-label="Elige Teoría o Práctica" data-modo-defecto="practica">
       <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="teoria" aria-pressed="false">
         <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">📖</span>
         <span class="riel-flyout__modo-tarjeta__titulo">Teoría</span>
@@ -292,37 +294,37 @@
         <span class="riel-flyout__modo-tarjeta__conteo">6 secciones</span>
       </button>
     </div>
-    <div class="riel-flyout__lista nav-anclas" data-modo-lista="teoria">
-      <a href="#temario" data-enlace="temario" class="riel-flyout__enlace">
+    <div class="riel-flyout__lista nav-anclas" data-modo-lista="teoria" hidden>
+      <a href="trimestre-1.html#temario" data-enlace="temario" class="riel-flyout__enlace">
         <span aria-hidden="true">📘</span><span>Temario</span>
       </a>
-      <a href="#infografias" data-enlace="infografias" class="riel-flyout__enlace">
+      <a href="trimestre-1.html#infografias" data-enlace="infografias" class="riel-flyout__enlace">
         <span aria-hidden="true">🎨</span><span>Infografías</span>
       </a>
-      <a href="#presentaciones" data-enlace="presentaciones" class="riel-flyout__enlace">
+      <a href="trimestre-1.html#presentaciones" data-enlace="presentaciones" class="riel-flyout__enlace">
         <span aria-hidden="true">📽️</span><span>Presentaciones</span>
       </a>
-      <a href="#videos" data-enlace="videos" class="riel-flyout__enlace">
+      <a href="trimestre-1.html#videos" data-enlace="videos" class="riel-flyout__enlace">
         <span aria-hidden="true">🎬</span><span>Videos</span>
       </a>
     </div>
-    <div class="riel-flyout__lista nav-anclas" data-modo-lista="practica" hidden>
-      <a href="trimestre-2-practica.html#proximas-fechas-trimestre" data-enlace="proximas-fechas-trimestre" class="riel-flyout__enlace">
+    <div class="riel-flyout__lista nav-anclas" data-modo-lista="practica">
+      <a href="#proximas-fechas-trimestre" data-enlace="proximas-fechas-trimestre" class="riel-flyout__enlace">
         <span aria-hidden="true">📅</span><span>Próximas fechas</span>
       </a>
-      <a href="trimestre-2-practica.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
+      <a href="#tareas" data-enlace="tareas" class="riel-flyout__enlace">
         <span aria-hidden="true">📝</span><span>Tareas</span>
       </a>
-      <a href="trimestre-2-practica.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
+      <a href="#entrega" data-enlace="entrega" class="riel-flyout__enlace">
         <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
       </a>
-      <a href="trimestre-2-practica.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
+      <a href="#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
         <span aria-hidden="true">📋</span><span>Rúbricas</span>
       </a>
-      <a href="trimestre-2-practica.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
+      <a href="#actividades" data-enlace="actividades" class="riel-flyout__enlace">
         <span aria-hidden="true">🎯</span><span>Actividades</span>
       </a>
-      <a href="trimestre-2-practica.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
+      <a href="#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
         <span aria-hidden="true">🚀</span><span>Proyectos</span>
       </a>
     </div>
@@ -388,7 +390,7 @@
     <ol>
       <li><a href="index.html">Inicio</a></li>
       <li class="migas-de-pan__separador" aria-hidden="true">/</li>
-      <li><span id="miga-trimestre" class="migas-de-pan__actual" aria-current="page">Trimestre 2 · Teoría</span></li>
+      <li><span id="miga-trimestre" class="migas-de-pan__actual" aria-current="page">Trimestre 1 · Práctica</span></li>
       <li id="miga-separador-seccion" class="migas-de-pan__separador" aria-hidden="true" hidden>/</li>
       <li id="miga-item-seccion" hidden><span id="miga-seccion" class="migas-de-pan__actual"></span></li>
     </ol>
@@ -396,44 +398,90 @@
 
   <!-- Recordatorio para evitar confundir el contenido de este trimestre con el de otro. -->
   <div class="banner-trimestre">
-    <p>📘 <strong>Trimestre 2 en curso:</strong> Consulta el temario, infografías, presentaciones y videos de este periodo.</p>
+    <p>✍️ <strong>Trimestre 1 en curso:</strong> Consulta tus próximas fechas, tareas, rúbricas y proyectos, y entrega tus trabajos de este periodo.</p>
   </div>
 
   <main id="main-content">
-    <!-- ===================== TEMARIO ===================== -->
-    <section id="temario" class="seccion">
+    <!-- ===================== PRÓXIMAS FECHAS ===================== -->
+    <section id="proximas-fechas-trimestre" class="seccion">
       <div class="seccion__encabezado">
-        <h2>Temario del Trimestre 2</h2>
-        <p>Estos son los temas que veremos durante este periodo.</p>
+        <h2>📅 Próximas fechas</h2>
+        <p>Todas tus tareas, actividades y proyectos de este trimestre, ordenados por fecha de entrega.</p>
       </div>
-      <div id="contenedor-temario" class="cuadricula-temario" aria-live="polite"></div>
+      <div id="contenedor-proximas-fechas-trimestre" aria-live="polite"></div>
     </section>
 
-    <!-- ===================== INFOGRAFÍAS ===================== -->
-    <section id="infografias" class="seccion seccion--alterna">
+    <!-- ===================== TAREAS ===================== -->
+    <section id="tareas" class="seccion seccion--alterna">
       <div class="seccion__encabezado">
-        <h2>🎨 Infografías</h2>
-        <p>Repasa cada secuencia con su infografía: haz clic para verla en grande.</p>
+        <h2>Tareas</h2>
+        <p>Trabajos individuales o en equipo con fecha de entrega.</p>
+        <p class="seccion__nota-leyenda">¿No sabes qué significan los íconos de tu progreso? <a href="progreso.html#leyenda-estados" class="panel-progreso__enlace">Ver leyenda →</a></p>
       </div>
-      <div id="contenedor-infografias" aria-live="polite"></div>
+      <!-- Progreso personal: se calcula a partir de las marcas de "completada"
+           guardadas en localStorage en este navegador (ver checklist-tarea). -->
+      <div id="resumen-progreso-tareas" class="resumen-progreso" aria-live="polite"></div>
+      <div id="contenedor-tareas" class="cuadricula" aria-live="polite"></div>
     </section>
 
-    <!-- ===================== PRESENTACIONES ===================== -->
-    <section id="presentaciones" class="seccion">
+    <!-- ===================== ENTREGA DE TRABAJOS ===================== -->
+    <section id="entrega" class="seccion">
       <div class="seccion__encabezado">
-        <h2>Presentaciones de las secuencias</h2>
-        <p>Repasa los temas de este bloque con la presentación de cada secuencia.</p>
+        <h2>Entrega de trabajos</h2>
+        <p>Sube tu trabajo del Trimestre 1 usando el siguiente formulario.</p>
       </div>
-      <div id="contenedor-presentaciones" class="lista-presentaciones" aria-live="polite"></div>
+      <div class="entrega__formulario">
+        <div class="entrega__instrucciones">
+          <h3>📤 Antes de enviar, verifica:</h3>
+          <ol>
+            <li><strong>Inicia sesión</strong> en el sitio (botón Perfil) — así tu progreso se actualiza solo al entregar.</li>
+            <li><strong>Formatos aceptados:</strong> PDF, Word, Excel, PowerPoint, o foto bien iluminada de tu cuaderno (solo si el profesor lo indica).</li>
+            <li>En el formulario, elige tu <strong>Grupo</strong> y tu <strong>Número de Lista</strong>, y selecciona la actividad que vas a entregar.</li>
+          </ol>
+          <p class="entrega__actualizacion-automatica">⚡ <strong>Tu progreso se actualiza solo:</strong> en un par de minutos, la actividad cambiará a 🟢 Entregado en tu panel de Tu Progreso — no necesitas marcarla tú mismo.</p>
+        </div>
+        <a
+          href="https://forms.gle/wHhUxDb91gcA5Nnj8"
+          class="enlace-instrucciones"
+          target="_blank"
+          rel="noopener noreferrer"
+        >📝 Abrir formulario de entrega del Trimestre 1</a>
+        <p class="entrega__nota">Se abrirá en una pestaña nueva. Necesitas iniciar sesión con tu cuenta de Google para poder subir tu archivo.</p>
+      </div>
     </section>
 
-    <!-- ===================== VIDEOS ===================== -->
-    <section id="videos" class="seccion seccion--alterna">
+    <!-- ===================== RÚBRICAS ===================== -->
+    <section id="rubricas" class="seccion seccion--alterna">
       <div class="seccion__encabezado">
-        <h2>Videos educativos</h2>
-        <p>Material audiovisual de apoyo para reforzar los temas vistos en clase.</p>
+        <h2>Rúbricas de evaluación</h2>
+        <p>📋 Guías de evaluación: cada rúbrica desglosa los criterios específicos que se calificarán, con 4 niveles de desempeño (Excelente, Bueno, Regular, Deficiente) y su valor en puntos. Revísala antes de entregar tu trabajo para saber exactamente qué se espera y asegurar la máxima puntuación.</p>
       </div>
-      <div id="contenedor-videos" class="cuadricula-videos" aria-live="polite"></div>
+      <div id="contenedor-rubricas" class="cuadricula" aria-live="polite"></div>
+    </section>
+
+    <!-- ===================== ACTIVIDADES ===================== -->
+    <section id="actividades" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>Actividades de clase</h2>
+        <p>Ejercicios y dinámicas que se realizan durante la sesión.</p>
+      </div>
+      <!-- Progreso personal: mismo patrón que en Tareas (ver claveProgreso
+           en js/main.js). -->
+      <div id="resumen-progreso-actividades" class="resumen-progreso" aria-live="polite"></div>
+      <div id="contenedor-actividades" class="cuadricula" aria-live="polite"></div>
+    </section>
+
+    <!-- ===================== PROYECTOS ===================== -->
+    <section id="proyectos" class="seccion seccion--alterna">
+      <div class="seccion__encabezado">
+        <h2>Proyectos</h2>
+        <p>Proyectos en curso durante el trimestre.</p>
+      </div>
+      <!-- Progreso personal: mismo patrón que en Tareas/Actividades (ver
+           claveProgreso en js/main.js). Es independiente del "avance"
+           estático de cada proyecto, que sigue viniendo de DATOS_PROYECTOS. -->
+      <div id="resumen-progreso-proyectos" class="resumen-progreso" aria-live="polite"></div>
+      <div id="contenedor-proyectos" class="cuadricula" aria-live="polite"></div>
     </section>
   </main>
 
@@ -453,8 +501,8 @@
         <h2 class="pie__columna-titulo">Navegación</h2>
         <ul class="pie__enlaces">
           <li><a href="index.html">Inicio</a></li>
-          <li><a href="trimestre-1.html">Trimestre 1°</a></li>
-          <li><span class="pie__enlace-actual" aria-current="page">Trimestre 2°</span></li>
+          <li><span class="pie__enlace-actual" aria-current="page">Trimestre 1°</span></li>
+          <li><a href="trimestre-2.html">Trimestre 2°</a></li>
           <li><a href="trimestre-3.html">Trimestre 3°</a></li>
           <li><a href="progreso.html">Mi progreso</a></li>
           <li><a href="guia.html">Guía rápida</a></li>

@@ -8129,20 +8129,20 @@ function activarSheetsMovil() {
   });
 }
 
-// Los 7 enlaces de la barra lateral que apuntan a secciones dentro de una
-// página de trimestre (identificados por data-enlace en el HTML). En una
+// Los enlaces de la barra lateral que apuntan a secciones dentro de una
+// página de trimestre (identificados por data-enlace en el HTML),
+// separados según a qué página quedaron (Teoría: trimestre-N.html,
+// Práctica: trimestre-N-practica.html — ver división de Fase 7). En una
 // página de trimestre ya son anclas locales ("#temario") y no se tocan;
-// en la portada y en FAQ se reescriben para apuntar a
-// "trimestre-N.html#ancla" usando ultimoTrimestreVisto.
-const ANCLAS_DE_TRIMESTRE = [
-  "temario",
-  "presentaciones",
-  "rubricas",
+// en el resto de páginas públicas se reescriben usando ultimoTrimestreVisto.
+const ANCLAS_TEORIA = ["temario", "infografias", "presentaciones", "videos"];
+const ANCLAS_PRACTICA = [
+  "proximas-fechas-trimestre",
   "tareas",
+  "entrega",
+  "rubricas",
   "actividades",
   "proyectos",
-  "videos",
-  "entrega",
 ];
 
 // Puebla a la vez el flyout de Trimestre del riel (desktop) y el sheet de
@@ -8187,9 +8187,15 @@ function actualizarEnlacesTrimestreEnSidebar() {
 
   if (TRIMESTRE_ACTUAL) return;
 
-  ANCLAS_DE_TRIMESTRE.forEach((id) => {
+  ANCLAS_TEORIA.forEach((id) => {
     document.querySelectorAll('[data-enlace="' + id + '"]').forEach((enlace) => {
       enlace.href = "trimestre-" + ultimoTrimestreVisto + ".html#" + id;
+    });
+  });
+
+  ANCLAS_PRACTICA.forEach((id) => {
+    document.querySelectorAll('[data-enlace="' + id + '"]').forEach((enlace) => {
+      enlace.href = "trimestre-" + ultimoTrimestreVisto + "-practica.html#" + id;
     });
   });
 
@@ -8201,6 +8207,43 @@ function actualizarEnlacesTrimestreEnSidebar() {
     const activo = tab.dataset.trimestreTab === ultimoTrimestreVisto;
     tab.classList.toggle("riel-flyout__trimestre-tab--activo", activo);
     tab.setAttribute("aria-selected", String(activo));
+  });
+}
+
+// Selector Teoría/Práctica dentro de #flyout-trimestre y #sheet-trimestre
+// (2 copias en el DOM, mismo patrón que el resto de esta sección: alterna
+// cuál de las 2 listas de .riel-flyout__lista hermanas se muestra, sin
+// navegar — por eso son <button>, no <a>). data-modo-defecto en
+// .riel-flyout__modo-selector fija qué mitad se ve al cargar: "teoria" en
+// trimestre-N.html, "practica" en trimestre-N-practica.html y en el resto
+// de páginas públicas (mismo orden de prioridad que ya tenía el menú
+// antes de esta división, con Tareas/Entrega primero).
+function activarSelectorModoTrimestre() {
+  document.querySelectorAll(".riel-flyout__modo-selector").forEach((selector) => {
+    if (selector.dataset.activado) return;
+    selector.dataset.activado = "true";
+
+    const contenedor = selector.parentElement;
+    const listaTeoria = contenedor.querySelector('[data-modo-lista="teoria"]');
+    const listaPractica = contenedor.querySelector('[data-modo-lista="practica"]');
+    const tarjetaTeoria = selector.querySelector('[data-modo-tarjeta="teoria"]');
+    const tarjetaPractica = selector.querySelector('[data-modo-tarjeta="practica"]');
+    if (!listaTeoria || !listaPractica || !tarjetaTeoria || !tarjetaPractica) return;
+
+    function mostrarModo(modo) {
+      const esTeoria = modo === "teoria";
+      listaTeoria.hidden = !esTeoria;
+      listaPractica.hidden = esTeoria;
+      tarjetaTeoria.classList.toggle("riel-flyout__modo-tarjeta--activo", esTeoria);
+      tarjetaTeoria.setAttribute("aria-pressed", String(esTeoria));
+      tarjetaPractica.classList.toggle("riel-flyout__modo-tarjeta--activo", !esTeoria);
+      tarjetaPractica.setAttribute("aria-pressed", String(!esTeoria));
+    }
+
+    tarjetaTeoria.addEventListener("click", () => mostrarModo("teoria"));
+    tarjetaPractica.addEventListener("click", () => mostrarModo("practica"));
+
+    mostrarModo(selector.dataset.modoDefecto || "practica");
   });
 }
 
@@ -16377,6 +16420,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarSubmenusSidebar();
   activarFlyoutsRiel();
   activarSheetsMovil();
+  activarSelectorModoTrimestre();
   activarControlEscalaTexto();
   activarTooltipsInfo();
   activarResaltadoDeNavegacion();
