@@ -3742,6 +3742,177 @@ summary {
   color: var(--color-texto-suave);
 }
 
+/* ---------- "Tu progreso" (portada): sección propia de ancho completo
+   (Fase 9 — salió del bento porque la celda era muy angosta) ----------
+   Mismo patrón que #encuadre-anual: encabezado suelto (.seccion__encabezado,
+   fuera de esta tarjeta) + una tarjeta de contenido. Mismo lenguaje visual
+   que .bento-celda (superficie+borde+radio-lg+sombra), pero no comparte
+   esa clase porque ya no vive en el grid — .panel-progreso__invitacion
+   trae su propio fondo/borde (lo usan también las páginas sin este
+   wrapper), así que se apaga aquí por selector anidado, mismo criterio
+   que ya usa .bento-celda con .tarjeta-examen-diagnostico/
+   .reglamento-contenedor (evita una caja dentro de otra caja). */
+.progreso-tarjeta {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra);
+  padding: 1.75rem 2rem;
+}
+
+.progreso-tarjeta .panel-progreso__invitacion {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+/* ---------- Dentro de la tarjeta: Misión de hoy, Próximas entregas y
+   Accesos rápidos ----------
+   #progreso-pendientes envuelve .semaforo-progreso (arriba) + estas 3
+   piezas, todas propias del dashboard-lite (ver renderizarProgreso() en
+   js/main.js). La lista de "Próximas entregas" reutiliza
+   .panel-progreso__lista/.panel-progreso__item tal cual (sin CSS nuevo
+   para la lista en sí). El botón de "Misión de hoy" reusa el mismo par
+   turquesa/navy ya validado en .riel-flyout__modo-tarjeta--activo — no
+   son colores nuevos. */
+.progreso-pendientes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mision-de-hoy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radio-md);
+  border: 1px solid var(--color-turquesa);
+  background-color: var(--color-superficie-alterna);
+}
+
+.mision-de-hoy__etiqueta {
+  margin: 0;
+  font-size: var(--tamano-fuente-meta-micro);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-turquesa);
+}
+
+:root[data-theme="claro"] .mision-de-hoy__etiqueta {
+  color: var(--color-primario);
+}
+
+.mision-de-hoy__titulo {
+  margin: 0;
+  font-family: var(--font-encabezados);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.mision-de-hoy__fecha {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.mision-de-hoy__boton {
+  margin-top: 0.25rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radio-full);
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.mision-de-hoy__boton:hover,
+.mision-de-hoy__boton:focus-visible {
+  filter: brightness(1.06);
+}
+
+.mision-de-hoy__boton:focus-visible {
+  outline: 2px solid var(--color-texto);
+  outline-offset: 2px;
+}
+
+:root[data-theme="claro"] .mision-de-hoy__boton {
+  background-color: var(--color-primario);
+  color: var(--color-primario-texto);
+}
+
+.proximas-entregas__titulo {
+  margin: 0 0 0.5rem;
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 700;
+  color: var(--color-texto-suave);
+}
+
+.progreso-sin-pendientes {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie-alterna);
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
+}
+
+/* auto-fit en vez de un conteo fijo de columnas: con la tarjeta ahora a
+   todo el ancho de la página (Fase 9, ya no en la celda angosta del
+   bento), esto da 4 columnas en desktop, 2 en tablet y 1 en mobile sin
+   necesitar un breakpoint manual por tamaño. */
+.accesos-rapidos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.75rem;
+}
+
+.accesos-rapidos__tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radio-md);
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-superficie);
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .accesos-rapidos__tarjeta:hover {
+    border-color: var(--color-turquesa);
+    transform: translateY(-2px);
+  }
+}
+
+.accesos-rapidos__tarjeta:focus-visible {
+  outline: 2px solid var(--color-turquesa);
+  outline-offset: 2px;
+}
+
+.accesos-rapidos__icono {
+  font-size: 1.25rem;
+}
+
+.accesos-rapidos__titulo {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-texto);
+}
+
+.accesos-rapidos__descripcion {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-texto-suave);
+}
+
 /* ---------- Detalle de progreso por trimestre (progreso.html) ----------
    Mismo acordeón <details>/<summary> y mismo ícono ▾ giratorio que
    .tarjeta-rubrica (la clase "tarjeta" ya puesta en el HTML da el
@@ -5225,22 +5396,27 @@ summary {
 }
 
 /* ---------- Portada: bento grid (boceto "Portada Bento" aprobado) ----------
-   5 secciones existentes (examen diagnóstico, horario, progreso, criterios,
+   4 secciones existentes (examen diagnóstico, horario, criterios,
    reglamento) reagrupadas en un grid de 4 columnas, tamaño de celda según
-   densidad de contenido — no una cuadrícula pareja. Encuadre Anual salió del
-   bento y volvió a ser su propia .seccion (ver index.html). Ninguna de estas
-   secciones perdió su id/clases propias, así que
-   actualizarVisibilidadBannerExamenDiagnostico()/renderizarHorario() etc.
-   (js/main.js) siguen funcionando sin cambios; esto solo reposiciona el
-   contenedor. Filas "auto": si #examen-diagnostico se oculta por completo
-   (.hidden), su fila colapsa sola, sin JS extra. */
+   densidad de contenido — no una cuadrícula pareja. Encuadre Anual y Tu
+   Progreso (Fase 9 — la celda era muy angosta para su dashboard-lite)
+   salieron del bento y volvieron a ser su propia .seccion (ver
+   index.html). Ninguna de las 4 que quedan perdió su id/clases propias,
+   así que actualizarVisibilidadBannerExamenDiagnostico()/
+   renderizarHorario() etc. (js/main.js) siguen funcionando sin cambios;
+   esto solo reposiciona el contenedor. Filas "auto": si
+   #examen-diagnostico se oculta por completo (.hidden), su fila colapsa
+   sola, sin JS extra. horario+criterios quedan a la par (ambas celdas
+   "cortas") y reglamento ocupa su propia fila completa: es la más densa
+   en contenido (9 reglas con expansión in-place), así que se beneficia
+   más del ancho extra que del emparejamiento. */
 .bento-portada {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-areas:
     "banner     banner     banner     banner"
-    "horario    horario    progreso   progreso"
-    "criterios  criterios  reglamento reglamento";
+    "horario    horario    criterios  criterios"
+    "reglamento reglamento reglamento reglamento";
   gap: 1.25rem;
   max-width: 1180px;
   margin: 0 auto;
@@ -5261,7 +5437,6 @@ summary {
 
 .bento-celda--banner { grid-area: banner; }
 .bento-celda--horario { grid-area: horario; }
-.bento-celda--progreso { grid-area: progreso; }
 .bento-celda--criterios { grid-area: criterios; }
 .bento-celda--reglamento { grid-area: reglamento; }
 
@@ -5361,17 +5536,16 @@ summary {
 }
 
 /* ---------- Colapso a mobile: 1 columna, orden de lectura natural ----------
-   Mismo orden que el DOM (examen → horario → progreso → criterios →
-   reglamento), así que ni siquiera hace falta reordenar por nombre — pero
-   se declara explícito para que quede documentado y no dependa por
-   accidente del orden del HTML si algún día cambia. */
+   Mismo orden que el DOM (examen → horario → criterios → reglamento),
+   así que ni siquiera hace falta reordenar por nombre — pero se declara
+   explícito para que quede documentado y no dependa por accidente del
+   orden del HTML si algún día cambia. */
 @media (max-width: 900px) {
   .bento-portada {
     grid-template-columns: 1fr;
     grid-template-areas:
       "banner"
       "horario"
-      "progreso"
       "criterios"
       "reglamento";
     padding: 2rem 1.25rem;

@@ -397,6 +397,40 @@
       </div>
     </section>
 
+    <!-- ===================== TU PROGRESO ===================== -->
+    <!-- Salió del bento (Fase 9): la celda era muy angosta para el
+         dashboard-lite completo (semáforo + Misión de hoy + Próximas
+         entregas + Accesos rápidos, ver renderizarProgreso() en
+         js/main.js). Mismo patrón que #encuadre-anual más abajo:
+         encabezado suelto + una tarjeta de contenido (.progreso-tarjeta),
+         no una .bento-celda. Ningún id/clase/función JS cambió, solo el
+         contenedor — renderizarProgreso() sigue buscando estos mismos
+         ids por getElementById(). -->
+    <section id="progreso" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>Tu progreso</h2>
+        <p>Identifícate para llevar tu propio conteo de tareas y actividades completadas.</p>
+      </div>
+
+      <div class="progreso-tarjeta">
+        <div id="progreso-sin-perfil" class="panel-progreso__invitacion">
+          <p>Aún no te has identificado en este dispositivo.</p>
+          <button type="button" id="boton-identificarme-progreso" class="boton-secundario">Identificarme</button>
+        </div>
+
+        <div id="progreso-con-perfil" class="panel-progreso" hidden>
+          <p id="progreso-mensaje" class="panel-progreso__mensaje"></p>
+          <!-- Semáforo + Misión de hoy + Próximas entregas + Accesos
+               rápidos del trimestre desbloqueado (dashboard-lite, Fase 8):
+               ver renderizarProgreso() en js/main.js. -->
+          <div id="progreso-pendientes" class="progreso-pendientes" aria-live="polite"></div>
+          <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
+          <div id="progreso-por-trimestre" class="panel-progreso__bloques" aria-live="polite"></div>
+          <a href="progreso.html" class="panel-progreso__enlace">Ver progreso detallado por trimestre →</a>
+        </div>
+      </div>
+    </section>
+
     <!-- ===================== TRIMESTRES ===================== -->
     <section id="trimestres" class="seccion seccion--alterna">
       <div class="seccion__encabezado">
@@ -466,13 +500,13 @@
     </section>
 
     <!-- ===================== BENTO: PANEL DE INICIO ===================== -->
-    <!-- 5 secciones reorganizadas en bento grid (boceto "Portada Bento"
-         aprobado). Encuadre Anual salió del bento y es su propia .seccion,
-         arriba. Orden en el DOM = orden de lectura en mobile (examen →
-         horario → progreso → criterios → reglamento); el orden visual en
-         desktop lo da grid-area (.bento-celda--*), no el orden del DOM —
-         ver .bento-portada en css/style.css. Ningún id/clase/función JS
-         existente cambió, solo el contenedor. -->
+    <!-- 4 secciones reorganizadas en bento grid (boceto "Portada Bento"
+         aprobado). Encuadre Anual y Tu Progreso (Fase 9) salieron del
+         bento y son su propia .seccion, arriba. Orden en el DOM = orden
+         de lectura en mobile (examen → horario → criterios → reglamento);
+         el orden visual en desktop lo da grid-area (.bento-celda--*), no
+         el orden del DOM — ver .bento-portada en css/style.css. Ningún
+         id/clase/función JS existente cambió, solo el contenedor. -->
     <div class="bento-portada">
 
       <!-- Franja completa (4×1) — el <section id="examen-diagnostico">
@@ -510,28 +544,6 @@
           <p>Días y horas de Educación Tecnológica según tu grupo.</p>
         </div>
         <div id="contenedor-horario" class="horario-contenedor" aria-live="polite"></div>
-      </section>
-
-      <!-- Celda corta (1×1) — resumen; las tarjetas de "Elige tu
-           trimestre" (arriba, #trimestres) NO viven aquí, son su propia
-           sección completa fuera del bento. -->
-      <section id="progreso" class="bento-celda bento-celda--progreso">
-        <div class="seccion__encabezado">
-          <h2>Tu progreso</h2>
-          <p>Identifícate para llevar tu propio conteo de tareas y actividades completadas.</p>
-        </div>
-
-        <div id="progreso-sin-perfil" class="panel-progreso__invitacion">
-          <p>Aún no te has identificado en este dispositivo.</p>
-          <button type="button" id="boton-identificarme-progreso" class="boton-secundario">Identificarme</button>
-        </div>
-
-        <div id="progreso-con-perfil" class="panel-progreso" hidden>
-          <p id="progreso-mensaje" class="panel-progreso__mensaje"></p>
-          <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
-          <div id="progreso-por-trimestre" class="panel-progreso__bloques" aria-live="polite"></div>
-          <a href="progreso.html" class="panel-progreso__enlace">Ver progreso detallado por trimestre →</a>
-        </div>
       </section>
 
       <!-- Celda mediana (2×1) -->

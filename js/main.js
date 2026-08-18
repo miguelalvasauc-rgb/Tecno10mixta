@@ -3737,6 +3737,47 @@ function itemEstaVencido(tipo, item, grupo) {
   return new Date(iso + "T23:59:59") < new Date();
 }
 
+// Enlace directo a una tarea/actividad/proyecto específica: viven en la
+// página de PRÁCTICA del trimestre (ver división Teoría/Práctica de
+// trimestre-N.html / trimestre-N-practica.html, Fase 7) — nunca en
+// Teoría, así que nunca es "trimestre-N.html#...". Único punto de
+// construcción de este enlace: construirSemaforoPendientes(),
+// renderizarProgresoDetallado() y el panel de Progreso de la portada lo
+// reutilizan en vez de repetir la concatenación cada uno.
+function enlacePendiente(trimestre, tipo, id) {
+  return "trimestre-" + trimestre + "-practica.html#" + tipo + "-" + id;
+}
+
+// Pendientes con fecha límite resuelta, ordenados ascendente (el más
+// próximo primero) — capa de datos pura reutilizada por el semáforo +
+// "próxima entrega" de progreso.html (construirSemaforoPendientes) y por
+// "Misión de hoy"/"Próximas entregas" del panel de Progreso de la
+// portada (construirDashboardPendientes). El llamador ya debe pasar
+// solo pendientes sin completar; esta función no filtra completado.
+function obtenerPendientesOrdenados(pendientes, grupo) {
+  return pendientes
+    .map(({ tipo, item }) => ({ tipo, item, iso: fechaLimiteISO(tipo, item, grupo) }))
+    .filter(({ iso }) => iso)
+    .sort((a, b) => a.iso.localeCompare(b.iso));
+}
+
+// Estado del semáforo (verde/amarillo/rojo) a partir de una lista ya
+// ordenada por obtenerPendientesOrdenados(). Rojo: al menos un pendiente
+// vencido (itemEstaVencido). Amarillo: nada vencido, pero algo vence en
+// los próximos 3 días. Verde: ninguno de los dos casos anteriores.
+function calcularEstadoSemaforo(conFecha, grupo) {
+  const ahora = new Date();
+  const finDelDia = (iso) => new Date(iso + "T23:59:59");
+
+  if (conFecha.some(({ tipo, item }) => itemEstaVencido(tipo, item, grupo))) return "rojo";
+
+  const porVencerPronto = conFecha.some(({ iso }) => {
+    const diasRestantes = Math.ceil((finDelDia(iso) - ahora) / 86400000);
+    return diasRestantes <= 3;
+  });
+  return porVencerPronto ? "amarillo" : "verde";
+}
+
 // Fecha (ISO) por la que ordenar un ítem en "Próximas fechas de este
 // trimestre" (ver obtenerProximasFechasTrimestre() abajo). Con
 // grupoActual === "3C"/"3E" es simplemente fechaLimiteISO() de ese
@@ -5913,40 +5954,44 @@ async function renderizarProgreso() {
   conPerfil.hidden = !perfil;
   if (!perfil) return;
 
-  const coincideConGrupoDelAlumno = (item) => item.grupo === "todos" || item.grupo === perfil.grupo;
-
-  let totalGeneral = 0;
-  let completadasGeneral = 0;
-  const porTrimestre = [];
-
-  for (const trimestre of ["1", "2", "3"]) {
-    const tareas = (await obtenerTareas(trimestre)).filter(coincideConGrupoDelAlumno);
-    const actividades = (await obtenerActividades(trimestre)).filter(coincideConGrupoDelAlumno);
-    const proyectos = (await obtenerProyectos(trimestre)).filter(coincideConGrupoDelAlumno);
-
-    const completadasTareas = tareas.filter((item) =>
-      itemEstaCompletado("tarea", item.id, trimestre)
-    ).length;
-    const completadasActividades = actividades.filter((item) =>
-      itemEstaCompletado("actividad", item.id, trimestre)
-    ).length;
-    const completadasProyectos = proyectos.filter((item) =>
-      itemEstaCompletado("proyecto", item.id, trimestre)
-    ).length;
-
-    const total = tareas.length + actividades.length + proyectos.length;
-    const completadas = completadasTareas + completadasActividades + completadasProyectos;
-
-    totalGeneral += total;
-    completadasGeneral += completadas;
-    porTrimestre.push({ trimestre, total, completadas });
-  }
+  // Misma data (tareas/actividades/proyectos por trimestre, ya filtrados
+  // por el grupo del alumno, con sus contadores) que ya arma
+  // calcularProgresoDetalladoPorTrimestre() para progreso.html — antes se
+  // recalculaba aquí con un bucle propio que descartaba los arreglos de
+  // items, así que el semáforo/"Misión de hoy"/"Próximas entregas" de
+  // abajo no podían armarse sin recalcular todo de nuevo. Reutilizarla
+  // tal cual evita esa duplicación.
+  const { porTrimestre, totalGeneral, completadasGeneral } = await calcularProgresoDetalladoPorTrimestre(perfil);
 
   const porcentaje = totalGeneral === 0 ? 0 : Math.round((completadasGeneral / totalGeneral) * 100);
 
   const mensaje = document.getElementById("progreso-mensaje");
   if (mensaje) {
     mensaje.textContent = MENSAJES_MOTIVACIONALES[completadasGeneral % MENSAJES_MOTIVACIONALES.length];
+  }
+
+  // Semáforo + "Misión de hoy" + "Próximas entregas" + "Accesos rápidos"
+  // del trimestre DESBLOQUEADO (no de los 3): mismo criterio que ya usa
+  // renderizarProgresoDetallado() para su propio semáforo en
+  // progreso.html — trimestreDesbloqueado es el trimestre realmente
+  // activo, ultimoTrimestreVisto solo sirve para los enlaces del sidebar.
+  const pendientesEl = document.getElementById("progreso-pendientes");
+  if (pendientesEl) {
+    pendientesEl.innerHTML = "";
+    const trimestreActivo = String(trimestreDesbloqueado);
+    const entradaActiva = porTrimestre.find((p) => p.trimestre === trimestreActivo);
+    const pendientes = entradaActiva
+      ? [
+          ...entradaActiva.tareas.map((item) => ({ tipo: "tarea", item })),
+          ...entradaActiva.actividades.map((item) => ({ tipo: "actividad", item })),
+          ...entradaActiva.proyectos.map((item) => ({ tipo: "proyecto", item })),
+        ].filter(({ tipo, item }) => !itemEstaCompletado(tipo, item.id, trimestreActivo))
+      : [];
+
+    const conFecha = obtenerPendientesOrdenados(pendientes, perfil.grupo);
+    pendientesEl.appendChild(construirFilaSemaforo(calcularEstadoSemaforo(conFecha, perfil.grupo)));
+    pendientesEl.appendChild(construirDashboardPendientes(conFecha, trimestreActivo, perfil.grupo));
+    pendientesEl.appendChild(construirAccesosRapidos(trimestreActivo));
   }
 
   const resumen = document.getElementById("progreso-resumen-general");
@@ -6056,40 +6101,22 @@ async function calcularProgresoDetalladoPorTrimestre(perfil) {
   return { porTrimestre, totalGeneral, completadasGeneral };
 }
 
-// Semáforo (verde/amarillo/rojo) + "próxima entrega" del trimestre activo,
-// sobre una lista ya filtrada de pendientes { tipo, item }. Capa de
-// presentación pura: reutiliza fechaLimiteISO/itemEstaVencido en vez de
-// recalcular vencimiento, e ícono+palabra en vez de solo color (WCAG
-// 1.4.1). Verde: nada vencido ni por vencer en 3 días. Amarillo: nada
-// vencido, pero algo vence en los próximos 3 días. Rojo: al menos un
-// pendiente ya vencido. "Próxima entrega" reutiliza el mismo par
-// badge-estado[data-estado] (completada/pendiente/atrasada) que ya usa el
-// detalle itemizado de abajo — colores fijos en :root, ya AA en los 10
-// temas, sin necesidad de validarlos de nuevo aquí.
-function construirSemaforoPendientes(pendientes, trimestre, grupo) {
-  const ahora = new Date();
-  const finDelDia = (iso) => new Date(iso + "T23:59:59");
-  const diasRestantes = (iso) => Math.ceil((finDelDia(iso) - ahora) / 86400000);
+// Texto del semáforo por estado — ícono+palabra en vez de solo color
+// (WCAG 1.4.1). Reutilizado por construirFilaSemaforo(), que a su vez
+// usan tanto construirSemaforoPendientes() (progreso.html) como el panel
+// de Progreso de la portada (index.html).
+const TEXTO_SEMAFORO = {
+  verde: "🟢 Al día — sin pendientes vencidos ni por vencer en los próximos 3 días.",
+  amarillo: "🟡 Atento — tienes pendientes que vencen en los próximos 3 días.",
+  rojo: "🔴 Vencido — tienes pendientes sin entregar cuya fecha ya pasó.",
+};
 
-  const conFecha = pendientes
-    .map(({ tipo, item }) => ({ tipo, item, iso: fechaLimiteISO(tipo, item, grupo) }))
-    .filter(({ iso }) => iso);
-
-  const vencidos = conFecha.filter(({ iso }) => finDelDia(iso) < ahora);
-  const porVencerPronto = conFecha.filter(
-    ({ iso }) => finDelDia(iso) >= ahora && diasRestantes(iso) <= 3
-  );
-
-  let estado = "verde";
-  if (vencidos.length > 0) estado = "rojo";
-  else if (porVencerPronto.length > 0) estado = "amarillo";
-
-  const TEXTO_SEMAFORO = {
-    verde: "🟢 Al día — sin pendientes vencidos ni por vencer en los próximos 3 días.",
-    amarillo: "🟡 Atento — tienes pendientes que vencen en los próximos 3 días.",
-    rojo: "🔴 Vencido — tienes pendientes sin entregar cuya fecha ya pasó.",
-  };
-
+// Solo el punto+texto del semáforo (sin "próxima entrega"): pieza mínima
+// reutilizada tal cual por construirSemaforoPendientes() (que le agrega
+// el bloque de próxima entrega debajo) y por el panel de Progreso de la
+// portada (que en vez de eso agrega ahí mismo "Misión de hoy"/"Próximas
+// entregas" como bloques propios — ver construirDashboardPendientes()).
+function construirFilaSemaforo(estado) {
   const tarjeta = document.createElement("div");
   tarjeta.className = "semaforo-progreso";
   tarjeta.dataset.estado = estado;
@@ -6105,10 +6132,26 @@ function construirSemaforoPendientes(pendientes, trimestre, grupo) {
   fila.append(punto, texto);
   tarjeta.appendChild(fila);
 
+  return tarjeta;
+}
+
+// Semáforo (verde/amarillo/rojo) + "próxima entrega" del trimestre activo,
+// sobre una lista ya filtrada de pendientes { tipo, item }. Capa de
+// presentación pura: reutiliza obtenerPendientesOrdenados()/
+// calcularEstadoSemaforo()/itemEstaVencido() en vez de recalcular
+// vencimiento. "Próxima entrega" reutiliza el mismo par
+// badge-estado[data-estado] (completada/pendiente/atrasada) que ya usa el
+// detalle itemizado de abajo — colores fijos en :root, ya AA en los 10
+// temas, sin necesidad de validarlos de nuevo aquí.
+function construirSemaforoPendientes(pendientes, trimestre, grupo) {
+  const conFecha = obtenerPendientesOrdenados(pendientes, grupo);
+  const tarjeta = construirFilaSemaforo(calcularEstadoSemaforo(conFecha, grupo));
+
   // Próxima entrega: el/los pendiente(s) con la fecha ISO más próxima
-  // (todos los que empatan, no solo uno).
+  // (todos los que empatan, no solo uno) — conFecha ya viene ordenado
+  // ascendente, así que el mínimo es el primero.
   if (conFecha.length > 0) {
-    const minIso = conFecha.reduce((min, actual) => (actual.iso < min ? actual.iso : min), conFecha[0].iso);
+    const minIso = conFecha[0].iso;
     const proximos = conFecha.filter(({ iso }) => iso === minIso);
 
     const bloqueProxima = document.createElement("div");
@@ -6133,12 +6176,12 @@ function construirSemaforoPendientes(pendientes, trimestre, grupo) {
 
       const badge = document.createElement("span");
       badge.className = "badge-estado";
-      badge.dataset.estado = finDelDia(iso) < ahora ? "atrasada" : "pendiente";
+      badge.dataset.estado = itemEstaVencido(tipo, item, grupo) ? "atrasada" : "pendiente";
       badge.textContent = formatearFecha(iso);
       fila.appendChild(badge);
 
       const enlace = document.createElement("a");
-      enlace.href = "trimestre-" + trimestre + ".html#" + tipo + "-" + item.id;
+      enlace.href = enlacePendiente(trimestre, tipo, item.id);
       enlace.className = "panel-progreso__item-enlace";
       enlace.textContent = ETIQUETAS_ENLACE_ITEM[tipo];
       fila.appendChild(enlace);
@@ -6152,6 +6195,127 @@ function construirSemaforoPendientes(pendientes, trimestre, grupo) {
   return tarjeta;
 }
 
+// "Misión de hoy" (el pendiente más urgente, destacado) + "Próximas
+// entregas" (hasta 4, la MISMA lista ordenada — el primer elemento es el
+// mismo ítem que "Misión de hoy", sin recalcularlo aparte) para el panel
+// de Progreso de la portada. conFecha ya viene ordenado ascendente por
+// obtenerPendientesOrdenados().
+function construirDashboardPendientes(conFecha, trimestre, grupo) {
+  const contenedor = document.createDocumentFragment();
+
+  if (conFecha.length === 0) {
+    const vacio = document.createElement("p");
+    vacio.className = "progreso-sin-pendientes";
+    vacio.textContent = "🎉 No tienes pendientes en este trimestre. ¡Sigue así!";
+    contenedor.appendChild(vacio);
+    return contenedor;
+  }
+
+  const primero = conFecha[0];
+
+  const mision = document.createElement("div");
+  mision.className = "mision-de-hoy";
+
+  const etiqueta = document.createElement("p");
+  etiqueta.className = "mision-de-hoy__etiqueta";
+  etiqueta.textContent = "🎯 Misión de hoy";
+
+  const tituloMision = document.createElement("p");
+  tituloMision.className = "mision-de-hoy__titulo";
+  tituloMision.textContent = primero.item.titulo;
+
+  const fechaMision = document.createElement("p");
+  fechaMision.className = "mision-de-hoy__fecha";
+  fechaMision.textContent = "Vence: " + formatearFecha(primero.iso);
+
+  const boton = document.createElement("a");
+  boton.className = "mision-de-hoy__boton";
+  boton.href = enlacePendiente(trimestre, primero.tipo, primero.item.id);
+  boton.textContent = ETIQUETAS_ENLACE_ITEM[primero.tipo];
+
+  mision.append(etiqueta, tituloMision, fechaMision, boton);
+  contenedor.appendChild(mision);
+
+  const proximas = document.createElement("div");
+  proximas.className = "proximas-entregas";
+
+  const tituloProximas = document.createElement("p");
+  tituloProximas.className = "proximas-entregas__titulo";
+  tituloProximas.textContent = "Próximas entregas";
+  proximas.appendChild(tituloProximas);
+
+  const lista = document.createElement("ul");
+  lista.className = "panel-progreso__lista";
+  conFecha.slice(0, 4).forEach(({ tipo, item, iso }) => {
+    const fila = document.createElement("li");
+    fila.className = "panel-progreso__item";
+
+    const tituloItem = document.createElement("span");
+    tituloItem.className = "panel-progreso__item-titulo";
+    tituloItem.textContent = item.titulo;
+    fila.appendChild(tituloItem);
+
+    const badge = document.createElement("span");
+    badge.className = "badge-estado";
+    badge.dataset.estado = itemEstaVencido(tipo, item, grupo) ? "atrasada" : "pendiente";
+    badge.textContent = formatearFecha(iso);
+    fila.appendChild(badge);
+
+    const enlace = document.createElement("a");
+    enlace.href = enlacePendiente(trimestre, tipo, item.id);
+    enlace.className = "panel-progreso__item-enlace";
+    enlace.textContent = ETIQUETAS_ENLACE_ITEM[tipo];
+    fila.appendChild(enlace);
+
+    lista.appendChild(fila);
+  });
+  proximas.appendChild(lista);
+  contenedor.appendChild(proximas);
+
+  return contenedor;
+}
+
+// Accesos rápidos del panel de Progreso de la portada: Temario vive en
+// Teoría (trimestre-N.html), los otros 3 en Práctica
+// (trimestre-N-practica.html) — ver división Teoría/Práctica de esas
+// páginas (Fase 7). "trimestre" es trimestreDesbloqueado (el trimestre
+// realmente activo del alumno), no ultimoTrimestreVisto.
+const ACCESOS_RAPIDOS_PROGRESO = [
+  { icono: "📘", titulo: "Temario", descripcion: "Repasa los temas de este trimestre.", practica: false, ancla: "temario" },
+  { icono: "📝", titulo: "Tareas", descripcion: "Revisa tus pendientes.", practica: true, ancla: "tareas" },
+  { icono: "🚀", titulo: "Proyectos", descripcion: "Consulta tus proyectos en curso.", practica: true, ancla: "proyectos" },
+  { icono: "📤", titulo: "Entregar", descripcion: "Sube tu siguiente trabajo.", practica: true, ancla: "entrega" },
+];
+
+function construirAccesosRapidos(trimestre) {
+  const grid = document.createElement("div");
+  grid.className = "accesos-rapidos";
+
+  ACCESOS_RAPIDOS_PROGRESO.forEach(({ icono, titulo, descripcion, practica, ancla }) => {
+    const tarjeta = document.createElement("a");
+    tarjeta.className = "accesos-rapidos__tarjeta";
+    tarjeta.href = "trimestre-" + trimestre + (practica ? "-practica" : "") + ".html#" + ancla;
+
+    const iconoEl = document.createElement("span");
+    iconoEl.className = "accesos-rapidos__icono";
+    iconoEl.setAttribute("aria-hidden", "true");
+    iconoEl.textContent = icono;
+
+    const tituloEl = document.createElement("p");
+    tituloEl.className = "accesos-rapidos__titulo";
+    tituloEl.textContent = titulo;
+
+    const descripcionEl = document.createElement("p");
+    descripcionEl.className = "accesos-rapidos__descripcion";
+    descripcionEl.textContent = descripcion;
+
+    tarjeta.append(iconoEl, tituloEl, descripcionEl);
+    grid.appendChild(tarjeta);
+  });
+
+  return grid;
+}
+
 async function renderizarProgresoDetallado() {
   const sinPerfil = document.getElementById("progreso-sin-perfil");
   const conPerfil = document.getElementById("progreso-con-perfil");
@@ -6161,6 +6325,17 @@ async function renderizarProgresoDetallado() {
   sinPerfil.hidden = Boolean(perfil);
   conPerfil.hidden = !perfil;
   if (!perfil) return;
+
+  // Detalle itemizado por trimestre: SOLO existe en progreso.html. Este
+  // guard debe correr ANTES de tocar mensaje/resumen-general, no después:
+  // ambos ids también los llena renderizarProgreso() en la portada (que
+  // además le agrega el semáforo/"Misión de hoy"/"Próximas entregas"/
+  // "Accesos rápidos" propios de índex.html) — si esta función siguiera
+  // de largo aquí, su innerHTML = "" de más abajo podría BORRAR ese
+  // contenido en la carrera entre los dos renderizarTodo() (Promise.all
+  // no garantiza orden de resolución entre ambas funciones).
+  const detalle = document.getElementById("progreso-detalle-trimestres");
+  if (!detalle) return;
 
   const nombreEl = document.getElementById("progreso-alumno-nombre");
   const grupoEl = document.getElementById("progreso-alumno-grupo");
@@ -6205,16 +6380,11 @@ async function renderizarProgresoDetallado() {
     if (tarjetaNivel) resumen.appendChild(tarjetaNivel);
   }
 
-  // --- Detalle itemizado por trimestre (solo existe en progreso.html) ---
-  const detalle = document.getElementById("progreso-detalle-trimestres");
-  if (!detalle) return;
-
-  // Semáforo de pendientes + próxima entrega: mismo guard de arriba (solo
-  // corre en progreso.html, nunca en el widget compacto de index.html, que
-  // comparte el id #progreso-resumen-general pero no tiene #progreso-
-  // detalle-trimestres). Usa trimestreDesbloqueado (el trimestre realmente
-  // activo, no ultimoTrimestreVisto) sobre porTrimestre, que ya viene
-  // filtrado por el grupo del alumno.
+  // Semáforo de pendientes + próxima entrega (guard de "solo progreso.html"
+  // ya aplicado arriba, antes de tocar mensaje/resumen-general). Usa
+  // trimestreDesbloqueado (el trimestre realmente activo, no
+  // ultimoTrimestreVisto) sobre porTrimestre, que ya viene filtrado por
+  // el grupo del alumno.
   if (resumen) {
     const trimestreActivo = String(trimestreDesbloqueado);
     const entradaActiva = porTrimestre.find((p) => p.trimestre === trimestreActivo);
@@ -6304,7 +6474,7 @@ async function renderizarProgresoDetallado() {
 
         if (!completado) {
           const enlace = document.createElement("a");
-          enlace.href = "trimestre-" + trimestre + ".html#" + tipo + "-" + item.id;
+          enlace.href = enlacePendiente(trimestre, tipo, item.id);
           enlace.className = "panel-progreso__item-enlace";
           enlace.textContent = ETIQUETAS_ENLACE_ITEM[tipo];
           fila.appendChild(enlace);
