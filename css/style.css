@@ -3599,6 +3599,27 @@ summary {
   color: var(--color-texto-suave);
 }
 
+/* Preview del nivel "Excelente" en la parte visible de la tarjeta (antes
+   de expandir): mismo verde #3FA34D + insignia 🏅 que .nivel-item
+   [data-nivel="excelente"] de abajo, para no introducir un segundo acento
+   para el mismo concepto. Texto en --color-texto normal (mismo par ya
+   validado que usa .nivel-item__descripcion sobre --color-superficie-
+   alterna) — el acento de color vive en el borde, no en el texto, así
+   que no hay un par de contraste nuevo que validar. */
+.tarjeta-rubrica__preview-excelente {
+  margin: 0.4rem 0 0;
+  padding: 0.4rem 0.7rem;
+  border-left: 3px solid #3FA34D;
+  border-radius: 6px;
+  background-color: var(--color-superficie-alterna);
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto);
+}
+
+.tarjeta-rubrica__preview-excelente-icono {
+  margin-right: 0.3rem;
+}
+
 /* Un color sutil por nivel, reutilizando la misma paleta de estados
    (verde/turquesa/naranja/rojo) ya usada en las tarjetas de tareas. */
 .nivel-item[data-nivel="excelente"] {

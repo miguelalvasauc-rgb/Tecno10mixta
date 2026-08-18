@@ -4522,6 +4522,25 @@ async function renderizarRubricas() {
       cabecera.appendChild(titulo);
       cabecera.appendChild(crearBadgeGrupo(item.grupo));
 
+      // Preview del nivel "Excelente" en la parte visible de la tarjeta
+      // (antes de expandir): mismo acento verde + insignia 🏅 que ya usa
+      // .nivel-item[data-nivel="excelente"] en la lista completa de abajo,
+      // para que el preview no contradiga visualmente el detalle expandido.
+      // No toca panelNiveles/niveles más abajo, que se queda igual.
+      const nivelExcelente = (item.niveles || []).find((n) => n.nivel === "Excelente");
+      let previewExcelente = null;
+      if (nivelExcelente) {
+        previewExcelente = document.createElement("p");
+        previewExcelente.className = "tarjeta-rubrica__preview-excelente";
+        const iconoPreview = document.createElement("span");
+        iconoPreview.className = "tarjeta-rubrica__preview-excelente-icono";
+        iconoPreview.setAttribute("aria-hidden", "true");
+        iconoPreview.textContent = "🏅";
+        const etiquetaPreview = document.createElement("strong");
+        etiquetaPreview.textContent = "Excelente: ";
+        previewExcelente.append(iconoPreview, etiquetaPreview, nivelExcelente.descripcion);
+      }
+
       const descripcion = document.createElement("p");
       descripcion.textContent = item.descripcion;
 
@@ -4537,7 +4556,9 @@ async function renderizarRubricas() {
       icono.setAttribute("aria-hidden", "true");
       icono.textContent = "▾";
 
-      resumen.append(cabecera, descripcion, meta, icono);
+      resumen.appendChild(cabecera);
+      if (previewExcelente) resumen.appendChild(previewExcelente);
+      resumen.append(descripcion, meta, icono);
 
       const niveles = document.createElement("ul");
       niveles.className = "tarjeta-rubrica__niveles";
