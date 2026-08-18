@@ -8230,6 +8230,15 @@ function activarSelectorModoTrimestre() {
     const tarjetaPractica = selector.querySelector('[data-modo-tarjeta="practica"]');
     if (!listaTeoria || !listaPractica || !tarjetaTeoria || !tarjetaPractica) return;
 
+    // Tabs 1°/2°/3° del mismo contenedor: reescribe su destino para que
+    // preserven el modo activo (ej. con Práctica activa, "2°" debe llevar
+    // a trimestre-2-practica.html, no a trimestre-2.html). Corre en las
+    // 13 páginas por igual — en trimestre-N.html/trimestre-N-practica.html
+    // esto sustituye el href hardcodeado del HTML; en el resto de páginas
+    // complementa (no reemplaza) el toggle de clase activa/candado que ya
+    // hace actualizarEnlacesTrimestreEnSidebar().
+    const tabs = contenedor.querySelectorAll(".riel-flyout__trimestre-tab[data-trimestre-tab]");
+
     function mostrarModo(modo) {
       const esTeoria = modo === "teoria";
       listaTeoria.hidden = !esTeoria;
@@ -8238,6 +8247,9 @@ function activarSelectorModoTrimestre() {
       tarjetaTeoria.setAttribute("aria-pressed", String(esTeoria));
       tarjetaPractica.classList.toggle("riel-flyout__modo-tarjeta--activo", !esTeoria);
       tarjetaPractica.setAttribute("aria-pressed", String(!esTeoria));
+      tabs.forEach((tab) => {
+        tab.href = "trimestre-" + tab.dataset.trimestreTab + (esTeoria ? "" : "-practica") + ".html";
+      });
     }
 
     tarjetaTeoria.addEventListener("click", () => mostrarModo("teoria"));
