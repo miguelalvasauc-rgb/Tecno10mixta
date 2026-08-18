@@ -9073,6 +9073,106 @@ async function actualizarUISesion() {
   });
 }
 
+// 5 reglas de fuerza de contraseña (Fase 4) — única fuente de verdad,
+// usada tanto por el checklist en vivo (activarValidadorContrasena) como
+// por los 2 formularios que envían la contraseña a Supabase (Crear
+// cuenta, Restablecer contraseña), para no repetir los mismos regex en
+// 3 sitios distintos.
+function calcularReglasContrasena(valor) {
+  const cumple = {
+    longitud: valor.length >= 8,
+    minuscula: /[a-z]/.test(valor),
+    mayuscula: /[A-Z]/.test(valor),
+    numero: /[0-9]/.test(valor),
+    especial: /[^A-Za-z0-9]/.test(valor),
+  };
+  const total = Object.values(cumple).filter(Boolean).length;
+  return { cumple, total, valida: total === 5 };
+}
+
+// Checklist de fuerza de contraseña en vivo (se actualiza en cada tecla,
+// sin esperar el submit): barra de color + etiqueta "Fuerza: X" + ✅/⬜
+// por regla — el color nunca es el único indicador (WCAG 1.4.1). "boton"
+// es opcional: si se pasa, queda deshabilitado hasta que las 5 reglas se
+// cumplan (además de la validación normal al enviar, que sigue
+// aplicando por separado). Reutilizada tal cual en #crear-contrasena
+// (Crear cuenta) y #restablecer-contrasena (Restablecer contraseña) —
+// mismas 5 reglas de calcularReglasContrasena(), un solo lugar que las
+// pinta.
+function activarValidadorContrasena(input, medidor, boton) {
+  if (!input || !medidor) return;
+
+  const filas = [
+    { clave: "longitud", texto: "Al menos 8 caracteres" },
+    { clave: "mayusminus", texto: "Una mayúscula y una minúscula" },
+    { clave: "numero", texto: "Un número" },
+    { clave: "especial", texto: "Un carácter especial (! @ # $ % …)" },
+  ];
+
+  medidor.innerHTML = "";
+  const barra = document.createElement("div");
+  barra.className = "medidor-contrasena__barra";
+  const relleno = document.createElement("div");
+  relleno.className = "medidor-contrasena__relleno";
+  barra.appendChild(relleno);
+
+  const etiqueta = document.createElement("p");
+  etiqueta.className = "medidor-contrasena__etiqueta";
+
+  const lista = document.createElement("ul");
+  lista.className = "medidor-contrasena__lista";
+  const filasEl = {};
+  filas.forEach(({ clave, texto }) => {
+    const item = document.createElement("li");
+    item.className = "medidor-contrasena__item";
+    const icono = document.createElement("span");
+    icono.className = "medidor-contrasena__icono";
+    icono.setAttribute("aria-hidden", "true");
+    icono.textContent = "⬜";
+    const textoEl = document.createElement("span");
+    textoEl.textContent = texto;
+    item.append(icono, textoEl);
+    lista.appendChild(item);
+    filasEl[clave] = { item, icono };
+  });
+
+  medidor.append(barra, etiqueta, lista);
+
+  const TEXTO_FUERZA = { debil: "Débil", aceptable: "Aceptable", fuerte: "Fuerte" };
+
+  function evaluar() {
+    const valor = input.value;
+    const { cumple, total, valida } = calcularReglasContrasena(valor);
+    const filasCumplidas = {
+      longitud: cumple.longitud,
+      mayusminus: cumple.minuscula && cumple.mayuscula,
+      numero: cumple.numero,
+      especial: cumple.especial,
+    };
+
+    Object.entries(filasCumplidas).forEach(([clave, ok]) => {
+      const { item, icono } = filasEl[clave];
+      item.classList.toggle("medidor-contrasena__item--ok", ok);
+      icono.textContent = ok ? "✅" : "⬜";
+    });
+
+    let nivel = "debil";
+    if (total === 5) nivel = "fuerte";
+    else if (total >= 3) nivel = "aceptable";
+
+    const hayValor = valor.length > 0;
+    barra.dataset.nivel = hayValor ? nivel : "";
+    relleno.style.width = (total / 5) * 100 + "%";
+    etiqueta.textContent = hayValor ? "Fuerza: " + TEXTO_FUERZA[nivel] : "";
+
+    if (boton) boton.disabled = !valida;
+    return valida;
+  }
+
+  input.addEventListener("input", evaluar);
+  evaluar();
+}
+
 // Los formularios de "Crear cuenta" / "Iniciar sesión" solo existen en
 // cuenta.html (se buscan por id y, si no están, la función no hace nada
 // en el resto de páginas).
@@ -9135,6 +9235,8 @@ function activarFormulariosCuenta() {
   const campoCorreoCrear = document.getElementById("crear-correo");
   const campoContrasenaCrear = document.getElementById("crear-contrasena");
   const campoConfirmarCrear = document.getElementById("crear-contrasena-confirmar");
+  const botonCrearCuenta = formCrear?.querySelector("button[type=submit]");
+  activarValidadorContrasena(campoContrasenaCrear, document.getElementById("crear-contrasena-medidor"), botonCrearCuenta);
 
   formCrear?.addEventListener("submit", async (evento) => {
     evento.preventDefault();
@@ -9164,8 +9266,13 @@ function activarFormulariosCuenta() {
       marcarCampoInvalido(campoCorreoCrear, "Ingresa un correo válido, por ejemplo: nombre@ejemplo.com");
       huboError = true;
     }
-    if (contrasena.length < 6) {
-      marcarCampoInvalido(campoContrasenaCrear, "La contraseña debe tener al menos 6 caracteres.");
+    // El botón ya queda deshabilitado mientras la contraseña no cumpla
+    // las 5 reglas (ver activarValidadorContrasena arriba); esta
+    // revalidación es solo el mismo criterio de "defensa en profundidad"
+    // que el resto del formulario — no depende de que el botón se haya
+    // habilitado a tiempo.
+    if (!calcularReglasContrasena(contrasena).valida) {
+      marcarCampoInvalido(campoContrasenaCrear, "La contraseña no cumple todas las reglas de seguridad de arriba.");
       huboError = true;
     }
     if (contrasena !== confirmar) {
@@ -9288,6 +9395,8 @@ function activarFormulariosCuenta() {
   const exitoRestablecer = document.getElementById("restablecer-exito");
   const campoNuevaContrasena = document.getElementById("restablecer-contrasena");
   const campoNuevaContrasenaConfirmar = document.getElementById("restablecer-contrasena-confirmar");
+  const botonRestablecer = formRestablecer?.querySelector("button[type=submit]");
+  activarValidadorContrasena(campoNuevaContrasena, document.getElementById("restablecer-contrasena-medidor"), botonRestablecer);
 
   formRestablecer?.addEventListener("submit", async (evento) => {
     evento.preventDefault();
@@ -9298,8 +9407,8 @@ function activarFormulariosCuenta() {
     const confirmar = campoNuevaContrasenaConfirmar.value;
 
     let huboError = false;
-    if (contrasena.length < 8) {
-      marcarCampoInvalido(campoNuevaContrasena, "La contraseña debe tener al menos 8 caracteres.");
+    if (!calcularReglasContrasena(contrasena).valida) {
+      marcarCampoInvalido(campoNuevaContrasena, "La contraseña no cumple todas las reglas de seguridad de arriba.");
       huboError = true;
     }
     if (contrasena !== confirmar) {

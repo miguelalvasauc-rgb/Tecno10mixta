@@ -244,15 +244,18 @@
 
             <div class="campo-formulario">
               <label for="crear-contrasena">Contraseña</label>
-              <input type="password" id="crear-contrasena" name="contrasena" minlength="6"
+              <input type="password" id="crear-contrasena" name="contrasena" minlength="8"
                      autocomplete="new-password" required aria-describedby="crear-contrasena-error">
               <p id="crear-contrasena-error" class="campo-formulario__error" role="alert" hidden></p>
+              <!-- Poblado/actualizado en cada tecla por activarValidadorContrasena()
+                   (js/main.js) — checklist en vivo de las 5 reglas de fuerza. -->
+              <div id="crear-contrasena-medidor" class="medidor-contrasena" aria-live="polite"></div>
             </div>
 
             <div class="campo-formulario">
               <label for="crear-contrasena-confirmar">Confirmar contraseña</label>
               <input type="password" id="crear-contrasena-confirmar" name="contrasenaConfirmar"
-                     minlength="6" autocomplete="new-password" required
+                     minlength="8" autocomplete="new-password" required
                      aria-describedby="crear-contrasena-confirmar-error">
               <p id="crear-contrasena-confirmar-error" class="campo-formulario__error" role="alert" hidden></p>
             </div>
@@ -368,6 +371,7 @@
               <input type="password" id="restablecer-contrasena" name="contrasena" minlength="8"
                      autocomplete="new-password" required aria-describedby="restablecer-contrasena-error">
               <p id="restablecer-contrasena-error" class="campo-formulario__error" role="alert" hidden></p>
+              <div id="restablecer-contrasena-medidor" class="medidor-contrasena" aria-live="polite"></div>
             </div>
 
             <div class="campo-formulario">

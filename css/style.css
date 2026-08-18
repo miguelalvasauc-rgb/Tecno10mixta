@@ -6128,6 +6128,76 @@ summary {
   color: var(--color-primario);
 }
 
+/* ---------- Medidor de fuerza de contraseña (Fase 4) ----------
+   Reutilizado en #crear-contrasena (Crear cuenta) y
+   #restablecer-contrasena (Restablecer contraseña) — ver
+   activarValidadorContrasena() en js/main.js. El color nunca es el único
+   portador del estado (WCAG 1.4.1): además de la barra, hay ✅/⬜ por
+   regla y una etiqueta de texto ("Fuerza: X"). Mismos 3 tokens
+   --color-estado-* que ya usa .semaforo-progreso, ya AA en los 10
+   temas — no son colores nuevos. Diseño simple/amigable a propósito
+   (nada de estética de terminal), consistente con el resto de
+   cuenta.html. */
+.medidor-contrasena {
+  margin-top: 0.6rem;
+}
+
+.medidor-contrasena__barra {
+  background-color: var(--color-borde);
+  border-radius: var(--radio-full);
+  overflow: hidden;
+  height: 6px;
+}
+
+.medidor-contrasena__relleno {
+  height: 100%;
+  width: 0%;
+  border-radius: var(--radio-full);
+  background-color: var(--color-estado-vencido);
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.medidor-contrasena__barra[data-nivel="aceptable"] .medidor-contrasena__relleno {
+  background-color: var(--color-estado-pendiente);
+}
+
+.medidor-contrasena__barra[data-nivel="fuerte"] .medidor-contrasena__relleno {
+  background-color: var(--color-estado-completado);
+}
+
+.medidor-contrasena__etiqueta {
+  margin: 0.4rem 0 0;
+  min-height: 1em;
+  font-size: var(--tamano-fuente-meta-micro);
+  font-weight: 700;
+  color: var(--color-texto-suave);
+}
+
+.medidor-contrasena__lista {
+  list-style: none;
+  margin: 0.45rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.25rem 0.75rem;
+}
+
+.medidor-contrasena__item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+}
+
+.medidor-contrasena__item--ok {
+  color: var(--color-texto);
+}
+
+.medidor-contrasena__icono {
+  flex: 0 0 auto;
+}
+
 /* ---------- Reglamento del taller ---------- */
 .reglamento-contenedor {
   background-color: var(--color-superficie);
