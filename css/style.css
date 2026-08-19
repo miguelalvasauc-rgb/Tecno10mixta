@@ -2585,7 +2585,8 @@ summary {
    regla nativa display:none vuelve a aplicar: degrada a expand/collapse
    instantáneo, nunca rompe la funcionalidad. */
 .rubricas-grupo__panel,
-.tarjeta-rubrica__panel {
+.tarjeta-rubrica__panel,
+.nivel-item__panel {
   display: grid;
   grid-template-rows: 0fr;
   overflow: hidden;
@@ -2600,25 +2601,29 @@ summary {
    real (recorta todo lo de adentro, separador incluido) en vez de dejar
    un remanente visible al cerrar. */
 .rubricas-grupo__panel-interior,
-.tarjeta-rubrica__panel-interior {
+.tarjeta-rubrica__panel-interior,
+.nivel-item__panel-interior {
   overflow: hidden;
   min-height: 0;
 }
 
 .rubricas-grupo[open] > .rubricas-grupo__panel,
-.tarjeta-rubrica[open] > .tarjeta-rubrica__panel {
+.tarjeta-rubrica[open] > .tarjeta-rubrica__panel,
+.nivel-item[open] > .nivel-item__panel {
   grid-template-rows: 1fr;
   visibility: visible;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .rubricas-grupo__panel,
-  .tarjeta-rubrica__panel {
+  .tarjeta-rubrica__panel,
+  .nivel-item__panel {
     transition: grid-template-rows 0.25s ease, visibility 0s linear 0.25s;
   }
 
   .rubricas-grupo[open] > .rubricas-grupo__panel,
-  .tarjeta-rubrica[open] > .tarjeta-rubrica__panel {
+  .tarjeta-rubrica[open] > .tarjeta-rubrica__panel,
+  .nivel-item[open] > .nivel-item__panel {
     transition: grid-template-rows 0.25s ease, visibility 0s linear 0s;
   }
 }
@@ -3572,7 +3577,6 @@ summary {
 }
 
 .tarjeta-rubrica__niveles {
-  list-style: none;
   margin: 0.75rem 0 0;
   padding: 0.75rem 0 0;
   border-top: 1px solid var(--color-borde);
@@ -3588,12 +3592,30 @@ summary {
   padding: 0.6rem 0.8rem;
 }
 
+/* <summary> del tercer nivel de acordeón: mismo criterio que
+   .tarjeta-rubrica > summary (list-style + marker nativo apagados,
+   cursor:pointer) pero conservando el layout flex que ya tenía este
+   elemento cuando era un <div> sin comportamiento de acordeón. */
 .nivel-item__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  list-style: none;
+  cursor: pointer;
+}
+
+.nivel-item__cabecera::-webkit-details-marker {
+  display: none;
+}
+
+.nivel-item__info {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
   gap: 0.4rem 0.8rem;
+  flex: 1;
 }
 
 .nivel-item__nombre {
@@ -3607,6 +3629,17 @@ summary {
   font-weight: 600;
   color: var(--color-texto-suave);
   white-space: nowrap;
+}
+
+.nivel-item__icono {
+  flex-shrink: 0;
+  color: var(--color-turquesa);
+  font-weight: 700;
+  transition: transform 0.2s ease;
+}
+
+.nivel-item[open] .nivel-item__icono {
+  transform: rotate(180deg);
 }
 
 .nivel-item__descripcion {

@@ -4624,29 +4624,61 @@ async function renderizarRubricas() {
       if (previewExcelente) resumen.appendChild(previewExcelente);
       resumen.append(descripcion, meta, icono);
 
-      const niveles = document.createElement("ul");
+      const niveles = document.createElement("div");
       niveles.className = "tarjeta-rubrica__niveles";
       (item.niveles || []).forEach((nivelInfo) => {
-        const li = document.createElement("li");
-        li.className = "nivel-item";
-        li.dataset.nivel = nivelInfo.nivel.toLowerCase();
+        // Tercer nivel de acordeón anidado (rubricas-grupo > tarjeta-rubrica
+        // > nivel-item), mismo wrapper panel/panel-interior de los otros
+        // dos — ver reset de acordeones hijos en el listener "toggle" de
+        // tarjeta más abajo.
+        const detalleNivel = document.createElement("details");
+        detalleNivel.className = "nivel-item";
+        detalleNivel.dataset.nivel = nivelInfo.nivel.toLowerCase();
 
-        const cabeceraNivel = document.createElement("div");
+        const cabeceraNivel = document.createElement("summary");
         cabeceraNivel.className = "nivel-item__cabecera";
+
+        const infoNivel = document.createElement("div");
+        infoNivel.className = "nivel-item__info";
         const nombreNivel = document.createElement("span");
         nombreNivel.className = "nivel-item__nombre";
         nombreNivel.textContent = nivelInfo.nivel;
         const puntosNivel = document.createElement("span");
         puntosNivel.className = "nivel-item__puntos";
         puntosNivel.textContent = nivelInfo.puntos + " pts";
-        cabeceraNivel.append(nombreNivel, puntosNivel);
+        infoNivel.append(nombreNivel, puntosNivel);
+
+        const iconoNivel = document.createElement("span");
+        iconoNivel.className = "nivel-item__icono";
+        iconoNivel.setAttribute("aria-hidden", "true");
+        iconoNivel.textContent = "▾";
+
+        cabeceraNivel.append(infoNivel, iconoNivel);
 
         const descripcionNivel = document.createElement("p");
         descripcionNivel.className = "nivel-item__descripcion";
         descripcionNivel.textContent = nivelInfo.descripcion;
 
-        li.append(cabeceraNivel, descripcionNivel);
-        niveles.appendChild(li);
+        const panelNivel = document.createElement("div");
+        panelNivel.className = "nivel-item__panel";
+        const panelNivelInterior = document.createElement("div");
+        panelNivelInterior.className = "nivel-item__panel-interior";
+        panelNivelInterior.appendChild(descripcionNivel);
+        panelNivel.appendChild(panelNivelInterior);
+
+        detalleNivel.append(cabeceraNivel, panelNivel);
+        niveles.appendChild(detalleNivel);
+      });
+
+      // Los 4 niveles arrancan colapsados cada vez que se abre la
+      // tarjeta-rubrica que los contiene — <details> no lo hace solo
+      // (su atributo open no se toca al colapsar el padre, que solo lo
+      // oculta con CSS), así que se resetean explícitamente al cerrar.
+      tarjeta.addEventListener("toggle", () => {
+        if (tarjeta.open) return;
+        niveles.querySelectorAll(".nivel-item[open]").forEach((detalle) => {
+          detalle.open = false;
+        });
       });
 
       // Mismo wrapper de animación (panel + panel-interior "limpia") que
