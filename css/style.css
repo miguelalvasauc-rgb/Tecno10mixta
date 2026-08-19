@@ -4921,14 +4921,47 @@ summary {
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-/* Grid de tarjetas de tema — mismo componente para #modal-tema-grid
-   (Fase 3) y para la sección "🎨 Personalización" de cuenta.html
-   (Fase 4, contenedor propio sin dialog alrededor). */
+/* Contenedor EXTERIOR del selector de tema — mismo componente para
+   #modal-tema-grid (Fase 3) y para la sección "🎨 Personalización" de
+   cuenta.html (Fase 4, contenedor propio sin dialog alrededor). Desde la
+   Fase 7 ya no acomoda tarjetas directo (eso lo hace .tema-grupo__grid
+   más abajo): solo apila los 2 bloques de grupo (Destacados/Más temas)
+   que arma construirGridTemas() en js/main.js. */
 .tema-tarjeta__grid,
 .modal-tema__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* Grid real de tarjetas dentro de cada .tema-grupo (Destacados o Más
+   temas) — mismos valores que tenía el contenedor exterior antes de la
+   Fase 7, solo que ahora aplican al subgrid en vez de al contenedor. */
+.tema-grupo__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 0.65rem;
+}
+
+.tema-grupo__titulo {
+  margin: 0 0 0.5rem;
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 700;
+  color: var(--color-texto-suave);
+}
+
+/* Botón "Ver los N temas restantes" + .reglamento-lista__resto: mismas
+   clases que usa #reglamento-taller (la transición grid-template-rows y
+   el estilo del botón ya son genéricos, ver más abajo en el archivo). Solo
+   la animación de expansión/rotación de ícono es nueva aquí, scoped a
+   .tema-grupo--mas en vez de .bento-celda--reglamento — mismo patrón,
+   ancestro distinto. */
+.tema-grupo--mas.reglamento--expandida .reglamento-lista__resto {
+  grid-template-rows: 1fr;
+}
+
+.tema-grupo--mas.reglamento--expandida .reglamento-boton-expandir__icono {
+  transform: rotate(180deg);
 }
 
 .tema-tarjeta {
@@ -5492,7 +5525,10 @@ summary {
   transition: grid-template-rows 0.3s ease;
 }
 
-.reglamento-lista__resto > ul {
+/* ">*" en vez de "> ul": generaliza el truco al primer hijo directo,
+   sea cual sea su tag — desde la Fase 7, .tema-grupo--mas reusa esta
+   misma clase con un <div class="tema-grupo__grid"> en vez de un <ul>. */
+.reglamento-lista__resto > * {
   overflow: hidden;
   min-height: 0;
 }

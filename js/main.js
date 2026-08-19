@@ -7190,6 +7190,12 @@ const TEMAS_DISPONIBLES = [
   { slug: "editorial-sepia", nombre: "☕ Editorial Sepia" },
 ];
 
+// Los 4 que construirGridTemas() pinta siempre visibles en "⭐ Destacados";
+// el resto de TEMAS_DISPONIBLES (en su mismo orden) cae en "Más temas",
+// colapsado por default. Lista aparte a propósito — TEMAS_DISPONIBLES no
+// cambia, esto solo decide el agrupamiento visual.
+const SLUGS_TEMAS_DESTACADOS = ["claro", "oscuro", "gamer-rgb", "menta-tecnologico"];
+
 // "Temas de evento" (Navidad, y los que se agreguen después) —
 // deliberadamente separados de TEMAS_DISPONIBLES: no son una opción del
 // selector de 10 temas, se activan/desactivan solo desde el módulo
@@ -7307,61 +7313,132 @@ function leerColoresTema(slug) {
   return colores;
 }
 
-// Arma el grid de 10 tarjetas de tema (swatch + nombre) dentro de
-// "contenedor" — reutilizada por #modal-tema (selector rápido desde el
-// riel/barra inferior) y por la sección "🎨 Personalización" de
-// cuenta.html (Fase 4), en vez de duplicar el mismo grid dos veces.
-// "alSeleccionar" recibe el slug elegido; cada punto de acceso decide
-// qué hacer (el modal usa seleccionarTema directo, cuenta.html podría
-// envolverlo si algún día necesita lógica extra).
+// Una tarjeta de tema individual (swatch + nombre) — extraído de
+// construirGridTemas() para poder pintarla en dos subgrids distintos
+// (Destacados / Más temas) sin duplicar el HTML. Mismo mosaico de 4
+// cuadros (primario/turquesa/superficie/texto, ver leerColoresTema) que
+// ya traía antes de la Fase 7.
+function crearTarjetaTema(slug, nombre, temaActivo, alSeleccionar) {
+  const { primario, turquesa, superficie, texto } = leerColoresTema(slug);
+  const [emoji, ...resto] = nombre.split(" ");
+
+  const tarjeta = document.createElement("button");
+  tarjeta.type = "button";
+  tarjeta.className = "tema-tarjeta";
+  tarjeta.dataset.temaSlug = slug;
+  if (slug === temaActivo) {
+    tarjeta.classList.add("tema-tarjeta--activa");
+    tarjeta.setAttribute("aria-current", "true");
+  }
+
+  const swatch = document.createElement("span");
+  swatch.className = "tema-tarjeta__swatch";
+  swatch.setAttribute("aria-hidden", "true");
+  [primario, turquesa, superficie, texto].forEach((color) => {
+    const cuadro = document.createElement("span");
+    cuadro.className = "tema-tarjeta__swatch-cuadro";
+    cuadro.style.backgroundColor = color;
+    swatch.appendChild(cuadro);
+  });
+  const emojiSwatch = document.createElement("span");
+  emojiSwatch.className = "tema-tarjeta__swatch-emoji";
+  emojiSwatch.textContent = emoji;
+  swatch.appendChild(emojiSwatch);
+
+  const textoNombre = document.createElement("span");
+  textoNombre.className = "tema-tarjeta__nombre";
+  textoNombre.textContent = resto.join(" ");
+
+  tarjeta.append(swatch, textoNombre);
+  tarjeta.addEventListener("click", () => alSeleccionar(slug));
+  return tarjeta;
+}
+
+// Arma el grid de temas en 2 grupos (Fase 7) dentro de "contenedor" —
+// reutilizada por #modal-tema (selector rápido desde el riel/barra
+// inferior) y por la sección "🎨 Personalización" de cuenta.html (Fase 4),
+// en vez de duplicar el mismo grid dos veces. "alSeleccionar" recibe el
+// slug elegido; cada punto de acceso decide qué hacer (el modal usa
+// seleccionarTema directo, cuenta.html podría envolverlo si algún día
+// necesita lógica extra).
 //
-// El swatch de cada tarjeta es un mosaico de 4 cuadros (primario/
-// turquesa/superficie/texto, ver leerColoresTema) en vez del split
-// diagonal de 2 colores de antes — se ve el tema real, no solo su acento.
-// Todas las lecturas pasan por leerColoresTema(), que alterna data-theme
-// y restaura de inmediato: 10 llamadas síncronas seguidas, sin ningún
-// await de por medio, así que el navegador no repinta a medio camino —
-// no hay parpadeo visible pese a alternar el tema 10 veces.
+// "⭐ Destacados" (SLUGS_TEMAS_DESTACADOS) queda siempre visible; el resto
+// vive en "Más temas", colapsado con el MISMO patrón de expansión in-place
+// que #reglamento-taller (ver activarExpansionReglamento): clase
+// "reglamento--expandida" + aria-expanded + texto dinámico del botón,
+// reusando .reglamento-lista__resto y .reglamento-boton-expandir tal
+// cual — solo el selector de la animación/rotación de ícono es nuevo
+// (mismo combo ancestro+expandida, scoped a .tema-grupo--mas en vez de
+// .bento-celda--reglamento).
+//
+// Ambos subgrids quedan DENTRO de "contenedor" a propósito: activarPreview
+// TemaEnVivo() delega eventos con grid.contains(tarjeta) sobre este mismo
+// elemento, y actualizarUIGridSegunEvento() lo deshabilita completo con
+// una sola clase (pointer-events/opacity heredan a los descendientes sin
+// importar el anidado) — ninguna de las dos necesitó cambios.
+//
+// "Más temas" arranca expandido si temaActivo cae ahí, para no obligar al
+// alumno a buscarlo con un clic extra; como esta función reconstruye todo
+// desde cero en cada llamada (incluida cada apertura del modal), ese
+// estado se recalcula siempre a partir del tema activo actual — nunca
+// "recuerda" si el alumno lo había abierto manualmente antes.
 function construirGridTemas(contenedor, temaActivo, alSeleccionar) {
   contenedor.innerHTML = "";
 
-  TEMAS_DISPONIBLES.forEach(({ slug, nombre }) => {
-    const { primario, turquesa, superficie, texto } = leerColoresTema(slug);
+  const destacados = TEMAS_DISPONIBLES.filter(({ slug }) => SLUGS_TEMAS_DESTACADOS.includes(slug));
+  const masTemas = TEMAS_DISPONIBLES.filter(({ slug }) => !SLUGS_TEMAS_DESTACADOS.includes(slug));
+  const activoEnMasTemas = masTemas.some(({ slug }) => slug === temaActivo);
 
-    const [emoji, ...resto] = nombre.split(" ");
-
-    const tarjeta = document.createElement("button");
-    tarjeta.type = "button";
-    tarjeta.className = "tema-tarjeta";
-    tarjeta.dataset.temaSlug = slug;
-    const esActiva = slug === temaActivo;
-    if (esActiva) {
-      tarjeta.classList.add("tema-tarjeta--activa");
-      tarjeta.setAttribute("aria-current", "true");
-    }
-
-    const swatch = document.createElement("span");
-    swatch.className = "tema-tarjeta__swatch";
-    swatch.setAttribute("aria-hidden", "true");
-    [primario, turquesa, superficie, texto].forEach((color) => {
-      const cuadro = document.createElement("span");
-      cuadro.className = "tema-tarjeta__swatch-cuadro";
-      cuadro.style.backgroundColor = color;
-      swatch.appendChild(cuadro);
-    });
-    const emojiSwatch = document.createElement("span");
-    emojiSwatch.className = "tema-tarjeta__swatch-emoji";
-    emojiSwatch.textContent = emoji;
-    swatch.appendChild(emojiSwatch);
-
-    const textoNombre = document.createElement("span");
-    textoNombre.className = "tema-tarjeta__nombre";
-    textoNombre.textContent = resto.join(" ");
-
-    tarjeta.append(swatch, textoNombre);
-    tarjeta.addEventListener("click", () => alSeleccionar(slug));
-    contenedor.appendChild(tarjeta);
+  const grupoDestacados = document.createElement("div");
+  grupoDestacados.className = "tema-grupo";
+  const tituloDestacados = document.createElement("p");
+  tituloDestacados.className = "tema-grupo__titulo";
+  tituloDestacados.textContent = "⭐ Destacados";
+  const gridDestacados = document.createElement("div");
+  gridDestacados.className = "tema-grupo__grid";
+  destacados.forEach(({ slug, nombre }) => {
+    gridDestacados.appendChild(crearTarjetaTema(slug, nombre, temaActivo, alSeleccionar));
   });
+  grupoDestacados.append(tituloDestacados, gridDestacados);
+
+  const grupoMas = document.createElement("div");
+  grupoMas.className = "tema-grupo tema-grupo--mas";
+  grupoMas.classList.toggle("reglamento--expandida", activoEnMasTemas);
+
+  const textoVerMas = "Ver los " + masTemas.length + " temas restantes";
+  const idRestoMas = contenedor.id + "-mas-resto";
+
+  const botonMas = document.createElement("button");
+  botonMas.type = "button";
+  botonMas.className = "reglamento-boton-expandir";
+  botonMas.setAttribute("aria-expanded", String(activoEnMasTemas));
+  botonMas.setAttribute("aria-controls", idRestoMas);
+  const textoBotonMas = document.createElement("span");
+  textoBotonMas.textContent = activoEnMasTemas ? "Ver menos" : textoVerMas;
+  const iconoBotonMas = document.createElement("span");
+  iconoBotonMas.className = "reglamento-boton-expandir__icono";
+  iconoBotonMas.setAttribute("aria-hidden", "true");
+  iconoBotonMas.textContent = "▾";
+  botonMas.append(textoBotonMas, iconoBotonMas);
+  botonMas.addEventListener("click", () => {
+    const expandida = grupoMas.classList.toggle("reglamento--expandida");
+    botonMas.setAttribute("aria-expanded", String(expandida));
+    textoBotonMas.textContent = expandida ? "Ver menos" : textoVerMas;
+  });
+
+  const restoMas = document.createElement("div");
+  restoMas.id = idRestoMas;
+  restoMas.className = "reglamento-lista__resto";
+  const gridMas = document.createElement("div");
+  gridMas.className = "tema-grupo__grid";
+  masTemas.forEach(({ slug, nombre }) => {
+    gridMas.appendChild(crearTarjetaTema(slug, nombre, temaActivo, alSeleccionar));
+  });
+  restoMas.appendChild(gridMas);
+
+  grupoMas.append(botonMas, restoMas);
+
+  contenedor.append(grupoDestacados, grupoMas);
 }
 
 // Texto del aviso que reemplaza la posibilidad de elegir tema mientras
