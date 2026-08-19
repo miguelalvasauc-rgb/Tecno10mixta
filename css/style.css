@@ -904,7 +904,7 @@ a {
   padding: 0.75rem 1.25rem;
   border-radius: 0 0 8px 8px;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   text-decoration: none;
   transition: top 0.2s ease;
 }
@@ -995,7 +995,7 @@ a {
 
 .encabezado__subtitulo {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-claro-sobre-navy-suave);
 }
 
@@ -1010,7 +1010,7 @@ a {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
 }
 
 .campo-grupo label {
@@ -1023,7 +1023,7 @@ a {
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 6px;
   padding: 0.4rem 0.6rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   cursor: pointer;
 }
 
@@ -1040,7 +1040,7 @@ a {
   border: none;
   border-radius: 999px;
   padding: 0.45rem 0.9rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   cursor: pointer;
   transition: filter 0.2s ease, transform 90ms ease;
@@ -1077,7 +1077,7 @@ a {
   gap: 0.4rem;
   min-width: 0;
   text-decoration: none;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-claro-sobre-navy);
   padding: 0.35rem 0.7rem;
@@ -1086,7 +1086,7 @@ a {
 }
 
 .selector-trimestre__numero {
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -1130,7 +1130,7 @@ a {
   gap: 0.4rem;
   margin: 0;
   padding: 0;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
 }
 
 .migas-de-pan a {
@@ -1168,7 +1168,7 @@ a {
 
 .banner-trimestre p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -1191,7 +1191,7 @@ a {
 
 .nav-principal a {
   text-decoration: none;
-  font-size: 0.88rem;
+  font-size: var(--tamano-fuente-accion);
   font-weight: 600;
   color: var(--color-texto-suave);
   padding: 0.35rem 0.2rem;
@@ -1374,7 +1374,7 @@ summary {
 
 .hero p {
   color: var(--color-primario-texto-suave);
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
 }
 
 .etiqueta-badge {
@@ -1718,7 +1718,7 @@ summary {
   text-align: center;
   font-weight: 700;
   color: var(--color-primario);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   line-height: 1.1;
   flex-shrink: 0;
 }
@@ -1762,13 +1762,13 @@ summary {
 
 .aviso-tarjeta__cuerpo p {
   margin: 0.3rem 0 0;
-  font-size: 0.88rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-texto-suave);
 }
 
 .badge-prioridad {
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   font-weight: 700;
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
@@ -1859,7 +1859,7 @@ summary {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  font-size: 11px;
+  font-size: var(--tamano-fuente-meta-micro);
   font-weight: 700;
   padding: 0.2rem 0.6rem;
   border-radius: var(--radio-full);
@@ -1910,7 +1910,7 @@ summary {
 
 .tarjeta-trimestre p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -1918,7 +1918,7 @@ summary {
   margin: 1rem 0 0;
   min-height: 1.2em;
   text-align: center;
-  font-size: 0.88rem;
+  font-size: var(--tamano-fuente-accion);
   font-weight: 600;
   color: var(--color-texto-suave);
 }
@@ -1951,7 +1951,7 @@ summary {
 }
 
 .temario-grupo__titulo {
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   font-weight: 700;
   color: var(--color-primario);
   border-left: 4px solid var(--color-acento);
@@ -1961,7 +1961,7 @@ summary {
 
 .temario-grupo__conteo {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -1992,7 +1992,7 @@ summary {
 
 .tarjeta-temario__info h4 {
   margin: 0 0 0.3rem 0;
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   color: var(--color-texto);
 }
 
@@ -2064,7 +2064,7 @@ summary {
   justify-content: center;
   text-align: center;
   padding: 0.75rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
 }
 
@@ -2114,7 +2114,7 @@ summary {
 
 .tarjeta-temario__info p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -2207,7 +2207,7 @@ summary {
 
 .tarjeta-temario__reverso-contenido p {
   margin: 0 0 0.6rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   line-height: 1.5;
 }
 
@@ -2222,7 +2222,7 @@ summary {
   align-items: center;
   gap: 0.35rem;
   align-self: flex-start;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -2311,7 +2311,7 @@ summary {
 }
 
 .infografias-grupo__titulo {
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   font-weight: 700;
   color: var(--color-primario);
   border-left: 4px solid var(--color-acento);
@@ -2321,7 +2321,7 @@ summary {
 
 .infografias-grupo__conteo {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -2417,7 +2417,7 @@ summary {
   justify-content: center;
   text-align: center;
   padding: 0.75rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
 }
 
@@ -2455,7 +2455,7 @@ summary {
 .tarjeta-infografia__titulo {
   margin: 0;
   padding: 0.75rem 0.9rem;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-texto);
 }
 
@@ -2537,7 +2537,7 @@ summary {
 }
 
 .rubricas-grupo__titulo {
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   font-weight: 700;
   color: var(--color-primario);
   border-left: 4px solid var(--color-acento);
@@ -2547,7 +2547,7 @@ summary {
 
 .rubricas-grupo__conteo {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -2656,7 +2656,7 @@ summary {
 }
 
 .tareas-grupo__titulo {
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   font-weight: 700;
   color: var(--color-primario);
   border-left: 4px solid var(--color-acento);
@@ -2666,7 +2666,7 @@ summary {
 
 .tareas-grupo__conteo {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -2721,7 +2721,7 @@ summary {
   border-radius: var(--radio-full);
   padding: 0.4rem 0.85rem;
   font-family: var(--font-cuerpo);
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto-suave);
   cursor: pointer;
@@ -2790,7 +2790,7 @@ summary {
 }
 
 .tablist-secuencias__tab-conteo {
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   color: var(--color-texto-suave);
 }
 
@@ -2870,7 +2870,7 @@ summary {
 }
 
 .actividades-grupo__titulo {
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   font-weight: 700;
   color: var(--color-primario);
   border-left: 4px solid var(--color-acento);
@@ -2880,7 +2880,7 @@ summary {
 
 .actividades-grupo__conteo {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -2966,7 +2966,7 @@ summary {
 }
 
 .proyectos-grupo__titulo {
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   font-weight: 700;
   color: var(--color-primario);
   border-left: 4px solid var(--color-acento);
@@ -2976,7 +2976,7 @@ summary {
 
 .proyectos-grupo__conteo {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -3153,7 +3153,7 @@ summary {
 
 .tarjeta p {
   margin: 0;
-  font-size: 0.88rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-texto-suave);
 }
 
@@ -3167,7 +3167,7 @@ summary {
 
 .badge-grupo {
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   font-weight: 700;
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
@@ -3182,7 +3182,7 @@ summary {
    badge ya existentes en la misma tarjeta. */
 .badge-formato {
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   font-weight: 700;
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
@@ -3193,7 +3193,7 @@ summary {
 
 .badge-estado {
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   font-weight: 700;
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
@@ -3315,7 +3315,7 @@ summary {
 
 .resumen-progreso__texto {
   margin: 0 0 0.35rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto-suave);
 }
@@ -3345,7 +3345,7 @@ summary {
 }
 
 .insignia-racha__texto {
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   color: var(--color-texto);
 }
@@ -3370,7 +3370,7 @@ summary {
 .etiqueta-nivel {
   display: inline-block;
   margin-top: 0.75rem;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   padding: 0.35rem 0.8rem;
   border-radius: 999px;
@@ -3446,7 +3446,7 @@ summary {
   height: 1.75rem;
   border-radius: 50%;
   background-color: color-mix(in srgb, var(--color-borde) 40%, transparent);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .proximas-fechas-trimestre__info {
@@ -3598,7 +3598,7 @@ summary {
 
 .nivel-item__nombre {
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto);
 }
 
@@ -3658,7 +3658,7 @@ summary {
   height: 28px;
   border-radius: var(--radio-full);
   background-color: var(--color-estado-completado);
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   line-height: 1;
 }
 
@@ -3825,14 +3825,14 @@ summary {
 .mision-de-hoy__titulo {
   margin: 0;
   font-family: var(--font-encabezados);
-  font-size: 1.05rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
   font-weight: 700;
   color: var(--color-texto);
 }
 
 .mision-de-hoy__fecha {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -3843,7 +3843,7 @@ summary {
   background-color: var(--color-turquesa);
   color: var(--color-acento-texto);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   text-decoration: none;
 }
 
@@ -3875,7 +3875,7 @@ summary {
   border-radius: var(--radio-md);
   background-color: var(--color-superficie-alterna);
   color: var(--color-texto-suave);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 /* auto-fit en vez de un conteo fijo de columnas: con la tarjeta ahora a
@@ -3913,19 +3913,19 @@ summary {
 }
 
 .accesos-rapidos__icono {
-  font-size: 1.25rem;
+  font-size: var(--tamano-fuente-titular);
 }
 
 .accesos-rapidos__titulo {
   margin: 0;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-texto);
 }
 
 .accesos-rapidos__descripcion {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -3952,7 +3952,7 @@ summary {
 
 .panel-progreso__trimestre-resumen h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   color: var(--color-texto);
 }
 
@@ -3975,7 +3975,7 @@ summary {
 
 .panel-progreso__trimestre h4 {
   margin: 0.9rem 0 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -4006,7 +4006,7 @@ summary {
   padding: 0.5rem 0.6rem;
   border-radius: var(--radio-md);
   background-color: var(--color-superficie-alterna);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
 }
 
 .panel-progreso__item-titulo {
@@ -4024,7 +4024,7 @@ summary {
 .panel-progreso__item-enlace {
   grid-area: enlace;
   justify-self: end;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   color: var(--color-turquesa);
   text-decoration: none;
@@ -4079,7 +4079,7 @@ summary {
   margin: 0.75rem 0 0;
   padding-top: 0.75rem;
   border-top: 1px solid var(--color-borde);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   line-height: 1.6;
   color: var(--color-texto-suave);
 }
@@ -4173,7 +4173,7 @@ summary {
 
 .tarjeta-video__info p {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -4261,7 +4261,7 @@ summary {
 
 .tarjeta-presentacion__info p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -4298,7 +4298,7 @@ summary {
 
 .tarjeta-examen-diagnostico__texto p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -4390,7 +4390,7 @@ summary {
   color: var(--color-texto);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-full);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   cursor: pointer;
   transition: opacity 0.15s ease;
 }
@@ -4563,7 +4563,7 @@ summary {
   text-align: center;
   font-weight: 700;
   color: var(--color-turquesa);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   line-height: 1.1;
 }
 
@@ -4577,12 +4577,12 @@ summary {
 
 .evento-item__info h4 {
   margin: 0 0 0.15rem;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .evento-item__info p {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -4593,7 +4593,7 @@ summary {
   gap: 0.35rem;
   align-self: flex-start;
   margin-top: 0.2rem;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   text-decoration: none;
   color: var(--color-turquesa);
@@ -4658,7 +4658,7 @@ summary {
   gap: 0.35rem;
   align-self: flex-start;
   margin-top: 0.2rem;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -4731,7 +4731,7 @@ summary {
 
 #modal-detalle-contenido,
 #modal-demo-contenido {
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   line-height: 1.6;
   color: var(--color-texto-suave);
 }
@@ -4773,7 +4773,7 @@ summary {
   border-radius: 50%;
   background-color: transparent;
   color: var(--color-texto-suave);
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   line-height: 1;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -4837,7 +4837,7 @@ summary {
   border-radius: 50%;
   background-color: transparent;
   color: var(--color-texto-suave);
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   line-height: 1;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -4916,7 +4916,7 @@ summary {
   border-radius: 999px;
   border: 1.5px solid var(--preview-turquesa, var(--color-turquesa));
   color: var(--preview-turquesa, var(--color-turquesa));
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   font-weight: 700;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
@@ -5059,7 +5059,7 @@ summary {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   line-height: 1;
 }
 
@@ -5099,7 +5099,7 @@ summary {
 }
 
 .campo-formulario label {
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto);
 }
@@ -5113,7 +5113,7 @@ summary {
   border-radius: 6px;
   padding: 0.6rem 0.75rem;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .campo-formulario textarea {
@@ -5141,7 +5141,7 @@ summary {
    participa del gap de .campo-formulario. */
 .campo-formulario__error {
   color: var(--color-error-formulario);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   margin: 0;
 }
 
@@ -5152,7 +5152,7 @@ summary {
   border: none;
   border-radius: 999px;
   padding: 0.65rem 1.4rem;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   font-weight: 700;
   cursor: pointer;
   transition: filter 0.2s ease, transform 90ms ease;
@@ -5225,7 +5225,7 @@ summary {
   border: 1px solid rgba(42, 29, 2, 0.25);
   border-radius: 8px;
   padding: 0.75rem 0.9rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   line-height: 1.5;
   font-weight: 600;
 }
@@ -5284,7 +5284,7 @@ summary {
 
 .formulario__estado {
   margin: 0;
-  font-size: 0.88rem;
+  font-size: var(--tamano-fuente-accion);
   font-weight: 600;
   min-height: 1.2em;
 }
@@ -5326,7 +5326,7 @@ summary {
 
 .entrega__instrucciones h3 {
   margin: 0 0 0.6rem;
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   color: var(--color-primario);
 }
 
@@ -5341,7 +5341,7 @@ summary {
   flex-direction: column;
   gap: 0.4rem;
   font-family: var(--font-cuerpo);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-texto);
 }
 
@@ -5360,7 +5360,7 @@ summary {
   border: 1px solid var(--color-turquesa);
   border-radius: 6px;
   font-family: var(--font-cuerpo);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto);
 }
 
@@ -5408,7 +5408,7 @@ summary {
 .tarjeta-docente__materia {
   margin: 0 0 0.85rem;
   color: var(--color-texto-suave);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .tarjeta-docente__mensaje {
@@ -5428,7 +5428,7 @@ summary {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .tarjeta-docente__datos a {
@@ -5627,7 +5627,7 @@ summary {
 .tabla-horario {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .tabla-horario th,
@@ -5677,7 +5677,7 @@ summary {
   transform: translateX(-50%);
   background-color: var(--color-turquesa);
   color: #04211D;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   font-weight: 700;
   padding: 0.2rem 0.7rem;
   border-radius: 999px;
@@ -5697,7 +5697,7 @@ summary {
 
 .criterio-tarjeta h3 {
   margin: 0.25rem 0 0.85rem;
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
 }
 
 /* Ícono ⓘ discreto: tooltip nativo vía "title" (hover en desktop, tap
@@ -5718,7 +5718,7 @@ summary {
   vertical-align: middle;
   border: 1px solid var(--color-borde);
   border-radius: 50%;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   color: var(--color-texto-suave);
   cursor: help;
   transition: color 0.15s ease, border-color 0.15s ease;
@@ -5861,7 +5861,7 @@ summary {
 
 .criterios-nota {
   margin: 1.25rem 0 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
   text-align: center;
 }
@@ -6139,7 +6139,7 @@ summary {
 }
 
 .cuenta-mensaje {
-  font-size: 0.88rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-texto-suave);
   background-color: var(--color-fondo);
   border-left: 3px solid var(--color-turquesa);
@@ -6150,13 +6150,13 @@ summary {
 
 .cuenta-error {
   color: var(--color-error-formulario);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   margin: 0;
 }
 
 .cuenta-ayuda {
   margin-top: 1rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
   text-align: center;
 }
@@ -6238,7 +6238,7 @@ summary {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -6356,7 +6356,7 @@ summary {
 .tabla-materiales {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.88rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .tabla-materiales th,
@@ -6396,7 +6396,7 @@ summary {
 
 .entrega__nota {
   margin: 0.6rem 0 0;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -6426,7 +6426,7 @@ summary {
 .pie {
   background-color: var(--color-primario);
   color: var(--color-primario-texto-suave);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
 }
 
 .pie__marca {
@@ -6482,7 +6482,7 @@ summary {
 
 .pie__columna-titulo {
   margin: 0 0 0.75rem;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-primario-texto);
 }
 
@@ -6535,7 +6535,7 @@ summary {
   justify-content: space-between;
   align-items: baseline;
   gap: 0.5rem;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
 }
 
 .pie__copyright,
@@ -6598,7 +6598,7 @@ summary {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   font-weight: 700;
   color: var(--color-texto);
   text-decoration: none;
@@ -6630,7 +6630,7 @@ summary {
   gap: 0.4rem;
   color: var(--color-texto-suave);
   text-decoration: none;
-  font-size: 0.88rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .mapa-sitio__nivel-2 a:hover {
@@ -6675,7 +6675,7 @@ summary {
   border-radius: 50%;
   background-color: var(--color-turquesa);
   color: #04211D;
-  font-size: 1.4rem;
+  font-size: var(--tamano-fuente-titular);
   line-height: 1;
   display: flex;
   align-items: center;
@@ -6816,7 +6816,7 @@ summary {
   padding: 0.65rem 1rem;
   border-radius: var(--radio-full);
   font-family: var(--font-cuerpo);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   text-align: left;
   box-shadow: var(--sombra);
@@ -6924,7 +6924,7 @@ summary {
 }
 
 .toast__icono {
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   line-height: 1;
   flex-shrink: 0;
 }
@@ -6954,7 +6954,7 @@ summary {
   margin-left: 0.25rem;
   color: inherit;
   font-family: var(--font-cuerpo);
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   text-decoration: underline;
   cursor: pointer;
@@ -7032,13 +7032,13 @@ summary {
   background-color: var(--color-toast-advertencia);
   color: #2A1D02;
   font-family: var(--font-cuerpo);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   box-shadow: var(--sombra);
 }
 
 .toast-modo-demo__icono {
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   line-height: 1;
   flex-shrink: 0;
 }
@@ -7055,7 +7055,7 @@ summary {
   padding: 0.25rem 0.75rem;
   color: inherit;
   font-family: var(--font-cuerpo);
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   cursor: pointer;
 }
@@ -7129,7 +7129,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
 .sin-resultados {
   color: var(--color-texto-suave);
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 /* Variante con ícono — SOLO para los 11 vacíos reales de alumno que
@@ -7162,7 +7162,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   height: 2.5rem;
   border-radius: 50%;
   background-color: color-mix(in srgb, var(--color-borde) 40%, transparent);
-  font-size: 1.25rem;
+  font-size: var(--tamano-fuente-titular);
   opacity: 0.85;
 }
 
@@ -7181,7 +7181,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
 
 @media (max-width: 720px) {
   .encabezado__titulo {
-    font-size: 1rem;
+    font-size: var(--tamano-fuente-cuerpo);
     white-space: normal;
   }
 
@@ -7393,7 +7393,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   background-color: var(--color-turquesa);
   color: var(--color-acento-texto);
   font-family: var(--font-cuerpo);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   line-height: 1;
 }
@@ -7535,7 +7535,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   flex: 1;
   text-align: center;
   text-decoration: none;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   color: var(--color-texto-suave);
   padding: 0.35rem 0;
@@ -7593,11 +7593,11 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
 }
 
 .riel-flyout__modo-tarjeta__icono {
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
 }
 
 .riel-flyout__modo-tarjeta__titulo {
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   color: var(--color-texto);
 }
@@ -7662,7 +7662,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
 
 .riel-flyout__texto-grupo {
   margin: 0 0 0.5rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -7679,7 +7679,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
 .control-escala-texto__etiqueta {
   color: var(--color-texto-suave);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
 }
 
 .control-escala-texto__fila {
@@ -7703,7 +7703,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   color: var(--color-texto);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-full);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   cursor: pointer;
   transition: opacity 0.15s ease;
@@ -7726,7 +7726,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
 .control-escala-texto__nivel {
   flex: 1;
   text-align: center;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto);
 }
 
@@ -7834,7 +7834,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
 }
 
 .barra-lateral__nav-icono {
-  font-size: 1.1rem;
+  font-size: var(--tamano-fuente-titulo-modal);
   line-height: 1;
   flex-shrink: 0;
   width: 1.3rem;
@@ -7915,7 +7915,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   border: none;
   border-radius: var(--radio-md);
   color: var(--color-texto-suave);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   cursor: pointer;
 }
 
@@ -8040,7 +8040,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
 }
 
 .barra-inferior__texto {
-  font-size: 11px;
+  font-size: var(--tamano-fuente-meta-micro);
   font-weight: 600;
 }
 
@@ -8129,7 +8129,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
 .sheet-perfil__cabecera .riel__avatar {
   width: 44px;
   height: 44px;
-  font-size: 1.05rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
 }
 
 .sheet-perfil__cabecera span[aria-hidden="true"]:not(.riel__avatar) {
@@ -8280,7 +8280,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   border: 2px solid var(--color-borde);
   border-radius: var(--radio-md);
   padding: 0.55rem 1.1rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   cursor: pointer;
   transition: transform 90ms ease;
@@ -8318,13 +8318,13 @@ a.boton-secundario {
 
 .cuenta-personalizacion h3 {
   margin: 0 0 0.35rem;
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   color: var(--color-texto);
 }
 
 .cuenta-personalizacion__ayuda {
   margin: 0 0 0.9rem;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -8355,7 +8355,7 @@ a.boton-secundario {
   margin: 0;
   font-family: var(--font-encabezados);
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
   color: var(--color-estado-progreso);
 }
 
@@ -8379,13 +8379,13 @@ a.boton-secundario {
 
 .panel-progreso__bloque p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
 .panel-progreso__enlace {
   align-self: flex-start;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   color: var(--color-turquesa);
   text-decoration: none;
@@ -8406,7 +8406,7 @@ a.boton-secundario {
 
 .leyenda-estados h3 {
   margin: 0 0 0.6rem;
-  font-size: 1rem;
+  font-size: var(--tamano-fuente-cuerpo);
   color: var(--color-texto);
 }
 
@@ -8428,7 +8428,7 @@ a.boton-secundario {
 
 .leyenda-estados__texto {
   font-family: var(--font-cuerpo);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -8574,13 +8574,13 @@ a.boton-secundario {
 }
 
 .admin-header__switch-calificacion-titulo {
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto-suave);
 }
 
 .admin-header__switch-calificacion-estado {
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -8598,7 +8598,7 @@ a.boton-secundario {
   padding: 0.75rem 1rem;
   font-family: var(--font-cuerpo);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-texto-suave);
   cursor: pointer;
   border-bottom: 3px solid transparent;
@@ -8654,7 +8654,7 @@ a.boton-secundario {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
 }
 
 .calificacion-filtro label {
@@ -8668,7 +8668,7 @@ a.boton-secundario {
   border: 1px solid var(--color-borde);
   background-color: var(--color-fondo);
   color: var(--color-texto);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   min-width: 180px;
   cursor: pointer;
 }
@@ -8684,7 +8684,7 @@ a.boton-secundario {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
 }
 
 .tabla-calificacion th,
@@ -8859,7 +8859,7 @@ a.boton-secundario {
   border: 1px solid var(--color-borde);
   border-radius: 8px;
   color: var(--color-texto);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   padding: 0.4rem 0.9rem;
   cursor: pointer;
 }
@@ -8947,7 +8947,7 @@ a.boton-secundario {
   border: 1px solid var(--color-borde);
   background-color: var(--color-fondo);
   color: var(--color-texto);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
 }
 
 /* ---------- Botón "Ver historial completo" (dentro de la celda de Alumno) ----------
@@ -8961,7 +8961,7 @@ a.boton-secundario {
   border: none;
   padding: 0;
   color: var(--color-turquesa);
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   font-weight: 600;
   cursor: pointer;
   text-align: left;
@@ -9003,7 +9003,7 @@ a.boton-secundario {
 
 .modal-historial__subtitulo {
   margin: 0 0 1.25rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -9041,7 +9041,7 @@ a.boton-secundario {
 
 .calificacion-historial__promedio-desglose {
   margin: 0.2rem 0 0;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -9069,7 +9069,7 @@ a.boton-secundario {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  font-size: 0.88rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-texto);
 }
 
@@ -9080,7 +9080,7 @@ a.boton-secundario {
 }
 
 .calificacion-historial__sin-cuenta {
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-texto-suave);
   line-height: 1.6;
 }
@@ -9168,7 +9168,7 @@ button.badge-estado {
 }
 
 #formulario-editar-entrega label {
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto-suave);
 }
@@ -9181,7 +9181,7 @@ button.badge-estado {
   background-color: var(--color-fondo);
   color: var(--color-texto);
   font-family: var(--font-cuerpo);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   margin-bottom: 0.75rem;
   resize: vertical;
 }
@@ -9202,7 +9202,7 @@ button.badge-estado {
   border: none;
   border-radius: var(--radio-md);
   padding: 0.55rem 1.1rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 700;
   cursor: pointer;
 }
@@ -9219,7 +9219,7 @@ button.badge-estado {
   background: none;
   border: none;
   color: var(--color-estado-vencido);
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
@@ -9428,7 +9428,7 @@ button.badge-estado {
   width: 1.7rem;
   height: 1.7rem;
   padding: 0;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   line-height: 1;
 }
 
@@ -9593,7 +9593,7 @@ button.badge-estado {
   gap: 0.75rem;
   padding: 0.55rem 0;
   border-bottom: 1px solid var(--color-borde);
-  font-size: 0.88rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 /* Mismo rol que .calificacion-historial__badge-contenedor: da contexto
@@ -9628,7 +9628,7 @@ button.badge-estado {
 .tabla-alumnos {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .tabla-alumnos th,
@@ -9663,7 +9663,7 @@ button.badge-estado {
   background: none;
   border: none;
   color: var(--color-estado-vencido);
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
@@ -9708,7 +9708,7 @@ button.badge-estado {
 }
 
 #formulario-nuevo-alumno label {
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto-suave);
 }
@@ -9721,7 +9721,7 @@ button.badge-estado {
   background-color: var(--color-fondo);
   color: var(--color-texto);
   font-family: var(--font-cuerpo);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   margin-bottom: 0.75rem;
 }
 
@@ -9761,7 +9761,7 @@ button.badge-estado {
   background-color: var(--color-fondo);
   border: 1px dashed var(--color-borde);
   font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
-  font-size: 1.2rem;
+  font-size: var(--tamano-fuente-titular);
   font-weight: 700;
   letter-spacing: 0.05em;
   color: var(--color-texto);
@@ -9776,7 +9776,7 @@ button.badge-estado {
 .tabla-avisos {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .tabla-avisos th,
@@ -9820,7 +9820,7 @@ button.badge-estado {
   background: none;
   border: none;
   color: var(--color-estado-vencido);
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
@@ -9863,7 +9863,7 @@ button.badge-estado {
 }
 
 #formulario-aviso label {
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto-suave);
 }
@@ -9877,7 +9877,7 @@ button.badge-estado {
   background-color: var(--color-fondo);
   color: var(--color-texto);
   font-family: var(--font-cuerpo);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   margin-bottom: 0.75rem;
   resize: vertical;
 }
@@ -9917,7 +9917,7 @@ button.badge-estado {
 }
 
 #formulario-popup-bienvenida label {
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto-suave);
 }
@@ -9930,7 +9930,7 @@ button.badge-estado {
   background-color: var(--color-fondo);
   color: var(--color-texto);
   font-family: var(--font-cuerpo);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   margin-bottom: 0.75rem;
   resize: vertical;
 }
@@ -10004,7 +10004,7 @@ button.badge-estado {
 
 #popup-bienvenida-mensaje-texto {
   margin: 0 0 1.25rem;
-  font-size: 0.95rem;
+  font-size: var(--tamano-fuente-accion);
   line-height: 1.6;
   color: var(--color-texto-suave);
   white-space: pre-line;
@@ -10083,7 +10083,7 @@ button.badge-estado {
 
 .trimestre-opcion__descripcion {
   grid-column: 2;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -10146,7 +10146,7 @@ button.badge-estado {
 
 .apariencia-opcion__descripcion {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -10158,7 +10158,7 @@ button.badge-estado {
 }
 
 .apariencia-opcion__estado {
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
   min-width: 5.5rem;
   text-align: right;
@@ -10254,7 +10254,7 @@ button.badge-estado {
 .tabla-fechas {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .tabla-fechas th,
@@ -10289,7 +10289,7 @@ button.badge-estado {
   background: none;
   border: none;
   color: var(--color-estado-vencido);
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
@@ -10330,7 +10330,7 @@ button.badge-estado {
 }
 
 #formulario-editar-fecha label {
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto-suave);
 }
@@ -10342,7 +10342,7 @@ button.badge-estado {
   background-color: var(--color-fondo);
   color: var(--color-texto);
   font-family: var(--font-cuerpo);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   margin-bottom: 0.75rem;
 }
 
@@ -10382,7 +10382,7 @@ button.badge-estado {
 
 .fechas-recorrido label {
   display: block;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto-suave);
   margin-bottom: 0.4rem;
@@ -10403,12 +10403,12 @@ button.badge-estado {
   background-color: var(--color-fondo);
   color: var(--color-texto);
   font-family: var(--font-cuerpo);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 .fechas-recorrido__ayuda {
   margin: 0.4rem 0 0;
-  font-size: 0.8rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -10460,7 +10460,7 @@ button.badge-estado {
   border: none;
   padding: 0;
   font-family: var(--font-cuerpo);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   cursor: pointer;
 }
 
@@ -10692,7 +10692,7 @@ button.badge-estado {
 }
 
 #formulario-calificar label {
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
   color: var(--color-texto-suave);
 }
@@ -10704,7 +10704,7 @@ button.badge-estado {
   background-color: var(--color-fondo);
   color: var(--color-texto);
   font-family: var(--font-cuerpo);
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   margin-bottom: 0.75rem;
 }
 
@@ -11010,7 +11010,7 @@ button.badge-estado {
    alcance para texto aclaratorio secundario en este módulo. */
 .kpi-tarjeta__tendencia-pendiente {
   margin: 0.6rem 0 0;
-  font-size: 0.72rem;
+  font-size: var(--tamano-fuente-encabezado-tabla);
   color: var(--color-texto-suave);
   font-style: italic;
 }
@@ -11077,7 +11077,7 @@ button.badge-estado {
   flex-wrap: wrap;
   gap: 0.9rem;
   margin-bottom: 0.6rem;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
 }
 
@@ -11135,7 +11135,7 @@ button.badge-estado {
    como __texto-segmento, así que usa --color-texto-suave normal en vez de
    los tokens ink oscuro/claro fijos de arriba. */
 .dashboard-grafica__etiqueta-barra {
-  font-size: 11px;
+  font-size: var(--tamano-fuente-meta-micro);
   fill: var(--color-texto-suave);
   text-anchor: middle;
 }
@@ -11291,7 +11291,7 @@ button.badge-estado {
   border: none;
   padding: 0;
   color: var(--color-texto-suave);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -11313,7 +11313,7 @@ button.badge-estado {
 .guia-wizard__indicador {
   margin: 0 0 0.4rem;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
   color: var(--color-texto-suave);
 }
 
@@ -11333,7 +11333,7 @@ button.badge-estado {
   background-color: var(--color-superficie);
   color: var(--color-texto-suave);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
@@ -11473,7 +11473,7 @@ button.badge-estado {
 
 .guia-cierre__enlace-completa {
   margin-top: 1rem;
-  font-size: 0.9rem;
+  font-size: var(--tamano-fuente-accion);
 }
 
 /* ---------- Vista de una sola página (pantalla + impresión) ----------
@@ -11808,7 +11808,7 @@ button.badge-estado {
   border: 1px solid var(--color-borde);
   background-color: var(--color-fondo);
   color: var(--color-texto);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   min-width: 180px;
   cursor: pointer;
 }
@@ -11834,7 +11834,7 @@ button.badge-estado {
   border: 1px solid var(--color-turquesa);
   border-radius: var(--radio-md);
   color: var(--color-texto);
-  font-size: 0.85rem;
+  font-size: var(--tamano-fuente-secundario);
   font-weight: 600;
 }
 
