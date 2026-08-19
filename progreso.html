@@ -33,7 +33,8 @@
     })();
   </script>
   <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 </head>
 <body>
   <a href="#main-content" class="enlace-saltar">Saltar al contenido principal</a>
@@ -492,7 +493,7 @@
        página no tiene el toast persistente de Fase 5 (nunca se
        extendió aquí), así que el efecto solo es interno a los
        cálculos, no visual. -->
-  <script src="datos-demo.js"></script>
-  <script src="js/main.js"></script>
+  <script src="datos-demo.js" defer></script>
+  <script src="js/main.js" defer></script>
 </body>
 </html>

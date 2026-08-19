@@ -33,7 +33,8 @@
     })();
   </script>
   <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 </head>
 <body data-trimestre="3">
   <a href="#main-content" class="enlace-saltar">Saltar al contenido principal</a>
@@ -583,7 +584,7 @@
        modo apagado este archivo no tiene ningún efecto. Antes de
        main.js porque este último ya referencia esos globales al
        cargar. Mismo criterio que ya usan admin.html/index.html. -->
-  <script src="datos-demo.js"></script>
-  <script src="js/main.js"></script>
+  <script src="datos-demo.js" defer></script>
+  <script src="js/main.js" defer></script>
 </body>
 </html>
