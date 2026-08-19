@@ -14397,6 +14397,7 @@ function abrirModalCalificar({ alumno, item, filaProgreso, alGuardar }) {
 
   const campoValor = document.getElementById("calificar-valor");
   campoValor.value = filaProgreso.calificacion != null ? filaProgreso.calificacion : "";
+  sincronizarBotonesValorRapidoCalificacion();
 
   document.getElementById("calificar-error").hidden = true;
   modal.showModal();
@@ -14475,6 +14476,39 @@ function activarFormularioCalificar() {
   modal.addEventListener("click", (evento) => {
     if (evento.target === modal) modal.close();
   });
+}
+
+// Marca el botón de valor rápido cuyo data-valor-rapido coincide con el
+// valor actual de #calificar-valor (si aplica) — se llama al escribir a
+// mano, al tocar un botón y al abrir el modal (ver abrirModalCalificar()),
+// así el estado visual nunca queda desincronizado del campo.
+function sincronizarBotonesValorRapidoCalificacion() {
+  const campoValor = document.getElementById("calificar-valor");
+  const contenedor = document.querySelector(".calificar-valor-rapido");
+  if (!campoValor || !contenedor) return;
+
+  const valorActual = campoValor.value.trim();
+  contenedor.querySelectorAll(".calificar-valor-rapido__boton").forEach((boton) => {
+    boton.classList.toggle("calificar-valor-rapido__boton--activo", boton.dataset.valorRapido === valorActual);
+  });
+}
+
+// Atajo sobre #calificar-valor: solo llena el campo, nunca hace submit.
+// El input sigue siendo editable a mano para notas con decimales (7.5,
+// 8.3, etc.) — ver PARTE 2 de la Fase 9a.
+function activarBotonesValorRapidoCalificacion() {
+  const campoValor = document.getElementById("calificar-valor");
+  const contenedor = document.querySelector(".calificar-valor-rapido");
+  if (!campoValor || !contenedor) return;
+
+  contenedor.addEventListener("click", (evento) => {
+    const boton = evento.target.closest(".calificar-valor-rapido__boton");
+    if (!boton) return;
+    campoValor.value = boton.dataset.valorRapido;
+    sincronizarBotonesValorRapidoCalificacion();
+  });
+
+  campoValor.addEventListener("input", sincronizarBotonesValorRapidoCalificacion);
 }
 
 /* ---------- Tabla de promedios (dentro de Evaluación) ----------
@@ -15325,6 +15359,7 @@ async function inicializarModuloEvaluacion() {
   activarNavegacionMovilTablaEvaluacion();
   activarBuscadorEvaluacion();
   activarFormularioCalificar();
+  activarBotonesValorRapidoCalificacion();
   activarVistasEvaluacion();
   activarExportarCSVPromedios();
   activarExportarCSVFinal();

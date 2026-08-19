@@ -9141,6 +9141,8 @@ button.badge-estado {
 #modal-editar-entrega {
   width: 92%;
   max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
   margin: auto;
   padding: 1.4rem 1.4rem 1.5rem;
   border: 1px solid var(--color-borde);
@@ -10661,6 +10663,8 @@ button.badge-estado {
 #modal-calificar {
   width: 92%;
   max-width: 400px;
+  max-height: 85vh;
+  overflow-y: auto;
   margin: auto;
   padding: 1.4rem 1.4rem 1.5rem;
   border: 1px solid var(--color-borde);
@@ -10706,6 +10710,38 @@ button.badge-estado {
   font-family: var(--font-cuerpo);
   font-size: var(--tamano-fuente-accion);
   margin-bottom: 0.75rem;
+}
+
+/* Atajo de valores rápidos, mismo patrón "pill" que
+   .calificacion-tabs-tipo__boton (ver esa sección más arriba): no
+   reemplaza el input, solo lo llena — sigue siendo editable a mano
+   para notas con decimales. */
+.calificar-valor-rapido {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+}
+
+.calificar-valor-rapido__boton {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+}
+
+.calificar-valor-rapido__boton:hover {
+  border-color: var(--color-turquesa);
+}
+
+.calificar-valor-rapido__boton--activo {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+  color: var(--color-primario-texto);
 }
 
 /* =========================================================
