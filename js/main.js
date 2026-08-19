@@ -1802,6 +1802,7 @@ const DATOS_ACTIVIDADES = {
       id: "a-s5-1",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
+      formatoEntrega: "digital",
       titulo: "🖥️ Explorando la Interfaz",
       descripcion: "Primer acercamiento guiado a Excel/LibreOffice: celdas, filas, columnas y formato básico.",
       fecha: { "3C": "2027-01-11", "3E": "2027-01-12" },
@@ -1822,6 +1823,7 @@ const DATOS_ACTIVIDADES = {
       id: "a-s5-2",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
+      formatoEntrega: "digital",
       titulo: "🔢 Fórmulas en Acción: El Supermercado Escolar",
       descripcion: "Los alumnos aplican fórmulas de Excel a un inventario ficticio de un supermercado escolar.",
       fecha: { "3C": "2027-01-18", "3E": "2027-01-19" },
@@ -1843,6 +1845,7 @@ const DATOS_ACTIVIDADES = {
       id: "a-s5-3",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
+      formatoEntrega: "digital",
       titulo: "🎨 Diseñando mi Primera Infografía en Excel",
       descripcion: "En equipos, los alumnos crean gráficas a partir de una encuesta y las maquetan como infografía en Excel.",
       fecha: { "3C": "2027-01-26", "3E": "2027-01-27" },
@@ -2214,6 +2217,7 @@ const DATOS_PROYECTOS = {
       id: "p-s5",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
+      formatoEntrega: "digital",
       titulo: "Mi Hoja de Cálculo para Decidir",
       descripcion: "Cada alumno crea una hoja de cálculo en Excel que resuelve un problema real de toma de decisiones en su vida escolar o familiar.",
       avance: 0,
@@ -3673,6 +3677,25 @@ function crearBadgeGrupo(grupo) {
   return span;
 }
 
+// Informativo, no decorativo (aunque no sea interactivo): a diferencia de
+// crearBadgeGrupo, aquí el texto visible ("💻 Digital"/"✍️ Físico") no
+// alcanza para un lector de pantalla, por eso lleva aria-label explícito
+// con la frase completa.
+function crearBadgeFormato(formatoEntrega) {
+  const esDigital = formatoEntrega === "digital";
+  const span = document.createElement("span");
+  span.className = "badge-formato";
+  span.title = esDigital
+    ? "Entrega en archivo digital"
+    : "Entrega en físico / a mano en el cuaderno";
+  span.setAttribute(
+    "aria-label",
+    esDigital ? "Formato de entrega: archivo digital" : "Formato de entrega: a mano en el cuaderno"
+  );
+  span.textContent = esDigital ? "💻 Digital" : "✍️ Físico";
+  return span;
+}
+
 function textoPrioridad(prioridad) {
   if (prioridad === "urgente") return "Urgente";
   if (prioridad === "importante") return "Importante";
@@ -5002,6 +5025,7 @@ async function renderizarTareas() {
       titulo.textContent = item.titulo;
       cabecera.appendChild(titulo);
       cabecera.appendChild(crearBadgeGrupo(item.grupo));
+      cabecera.appendChild(crearBadgeFormato(item.formatoEntrega));
 
       const fecha = document.createElement("p");
       fecha.className = "tarjeta__fecha";
@@ -5145,6 +5169,7 @@ async function renderizarActividades() {
       titulo.textContent = item.titulo;
       cabecera.appendChild(titulo);
       cabecera.appendChild(crearBadgeGrupo(item.grupo));
+      cabecera.appendChild(crearBadgeFormato(item.formatoEntrega));
 
       const fecha = document.createElement("p");
       fecha.className = "tarjeta__fecha";
@@ -5304,6 +5329,7 @@ async function renderizarProyectos() {
       insignia.hidden = avanceMostrado < 100;
       cabecera.appendChild(insignia);
       cabecera.appendChild(crearBadgeGrupo(item.grupo));
+      cabecera.appendChild(crearBadgeFormato(item.formatoEntrega));
 
       const fecha = document.createElement("p");
       fecha.className = "tarjeta__fecha";

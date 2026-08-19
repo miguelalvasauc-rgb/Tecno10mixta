@@ -3175,6 +3175,22 @@ summary {
   color: var(--color-primario-texto);
 }
 
+/* Formato de entrega (físico/digital): outline neutro a propósito, NO los
+   colores de estado (mint/peach/rojo son exclusivos de semántica de
+   progreso, ver Status-Color Exclusivity Rule) ni el fill navy de
+   .badge-grupo, para no competir visualmente con esos dos sistemas de
+   badge ya existentes en la misma tarjeta. */
+.badge-formato {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-borde);
+  background-color: transparent;
+  color: var(--color-texto-suave);
+}
+
 .badge-estado {
   display: inline-block;
   font-size: 0.72rem;
