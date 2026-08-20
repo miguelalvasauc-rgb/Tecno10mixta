@@ -2462,12 +2462,25 @@ summary {
 /* Imagen ampliada dentro de #modal-detalle-contenido cuando lo abre
    abrirModalImagenInfografia() — el resto de #modal-detalle (caja,
    ::backdrop, botón cerrar) ya está definido más abajo, sección Modal
-   de detalle. */
+   de detalle. width/height:auto + max-width/max-height (en vez del
+   width:100% anterior) deja que cada imagen use su tamaño natural
+   limitado por lo que la restrinja primero (ancho o alto) — ni estira
+   las horizontales chatas ni recorta las verticales, sin JS para
+   detectar orientación. */
 .modal-detalle__imagen-ampliada {
   display: block;
-  width: 100%;
+  width: auto;
   height: auto;
+  max-width: 100%;
+  max-height: 70vh;
+  margin: 0 auto;
   border-radius: 8px;
+}
+
+/* Separa el botón de descarga (ver .enlace-descarga, reutilizado tal
+   cual) de la imagen debajo — .enlace-descarga solo trae margin-top. */
+.modal-detalle__descarga-imagen {
+  margin-bottom: 0.75rem;
 }
 
 .badge-unidad {
@@ -4748,6 +4761,20 @@ summary {
   background-color: var(--color-superficie);
   color: var(--color-texto);
   box-shadow: var(--sombra);
+}
+
+/* Variante del mismo #modal-detalle SOLO cuando muestra una infografía
+   (abrirModalImagenInfografia() agrega esta clase al abrir, y el
+   evento "close" del <dialog> la quita al cerrar — cubre botón ✕,
+   clic en ::backdrop y Esc por igual, así que el modal vuelve a su
+   ancho de texto normal de 640px la próxima vez que se use para "Ver
+   más" del Temario). Más ancho que el texto para darle espacio real a
+   las infografías horizontales sin reventar en pantallas chicas; el
+   ID+clase en el mismo elemento ya gana por especificidad sobre la
+   regla compartida de arriba, sin necesitar !important. */
+#modal-detalle.modal-detalle--visor-imagen {
+  max-width: min(94vw, 1000px);
+  max-height: 85vh;
 }
 
 #modal-detalle::backdrop,

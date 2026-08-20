@@ -3942,6 +3942,15 @@ function abrirModalDetalle(item) {
   const modal = document.getElementById("modal-detalle");
   if (!modal) return;
 
+  // Quita la variante de ancho de abrirModalImagenInfografia() (ver
+  // .modal-detalle--visor-imagen en css/style.css) por si el mismo
+  // #modal-detalle se usó para una infografía justo antes — el evento
+  // "close" del <dialog> es la otra vía documentada para esto, pero no
+  // es confiable en todos los navegadores al cerrar por close() nativo,
+  // así que se limpia aquí también, en el único punto donde de verdad
+  // importa (mostrar texto después de haber mostrado una imagen).
+  modal.classList.remove("modal-detalle--visor-imagen");
+
   const titulo = document.getElementById("modal-detalle-titulo");
   const contenido = document.getElementById("modal-detalle-contenido");
   titulo.textContent = item.titulo;
@@ -3987,6 +3996,16 @@ function activarCierreModalDetalle() {
 
   modal.addEventListener("click", (evento) => {
     if (evento.target === modal) modal.close();
+  });
+
+  // Quita la variante de ancho de abrirModalImagenInfografia() (ver
+  // .modal-detalle--visor-imagen en css/style.css) sin importar cómo se
+  // cerró — botón ✕, clic en ::backdrop de arriba, o Esc (el <dialog>
+  // nativo ya dispara "close" en los 3 casos) — para que la próxima vez
+  // que abrirModalDetalle() lo use para texto del Temario, vuelva a su
+  // ancho normal de 640px.
+  modal.addEventListener("close", () => {
+    modal.classList.remove("modal-detalle--visor-imagen");
   });
 }
 
@@ -4451,12 +4470,25 @@ function abrirModalImagenInfografia(item) {
 
   const contenido = document.getElementById("modal-detalle-contenido");
   contenido.innerHTML = "";
+
+  const enlaceDescarga = document.createElement("a");
+  enlaceDescarga.className = "enlace-descarga modal-detalle__descarga-imagen";
+  enlaceDescarga.href = item.imagen;
+  enlaceDescarga.download = "";
+  enlaceDescarga.textContent = "⬇ Descargar infografía";
+  contenido.appendChild(enlaceDescarga);
+
   const imgAmpliada = document.createElement("img");
   imgAmpliada.className = "modal-detalle__imagen-ampliada";
   imgAmpliada.src = item.imagen;
   imgAmpliada.alt = item.alt || item.titulo;
   contenido.appendChild(imgAmpliada);
 
+  // Ancho más generoso que el modal de texto (ver .modal-detalle--visor-imagen
+  // en css/style.css) — respeta la proporción real de la infografía en vez
+  // de estirarla al ancho fijo de 640px. Se quita en el evento "close" de
+  // activarCierreModalDetalle(), no aquí.
+  modal.classList.add("modal-detalle--visor-imagen");
   modal.showModal();
 }
 
