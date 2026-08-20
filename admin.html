@@ -748,6 +748,31 @@
               </div>
             </div>
           </div>
+
+          <!-- Fase 13: desbloqueo de los 9 temas de recompensa (Fase 10/12)
+               por grupo — a diferencia de Fondos/Eventos arriba (config_sitio,
+               un valor único global), esto es INSERT/DELETE directo en
+               temas_desbloqueados_grupo: cada fila es un desbloqueo real
+               para un grupo específico (RLS "FOR ALL" con es_docente(),
+               Fase 11, ya lista — este módulo solo la consume). Las 3
+               secciones de trimestre + sus 9 filas las arma JS
+               (inicializarSeccionRecompensasAdmin() en js/main.js) a partir
+               de TRIMESTRE_POR_TEMA_RECOMPENSA — aquí solo va el
+               contenedor y el selector de grupo. -->
+          <div class="apariencia-seccion">
+            <h3>🏆 Temas de recompensa</h3>
+            <p class="apariencia-opcion__descripcion">Marca un tema como desbloqueado cuando el grupo entero resuelva el reto del trimestre correspondiente.</p>
+            <div class="calificacion-filtros">
+              <div class="calificacion-filtro">
+                <label for="apariencia-recompensa-grupo-select">Grupo</label>
+                <select id="apariencia-recompensa-grupo-select" disabled>
+                  <option value="3C">3°C</option>
+                  <option value="3E">3°E</option>
+                </select>
+              </div>
+            </div>
+            <div id="apariencia-recompensa-lista" class="apariencia-recompensa-lista"></div>
+          </div>
         </div>
       </section>
     </section>

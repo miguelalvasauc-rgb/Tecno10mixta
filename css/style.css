@@ -12122,6 +12122,34 @@ button.badge-estado {
   cursor: not-allowed;
 }
 
+/* ---- Módulo Apariencia: subsección "🏆 Temas de recompensa" (Fase 13) ----
+   Filas armadas por JS (poblarListaRecompensasAdmin en js/main.js) con
+   los MISMOS .apariencia-opcion/.interruptor que ya usan Fondos/Modo
+   Demo arriba — solo el agrupamiento por trimestre (h4 + subgrid) es
+   nuevo aquí. */
+.apariencia-seccion > .apariencia-opcion__descripcion {
+  margin-bottom: 1rem;
+}
+
+.apariencia-recompensa-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.apariencia-recompensa-grupo__titulo {
+  margin: 0 0 0.6rem;
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 700;
+  color: var(--color-texto-suave);
+}
+
+.apariencia-recompensa-grupo__filas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
 /* ---- Selector de 10 temas deshabilitado durante un evento (#modal-tema
    y "Personalización" de cuenta.html) — ver actualizarUIGridSegunEvento()
    en js/main.js. El aviso se inserta/quita dinámicamente justo antes del

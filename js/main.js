@@ -13525,6 +13525,233 @@ async function inicializarModuloApariencia() {
   // localStorage puro), pero se inicializa aquí mismo por ser del mismo
   // módulo/tab — así solo hay un punto de entrada para "Apariencia".
   activarSwitchModoDemo();
+
+  // Ya cubierto por el "await promesaGuardPanelDocente" de arriba —
+  // mismo guard, mismo módulo/tab, no necesita esperar la promesa otra vez.
+  await inicializarSeccionRecompensasAdmin();
+}
+
+/* ---------------------------------------------------------
+   Fase 13: "🏆 Temas de recompensa" dentro de Apariencia — a diferencia
+   de Fondos/Eventos arriba (config_sitio, un valor único global por
+   clave), esto es INSERT/DELETE directo en temas_desbloqueados_grupo:
+   cada fila es un desbloqueo real para un grupo específico (RLS
+   "FOR ALL" con es_docente(), Fase 11 — ya lista, este módulo solo la
+   consume). TRIMESTRE_POR_TEMA_RECOMPENSA (Fase 12, sección 7) decide
+   el agrupamiento de las 9 filas.
+   --------------------------------------------------------- */
+
+// Arma las 3 secciones (Trimestre 1/2/3) con sus 3 filas cada una, UNA
+// SOLA VEZ al cargar el módulo — el estado de cada fila (checked/fecha)
+// se actualiza aparte (actualizarFilaRecompensaUI, vía
+// cargarEstadoRecompensasAdmin) para no reconstruir el DOM —y perder el
+// foco/estado disabled de los switches— cada vez que cambia el grupo.
+function poblarListaRecompensasAdmin(contenedor) {
+  contenedor.innerHTML = "";
+
+  for (let trimestre = 1; trimestre <= 3; trimestre++) {
+    const slugsDelTrimestre = Object.entries(TRIMESTRE_POR_TEMA_RECOMPENSA)
+      .filter(([, trimestreDelTema]) => trimestreDelTema === trimestre)
+      .map(([slug]) => slug);
+
+    const grupoTrimestre = document.createElement("div");
+    grupoTrimestre.className = "apariencia-recompensa-grupo";
+
+    const titulo = document.createElement("h4");
+    titulo.className = "apariencia-recompensa-grupo__titulo";
+    titulo.textContent = "Trimestre " + trimestre;
+
+    const filas = document.createElement("div");
+    filas.className = "apariencia-recompensa-grupo__filas";
+
+    slugsDelTrimestre.forEach((slug) => {
+      const info = TEMAS_DISPONIBLES.find((t) => t.slug === slug);
+      if (!info) return;
+      filas.appendChild(crearFilaRecompensaAdmin(slug, info.nombre));
+    });
+
+    grupoTrimestre.append(titulo, filas);
+    contenedor.appendChild(grupoTrimestre);
+  }
+}
+
+// Fila individual — mismo componente .apariencia-opcion/.interruptor que
+// ya usan Patrones de fondo y Modo Demo arriba, solo que aquí el listener
+// de "change" llama a ejecutarCambioTemaRecompensa() en vez de escribir
+// directo. "nombre" ya trae el emoji al frente (mismo string de
+// TEMAS_DISPONIBLES que usa el selector del alumno, Fase 7/12).
+function crearFilaRecompensaAdmin(slug, nombre) {
+  const fila = document.createElement("div");
+  fila.className = "apariencia-opcion";
+  fila.dataset.temaSlug = slug;
+
+  const texto = document.createElement("div");
+  texto.className = "apariencia-opcion__texto";
+  const tituloId = "apariencia-recompensa-titulo-" + slug;
+  const tituloSpan = document.createElement("span");
+  tituloSpan.id = tituloId;
+  tituloSpan.className = "apariencia-opcion__titulo";
+  tituloSpan.textContent = nombre;
+  texto.appendChild(tituloSpan);
+
+  const control = document.createElement("div");
+  control.className = "apariencia-opcion__control";
+
+  const estado = document.createElement("span");
+  estado.className = "apariencia-opcion__estado";
+  estado.textContent = "Cargando…";
+
+  const label = document.createElement("label");
+  label.className = "interruptor";
+  label.setAttribute("aria-labelledby", tituloId);
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.className = "interruptor__input";
+  input.disabled = true;
+  const riel = document.createElement("span");
+  riel.className = "interruptor__riel";
+  riel.setAttribute("aria-hidden", "true");
+  label.append(input, riel);
+
+  input.addEventListener("change", (evento) => {
+    // input.dataset.desbloqueadoEn: último valor CONFIRMADO (lo deja
+    // actualizarFilaRecompensaUI en cada refresco) — es lo que se
+    // restaura si Modo Demo intercepta o si el guardado falla, mismo
+    // criterio que select.dataset.valorGuardado en ejecutarCambioEvento().
+    const valorAnterior = input.dataset.desbloqueadoEn || null;
+    const grupoSeleccionado = document.getElementById("apariencia-recompensa-grupo-select")?.value;
+    if (grupoSeleccionado) {
+      ejecutarCambioTemaRecompensa(slug, evento.target.checked, grupoSeleccionado, valorAnterior);
+    }
+  });
+
+  control.append(estado, label);
+  fila.append(texto, control);
+  return fila;
+}
+
+// "Bloqueado" o la fecha real de desbloqueo — desbloqueado_en es
+// timestamptz con hora, igual que progreso.actualizado_en, así que
+// reutiliza formatearFechaHoraCorta() en vez de formatearFecha() (esa
+// asume fecha-sola y le concatenaría una "T00:00:00" de más).
+function textoEstadoRecompensa(desbloqueadoEn) {
+  return desbloqueadoEn ? "Desde " + formatearFechaHoraCorta(desbloqueadoEn) : "Bloqueado";
+}
+
+// Repinta UNA fila ya armada por crearFilaRecompensaAdmin() con su
+// estado real — "desbloqueadoEn" es el ISO de la columna, o null/"" si
+// el tema sigue bloqueado para este grupo. También deja el valor en
+// dataset.desbloqueadoEn (ver el listener "change" de arriba).
+function actualizarFilaRecompensaUI(slug, desbloqueadoEn) {
+  const fila = document.querySelector('.apariencia-opcion[data-tema-slug="' + slug + '"]');
+  if (!fila) return;
+  const input = fila.querySelector(".interruptor__input");
+  const estado = fila.querySelector(".apariencia-opcion__estado");
+  if (input) {
+    input.checked = !!desbloqueadoEn;
+    input.dataset.desbloqueadoEn = desbloqueadoEn || "";
+  }
+  if (estado) estado.textContent = textoEstadoRecompensa(desbloqueadoEn);
+}
+
+// Consulta temas_desbloqueados_grupo para "grupo" — vía obtenerDatos()
+// (no clienteSupabase directo) para heredar el mock de Modo Demo ("nada
+// desbloqueado", ver DEMO_TABLAS sección 2), exactamente igual que ya
+// hace obtenerEstadoDesbloqueoTemas() para el selector del alumno
+// (Fase 12) — y repinta las 9 filas ya armadas por
+// poblarListaRecompensasAdmin(). Se llama al cargar el módulo y cada vez
+// que cambia el <select> de grupo.
+async function cargarEstadoRecompensasAdmin(grupo) {
+  const select = document.getElementById("apariencia-recompensa-grupo-select");
+  const inputs = document.querySelectorAll("#apariencia-recompensa-lista .interruptor__input");
+  if (select) select.disabled = true;
+  inputs.forEach((input) => (input.disabled = true));
+
+  let filas = [];
+  try {
+    const { data, error } = await obtenerDatos("temas_desbloqueados_grupo", {
+      select: "tema_slug, desbloqueado_en",
+      eq: { grupo },
+    });
+    if (error) throw error;
+    filas = data || [];
+  } catch {
+    filas = [];
+  }
+
+  const porSlug = new Map(filas.map((fila) => [fila.tema_slug, fila.desbloqueado_en]));
+  Object.keys(TRIMESTRE_POR_TEMA_RECOMPENSA).forEach((slug) => {
+    actualizarFilaRecompensaUI(slug, porSlug.get(slug) || null);
+  });
+
+  inputs.forEach((input) => (input.disabled = false));
+  if (select) select.disabled = false;
+}
+
+// Activar → INSERT (grupo, tema_slug) en temas_desbloqueados_grupo;
+// desactivar → DELETE de esa fila (deshacer un desbloqueo por error —
+// la política RLS "FOR ALL" con es_docente() ya lo permite, Fase 11, sin
+// cambios de Supabase). Mismo criterio optimista que
+// ejecutarCambioPatronesFondo(): el checkbox nativo ya cambió
+// visualmente (evento "change" dispara después), así que hay que
+// revertirlo a mano tanto si Modo Demo intercepta como si la escritura
+// real falla — "valorAnterior" (capturado por el listener antes de
+// llamar aquí) es lo que se restaura en ambos casos.
+async function ejecutarCambioTemaRecompensa(slug, activo, grupo, valorAnterior) {
+  if (demoModeActivo()) {
+    actualizarFilaRecompensaUI(slug, valorAnterior);
+    abrirModalDemo();
+    return;
+  }
+
+  const fila = document.querySelector('.apariencia-opcion[data-tema-slug="' + slug + '"]');
+  const input = fila?.querySelector(".interruptor__input");
+  if (input) input.disabled = true;
+
+  const referenciaToast = mostrarToastCarga(activo ? "Desbloqueando tema…" : "Bloqueando tema de nuevo…");
+  try {
+    if (activo) {
+      const { data, error } = await clienteSupabase
+        .from("temas_desbloqueados_grupo")
+        .insert({ grupo, tema_slug: slug })
+        .select("desbloqueado_en")
+        .single();
+      if (error) throw error;
+      actualizarFilaRecompensaUI(slug, data.desbloqueado_en);
+    } else {
+      const { error } = await clienteSupabase
+        .from("temas_desbloqueados_grupo")
+        .delete()
+        .eq("grupo", grupo)
+        .eq("tema_slug", slug);
+      if (error) throw error;
+      actualizarFilaRecompensaUI(slug, null);
+    }
+    actualizarToastCarga(referenciaToast, {
+      tipo: "exito",
+      mensaje: activo ? "Tema desbloqueado" : "Tema bloqueado de nuevo",
+    });
+  } catch (error) {
+    actualizarFilaRecompensaUI(slug, valorAnterior);
+    actualizarToastCarga(referenciaToast, {
+      tipo: "error",
+      mensaje: "No se pudo guardar. Revisa tu conexión.",
+      onReintentar: () => ejecutarCambioTemaRecompensa(slug, activo, grupo, valorAnterior),
+    });
+  } finally {
+    if (input) input.disabled = false;
+  }
+}
+
+async function inicializarSeccionRecompensasAdmin() {
+  const contenedor = document.getElementById("apariencia-recompensa-lista");
+  const select = document.getElementById("apariencia-recompensa-grupo-select");
+  if (!contenedor || !select) return; // no es admin.html
+
+  poblarListaRecompensasAdmin(contenedor);
+  await cargarEstadoRecompensasAdmin(select.value);
+
+  select.addEventListener("change", () => cargarEstadoRecompensasAdmin(select.value));
 }
 
 /* ---------------------------------------------------------
