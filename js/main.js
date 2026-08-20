@@ -2401,6 +2401,216 @@ const DATOS_PRESENTACIONES = {
   ],
 };
 
+// Fase 15: los retos de "🏆 Aplica tus conocimientos" (trimestre-N-
+// practica.html), contenido verbatim de retos_temas_recompensa.md — un
+// reto por trimestre con 3 partes (una por secuencia), distinto para 3C
+// y 3E a propósito (para que no se compartan respuestas entre grupos).
+// Cada parte declara su "tipo" y el renderizado (crearParteReto, más
+// abajo) se adapta: caso_decision/clasificacion/secuencia_orden/
+// cifrado_cesar/calculo_aplicado/detectar_error. La resolución se hace
+// en persona con el docente — estos datos NUNCA incluyen la respuesta
+// (ni el texto descifrado del César, ni el orden correcto de
+// secuencia_orden, ni el diagnóstico de detectar_error): solo el
+// planteamiento que el sitio puede mostrar sin arruinar el reto.
+//
+// pasos_desordenados de cada secuencia_orden: orden FIJO barajado a
+// propósito al escribir estos datos (no aleatorio en cada carga, para
+// que un grupo discutiendo el reto en clase vea siempre el mismo
+// orden) — el orden correcto real está documentado en
+// retos_temas_recompensa.md, nunca aquí. crearParteReto() los pinta tal
+// cual vienen, sin ordenarlos: ese es el trabajo del reto, no del sitio.
+const DATOS_RETOS = {
+  1: {
+    "3C": {
+      partes: [
+        {
+          tipo: "caso_decision",
+          secuencia: "Secuencia 1 — Inteligencia Artificial",
+          texto:
+            'Un sistema de IA en la escuela recomienda automáticamente qué alumnos deben pasar a un grupo de "apoyo extra" basándose solo en calificaciones anteriores. Un compañero dice que esto es justo porque "la IA no tiene prejuicios como las personas". ¿Están de acuerdo? Expliquen usando el concepto de sesgo algorítmico.',
+        },
+        {
+          tipo: "clasificacion",
+          secuencia: "Secuencia 2 — Realidad Virtual",
+          instruccion: "Clasificar como Realidad Aumentada / Realidad Virtual / Metaverso:",
+          items: [
+            "Filtro de Instagram con orejas de animal",
+            "Visor que te transporta a una isla",
+            "Espacio donde amigos construyen una casa juntos con avatares",
+            "App que muestra un mueble en tu sala antes de comprarlo",
+            "Videojuego 100% inmersivo con visor",
+            "Plataforma de ropa virtual y socialización",
+          ],
+        },
+        {
+          tipo: "secuencia_orden",
+          secuencia: "Secuencia 3 — Robótica",
+          instruccion: "Ordenar el ciclo básico de un robot:",
+          pasos_desordenados: [
+            "Controlador procesa y decide",
+            "Actuador ejecuta la acción",
+            "Sensor detecta información",
+          ],
+        },
+      ],
+    },
+    "3E": {
+      partes: [
+        {
+          tipo: "caso_decision",
+          secuencia: "Secuencia 1 — Inteligencia Artificial",
+          texto:
+            'Un chatbot de atención a clientes empieza a responder groserías después de que varios usuarios "le enseñaron" malas palabras jugando con él. ¿Es culpa del chatbot? Expliquen usando el concepto de Machine Learning.',
+        },
+        {
+          tipo: "clasificacion",
+          secuencia: "Secuencia 2 — Realidad Virtual",
+          instruccion: "Clasificar como Realidad Aumentada / Realidad Virtual / Metaverso:",
+          items: [
+            "Lentes que replican una pirámide egipcia",
+            "Medidor de dimensiones sobre cámara real (mide un mueble en tu cuarto)",
+            "Concierto virtual masivo con avatares",
+            "Filtro de sombrero animado en video",
+            "Simulador de manejo inmersivo con visor",
+            "Mundo donde compras y decoras terrenos virtuales",
+          ],
+        },
+        {
+          tipo: "secuencia_orden",
+          secuencia: "Secuencia 3 — Robótica",
+          instruccion: "Ordenar el proceso de crear un robot:",
+          pasos_desordenados: [
+            "Programar el comportamiento",
+            "Definir el problema",
+            "Probar y ajustar",
+            "Diseñar el robot",
+          ],
+        },
+      ],
+    },
+  },
+  2: {
+    "3C": {
+      partes: [
+        {
+          tipo: "calculo_aplicado",
+          secuencia: "Secuencia 4 — Ciencia de Datos",
+          instruccion: "Calcula el promedio y decide qué tipo de gráfica usar para comparar a las personas, y explica por qué.",
+          tabla: {
+            encabezados: ["Alumno", "Calificación"],
+            filas: [
+              ["Ana", "8"],
+              ["Luis", "7"],
+              ["Marco", "9"],
+              ["Sofía", "6"],
+              ["Iker", "10"],
+            ],
+          },
+        },
+        {
+          tipo: "detectar_error",
+          secuencia: "Secuencia 5 — Hojas de Cálculo",
+          contexto: "Fórmula copiada de una hoja en inglés que no funciona en Excel en español.",
+          fragmento: "=SUM(A1:A5)",
+        },
+        {
+          tipo: "cifrado_cesar",
+          secuencia: "Secuencia 6 — Seguridad Digital",
+          desplazamiento: "+3",
+          mensaje_cifrado: "QR FRPSDUWDV WX FODYH",
+        },
+      ],
+    },
+    "3E": {
+      partes: [
+        {
+          tipo: "calculo_aplicado",
+          secuencia: "Secuencia 4 — Ciencia de Datos",
+          instruccion: "Calcula el promedio y decide qué tipo de gráfica usar para mostrar el cambio en el tiempo, y explica por qué.",
+          tabla: {
+            encabezados: ["Día", "Temperatura (°C)"],
+            filas: [
+              ["Lunes", "22"],
+              ["Martes", "25"],
+              ["Miércoles", "19"],
+              ["Jueves", "28"],
+              ["Viernes", "24"],
+            ],
+          },
+        },
+        {
+          tipo: "detectar_error",
+          secuencia: "Secuencia 5 — Hojas de Cálculo",
+          contexto: "Esta fórmula da como resultado el error #DIV/0!",
+          fragmento: "=PROMEDIO(A1:A5)",
+        },
+        {
+          tipo: "cifrado_cesar",
+          secuencia: "Secuencia 6 — Seguridad Digital",
+          desplazamiento: "+2",
+          mensaje_cifrado: "TCPUQOYCTG SWG UGEWGUVTC VWU CTEJKXQU",
+        },
+      ],
+    },
+  },
+  3: {
+    "3C": {
+      partes: [
+        {
+          tipo: "secuencia_orden",
+          secuencia: "Secuencia 7 — Soluciones Digitales",
+          instruccion: "Ordenar los 4 pilares del pensamiento computacional:",
+          pasos_desordenados: [
+            "Abstracción",
+            "Descomposición",
+            "Diseño de algoritmos",
+            "Reconocimiento de patrones",
+          ],
+        },
+        {
+          tipo: "detectar_error",
+          secuencia: "Secuencia 8 — Diseño Web",
+          contexto: "Encuentra el error en este fragmento de HTML.",
+          fragmento: "<p>Bienvenido a mi sitio web",
+        },
+        {
+          tipo: "caso_decision",
+          secuencia: "Secuencia 9 — Prototipos Tecnológicos e IoT",
+          texto:
+            "Un sensor de temperatura en un invernadero detecta 38°C. El sistema debe regar automáticamente, pero también hay una alerta de que el tanque de agua está casi vacío. ¿Qué debería hacer el sistema y por qué?",
+        },
+      ],
+    },
+    "3E": {
+      partes: [
+        {
+          tipo: "secuencia_orden",
+          secuencia: "Secuencia 7 — Soluciones Digitales",
+          instruccion: "Ordenar el ciclo de diseño de una solución:",
+          pasos_desordenados: [
+            "Probarla",
+            "Entender el problema",
+            "Mejorarla",
+            "Proponer una solución",
+          ],
+        },
+        {
+          tipo: "detectar_error",
+          secuencia: "Secuencia 8 — Diseño Web",
+          contexto: "Encuentra el error en este fragmento de CSS.",
+          fragmento: "color: blue\nfont-size: 16px;",
+        },
+        {
+          tipo: "caso_decision",
+          secuencia: "Secuencia 9 — Prototipos Tecnológicos e IoT",
+          texto:
+            "Un sensor de movimiento en la entrada solo debe encender las luces cuando detecta a alguien Y ya está oscureciendo. Si solo hay movimiento pero es de día, no debe encender. ¿Por qué es importante combinar los dos sensores en vez de usar solo uno?",
+        },
+      ],
+    },
+  },
+};
+
 // "secuencia" usa el mismo texto que "unidad" en DATOS_TEMARIO, para que
 // renderizarInfografias() agrupe visualmente con el mismo rótulo que ya
 // ve el alumno en Temario. Imágenes reales aún no existen (ver
@@ -7601,6 +7811,261 @@ function activarModalCelebracionTema() {
   });
 }
 
+/* ---------------------------------------------------------
+   Fase 15: "🏆 Aplica tus conocimientos" (trimestre-N-practica.html)
+   --------------------------------------------------------- */
+
+// Vista previa de UN tema del trimestre — misma familia visual que
+// crearTarjetaTema() (Fase 7/12: mismo mosaico de 4 cuadros vía
+// leerColoresTema, mismo candado 🔒), pero como <div> de solo lectura
+// (sin alSeleccionar, sin aria-current): esta tarjeta nunca selecciona
+// nada, solo informa el estado. "estadoDesbloqueo" es el MISMO objeto
+// que ya devolvió obtenerEstadoDesbloqueoTemas() para el reto de abajo,
+// no una consulta aparte.
+function crearVistaPreviaTemaTrimestre(slug, nombre, estadoDesbloqueo) {
+  const { primario, turquesa, superficie, texto } = leerColoresTema(slug);
+  const [emoji, ...resto] = nombre.split(" ");
+  const nombreSinEmoji = resto.join(" ");
+  const bloqueado = !estadoDesbloqueo.esDocente && !estadoDesbloqueo.slugsDesbloqueados.has(slug);
+
+  const tarjeta = document.createElement("div");
+  tarjeta.className = "tema-tarjeta tema-tarjeta--vista-previa";
+  if (bloqueado) {
+    tarjeta.classList.add("tema-tarjeta--bloqueada");
+    tarjeta.title = "Se desbloquea cuando tu grupo completa el reto de este trimestre";
+  }
+
+  const swatch = document.createElement("span");
+  swatch.className = "tema-tarjeta__swatch";
+  swatch.setAttribute("aria-hidden", "true");
+  [primario, turquesa, superficie, texto].forEach((color) => {
+    const cuadro = document.createElement("span");
+    cuadro.className = "tema-tarjeta__swatch-cuadro";
+    cuadro.style.backgroundColor = color;
+    swatch.appendChild(cuadro);
+  });
+  const emojiSwatch = document.createElement("span");
+  emojiSwatch.className = "tema-tarjeta__swatch-emoji";
+  emojiSwatch.textContent = emoji;
+  swatch.appendChild(emojiSwatch);
+  if (bloqueado) {
+    const candado = document.createElement("span");
+    candado.className = "tema-tarjeta__candado";
+    candado.setAttribute("aria-hidden", "true");
+    candado.textContent = "🔒";
+    swatch.appendChild(candado);
+  }
+
+  const textoNombre = document.createElement("span");
+  textoNombre.className = "tema-tarjeta__nombre";
+  textoNombre.textContent = nombreSinEmoji;
+
+  tarjeta.append(swatch, textoNombre);
+  return tarjeta;
+}
+
+// "🔑 Inicia sesión..." — mismo componente visual que
+// #progreso-sin-perfil en progreso.html (.panel-progreso__invitacion),
+// mismo texto exacto pedido para esta sección.
+function crearAvisoSinSesionReto() {
+  const aviso = document.createElement("div");
+  aviso.className = "panel-progreso__invitacion";
+
+  const texto = document.createElement("p");
+  texto.textContent = "🔑 Inicia sesión para ver el reto de tu grupo";
+
+  const enlace = document.createElement("a");
+  enlace.href = "cuenta.html";
+  enlace.className = "boton-secundario";
+  enlace.textContent = "Identificarme";
+
+  aviso.append(texto, enlace);
+  return aviso;
+}
+
+// Una parte del reto (1 de 3) — "parte.tipo" decide el formato. Nunca
+// incluye la respuesta: solo el planteamiento que trae DATOS_RETOS.
+function crearParteReto(parte) {
+  const bloque = document.createElement("div");
+  bloque.className = "reto-parte";
+
+  const titulo = document.createElement("h3");
+  titulo.className = "reto-parte__titulo";
+  titulo.textContent = parte.secuencia;
+  bloque.appendChild(titulo);
+
+  const agregarInstruccion = (texto) => {
+    const p = document.createElement("p");
+    p.className = "reto-parte__instruccion";
+    p.textContent = texto;
+    bloque.appendChild(p);
+  };
+
+  if (parte.tipo === "caso_decision") {
+    const p = document.createElement("p");
+    p.className = "reto-parte__texto";
+    p.textContent = parte.texto;
+    bloque.appendChild(p);
+  } else if (parte.tipo === "clasificacion") {
+    if (parte.instruccion) agregarInstruccion(parte.instruccion);
+    const lista = document.createElement("ol");
+    lista.className = "reto-parte__lista";
+    parte.items.forEach((item) => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      lista.appendChild(li);
+    });
+    bloque.appendChild(lista);
+  } else if (parte.tipo === "secuencia_orden") {
+    if (parte.instruccion) agregarInstruccion(parte.instruccion);
+    // Sin numeración 1/2/3 a propósito (letras A/B/C vía CSS
+    // counter(paso, upper-alpha), ver .reto-parte__lista--pasos): una
+    // lista numerada 1-2-3 podría leerse como "este ya es el orden
+    // correcto", justo lo contrario de "pasos_desordenados".
+    const lista = document.createElement("ul");
+    lista.className = "reto-parte__lista reto-parte__lista--pasos";
+    parte.pasos_desordenados.forEach((paso) => {
+      const li = document.createElement("li");
+      li.textContent = paso;
+      lista.appendChild(li);
+    });
+    bloque.appendChild(lista);
+  } else if (parte.tipo === "cifrado_cesar") {
+    agregarInstruccion("Desplazamiento: " + parte.desplazamiento);
+    const cifrado = document.createElement("p");
+    cifrado.className = "reto-parte__cifrado";
+    cifrado.textContent = parte.mensaje_cifrado;
+    bloque.appendChild(cifrado);
+  } else if (parte.tipo === "calculo_aplicado") {
+    if (parte.instruccion) agregarInstruccion(parte.instruccion);
+    const tabla = document.createElement("table");
+    tabla.className = "reto-parte__tabla";
+    const thead = document.createElement("thead");
+    const filaEncabezado = document.createElement("tr");
+    parte.tabla.encabezados.forEach((encabezado) => {
+      const th = document.createElement("th");
+      th.textContent = encabezado;
+      filaEncabezado.appendChild(th);
+    });
+    thead.appendChild(filaEncabezado);
+    tabla.appendChild(thead);
+    const tbody = document.createElement("tbody");
+    parte.tabla.filas.forEach((fila) => {
+      const tr = document.createElement("tr");
+      fila.forEach((celda) => {
+        const td = document.createElement("td");
+        td.textContent = celda;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    tabla.appendChild(tbody);
+    bloque.appendChild(tabla);
+  } else if (parte.tipo === "detectar_error") {
+    if (parte.contexto) agregarInstruccion(parte.contexto);
+    const codigo = document.createElement("pre");
+    codigo.className = "reto-parte__codigo";
+    codigo.textContent = parte.fragmento;
+    bloque.appendChild(codigo);
+  }
+
+  return bloque;
+}
+
+// Repinta "contenedor" con las 3 partes del reto de "grupo" para el
+// trimestre dado — separado de renderizarSeccionAplicaConocimientos()
+// para que el selector de grupo del docente (ver más abajo) pueda
+// llamarlo de nuevo sin reconstruir el resto de la sección.
+function renderizarPartesReto(contenedor, trimestre, grupo) {
+  contenedor.innerHTML = "";
+  const reto = DATOS_RETOS[trimestre]?.[grupo];
+  if (!reto) return;
+  reto.partes.forEach((parte) => contenedor.appendChild(crearParteReto(parte)));
+}
+
+// Selector "Ver reto de: 3°C/3°E" — SOLO para docente (nunca tiene
+// grupo propio, pero necesita ver ambos retos para arbitrarlos, ver
+// retos_temas_recompensa.md). Mismo componente visual que el filtro de
+// grupo de Calificación/Apariencia (.calificacion-filtro, Fase 13).
+function crearSelectorGrupoDocenteReto(trimestre, contenedorPartes) {
+  const filtro = document.createElement("div");
+  filtro.className = "calificacion-filtro";
+
+  const idSelect = "aplica-conocimientos-grupo-docente";
+  const label = document.createElement("label");
+  label.setAttribute("for", idSelect);
+  label.textContent = "Ver reto de";
+
+  const select = document.createElement("select");
+  select.id = idSelect;
+  ["3C", "3E"].forEach((grupo) => {
+    const option = document.createElement("option");
+    option.value = grupo;
+    option.textContent = textoGrupo(grupo);
+    select.appendChild(option);
+  });
+  select.addEventListener("change", () => {
+    renderizarPartesReto(contenedorPartes, trimestre, select.value);
+  });
+
+  filtro.append(label, select);
+  return filtro;
+}
+
+// Punto de entrada de toda la sección — no-op fuera de trimestre-N-
+// practica.html (sin #aplica-tus-conocimientos, ver el guard de abajo),
+// así que se puede llamar sin condición desde renderizarTodo() como el
+// resto de secciones de trimestre. Una sola llamada a
+// obtenerEstadoDesbloqueoTemas() (Fase 12) sirve para las 2 partes
+// siempre-visibles (preview de temas) Y para decidir si quien mira es
+// docente (reutiliza estado.esDocente en vez de otra llamada a
+// es_docente()).
+async function renderizarSeccionAplicaConocimientos() {
+  const seccion = document.getElementById("aplica-tus-conocimientos");
+  if (!seccion) return;
+
+  const trimestre = Number(TRIMESTRE_ACTUAL);
+  const estado = await obtenerEstadoDesbloqueoTemas();
+
+  const contenedorPreview = document.getElementById("aplica-conocimientos-temas");
+  if (contenedorPreview) {
+    contenedorPreview.innerHTML = "";
+    const slugsDelTrimestre = Object.entries(TRIMESTRE_POR_TEMA_RECOMPENSA)
+      .filter(([, trimestreDelTema]) => trimestreDelTema === trimestre)
+      .map(([slug]) => slug);
+    slugsDelTrimestre.forEach((slug) => {
+      const info = TEMAS_DISPONIBLES.find((t) => t.slug === slug);
+      if (!info) return;
+      contenedorPreview.appendChild(crearVistaPreviaTemaTrimestre(slug, info.nombre, estado));
+    });
+  }
+
+  const contenedorReto = document.getElementById("aplica-conocimientos-reto");
+  if (!contenedorReto) return;
+  contenedorReto.innerHTML = "";
+
+  const perfil = obtenerPerfilActivo();
+  if (!perfil) {
+    contenedorReto.appendChild(crearAvisoSinSesionReto());
+    return;
+  }
+
+  if (estado.esDocente) {
+    const contenedorPartes = document.createElement("div");
+    contenedorPartes.className = "reto-partes";
+    contenedorReto.append(crearSelectorGrupoDocenteReto(trimestre, contenedorPartes), contenedorPartes);
+    renderizarPartesReto(contenedorPartes, trimestre, "3C");
+    return;
+  }
+
+  if (!perfil.grupo) {
+    contenedorReto.appendChild(crearAvisoSinSesionReto());
+    return;
+  }
+
+  renderizarPartesReto(contenedorReto, trimestre, perfil.grupo);
+}
+
 // Una tarjeta de tema individual (swatch + nombre) — extraído de
 // construirGridTemas() para poder pintarla en dos subgrids distintos
 // (Destacados / Más temas) sin duplicar el HTML. Mismo mosaico de 4
@@ -9098,6 +9563,7 @@ async function renderizarTodo() {
     renderizarProximasFechasTrimestre(),
     renderizarVideos(),
     renderizarPresentaciones(),
+    renderizarSeccionAplicaConocimientos(),
   ]);
   // Secuenciadas a propósito (no dentro del Promise.all de arriba):
   // ambas piden el mismo detalle por trimestre vía

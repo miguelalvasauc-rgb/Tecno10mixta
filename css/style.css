@@ -5416,6 +5416,149 @@ summary {
   line-height: 1.25;
 }
 
+/* ---------- Fase 15: "🏆 Aplica tus conocimientos" (trimestre-N-
+   practica.html) ---------- */
+
+/* Vista previa de tema de solo lectura (crearVistaPreviaTemaTrimestre en
+   js/main.js): mismas .tema-tarjeta/__swatch/__candado de arriba, pero
+   es un <div>, no un <button> — sin el "levantarse" al hover/foco que
+   sugeriría que se puede seleccionar. */
+.tema-tarjeta--vista-previa {
+  cursor: default;
+}
+
+.tema-tarjeta--vista-previa:hover,
+.tema-tarjeta--vista-previa:focus-visible {
+  transform: none;
+  border-color: var(--color-borde);
+}
+
+.aplica-conocimientos-temas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.65rem;
+  max-width: 400px;
+  margin: 0 0 1.5rem;
+}
+
+.reto-partes {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.aplica-conocimientos-reto {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.reto-parte {
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: 1.1rem 1.25rem;
+  background-color: var(--color-superficie);
+}
+
+.reto-parte__titulo {
+  margin: 0 0 0.6rem;
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 700;
+  color: var(--color-texto-suave);
+}
+
+.reto-parte__texto {
+  margin: 0;
+  color: var(--color-texto);
+  line-height: 1.6;
+}
+
+.reto-parte__instruccion {
+  margin: 0 0 0.75rem;
+  color: var(--color-texto);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.reto-parte__lista {
+  margin: 0;
+  padding-left: 1.4rem;
+  color: var(--color-texto);
+  line-height: 1.7;
+}
+
+/* Letras (A/B/C…) en vez de números — ver comentario de
+   crearParteReto()/tipo "secuencia_orden" en js/main.js: numerar 1-2-3
+   una lista deliberadamente desordenada se leería como "este ya es el
+   orden correcto". */
+.reto-parte__lista--pasos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: paso;
+}
+
+.reto-parte__lista--pasos li {
+  position: relative;
+  padding: 0.55rem 0.75rem 0.55rem 2.3rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+.reto-parte__lista--pasos li:last-child {
+  margin-bottom: 0;
+}
+
+.reto-parte__lista--pasos li::before {
+  counter-increment: paso;
+  content: counter(paso, upper-alpha) ")";
+  position: absolute;
+  left: 0.75rem;
+  font-weight: 700;
+  color: var(--color-texto-suave);
+}
+
+/* Cifrado César / fragmentos de código con error: misma caja
+   monoespaciada con borde punteado que ya usa .alumnos-codigo__valor
+   (admin.html) para el código de invitación — mismo lenguaje visual de
+   "esto es texto para copiar/leer con cuidado, no prosa normal". */
+.reto-parte__cifrado,
+.reto-parte__codigo {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border-radius: 8px;
+  background-color: var(--color-fondo);
+  border: 1px dashed var(--color-borde);
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  color: var(--color-texto);
+  white-space: pre-wrap;
+  word-break: break-word;
+  letter-spacing: 0.03em;
+}
+
+.reto-parte__tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--tamano-fuente-secundario);
+}
+
+.reto-parte__tabla th,
+.reto-parte__tabla td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-borde);
+  text-align: left;
+  color: var(--color-texto);
+}
+
+.reto-parte__tabla th {
+  background-color: var(--color-superficie-alterna);
+  font-weight: 700;
+}
+
 /* ---------- Formulario de contacto ---------- */
 .formulario-contacto {
   display: flex;

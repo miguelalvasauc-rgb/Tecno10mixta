@@ -485,6 +485,24 @@
       <div id="resumen-progreso-proyectos" class="resumen-progreso" aria-live="polite"></div>
       <div id="contenedor-proyectos" class="cuadricula" aria-live="polite"></div>
     </section>
+
+    <!-- ===================== APLICA TUS CONOCIMIENTOS ===================== -->
+    <!-- Fase 15: contenido armado por JS (ver renderizarSeccionAplicaConocimientos()
+         en js/main.js) — 3 bloques: explicación fija (siempre visible, este
+         <p> es estático), preview de los 3 temas del trimestre (siempre
+         visible, vía obtenerEstadoDesbloqueoTemas()/TRIMESTRE_POR_TEMA_RECOMPENSA,
+         Fase 12) y el reto en sí (gated por sesión+grupo, mismo componente
+         que #progreso-sin-perfil de progreso.html). -->
+    <section id="aplica-tus-conocimientos" class="seccion seccion--alterna">
+      <div class="seccion__encabezado">
+        <h2>🏆 Aplica tus conocimientos</h2>
+        <p>Este trimestre hay un reto de 3 partes, una por cada secuencia que ya vieron en clase. Si todo el grupo lo resuelve correctamente, tu profesor desbloquea 3 temas visuales nuevos para todo el grupo. El reto se resuelve en persona con tu profesor — aquí solo se muestra el planteamiento, nunca la respuesta.</p>
+      </div>
+
+      <div id="aplica-conocimientos-temas" class="aplica-conocimientos-temas" aria-live="polite"></div>
+
+      <div id="aplica-conocimientos-reto" class="aplica-conocimientos-reto" aria-live="polite"></div>
+    </section>
   </main>
 
   <!-- ===================== PIE DE PÁGINA ===================== -->
