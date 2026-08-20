@@ -12746,10 +12746,22 @@ function activarNavegacionMovilTablaCalificacion() {
   if (!contenedor || !botonIzq || !botonDer) return;
 
   botonIzq.addEventListener("click", () => {
-    contenedor.scrollBy({ left: -anchoPrimeraColumnaDatosCalificacion(), behavior: "smooth" });
+    const prefiereMovimientoReducido = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    contenedor.scrollBy({
+      left: -anchoPrimeraColumnaDatosCalificacion(),
+      behavior: prefiereMovimientoReducido ? "auto" : "smooth",
+    });
   });
   botonDer.addEventListener("click", () => {
-    contenedor.scrollBy({ left: anchoPrimeraColumnaDatosCalificacion(), behavior: "smooth" });
+    const prefiereMovimientoReducido = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    contenedor.scrollBy({
+      left: anchoPrimeraColumnaDatosCalificacion(),
+      behavior: prefiereMovimientoReducido ? "auto" : "smooth",
+    });
   });
 
   contenedor.addEventListener("scroll", actualizarEstadoNavegacionTablaCalificacion);
@@ -15548,10 +15560,22 @@ function activarNavegacionMovilTablaEvaluacion() {
   if (!contenedor || !botonIzq || !botonDer) return;
 
   botonIzq.addEventListener("click", () => {
-    contenedor.scrollBy({ left: -anchoPrimeraColumnaDatosEvaluacion(), behavior: "smooth" });
+    const prefiereMovimientoReducido = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    contenedor.scrollBy({
+      left: -anchoPrimeraColumnaDatosEvaluacion(),
+      behavior: prefiereMovimientoReducido ? "auto" : "smooth",
+    });
   });
   botonDer.addEventListener("click", () => {
-    contenedor.scrollBy({ left: anchoPrimeraColumnaDatosEvaluacion(), behavior: "smooth" });
+    const prefiereMovimientoReducido = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    contenedor.scrollBy({
+      left: anchoPrimeraColumnaDatosEvaluacion(),
+      behavior: prefiereMovimientoReducido ? "auto" : "smooth",
+    });
   });
 
   contenedor.addEventListener("scroll", actualizarEstadoNavegacionTablaEvaluacion);
