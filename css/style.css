@@ -472,6 +472,98 @@
   --md-outline-variant: var(--color-borde);
 }
 
+/* ---------- 3 temas de recompensa nuevos (Fase 10) ----------
+   Mismo patrón de 16 tokens que los 8 temas nuevos de arriba. Diseño y
+   verificación de contraste WCAG cerrados en la Fase 10 parte 1 (incluye
+   2 correcciones de matiz sobre el diseño original para respetar la
+   Status-Color Exclusivity Rule: acento-brasa y acento-turquesa se
+   rotaron en H manteniendo S/L, ver comentarios en cada bloque). */
+:root[data-theme="atardecer-volcanico"] {
+  --color-fondo: #120A08;
+  --color-superficie: #1E120D;
+  --color-superficie-alterna: #170D0A;
+  --color-borde: #3A2016;
+  --color-texto: #FBEAE3;
+  --color-texto-suave: #C7A599;
+  --color-error-formulario: #E5484D;
+  /* acento-lava como --color-primario: con texto claro fijo falla AA
+     (3.12:1), así que --color-primario-texto reutiliza --color-superficie
+     — mismo truco ya usado por cyberpunk-gold con su dorado. */
+  --color-primario: #FF5A1F;
+  --color-primario-suave: #FF7A3F;
+  /* acento-brasa: #F2A65A original rotado a H=49° (dorado) — el original
+     (H=30°) casi coincidía con --color-estado-progreso (H=33°), violando
+     la Status-Color Exclusivity Rule. 16°/22° de separación de
+     progreso/pendiente respectivamente. */
+  --color-turquesa: #F2D65A;
+  --color-acento-texto: #1E120D;
+  --color-primario-texto: #1E120D;
+  --color-primario-texto-suave: #2E1D15;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
+}
+
+:root[data-theme="laboratorio-ciencia"] {
+  --color-fondo: #090D16;
+  --color-superficie: #131C2E;
+  --color-superficie-alterna: #0D1220;
+  --color-borde: #263A5E;
+  --color-texto: #E2E8F0;
+  --color-texto-suave: #9FADC4;
+  --color-error-formulario: #EA5257;
+  --color-primario: #7B2CBF;
+  /* Ajustado más cerca de --color-primario que un violeta más claro
+     (#8F42D0): con ese valor --color-primario-texto-suave fallaba AA
+     contra --color-primario-suave (3.62:1) — mismo problema ya
+     documentado en rosa-pastel. Este valor deja ambos pares en AA. */
+  --color-primario-suave: #8539C7;
+  /* acento-turquesa: #00F5D4 original rotado a H=192° (cian más azul,
+     menos verde) — el original (H=172°) casi coincidía con
+     --color-estado-completado (H=168°), violando la Status-Color
+     Exclusivity Rule. 24° de separación del nuevo valor. */
+  --color-turquesa: #00C4F5;
+  --color-acento-texto: #131C2E;
+  --color-primario-texto: #E8EEF4;
+  --color-primario-texto-suave: #D6DEE8;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
+}
+
+:root[data-theme="terminal-cian"] {
+  --color-fondo: #050B0F;
+  --color-superficie: #0D1A21;
+  --color-superficie-alterna: #081016;
+  --color-borde: #123640;
+  --color-texto: #33D9FF;
+  /* Valor original de diseño (#0E7A94) fallaba AA (3.56:1 contra
+     --color-superficie) — este es el reemplazo que sí pasa (5.43:1),
+     misma familia cian, solo más claro. */
+  --color-texto-suave: #1F9BB8;
+  /* NO se vuelve cian a propósito: es un color semántico (validación de
+     formularios), no decorativo — se mantiene rojo reconocible como en
+     los otros 12 temas. El global ya pasa AA (4.52:1) sin override. */
+  --color-error-formulario: #E5484D;
+  /* Monocromático a propósito: primario/turquesa reutilizan el mismo
+     cian que --color-texto en vez de inventar un tono nuevo fuera de
+     familia. */
+  --color-primario: #33D9FF;
+  --color-primario-suave: #7FF3FF;
+  --color-turquesa: #33D9FF;
+  --color-acento-texto: #050B0F;
+  --color-primario-texto: #050B0F;
+  --color-primario-texto-suave: #123640;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
+  /* Único tema que sobreescribe la tipografía: IBM Plex Mono (ver
+     @font-face junto a Quicksand/Inter) solo se pide cuando este tema
+     está activo — el resto de temas/páginas nunca la descargan. */
+  --font-encabezados: "IBM Plex Mono", var(--fuente-titulos);
+  --font-cuerpo: "IBM Plex Mono", var(--fuente-base);
+}
+
 /* Turquesa siempre disponible como color secundario de marca (badges, tags) */
 :root {
   /* Tamaño de texto (accesibilidad visual, ver control-escala-texto más
@@ -759,6 +851,27 @@
   font-weight: 700;
   font-display: swap;
   src: url("../assets/fonts/inter-700.woff2") format("woff2");
+}
+
+/* IBM Plex Mono, auto-hospedada igual que Quicksand/Inter arriba — SOLO se
+   pide cuando el tema "Terminal Cian" está activo (ver override de
+   --font-cuerpo/--font-encabezados en :root[data-theme="terminal-cian"]):
+   @font-face no descarga nada hasta que algo en la página renderizada
+   necesita esa font-family, así que el resto de temas/páginas nunca la
+   piden. */
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/ibm-plex-mono-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../assets/fonts/ibm-plex-mono-600.woff2") format("woff2");
 }
 
 /* ---------- Reset básico ---------- */
@@ -1426,6 +1539,9 @@ summary {
 :root[data-theme="bosque-calido"] body.patrones-activos::before,
 :root[data-theme="menta-tecnologico"] body.patrones-activos::before,
 :root[data-theme="editorial-sepia"] body.patrones-activos::before,
+:root[data-theme="atardecer-volcanico"] body.patrones-activos::before,
+:root[data-theme="laboratorio-ciencia"] body.patrones-activos::before,
+:root[data-theme="terminal-cian"] body.patrones-activos::before,
 :root[data-theme="dia-de-muertos"] body.patrones-activos::before,
 :root[data-theme="regreso-a-clases"] body.patrones-activos::before {
   content: "";
@@ -1445,6 +1561,9 @@ summary {
   :root[data-theme="bosque-calido"] body.patrones-activos::before,
   :root[data-theme="menta-tecnologico"] body.patrones-activos::before,
   :root[data-theme="editorial-sepia"] body.patrones-activos::before,
+  :root[data-theme="atardecer-volcanico"] body.patrones-activos::before,
+  :root[data-theme="laboratorio-ciencia"] body.patrones-activos::before,
+  :root[data-theme="terminal-cian"] body.patrones-activos::before,
   :root[data-theme="dia-de-muertos"] body.patrones-activos::before {
     animation: desplazarPatronFondo 75s linear infinite;
   }
@@ -1462,7 +1581,10 @@ summary {
 :root[data-theme="rosa-pastel"] body.patrones-activos .hero::before,
 :root[data-theme="bosque-calido"] body.patrones-activos .hero::before,
 :root[data-theme="menta-tecnologico"] body.patrones-activos .hero::before,
-:root[data-theme="editorial-sepia"] body.patrones-activos .hero::before {
+:root[data-theme="editorial-sepia"] body.patrones-activos .hero::before,
+:root[data-theme="atardecer-volcanico"] body.patrones-activos .hero::before,
+:root[data-theme="laboratorio-ciencia"] body.patrones-activos .hero::before,
+:root[data-theme="terminal-cian"] body.patrones-activos .hero::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -1488,7 +1610,10 @@ summary {
     :root[data-theme="rosa-pastel"] body.patrones-activos .hero::before,
     :root[data-theme="bosque-calido"] body.patrones-activos .hero::before,
     :root[data-theme="menta-tecnologico"] body.patrones-activos .hero::before,
-    :root[data-theme="editorial-sepia"] body.patrones-activos .hero::before {
+    :root[data-theme="editorial-sepia"] body.patrones-activos .hero::before,
+    :root[data-theme="atardecer-volcanico"] body.patrones-activos .hero::before,
+    :root[data-theme="laboratorio-ciencia"] body.patrones-activos .hero::before,
+    :root[data-theme="terminal-cian"] body.patrones-activos .hero::before {
       animation: parallaxPatronHero linear;
       animation-timeline: scroll(root);
     }
@@ -1552,6 +1677,32 @@ summary {
 
 :root[data-theme="editorial-sepia"] body.patrones-activos::before {
   background-image: repeating-linear-gradient(135deg, transparent 0 20px, rgba(60, 42, 33, 0.09) 20px 20.6px);
+}
+
+/* Grietas de lava: paths SVG irregulares (no repeating-linear-gradient,
+   que sería demasiado geométrico para "craquelado"), tono lava/brasa. */
+:root[data-theme="atardecer-volcanico"] body.patrones-activos::before {
+  background-image:
+    url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22160%22 height=%22160%22 viewBox=%220 0 160 160%22%3E%3Cpath d=%22M10,140 L28,110 L22,90 L45,68 L40,42 L60,20%22 fill=%22none%22 stroke=%22rgba(255,90,31,0.06)%22 stroke-width=%221.5%22/%3E%3Cpath d=%22M130,150 L118,120 L128,95 L108,75 L118,50 L100,25%22 fill=%22none%22 stroke=%22rgba(242,214,90,0.05)%22 stroke-width=%221.5%22/%3E%3Cpath d=%22M70,160 L82,135 L70,112 L88,90 L75,65%22 fill=%22none%22 stroke=%22rgba(255,90,31,0.045)%22 stroke-width=%221%22/%3E%3C/svg%3E');
+  background-size: 160px 160px;
+}
+
+/* Moléculas/burbujas conectadas: dots (radial-gradient) + líneas finas
+   (repeating-linear-gradient cruzadas), turquesa/violeta — misma técnica
+   ya usada por arcade-neon (líneas + dots), aplicada a este concepto. */
+:root[data-theme="laboratorio-ciencia"] body.patrones-activos::before {
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0 46px, rgba(0, 196, 245, 0.05) 46px 47px),
+    repeating-linear-gradient(-45deg, transparent 0 46px, rgba(123, 44, 191, 0.04) 46px 47px),
+    radial-gradient(circle at 20% 30%, rgba(0, 196, 245, 0.10) 0%, rgba(0, 196, 245, 0.10) 3px, transparent 3px),
+    radial-gradient(circle at 70% 60%, rgba(123, 44, 191, 0.10) 0%, rgba(123, 44, 191, 0.10) 3px, transparent 3px),
+    radial-gradient(circle at 40% 85%, rgba(0, 196, 245, 0.10) 0%, rgba(0, 196, 245, 0.10) 3px, transparent 3px);
+  background-size: auto, auto, 380px 380px, 380px 380px, 380px 380px;
+}
+
+/* Scanlines horizontales estilo CRT. */
+:root[data-theme="terminal-cian"] body.patrones-activos::before {
+  background-image: repeating-linear-gradient(180deg, transparent 0 3px, rgba(51, 217, 255, 0.05) 3px 4px);
 }
 
 /* Niebla/bruma de Día de Muertos: mismo mecanismo que los 8 de arriba
@@ -1636,6 +1787,26 @@ summary {
 
 :root[data-theme="editorial-sepia"] body.patrones-activos .hero::before {
   background-image: repeating-linear-gradient(135deg, transparent 0 16px, rgba(60, 42, 33, 0.06) 16px 16.6px);
+}
+
+:root[data-theme="atardecer-volcanico"] body.patrones-activos .hero::before {
+  background-image:
+    url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22160%22 height=%22160%22 viewBox=%220 0 160 160%22%3E%3Cpath d=%22M10,140 L28,110 L22,90 L45,68 L40,42 L60,20%22 fill=%22none%22 stroke=%22rgba(255,90,31,0.16)%22 stroke-width=%222%22/%3E%3Cpath d=%22M130,150 L118,120 L128,95 L108,75 L118,50 L100,25%22 fill=%22none%22 stroke=%22rgba(242,214,90,0.13)%22 stroke-width=%222%22/%3E%3Cpath d=%22M70,160 L82,135 L70,112 L88,90 L75,65%22 fill=%22none%22 stroke=%22rgba(255,90,31,0.11)%22 stroke-width=%221.5%22/%3E%3C/svg%3E');
+  background-size: 120px 120px;
+}
+
+:root[data-theme="laboratorio-ciencia"] body.patrones-activos .hero::before {
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0 36px, rgba(0, 196, 245, 0.10) 36px 37px),
+    repeating-linear-gradient(-45deg, transparent 0 36px, rgba(123, 44, 191, 0.08) 36px 37px),
+    radial-gradient(circle at 20% 30%, rgba(0, 196, 245, 0.20) 0%, rgba(0, 196, 245, 0.20) 4px, transparent 4px),
+    radial-gradient(circle at 70% 60%, rgba(123, 44, 191, 0.20) 0%, rgba(123, 44, 191, 0.20) 4px, transparent 4px),
+    radial-gradient(circle at 40% 85%, rgba(0, 196, 245, 0.20) 0%, rgba(0, 196, 245, 0.20) 4px, transparent 4px);
+  background-size: auto, auto, 280px 280px, 280px 280px, 280px 280px;
+}
+
+:root[data-theme="terminal-cian"] body.patrones-activos .hero::before {
+  background-image: repeating-linear-gradient(180deg, transparent 0 3px, rgba(51, 217, 255, 0.12) 3px 4px);
 }
 
 /* ---------- Secciones ---------- */

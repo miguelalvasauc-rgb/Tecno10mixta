@@ -7290,6 +7290,9 @@ const TEMAS_DISPONIBLES = [
   { slug: "bosque-calido", nombre: "🌿 Bosque Cálido" },
   { slug: "menta-tecnologico", nombre: "🧪 Menta Tecnológico" },
   { slug: "editorial-sepia", nombre: "☕ Editorial Sepia" },
+  { slug: "atardecer-volcanico", nombre: "🌋 Atardecer Volcánico" },
+  { slug: "laboratorio-ciencia", nombre: "🧬 Laboratorio de Ciencia" },
+  { slug: "terminal-cian", nombre: "💻 Terminal Cian" },
 ];
 
 // Los 4 que construirGridTemas() pinta siempre visibles en "⭐ Destacados";
