@@ -7549,6 +7549,9 @@ const EVENTOS_DISPONIBLES = [
   { slug: "dia-de-muertos", nombre: "💀 Día de Muertos" },
   { slug: "regreso-a-clases", nombre: "🎒 Regreso a Clases" },
   { slug: "independencia", nombre: "🇲🇽 Independencia" },
+  { slug: "amor-y-amistad", nombre: "💕 Amor y Amistad" },
+  { slug: "dia-del-maestro", nombre: "👩‍🏫 Día del Maestro" },
+  { slug: "fin-de-curso", nombre: "☀️ Fin de Curso" },
 ];
 
 // Evento actualmente forzado (slug de EVENTOS_DISPONIBLES sin contar

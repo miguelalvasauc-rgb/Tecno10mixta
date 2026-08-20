@@ -484,6 +484,133 @@
   --md-outline-variant: var(--color-borde);
 }
 
+/* Quinto "tema de evento" — Amor y Amistad, mismo patrón que los 4
+   anteriores: bloque :root[data-theme] + valor propio
+   ("amor-y-amistad") de config_sitio.tema_evento_activo. Igual de
+   ausente de TEMAS_DISPONIBLES/construirGridTemas(). Fondo CLARO (como
+   Regreso a Clases/Independencia).
+
+   --color-primario: el fucsia/cereza pedido (#D6336C) cae casi exacto
+   en el punto de cruce WCAG (blanco 4.62:1 / negro 4.55:1 — ninguno con
+   margen real), y --color-primario-texto-suave necesita ser un color
+   DISTINTO de --color-primario-texto que igual pase contra
+   --color-primario — imposible dejando el primario en su luminancia
+   original. Se oscurece manteniendo el mismo H/S (misma familia fucsia,
+   339°): blanco pasa a 5.94:1, con margen real para que
+   --color-primario-texto-suave (más abajo) tenga espacio propio.
+
+   --color-turquesa: #F2B8C6 original (H=345.5°) quedaba a solo 14.5° de
+   --color-estado-vencido (rojo, H=0°) — insuficiente separación para la
+   Status-Color Exclusivity Rule (rojo es SOLO el estado "vencido/error",
+   nunca un acento decorativo). Rotado a H=332° manteniendo S/L: 28° de
+   separación, mismo rosa suave a la vista.
+
+   Rojo clásico de San Valentín (#E03131) NO es variable de este bloque:
+   solo puede usarse fijo dentro de SVGs decorativos (corazones/listones)
+   si se agregan más adelante, nunca en botones/badges/toasts — misma
+   regla que el rojo patrio de Independencia arriba. */
+:root[data-theme="amor-y-amistad"] {
+  --color-fondo: #FDF1F3;
+  --color-superficie: #FFFFFF;
+  --color-superficie-alterna: #FBE4E8;
+  --color-borde: #F5CEDA;
+  --color-texto: #4A1524;
+  --color-texto-suave: #7A4152;
+  --color-error-formulario: #C41C22;
+  --color-primario: #BB265A;
+  /* Mismo H/L que --color-primario (339°, L=44%), saturación reducida
+     (66%→50%) para el efecto de "shimmer" del degradado del hero
+     (.hero, ver linear-gradient primario→primario-suave→primario) sin
+     saltar de luminancia — mismo criterio que ya documentan
+     rosa-pastel/regreso-a-clases al acercar el suave al primario. */
+  --color-primario-suave: #A8385F;
+  --color-turquesa: #F2B8D3;
+  --color-acento-texto: #4A1524;
+  --color-primario-texto: #FFFFFF;
+  --color-primario-texto-suave: #F5E6EA;
+  --sombra: 0 8px 20px rgba(187, 38, 90, 0.12);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
+}
+
+/* Sexto "tema de evento" — Día del Maestro, mismo patrón que los 5
+   anteriores: bloque :root[data-theme] + valor propio
+   ("dia-del-maestro") de config_sitio.tema_evento_activo. Igual de
+   ausente de TEMAS_DISPONIBLES/construirGridTemas(). Fondo OSCURO (como
+   Navidad/Día de Muertos).
+
+   --color-primario: el verde pizarrón pedido (#35524A, H=163.4°)
+   quedaba a solo 4.5° de --color-estado-completado (H=167.9°) — la
+   peor colisión de Status-Color Exclusivity Rule encontrada hasta
+   ahora en el sitio (peor que la de atardecer-volcanico en Fase 10).
+   Rotado a H=145° manteniendo S/L (21.5%/26.5%): 22.9° de separación,
+   mismo verde pizarrón oscuro a la vista.
+
+   --color-turquesa: el dorado/mostaza pedido (#C9A227, H=45.6°)
+   quedaba a 12.6° de --color-estado-progreso (H=33°) — insuficiente.
+   Rotado a H=52° manteniendo S/L: 19°/25.2° de separación de
+   progreso/pendiente respectivamente, mismo dorado a la vista. */
+:root[data-theme="dia-del-maestro"] {
+  --color-fondo: #0F1C18;
+  --color-superficie: #17281F;
+  --color-superficie-alterna: #12211A;
+  --color-borde: #274A38;
+  --color-texto: #EFF5F0;
+  --color-texto-suave: #B9CCC0;
+  --color-error-formulario: #E86A6F;
+  --color-primario: #355241;
+  --color-primario-suave: #2E563F;
+  --color-turquesa: #C9B327;
+  --color-acento-texto: #0F1C18;
+  --color-primario-texto: #EFF5F0;
+  --color-primario-texto-suave: #B9CCC0;
+  --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
+}
+
+/* Séptimo "tema de evento" — Fin de Curso, mismo patrón que los 6
+   anteriores: bloque :root[data-theme] + valor propio ("fin-de-curso")
+   de config_sitio.tema_evento_activo. Igual de ausente de
+   TEMAS_DISPONIBLES/construirGridTemas(). Fondo CLARO (como Regreso a
+   Clases/Independencia/Amor y Amistad).
+
+   --color-primario: el azul cielo pedido (#0284C7) no choca con ningún
+   color de estado (32.5° del mint de completado), así que se queda tal
+   cual. Blanco falla contra él (4.10:1) — es un azul ya bastante
+   luminoso; negro sí pasa (5.13:1). Con el primario en esa luminancia,
+   --color-primario-texto-suave no tiene espacio para ser un tono más
+   claro que negro sin caer bajo AA (mismo techo matemático ya
+   documentado en gamer-rgb/menta-tecnologico) — se deja igual que
+   --color-primario-texto.
+
+   --color-turquesa: el amarillo sol pedido (#FFC93C, H=43.4°) quedaba a
+   solo 10.4° de --color-estado-progreso (H=33°) — insuficiente. Rotado
+   a H=52° manteniendo S/L: 19°/25.2° de separación de
+   progreso/pendiente, mismo amarillo sol a la vista.
+
+   Naranja NO es variable de este bloque: mismo motivo que el rojo en
+   Amor y Amistad — reservado para --color-estado-progreso/pendiente,
+   solo utilizable fijo dentro de SVGs decorativos si se agregan. */
+:root[data-theme="fin-de-curso"] {
+  --color-fondo: #E8F6FB;
+  --color-superficie: #FFFFFF;
+  --color-superficie-alterna: #D9EEF7;
+  --color-borde: #C3E4F0;
+  --color-texto: #12374A;
+  --color-texto-suave: #3E6478;
+  --color-error-formulario: #C41C22;
+  --color-primario: #0284C7;
+  --color-primario-suave: #0B94DA;
+  --color-turquesa: #FFE53C;
+  --color-acento-texto: #12374A;
+  --color-primario-texto: #000000;
+  --color-primario-texto-suave: #000000;
+  --sombra: 0 8px 20px rgba(2, 132, 199, 0.12);
+  --color-superficie-baja: var(--color-superficie);
+  --md-outline-variant: var(--color-borde);
+}
+
 /* ---------- 3 temas de recompensa nuevos (Fase 10) ----------
    Mismo patrón de 16 tokens que los 8 temas nuevos de arriba. Diseño y
    verificación de contraste WCAG cerrados en la Fase 10 parte 1 (incluye
