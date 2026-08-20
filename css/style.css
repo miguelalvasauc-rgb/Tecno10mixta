@@ -5087,6 +5087,87 @@ summary {
   }
 }
 
+/* ---------- Fase 14: celebración de temas de recompensa ----------
+   Mismo tratamiento de caja/backdrop que #modal-detalle/#modal-demo/
+   #modal-tema arriba (sin fijar "position", el navegador ya centra el
+   <dialog> vía dialog:modal) — el borde turquesa + el ícono grande son
+   la única diferencia visual, para que se sienta como un logro y no
+   como un modal informativo más. Contenido armado por JS
+   (mostrarCelebracionTemasDesbloqueados en js/main.js): título,
+   nombres de los temas y a cuál botón de tema llevar "Ver tema". */
+#modal-celebracion-tema {
+  width: 92%;
+  max-width: 420px;
+  margin: auto;
+  padding: 1.6rem 1.6rem 1.8rem;
+  border: 2px solid var(--color-turquesa);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+  text-align: center;
+}
+
+#modal-celebracion-tema::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+.modal-celebracion-tema__cerrar {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-fuente-cuerpo);
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.modal-celebracion-tema__cerrar:hover,
+.modal-celebracion-tema__cerrar:focus-visible {
+  background-color: var(--color-superficie-alterna);
+  color: var(--color-texto);
+}
+
+.modal-celebracion-tema__icono {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+#modal-celebracion-tema-titulo {
+  margin: 0 0 0.6rem;
+  font-size: var(--tamano-fuente-titulo-modal);
+  color: var(--color-texto);
+}
+
+.modal-celebracion-tema__lista {
+  margin: 0 0 1.4rem;
+  font-size: var(--tamano-fuente-accion);
+  color: var(--color-texto-suave);
+}
+
+.modal-celebracion-tema__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  #modal-celebracion-tema {
+    padding: 1.8rem 2rem 2rem;
+  }
+}
+
 /* Preview en vivo del selector de tema (#modal-tema únicamente — la
    sección "Personalización" de cuenta.html no lo usa). Insertada por JS
    (crearPreviewTemaEnVivo en main.js) entre el título y el grid.

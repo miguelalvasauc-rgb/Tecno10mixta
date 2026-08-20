@@ -526,6 +526,24 @@
     <div id="modal-tema-grid" class="modal-tema__grid"></div>
   </dialog>
 
+  <!-- Fase 14: celebración de temas de recompensa recién desbloqueados —
+       contenido armado por JS (ver mostrarCelebracionTemasDesbloqueados()
+       en js/main.js), mismo tratamiento de caja que #modal-tema arriba
+       (CSS compartido, sin fijar "position" en el <dialog>). El botón
+       "Ver tema" reutiliza el propio #modal-tema/#modal-tema-grid de
+       arriba — nunca en admin.html: un docente no tiene grupo, así que
+       esto nunca se dispara ahí. -->
+  <dialog id="modal-celebracion-tema" aria-labelledby="modal-celebracion-tema-titulo">
+    <button type="button" class="modal-celebracion-tema__cerrar" aria-label="Cerrar">✕</button>
+    <div class="modal-celebracion-tema__icono" aria-hidden="true">🎉</div>
+    <h3 id="modal-celebracion-tema-titulo">¡Nuevo tema desbloqueado!</h3>
+    <p id="modal-celebracion-tema-lista" class="modal-celebracion-tema__lista"></p>
+    <div class="modal-celebracion-tema__acciones">
+      <button type="button" id="modal-celebracion-tema-ver" class="boton-primario">Ver tema</button>
+      <button type="button" id="modal-celebracion-tema-cerrar-secundario" class="boton-secundario">Cerrar</button>
+    </div>
+  </dialog>
+
   <div id="contenedor-toast" class="contenedor-toast" aria-live="polite" aria-atomic="false"></div>
 
   <!-- Datos ficticios de "Modo Demo" (Fase 6: aplicarOverridesFechas()

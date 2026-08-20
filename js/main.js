@@ -7495,6 +7495,112 @@ async function obtenerEstadoDesbloqueoTemas() {
   return { esDocente: false, slugsDesbloqueados: new Set(data.map((fila) => fila.tema_slug)) };
 }
 
+/* ---------------------------------------------------------
+   Fase 14: celebración automática al desbloquear un tema de recompensa
+   --------------------------------------------------------- */
+
+// Slugs de temas de recompensa que el alumno YA vio celebrar — evita
+// repetir la celebración en cada carga de página una vez mostrada.
+const CLAVE_TEMAS_CELEBRADOS = "tecno10mixta_temas_celebrados";
+
+// Compara obtenerEstadoDesbloqueoTemas() (Fase 12, mismo dato, sin
+// duplicar la consulta) contra CLAVE_TEMAS_CELEBRADOS: cualquier slug
+// desbloqueado que todavía no esté ahí entra a UNA sola celebración que
+// los menciona a todos (no una por tema) y se agrega a la lista.
+//
+// estado.esDocente === true ya viene con slugsDesbloqueados vacío (ver
+// obtenerEstadoDesbloqueoTemas), así que un docente nunca tendría "temas
+// nuevos" que comparar — el "if (estado.esDocente) return" de abajo es
+// una segunda capa explícita, no la única defensa. Mismo con Modo Demo:
+// DEMO_TABLAS.temas_desbloqueados_grupo (sección 2) siempre devuelve
+// [], así que slugsDesbloqueados tampoco puede traer nada "nuevo" ahí.
+async function verificarCelebracionTemasDesbloqueados() {
+  const estado = await obtenerEstadoDesbloqueoTemas();
+  if (estado.esDocente || estado.slugsDesbloqueados.size === 0) return;
+
+  const celebrados = new Set(JSON.parse(localStorage.getItem(CLAVE_TEMAS_CELEBRADOS) || "[]"));
+
+  // Orden de TEMAS_DISPONIBLES (no el de iteración del Set, que depende
+  // del orden en que Supabase devolvió las filas) — presentación
+  // consistente en la celebración sin importar en qué orden se
+  // desbloquearon.
+  const nuevos = TEMAS_DISPONIBLES.map((t) => t.slug).filter(
+    (slug) => estado.slugsDesbloqueados.has(slug) && !celebrados.has(slug)
+  );
+  if (nuevos.length === 0) return;
+
+  nuevos.forEach((slug) => celebrados.add(slug));
+  localStorage.setItem(CLAVE_TEMAS_CELEBRADOS, JSON.stringify([...celebrados]));
+
+  mostrarCelebracionTemasDesbloqueados(nuevos);
+}
+
+// Arma y muestra #modal-celebracion-tema para "slugs" (1 a 3 temas
+// recién desbloqueados) — título en singular/plural y los nombres
+// unidos en una sola oración ("A, B y C"), mismo criterio de unión que
+// ya usa trimestresAfectados() en el módulo Trimestre del admin.
+function mostrarCelebracionTemasDesbloqueados(slugs) {
+  const modal = document.getElementById("modal-celebracion-tema");
+  if (!modal) return;
+
+  const nombres = slugs.map((slug) => TEMAS_DISPONIBLES.find((t) => t.slug === slug)?.nombre || slug);
+  const listaTexto =
+    nombres.length === 1 ? nombres[0] : nombres.slice(0, -1).join(", ") + " y " + nombres[nombres.length - 1];
+
+  const titulo = document.getElementById("modal-celebracion-tema-titulo");
+  if (titulo) {
+    titulo.textContent = slugs.length === 1 ? "🎉 ¡Nuevo tema desbloqueado!" : "🎉 ¡Nuevos temas desbloqueados!";
+  }
+
+  const lista = document.getElementById("modal-celebracion-tema-lista");
+  if (lista) lista.textContent = listaTexto;
+
+  modal.showModal();
+}
+
+// "Ver tema" del modal de celebración: mismo mecanismo de apertura que
+// el clic en .boton-tema (ver activarSelectorTema más abajo) — no lo
+// modifica, solo llama a las mismas piezas (crearPreviewTemaEnVivo,
+// aplicarColoresAPreview, construirGridTemas, actualizarUIGridSegunEvento)
+// desde este punto de entrada distinto, para que el alumno pueda elegir
+// el tema recién desbloqueado ahí mismo.
+async function abrirSelectorTemaDesdeCelebracion() {
+  const modal = document.getElementById("modal-tema");
+  const grid = document.getElementById("modal-tema-grid");
+  if (!modal || !grid) return;
+
+  const preview = crearPreviewTemaEnVivo(modal);
+  aplicarColoresAPreview(preview, temaActual);
+  await construirGridTemas(grid, temaActual, seleccionarTema);
+  actualizarUIGridSegunEvento(grid);
+  modal.showModal();
+}
+
+// Cierre por el botón ✕, el botón "Cerrar" del pie, clic en el
+// ::backdrop y Esc nativo del <dialog> — mismo patrón ya usado por
+// activarCierreModalDemo(). "Ver tema" cierra este modal y abre
+// #modal-tema de inmediato.
+function activarModalCelebracionTema() {
+  const modal = document.getElementById("modal-celebracion-tema");
+  if (!modal) return;
+
+  const botonCerrar = modal.querySelector(".modal-celebracion-tema__cerrar");
+  const botonCerrarSecundario = document.getElementById("modal-celebracion-tema-cerrar-secundario");
+  [botonCerrar, botonCerrarSecundario].forEach((boton) => {
+    boton?.addEventListener("click", () => modal.close());
+  });
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) modal.close();
+  });
+
+  const botonVer = document.getElementById("modal-celebracion-tema-ver");
+  botonVer?.addEventListener("click", () => {
+    modal.close();
+    abrirSelectorTemaDesdeCelebracion();
+  });
+}
+
 // Una tarjeta de tema individual (swatch + nombre) — extraído de
 // construirGridTemas() para poder pintarla en dos subgrids distintos
 // (Destacados / Más temas) sin duplicar el HTML. Mismo mosaico de 4
@@ -17407,6 +17513,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // obtenerPerfilActivo()/progresoCache de forma síncrona y necesitan las
   // cachés ya pobladas (ver sección 11).
   await sincronizarPerfilActivo();
+  // Fase 14: sin await a propósito — no bloquea renderizarTodo() ni el
+  // resto de la carga; solo alumnos con grupo y sesión llegan a
+  // consultar algo (ver verificarCelebracionTemasDesbloqueados), así que
+  // para el resto de casos (sin sesión, docente, Modo Demo) esto resuelve
+  // casi de inmediato de todos modos.
+  verificarCelebracionTemasDesbloqueados();
   await renderizarTodo();
 
   // Deep-link desde progreso.html (#tarea-{id}/#actividad-{id}/
@@ -17419,6 +17531,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (TRIMESTRE_ACTUAL === "1") activarPestanaDesdeHash();
 
   activarSelectorTema();
+  activarModalCelebracionTema();
   // Código muerto (ver nota de aplicarEstadoSidebarColapsada arriba):
   // #boton-colapsar-sidebar ya no existe en ninguna página.
   const botonColapsarSidebar = document.getElementById("boton-colapsar-sidebar");
