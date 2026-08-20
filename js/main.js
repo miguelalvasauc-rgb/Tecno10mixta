@@ -6020,6 +6020,15 @@ async function renderizarProgreso() {
   // tal cual evita esa duplicación.
   const { porTrimestre, totalGeneral, completadasGeneral } = await calcularProgresoDetalladoPorTrimestre(perfil);
 
+  // Resuelto ANTES de tocar el DOM a propósito: si renderizarTodo() corre
+  // dos veces solapado (DOMContentLoaded + onAuthStateChange, ver comentario
+  // de sincronizarPerfilActivo), un await situado EN MEDIO del tramo de
+  // escritura (innerHTML="" ... appendChild) le da a la otra invocación una
+  // ventana para intercalar su propio innerHTML="" y duplicar racha/nivel/
+  // semáforo. Con la promesa ya resuelta aquí, todo el tramo de abajo queda
+  // como un solo bloque síncrono, sin punto de interleaving posible.
+  const tarjetaRacha = await construirTarjetaRachaPuntualidad();
+
   const porcentaje = totalGeneral === 0 ? 0 : Math.round((completadasGeneral / totalGeneral) * 100);
 
   const mensaje = document.getElementById("progreso-mensaje");
@@ -6073,7 +6082,6 @@ async function renderizarProgreso() {
 
     resumen.append(texto, barra, construirListaExamenDiagnostico(perfil));
 
-    const tarjetaRacha = await construirTarjetaRachaPuntualidad();
     if (tarjetaRacha) resumen.appendChild(tarjetaRacha);
 
     const tarjetaNivel = construirTarjetaNivel(porcentaje);
@@ -6427,6 +6435,12 @@ async function renderizarProgresoDetallado() {
 
   const { porTrimestre, totalGeneral, completadasGeneral } = await calcularProgresoDetalladoPorTrimestre(perfil);
 
+  // Resuelto ANTES de tocar el DOM — mismo motivo que en renderizarProgreso():
+  // con la promesa ya resuelta aquí, el tramo de abajo (incluido el semáforo)
+  // queda como un solo bloque síncrono, sin hueco donde un renderizarTodo()
+  // concurrente pueda intercalar su propio innerHTML="" y duplicar contenido.
+  const tarjetaRacha = await construirTarjetaRachaPuntualidad();
+
   const porcentaje = totalGeneral === 0 ? 0 : Math.round((completadasGeneral / totalGeneral) * 100);
 
   const mensaje = document.getElementById("progreso-mensaje");
@@ -6456,7 +6470,6 @@ async function renderizarProgresoDetallado() {
 
     resumen.append(texto, barra, construirListaExamenDiagnostico(perfil));
 
-    const tarjetaRacha = await construirTarjetaRachaPuntualidad();
     if (tarjetaRacha) resumen.appendChild(tarjetaRacha);
 
     const tarjetaNivel = construirTarjetaNivel(porcentaje);
