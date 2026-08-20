@@ -69,3 +69,31 @@ Rules:
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+
+## Regla: Uso del MCP 21st.dev (solo inspiración, nunca código directo)
+
+**Contexto:** El MCP 21st.dev está conectado en Claude Code para este repo, pero su 
+catálogo es 100% React + Tailwind + Shadcn — incompatible con el stack vanilla de 
+Tecno10mixta.
+
+**Reglas obligatorias:**
+
+1. Nunca usar `/ui` para escribir archivos directamente al repo. Genera componentes 
+   React/Tailwind, lo cual viola "SIN frameworks, SIN Tailwind" de este documento.
+2. Uso permitido: buscar/consultar el catálogo como referencia de diseño (jerarquía 
+   visual, paleta, microinteracciones, estructura de layout) — no como fuente de código.
+3. Flujo correcto:
+   - Buscar 2-4 opciones en 21st.dev de la categoría solicitada
+   - Describir cada opción en texto/capturas a Hiram — no código
+   - Hiram elige la referencia
+   - Construir la versión final desde cero, en HTML/CSS/JS vanilla puro, usando las 
+     variables CSS y convenciones existentes en `style.css`
+4. Todo diseño final debe:
+   - Usar la paleta institucional (Navy #1B3A6B, Turquesa #14B8A6) y/o el sistema de 
+     10 temas existente, según la página
+   - Cumplir WCAG AA en todos los temas aplicables
+   - Ser mobile-first
+   - No modificar lógica funcional (ej. Supabase Auth) salvo pedido explícito
+5. Si un resultado de 21st.dev viene con clases Tailwind o JSX en el output, señalarlo 
+   y traducirlo antes de escribir cualquier archivo — nunca pegar el snippet tal cual.
