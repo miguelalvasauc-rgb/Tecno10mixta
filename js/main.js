@@ -3447,6 +3447,12 @@ const DEMO_TABLAS = {
   progreso: () => DEMO_PROGRESO,
   avisos: () => DEMO_AVISOS,
   fechas_override: () => DEMO_FECHAS_OVERRIDE,
+  // Fase 12: a diferencia de las tablas de arriba, no viene de un DEMO_
+  // array en datos-demo.js — la decisión de producto ya tomada es que
+  // Modo Demo siempre muestra los 9 temas de recompensa bloqueados, así
+  // que el mock es directamente "sin filas" (ver obtenerEstadoDesbloqueoTemas,
+  // sección 7).
+  temas_desbloqueados_grupo: () => [],
 };
 
 function obtenerDatosDemo(tabla, opciones) {
@@ -7301,6 +7307,23 @@ const TEMAS_DISPONIBLES = [
 // cambia, esto solo decide el agrupamiento visual.
 const SLUGS_TEMAS_DESTACADOS = ["claro", "oscuro", "gamer-rgb", "menta-tecnologico"];
 
+// Fase 12: los 9 temas de recompensa (todo TEMAS_DISPONIBLES menos los 4
+// Destacados, que nunca llevan candado) y en qué trimestre se desbloquea
+// cada uno — 3 grupos de 3, en el mismo orden en que ya están declarados
+// arriba. Un slug que NO aparece aquí (los 4 Destacados) nunca entra a la
+// lógica de candado de crearTarjetaTema(), sin importar nada más.
+const TRIMESTRE_POR_TEMA_RECOMPENSA = {
+  "arcade-neon": 1,
+  "cyberpunk-gold": 1,
+  galaxia: 1,
+  "rosa-pastel": 2,
+  "bosque-calido": 2,
+  "editorial-sepia": 2,
+  "atardecer-volcanico": 3,
+  "laboratorio-ciencia": 3,
+  "terminal-cian": 3,
+};
+
 // "Temas de evento" (Navidad, y los que se agreguen después) —
 // deliberadamente separados de TEMAS_DISPONIBLES: no son una opción del
 // selector de 10 temas, se activan/desactivan solo desde el módulo
@@ -7376,7 +7399,7 @@ async function seleccionarTema(tema) {
   // mueva a la tarjeta recién elegida.
   const gridCuenta = document.getElementById("cuenta-tema-grid");
   if (gridCuenta) {
-    construirGridTemas(gridCuenta, temaActual, seleccionarTema);
+    await construirGridTemas(gridCuenta, temaActual, seleccionarTema);
     actualizarUIGridSegunEvento(gridCuenta);
   }
 
@@ -7418,14 +7441,66 @@ function leerColoresTema(slug) {
   return colores;
 }
 
+// Fase 12: estado de desbloqueo de los 9 temas de recompensa para la
+// cuenta activa — se recalcula fresco en cada llamada (mismo criterio que
+// leerColoresTema: construirGridTemas() ya reconstruye todo desde cero
+// cada vez que se abre el modal, así que este estado tampoco necesita
+// cachearse aparte).
+//
+//   - Sin perfil (sin sesión): nada desbloqueado — no hay grupo que
+//     consultar, comportamiento seguro por default.
+//   - Docente (RPC es_docente(), el mismo chequeo real que ya usa
+//     guardPanelDocente/el atajo de cuenta.html — perfilActivoCache no
+//     guarda "rol" hoy): los 9 quedan desbloqueados sin tocar
+//     temas_desbloqueados_grupo, es una regla de UI.
+//   - Alumno con grupo: consulta temas_desbloqueados_grupo filtrando por
+//     su grupo, vía obtenerDatos() para heredar el mock de Modo Demo
+//     (ver DEMO_TABLAS, sección 2) en vez de llamar a Supabase directo.
+async function obtenerEstadoDesbloqueoTemas() {
+  const perfil = obtenerPerfilActivo();
+  if (!perfil) return { esDocente: false, slugsDesbloqueados: new Set() };
+
+  let esDocente = false;
+  try {
+    const { data, error } = await clienteSupabase.rpc("es_docente");
+    esDocente = !error && !!data;
+  } catch {
+    esDocente = false;
+  }
+  if (esDocente) return { esDocente: true, slugsDesbloqueados: new Set() };
+
+  if (!perfil.grupo) return { esDocente: false, slugsDesbloqueados: new Set() };
+
+  const { data, error } = await obtenerDatos("temas_desbloqueados_grupo", {
+    select: "tema_slug",
+    eq: { grupo: perfil.grupo },
+  });
+  if (error || !data) return { esDocente: false, slugsDesbloqueados: new Set() };
+
+  return { esDocente: false, slugsDesbloqueados: new Set(data.map((fila) => fila.tema_slug)) };
+}
+
 // Una tarjeta de tema individual (swatch + nombre) — extraído de
 // construirGridTemas() para poder pintarla en dos subgrids distintos
 // (Destacados / Más temas) sin duplicar el HTML. Mismo mosaico de 4
 // cuadros (primario/turquesa/superficie/texto, ver leerColoresTema) que
 // ya traía antes de la Fase 7.
-function crearTarjetaTema(slug, nombre, temaActivo, alSeleccionar) {
+//
+// "estadoDesbloqueo" (ver obtenerEstadoDesbloqueoTemas): solo los 9 slugs
+// de TRIMESTRE_POR_TEMA_RECOMPENSA entran a la lógica de candado — los 4
+// Destacados ni siquiera están en ese mapa, así que "bloqueado" queda
+// false para ellos sin un chequeo aparte.
+function crearTarjetaTema(slug, nombre, temaActivo, alSeleccionar, estadoDesbloqueo) {
   const { primario, turquesa, superficie, texto } = leerColoresTema(slug);
   const [emoji, ...resto] = nombre.split(" ");
+  const nombreSinEmoji = resto.join(" ");
+
+  const trimestreDesbloqueo = TRIMESTRE_POR_TEMA_RECOMPENSA[slug];
+  const bloqueado =
+    trimestreDesbloqueo !== undefined &&
+    !estadoDesbloqueo.esDocente &&
+    !estadoDesbloqueo.slugsDesbloqueados.has(slug);
+  const textoBloqueo = bloqueado ? "Se desbloquea en Trimestre " + trimestreDesbloqueo : "";
 
   const tarjeta = document.createElement("button");
   tarjeta.type = "button";
@@ -7434,6 +7509,17 @@ function crearTarjetaTema(slug, nombre, temaActivo, alSeleccionar) {
   if (slug === temaActivo) {
     tarjeta.classList.add("tema-tarjeta--activa");
     tarjeta.setAttribute("aria-current", "true");
+  }
+
+  // aria-disabled (NO el atributo "disabled" nativo) a propósito: la
+  // tarjeta debe seguir en el orden de Tab y ser anunciada por lector de
+  // pantalla ("bloqueado, se desbloquea en Trimestre X"), no desaparecer
+  // del todo — "disabled" real la sacaría del foco.
+  if (bloqueado) {
+    tarjeta.classList.add("tema-tarjeta--bloqueada");
+    tarjeta.title = textoBloqueo;
+    tarjeta.setAttribute("aria-disabled", "true");
+    tarjeta.setAttribute("aria-label", nombreSinEmoji + " — bloqueado. " + textoBloqueo);
   }
 
   const swatch = document.createElement("span");
@@ -7450,12 +7536,35 @@ function crearTarjetaTema(slug, nombre, temaActivo, alSeleccionar) {
   emojiSwatch.textContent = emoji;
   swatch.appendChild(emojiSwatch);
 
+  // Candado superpuesto ENCIMA del swatch, no en vez de él — el alumno
+  // debe poder ver de qué color es el tema aunque esté bloqueado, es
+  // parte del incentivo (mismo criterio de "placa de fondo oscuro fijo"
+  // que ya usa .tema-tarjeta__swatch-emoji arriba, así que no necesita
+  // su propio par de contraste en validate_palette.js).
+  if (bloqueado) {
+    const candado = document.createElement("span");
+    candado.className = "tema-tarjeta__candado";
+    candado.setAttribute("aria-hidden", "true");
+    candado.textContent = "🔒";
+    swatch.appendChild(candado);
+  }
+
   const textoNombre = document.createElement("span");
   textoNombre.className = "tema-tarjeta__nombre";
   textoNombre.textContent = resto.join(" ");
 
   tarjeta.append(swatch, textoNombre);
-  tarjeta.addEventListener("click", () => alSeleccionar(slug));
+  // El preview en vivo (activarPreviewTemaEnVivo) sigue funcionando igual
+  // en tarjetas bloqueadas — está delegado sobre el grid entero y no
+  // consulta "bloqueado" para nada. Solo el clic de selección final queda
+  // cortado acá, con el mismo tooltip como refuerzo (mostrarToastAdvertencia).
+  tarjeta.addEventListener("click", () => {
+    if (bloqueado) {
+      mostrarToastAdvertencia(textoBloqueo, { icono: "🔒" });
+      return;
+    }
+    alSeleccionar(slug);
+  });
   return tarjeta;
 }
 
@@ -7487,8 +7596,12 @@ function crearTarjetaTema(slug, nombre, temaActivo, alSeleccionar) {
 // desde cero en cada llamada (incluida cada apertura del modal), ese
 // estado se recalcula siempre a partir del tema activo actual — nunca
 // "recuerda" si el alumno lo había abierto manualmente antes.
-function construirGridTemas(contenedor, temaActivo, alSeleccionar) {
+async function construirGridTemas(contenedor, temaActivo, alSeleccionar) {
   contenedor.innerHTML = "";
+
+  // Una sola consulta para las 13 tarjetas (Fase 12) — crearTarjetaTema()
+  // decide por slug si le aplica el candado, ver TRIMESTRE_POR_TEMA_RECOMPENSA.
+  const estadoDesbloqueo = await obtenerEstadoDesbloqueoTemas();
 
   const destacados = TEMAS_DISPONIBLES.filter(({ slug }) => SLUGS_TEMAS_DESTACADOS.includes(slug));
   const masTemas = TEMAS_DISPONIBLES.filter(({ slug }) => !SLUGS_TEMAS_DESTACADOS.includes(slug));
@@ -7502,7 +7615,7 @@ function construirGridTemas(contenedor, temaActivo, alSeleccionar) {
   const gridDestacados = document.createElement("div");
   gridDestacados.className = "tema-grupo__grid";
   destacados.forEach(({ slug, nombre }) => {
-    gridDestacados.appendChild(crearTarjetaTema(slug, nombre, temaActivo, alSeleccionar));
+    gridDestacados.appendChild(crearTarjetaTema(slug, nombre, temaActivo, alSeleccionar, estadoDesbloqueo));
   });
   grupoDestacados.append(tituloDestacados, gridDestacados);
 
@@ -7537,7 +7650,7 @@ function construirGridTemas(contenedor, temaActivo, alSeleccionar) {
   const gridMas = document.createElement("div");
   gridMas.className = "tema-grupo__grid";
   masTemas.forEach(({ slug, nombre }) => {
-    gridMas.appendChild(crearTarjetaTema(slug, nombre, temaActivo, alSeleccionar));
+    gridMas.appendChild(crearTarjetaTema(slug, nombre, temaActivo, alSeleccionar, estadoDesbloqueo));
   });
   restoMas.appendChild(gridMas);
 
@@ -7673,9 +7786,9 @@ function activarSelectorTema() {
   activarPreviewTemaEnVivo(grid, preview);
 
   document.querySelectorAll(".boton-tema").forEach((boton) => {
-    boton.addEventListener("click", () => {
+    boton.addEventListener("click", async () => {
       if (grid) {
-        construirGridTemas(grid, temaActual, seleccionarTema);
+        await construirGridTemas(grid, temaActual, seleccionarTema);
         actualizarUIGridSegunEvento(grid);
       }
       aplicarColoresAPreview(preview, temaActual);
@@ -9704,7 +9817,7 @@ async function activarPanelSesionCuenta() {
   // que esta sección necesita.
   const gridTemaCuenta = document.getElementById("cuenta-tema-grid");
   if (gridTemaCuenta) {
-    construirGridTemas(gridTemaCuenta, temaActual, seleccionarTema);
+    await construirGridTemas(gridTemaCuenta, temaActual, seleccionarTema);
     actualizarUIGridSegunEvento(gridTemaCuenta);
   }
 

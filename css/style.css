@@ -5249,6 +5249,24 @@ summary {
   color: var(--color-primario-texto);
 }
 
+/* Fase 12: candado en los 9 temas de recompensa aún no desbloqueados
+   (ver TRIMESTRE_POR_TEMA_RECOMPENSA/crearTarjetaTema en js/main.js).
+   Opacidad leve (no grayscale ni un overlay opaco): el alumno debe poder
+   ver de qué color es el tema aunque esté bloqueado, es parte del
+   incentivo — solo se apaga el "levantarse" al hover/foco, para no
+   sugerir que es clicable como las demás. El aria-disabled + tooltip
+   nativo (title, ver JS) hacen el resto del trabajo de comunicar el
+   estado; esta clase es solo la capa visual. */
+.tema-tarjeta--bloqueada {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.tema-tarjeta--bloqueada:hover,
+.tema-tarjeta--bloqueada:focus-visible {
+  transform: none;
+}
+
 /* Mosaico de 4 cuadros (primario/turquesa/superficie/texto, ver
    leerColoresTema() en js/main.js) en vez del split diagonal de 2
    colores de antes. "gap: 1px" + background-color en el propio grid
@@ -5291,6 +5309,25 @@ summary {
   align-items: center;
   justify-content: center;
   font-size: var(--tamano-fuente-secundario);
+  line-height: 1;
+}
+
+/* Candado superpuesto en la esquina opuesta al "✓" de tema activo (misma
+   placa de fondo oscuro fijo que .tema-tarjeta__swatch-emoji arriba, así
+   que no necesita su propio par en validate_palette.js) — encima del
+   mosaico, nunca en su lugar. */
+.tema-tarjeta__candado {
+  position: absolute;
+  top: 0.35rem;
+  left: 0.35rem;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--tamano-fuente-meta-micro);
   line-height: 1;
 }
 
