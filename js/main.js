@@ -9112,25 +9112,25 @@ async function sincronizarPerfilActivo() {
     return;
   }
 
-  // Las 3 solo dependen de session.user.id, no entre sí — antes corrían en
-  // cascada (perfil → sincronizarTemaConCuenta → progreso), 3 round-trips
-  // secuenciales a Supabase sin necesidad. sincronizarTemaConCuenta no se
-  // desestructura: aplica el tema por su cuenta (su propio try/catch
-  // aislado, ver esa función) y no devuelve nada que se use aquí.
+  // Las 2 solo dependen de session.user.id, no entre sí — antes corrían en
+  // cascada (perfil → sincronizarTemaConCuenta con su propio SELECT →
+  // progreso), 3 round-trips secuenciales a Supabase sin necesidad. El
+  // SELECT de perfiles ya trae tema_preferido, así que sincronizarTemaConCuenta
+  // recibe el valor en vez de consultarlo ella misma (ver esa función).
   const [{ data: perfil }, { data: progreso }] = await Promise.all([
     clienteSupabase
       .from("perfiles")
-      .select("nombre, grupo")
+      .select("nombre, grupo, tema_preferido")
       .eq("id", session.user.id)
       .single(),
     clienteSupabase
       .from("progreso")
       .select("tipo, item_id, trimestre, actualizado_en")
       .eq("alumno_id", session.user.id),
-    sincronizarTemaConCuenta(session.user.id),
   ]);
 
   perfilActivoCache = perfil ? { nombre: perfil.nombre, grupo: perfil.grupo } : null;
+  await sincronizarTemaConCuenta(perfil?.tema_preferido);
 
   // El grupo del alumno con sesión iniciada gana sobre el <select>/
   // localStorage (ver actualizarFlyoutAjustesGrupo): un alumno siempre ve
@@ -9143,15 +9143,13 @@ async function sincronizarPerfilActivo() {
   progresoCache = progreso || [];
 }
 
-// Lee perfiles.tema_preferido para la sesión activa y lo aplica si es un
-// slug válido y distinto del ya aplicado — mismo criterio que ya usa el
-// grupo arriba ("el valor de la cuenta gana sobre localStorage"). Va en
-// una consulta PROPIA, separada del select de nombre/grupo de arriba (y
-// con su propio try/catch), a propósito: si la columna tema_preferido
-// todavía no existe en Supabase (Fase 1 pendiente) o la consulta falla
-// por cualquier otra razón, esto no debe tumbar nombre/nivel/progreso —
-// solo se queda con lo que ya haya en pantalla (localStorage/sistema).
-async function sincronizarTemaConCuenta(idUsuario) {
+// Aplica temaPreferido (ya leído por sincronizarPerfilActivo() como parte
+// del mismo SELECT de perfiles, ver esa función) si es un slug válido y
+// distinto del ya aplicado — mismo criterio que ya usa el grupo arriba
+// ("el valor de la cuenta gana sobre localStorage"). El try/catch se queda
+// por si aplicarTema()/localStorage fallan; si temaPreferido viene null
+// (columna sin valor o fila sin match) simplemente no hace nada.
+async function sincronizarTemaConCuenta(temaPreferido) {
   // Mismo criterio que el guard de seleccionarTema(): con un evento
   // forzado activo, el tema de la cuenta (aunque sea distinto del ya
   // aplicado) NO debe pisar el tema de evento — se queda en localStorage/
@@ -9171,14 +9169,9 @@ async function sincronizarTemaConCuenta(idUsuario) {
   if (await promesaTemaEventoActivo) return;
 
   try {
-    const { data: perfil, error } = await clienteSupabase
-      .from("perfiles")
-      .select("tema_preferido")
-      .eq("id", idUsuario)
-      .single();
-    if (error || !perfil?.tema_preferido) return;
+    if (!temaPreferido) return;
 
-    const temaGuardado = perfil.tema_preferido;
+    const temaGuardado = temaPreferido;
     if (temaGuardado === temaActual) return;
     if (!TEMAS_DISPONIBLES.some((t) => t.slug === temaGuardado)) return;
 
@@ -9186,8 +9179,8 @@ async function sincronizarTemaConCuenta(idUsuario) {
     localStorage.setItem(CLAVE_TEMA, temaActual);
     aplicarTema(temaActual);
   } catch {
-    // Sin conexión o columna todavía no creada: se queda con lo que ya
-    // aplicó localStorage/el tema de sistema.
+    // aplicarTema()/localStorage fallan: se queda con lo que ya aplicó
+    // localStorage/el tema de sistema.
   }
 }
 
