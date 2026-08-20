@@ -9030,11 +9030,23 @@ async function sincronizarPerfilActivo() {
     return;
   }
 
-  const { data: perfil } = await clienteSupabase
-    .from("perfiles")
-    .select("nombre, grupo")
-    .eq("id", session.user.id)
-    .single();
+  // Las 3 solo dependen de session.user.id, no entre sí — antes corrían en
+  // cascada (perfil → sincronizarTemaConCuenta → progreso), 3 round-trips
+  // secuenciales a Supabase sin necesidad. sincronizarTemaConCuenta no se
+  // desestructura: aplica el tema por su cuenta (su propio try/catch
+  // aislado, ver esa función) y no devuelve nada que se use aquí.
+  const [{ data: perfil }, { data: progreso }] = await Promise.all([
+    clienteSupabase
+      .from("perfiles")
+      .select("nombre, grupo")
+      .eq("id", session.user.id)
+      .single(),
+    clienteSupabase
+      .from("progreso")
+      .select("tipo, item_id, trimestre, actualizado_en")
+      .eq("alumno_id", session.user.id),
+    sincronizarTemaConCuenta(session.user.id),
+  ]);
 
   perfilActivoCache = perfil ? { nombre: perfil.nombre, grupo: perfil.grupo } : null;
 
@@ -9045,13 +9057,6 @@ async function sincronizarPerfilActivo() {
   grupoActual = perfilActivoCache?.grupo || localStorage.getItem(CLAVE_GRUPO) || "todos";
   sincronizarSelectorGrupo(grupoActual);
   actualizarFlyoutAjustesGrupo();
-
-  await sincronizarTemaConCuenta(session.user.id);
-
-  const { data: progreso } = await clienteSupabase
-    .from("progreso")
-    .select("tipo, item_id, trimestre, actualizado_en")
-    .eq("alumno_id", session.user.id);
 
   progresoCache = progreso || [];
 }
