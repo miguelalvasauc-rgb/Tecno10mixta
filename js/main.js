@@ -6126,37 +6126,63 @@ const ETIQUETAS_ENLACE_ITEM = {
 // contadores de completadas) — extraída aquí para que
 // generarVistaImpresionProgreso() (vista de impresión) la reutilice sin
 // duplicar el bucle.
+// Caché en memoria del resultado YA RESUELTO (no una promesa) para el
+// perfil activo — renderizarProgreso()/renderizarProgresoDetallado()/
+// generarVistaImpresionProgreso() piden el mismo detalle por trimestre en
+// la misma sesión; sin esto, progreso.html lo recalculaba 2 veces
+// completas (18 consultas). Se invalida en sincronizarPerfilActivo(), el
+// único lugar que repuebla perfilActivoCache/progresoCache.
+let cacheProgresoDetallado = null;
+
 async function calcularProgresoDetalladoPorTrimestre(perfil) {
+  if (cacheProgresoDetallado) return cacheProgresoDetallado;
+
   const coincideConGrupoDelAlumno = (item) => item.grupo === "todos" || item.grupo === perfil.grupo;
 
-  let totalGeneral = 0;
-  let completadasGeneral = 0;
-  const porTrimestre = [];
+  // Los 3 trimestres, y las 3 consultas (tareas/actividades/proyectos)
+  // dentro de cada uno, son independientes entre sí — antes corrían en
+  // cascada (9 awaits secuenciales). Promise.all conserva el orden del
+  // array de trimestres sin importar en qué orden resuelvan.
+  const porTrimestre = await Promise.all(
+    ["1", "2", "3"].map(async (trimestre) => {
+      const [tareas, actividades, proyectos] = await Promise.all([
+        obtenerTareas(trimestre),
+        obtenerActividades(trimestre),
+        obtenerProyectos(trimestre),
+      ]);
+      const tareasDelGrupo = tareas.filter(coincideConGrupoDelAlumno);
+      const actividadesDelGrupo = actividades.filter(coincideConGrupoDelAlumno);
+      const proyectosDelGrupo = proyectos.filter(coincideConGrupoDelAlumno);
 
-  for (const trimestre of ["1", "2", "3"]) {
-    const tareas = (await obtenerTareas(trimestre)).filter(coincideConGrupoDelAlumno);
-    const actividades = (await obtenerActividades(trimestre)).filter(coincideConGrupoDelAlumno);
-    const proyectos = (await obtenerProyectos(trimestre)).filter(coincideConGrupoDelAlumno);
+      const completadasTareas = tareasDelGrupo.filter((item) =>
+        itemEstaCompletado("tarea", item.id, trimestre)
+      ).length;
+      const completadasActividades = actividadesDelGrupo.filter((item) =>
+        itemEstaCompletado("actividad", item.id, trimestre)
+      ).length;
+      const completadasProyectos = proyectosDelGrupo.filter((item) =>
+        itemEstaCompletado("proyecto", item.id, trimestre)
+      ).length;
 
-    const completadasTareas = tareas.filter((item) =>
-      itemEstaCompletado("tarea", item.id, trimestre)
-    ).length;
-    const completadasActividades = actividades.filter((item) =>
-      itemEstaCompletado("actividad", item.id, trimestre)
-    ).length;
-    const completadasProyectos = proyectos.filter((item) =>
-      itemEstaCompletado("proyecto", item.id, trimestre)
-    ).length;
+      const total = tareasDelGrupo.length + actividadesDelGrupo.length + proyectosDelGrupo.length;
+      const completadas = completadasTareas + completadasActividades + completadasProyectos;
 
-    const total = tareas.length + actividades.length + proyectos.length;
-    const completadas = completadasTareas + completadasActividades + completadasProyectos;
+      return {
+        trimestre,
+        tareas: tareasDelGrupo,
+        actividades: actividadesDelGrupo,
+        proyectos: proyectosDelGrupo,
+        total,
+        completadas,
+      };
+    })
+  );
 
-    totalGeneral += total;
-    completadasGeneral += completadas;
-    porTrimestre.push({ trimestre, tareas, actividades, proyectos, total, completadas });
-  }
+  const totalGeneral = porTrimestre.reduce((suma, t) => suma + t.total, 0);
+  const completadasGeneral = porTrimestre.reduce((suma, t) => suma + t.completadas, 0);
 
-  return { porTrimestre, totalGeneral, completadasGeneral };
+  cacheProgresoDetallado = { porTrimestre, totalGeneral, completadasGeneral };
+  return cacheProgresoDetallado;
 }
 
 // Texto del semáforo por estado — ícono+palabra en vez de solo color
@@ -8791,9 +8817,16 @@ async function renderizarTodo() {
     renderizarProximasFechasTrimestre(),
     renderizarVideos(),
     renderizarPresentaciones(),
-    renderizarProgreso(),
-    renderizarProgresoDetallado(),
   ]);
+  // Secuenciadas a propósito (no dentro del Promise.all de arriba):
+  // ambas piden el mismo detalle por trimestre vía
+  // calcularProgresoDetalladoPorTrimestre() (ver cacheProgresoDetallado) —
+  // si arrancaran juntas, las dos dispararían las mismas 3x3 consultas en
+  // paralelo antes de que la primera pudiera poblar la caché para la
+  // segunda. Así, renderizarProgreso() la puebla y
+  // renderizarProgresoDetallado() la reutiliza sin volver a consultar.
+  await renderizarProgreso();
+  await renderizarProgresoDetallado();
   activarBotonEncuadreAnual();
   activarExpansionReglamento();
 }
@@ -9020,6 +9053,11 @@ function obtenerPerfilActivo() {
 // reporta todo como no completado, y crearChecklistProgreso() muestra el
 // aviso de "inicia sesión" en vez de un indicador de estado.
 async function sincronizarPerfilActivo() {
+  // Invalida el detalle por trimestre cacheado (ver cacheProgresoDetallado):
+  // cualquier repoblación de perfilActivoCache/progresoCache (cambio de
+  // sesión o de grupo) puede volver obsoleto el detalle ya calculado.
+  cacheProgresoDetallado = null;
+
   const { data: { session } } = await clienteSupabase.auth.getSession();
   if (!session) {
     perfilActivoCache = null;
