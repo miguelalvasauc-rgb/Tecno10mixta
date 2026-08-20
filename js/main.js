@@ -7376,10 +7376,17 @@ function aplicarTema(tema) {
 // tabla) y lo aplica de inmediato — aplica primero, sincroniza con la
 // cuenta después, mismo criterio de "no bloquear la UI por la escritura
 // remota" que ya usa el resto del sitio (ver p. ej. guardarEntregaManual).
-// Si la RPC falla (sin conexión, o la función/columna todavía no existe
-// en Supabase — ver Fase 1), el tema ya quedó aplicado y en localStorage:
-// solo no se sincronizó a la cuenta, se reintenta la próxima vez que el
-// alumno elija un tema.
+// El toast de confirmación SÍ espera a que la RPC confirme (o a que se
+// sepa que no hay sesión) antes de mostrarse — antes se mostraba de
+// inmediato sin importar el resultado, lo que ocultó en producción que
+// la whitelist de la función se había quedado atrás de TEMAS_DISPONIBLES
+// (los 3 temas de la Fase 10 nunca se agregaron ahí: la RPC fallaba
+// siempre para esos slugs y el catch vacío se tragaba el error, así que
+// el alumno veía "activado" pero el tema nunca se guardaba en la cuenta
+// y se revertía en la siguiente página). Si la RPC falla ahora, se ve un
+// toast de aviso distinto (no el de éxito) y el error real queda en
+// consola — el tema ya aplicado localmente NO se revierte, solo no
+// quedó sincronizado con la cuenta.
 async function seleccionarTema(tema) {
   // El grid ya queda pointer-events:none mientras hay un evento forzado
   // (ver actualizarUIGridSegunEvento), así que esto no debería disparar
@@ -7405,18 +7412,26 @@ async function seleccionarTema(tema) {
 
   const info = TEMAS_DISPONIBLES.find((t) => t.slug === tema);
   const [emoji, ...resto] = (info?.nombre || tema).split(" ");
-  mostrarToast("Tema \"" + resto.join(" ") + "\" activado", { icono: emoji });
+  const nombreSinEmoji = resto.join(" ");
 
   const {
     data: { session },
   } = await clienteSupabase.auth.getSession();
-  if (!session) return;
+  if (!session) {
+    // Sin sesión no hay nada que sincronizar — la elección ya quedó
+    // completa en localStorage, así que el toast de éxito se muestra de
+    // inmediato, no hay una escritura remota pendiente que esperar.
+    mostrarToast("Tema \"" + nombreSinEmoji + "\" activado", { icono: emoji });
+    return;
+  }
 
   try {
     const { error } = await clienteSupabase.rpc("actualizar_tema_preferido", { nuevo_tema: tema });
     if (error) throw error;
-  } catch {
-    // Se reintenta la próxima vez que el alumno elija un tema.
+    mostrarToast("Tema \"" + nombreSinEmoji + "\" activado", { icono: emoji });
+  } catch (error) {
+    console.error("No se pudo guardar el tema preferido en la cuenta:", error);
+    mostrarToastAdvertencia("No se pudo guardar tu preferencia de tema, se reintentará");
   }
 }
 
