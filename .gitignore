@@ -1,2 +1,9 @@
 Prompt_ClaudeCode_Bloque3.md
 .codegraph/
+
+# graphify: cache de AST regenerable (gratis, sin LLM) y snapshots
+# históricos diarios redundantes con graphify-out/graph.json actual.
+# graphify-out/cache/semantic/ NO se ignora a propósito: regenerarlo
+# cuesta llamadas reales a LLM.
+graphify-out/cache/ast/
+graphify-out/20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
