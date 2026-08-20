@@ -151,6 +151,9 @@
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
   --color-superficie-baja: var(--color-superficie);
   --md-outline-variant: var(--color-borde);
+  /* Fase 16: solo encabezados (--font-cuerpo se queda en Inter) — ver
+     @font-face de Rajdhani junto a Quicksand/Inter/IBM Plex Mono. */
+  --font-encabezados: "Rajdhani", var(--fuente-titulos);
 }
 
 :root[data-theme="cyberpunk-gold"] {
@@ -236,6 +239,9 @@
   --sombra: 0 8px 20px rgba(178, 51, 132, 0.12);
   --color-superficie-baja: var(--color-superficie);
   --md-outline-variant: var(--color-borde);
+  /* Fase 16: solo encabezados (--font-cuerpo se queda en Inter) — ver
+     @font-face de Fredoka junto a Quicksand/Inter/IBM Plex Mono. */
+  --font-encabezados: "Fredoka", var(--fuente-titulos);
 }
 
 :root[data-theme="bosque-calido"] {
@@ -257,6 +263,9 @@
   --sombra: 0 8px 20px rgba(47, 82, 51, 0.12);
   --color-superficie-baja: var(--color-superficie);
   --md-outline-variant: var(--color-borde);
+  /* Fase 16: solo encabezados (--font-cuerpo se queda en Inter) — ver
+     @font-face de Fraunces junto a Quicksand/Inter/IBM Plex Mono. */
+  --font-encabezados: "Fraunces", var(--fuente-titulos);
 }
 
 :root[data-theme="menta-tecnologico"] {
@@ -312,6 +321,9 @@
   --sombra: 0 8px 20px rgba(26, 60, 64, 0.12);
   --color-superficie-baja: var(--color-superficie);
   --md-outline-variant: var(--color-borde);
+  /* Fase 16: solo encabezados (--font-cuerpo se queda en Inter) — ver
+     @font-face de Playfair Display junto a Quicksand/Inter/IBM Plex Mono. */
+  --font-encabezados: "Playfair Display", var(--fuente-titulos);
 }
 
 /* "Tema de evento" — Navidad, el primero de una serie (Día de Muertos,
@@ -502,6 +514,11 @@
   --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
   --color-superficie-baja: var(--color-superficie);
   --md-outline-variant: var(--color-borde);
+  /* Fase 16: solo encabezados (--font-cuerpo se queda en Inter) — ver
+     @font-face de Anton junto a Quicksand/Inter/IBM Plex Mono (peso
+     único real 400, declarado como rango "400 900" para que 600/700
+     usen el glifo tal cual sin negrita sintética). */
+  --font-encabezados: "Anton", var(--fuente-titulos);
 }
 
 :root[data-theme="laboratorio-ciencia"] {
@@ -872,6 +889,69 @@
   font-weight: 600;
   font-display: swap;
   src: url("../assets/fonts/ibm-plex-mono-600.woff2") format("woff2");
+}
+
+/* Fase 16: mismo mecanismo que IBM Plex Mono arriba, pero solo para
+   --font-encabezados (--font-cuerpo se queda en Inter en los 5 temas de
+   abajo) — cada fuente SOLO se pide cuando su tema específico está
+   activo, nunca junto a las otras ni fuera de su tema.
+
+   Playfair Display/Fredoka/Fraunces: Google las sirve como variable
+   (un solo archivo cubre todo el eje de peso — verificado pidiendo la
+   familia completa, 600 y 700 resuelven al MISMO archivo), así que un
+   solo @font-face con font-weight en RANGO "600 700" cubre ambos pesos
+   sin descargar el archivo dos veces ni disparar negrita sintética. */
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("../assets/fonts/playfair-display-600-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("../assets/fonts/fredoka-600-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("../assets/fonts/fraunces-600-700.woff2") format("woff2");
+}
+/* Rajdhani SÍ tiene archivos estáticos distintos por peso (verificado:
+   600 y 700 son binarios distintos), así que sigue el patrón normal de
+   dos @font-face, igual que Quicksand/Inter arriba. */
+@font-face {
+  font-family: "Rajdhani";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../assets/fonts/rajdhani-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Rajdhani";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../assets/fonts/rajdhani-700.woff2") format("woff2");
+}
+/* Anton SOLO existe en un peso real (400, condensada/display por
+   diseño) — declarar font-weight como RANGO "400 900" en vez de un
+   valor fijo de 400 es lo que evita que h1-h4/.headline-* (que piden
+   600/700 vía --font-encabezados) disparen negrita sintética sobre una
+   fuente que ya es visualmente muy bold: el navegador ve que 600/700
+   caen dentro del rango declarado y usa el glifo real de Anton tal
+   cual, sin intentar "engordarlo" más. */
+@font-face {
+  font-family: "Anton";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("../assets/fonts/anton-400.woff2") format("woff2");
 }
 
 /* ---------- Reset básico ---------- */
