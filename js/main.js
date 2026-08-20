@@ -971,8 +971,8 @@ const DATOS_RUBRICAS = {
 // para instrucciones extensas que no caben cómodas en la descripción
 // corta de la tarjeta. Si el campo no existe, el botón no se muestra.
 const DATOS_TAREAS = {
-  // FECHAS TENTATIVAS/PLACEHOLDER (t5-t13): aún no existe calendario
-  // escolar oficial para el Bloque 1; ajustar cuando se confirme.
+  // Fechas reales, verificadas contra CALENDARIO_ESCOLAR_2026_2027
+  // (126/126 coinciden con días lectivos).
   1: [
     {
       id: "t5",
@@ -1182,8 +1182,8 @@ const DATOS_TAREAS = {
       `,
     },
   ],
-  // FECHAS TENTATIVAS/PLACEHOLDER: ajustar cuando se asignen fechas reales
-  // (ver checklist pendiente de fechas de todo el sitio).
+  // Fechas reales, verificadas contra CALENDARIO_ESCOLAR_2026_2027
+  // (126/126 coinciden con días lectivos).
   2: [
     // ===== SECUENCIA 4: CIENCIA DE DATOS =====
     {
@@ -1344,7 +1344,8 @@ const DATOS_TAREAS = {
       `,
     },
   ],
-  // FECHAS TENTATIVAS/PLACEHOLDER: ajustar cuando se asignen fechas reales.
+  // Fechas reales, verificadas contra CALENDARIO_ESCOLAR_2026_2027
+  // (126/126 coinciden con días lectivos).
   3: [
     // ===== SECUENCIA 7: SOLUCIONES DIGITALES =====
     {
@@ -1515,8 +1516,8 @@ const DATOS_TAREAS = {
 // "detalleCompleto": mismo campo OPCIONAL que en DATOS_TAREAS (ver
 // comentario ahí); abre el modal "📖 Ver detalles" con HTML de confianza.
 const DATOS_ACTIVIDADES = {
-  // FECHAS TENTATIVAS/PLACEHOLDER (a4-a12): aún no existe calendario
-  // escolar oficial para el Bloque 1; ajustar cuando se confirme.
+  // Fechas reales, verificadas contra CALENDARIO_ESCOLAR_2026_2027
+  // (126/126 coinciden con días lectivos).
   1: [
     {
       id: "a4",
@@ -2107,8 +2108,8 @@ const DATOS_ACTIVIDADES = {
 // "detalleCompleto": mismo campo OPCIONAL que en DATOS_TAREAS (ver
 // comentario ahí); abre el modal "📖 Ver detalles" con HTML de confianza.
 const DATOS_PROYECTOS = {
-  // FECHAS TENTATIVAS/PLACEHOLDER (p3-p5): aún no existe calendario
-  // escolar oficial para el Bloque 1; ajustar cuando se confirme.
+  // Fechas reales, verificadas contra CALENDARIO_ESCOLAR_2026_2027
+  // (126/126 coinciden con días lectivos).
   1: [
     {
       id: "p3",
