@@ -1750,7 +1750,10 @@ summary {
 :root[data-theme="laboratorio-ciencia"] body.patrones-activos::before,
 :root[data-theme="terminal-cian"] body.patrones-activos::before,
 :root[data-theme="dia-de-muertos"] body.patrones-activos::before,
-:root[data-theme="regreso-a-clases"] body.patrones-activos::before {
+:root[data-theme="regreso-a-clases"] body.patrones-activos::before,
+:root[data-theme="amor-y-amistad"] body.patrones-activos::before,
+:root[data-theme="dia-del-maestro"] body.patrones-activos::before,
+:root[data-theme="fin-de-curso"] body.patrones-activos::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -1771,7 +1774,10 @@ summary {
   :root[data-theme="atardecer-volcanico"] body.patrones-activos::before,
   :root[data-theme="laboratorio-ciencia"] body.patrones-activos::before,
   :root[data-theme="terminal-cian"] body.patrones-activos::before,
-  :root[data-theme="dia-de-muertos"] body.patrones-activos::before {
+  :root[data-theme="dia-de-muertos"] body.patrones-activos::before,
+  :root[data-theme="amor-y-amistad"] body.patrones-activos::before,
+  :root[data-theme="dia-del-maestro"] body.patrones-activos::before,
+  :root[data-theme="fin-de-curso"] body.patrones-activos::before {
     animation: desplazarPatronFondo 75s linear infinite;
   }
 
@@ -1935,6 +1941,40 @@ summary {
     radial-gradient(circle at 25% 30%, rgba(29, 99, 216, 0.12) 0%, transparent 55%),
     radial-gradient(circle at 75% 70%, rgba(124, 58, 237, 0.10) 0%, transparent 55%);
   background-size: 900px 900px, 1000px 1000px;
+}
+
+/* Niebla de Amor y Amistad: fondo CLARO — opacidad ~3× la de un tema
+   oscuro equivalente (0.12-0.18 en vez de 0.04-0.06), mismo criterio ya
+   aplicado a rosa-pastel/menta-tecnológico/editorial-sepia (commit
+   a5e39e2) para que el patrón se perciba igual de notorio sobre un
+   fondo casi blanco. */
+:root[data-theme="amor-y-amistad"] body.patrones-activos::before {
+  background-image:
+    radial-gradient(circle at 20% 25%, rgba(187, 38, 90, 0.16) 0%, transparent 55%),
+    radial-gradient(circle at 75% 55%, rgba(242, 184, 211, 0.14) 0%, transparent 50%),
+    radial-gradient(circle at 45% 85%, rgba(187, 38, 90, 0.12) 0%, transparent 60%);
+  background-size: 650px 650px, 580px 580px, 620px 620px;
+}
+
+/* Niebla de Día del Maestro: fondo OSCURO — mismo rango de opacidad que
+   Día de Muertos (0.08-0.12), sin el multiplicador de los temas
+   claros. */
+:root[data-theme="dia-del-maestro"] body.patrones-activos::before {
+  background-image:
+    radial-gradient(circle at 20% 25%, rgba(53, 82, 65, 0.12) 0%, transparent 55%),
+    radial-gradient(circle at 75% 55%, rgba(201, 179, 39, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 45% 85%, rgba(53, 82, 65, 0.10) 0%, transparent 60%);
+  background-size: 700px 700px, 620px 620px, 660px 660px;
+}
+
+/* Niebla de Fin de Curso: fondo CLARO — mismo criterio de opacidad ~3×
+   que Amor y Amistad arriba. */
+:root[data-theme="fin-de-curso"] body.patrones-activos::before {
+  background-image:
+    radial-gradient(circle at 20% 25%, rgba(2, 132, 199, 0.14) 0%, transparent 55%),
+    radial-gradient(circle at 75% 55%, rgba(255, 229, 60, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 45% 85%, rgba(2, 132, 199, 0.12) 0%, transparent 60%);
+  background-size: 650px 650px, 580px 580px, 620px 620px;
 }
 
 /* ---- Valores por tema: capa del hero (misma imagen, mayor opacidad/escala) ---- */
@@ -13154,6 +13194,103 @@ button.badge-estado {
 
 @media (prefers-reduced-motion: no-preference) {
   .icono-flotante-independencia {
+    animation: flotarIconoNavidad var(--icono-duracion, 8s) ease-in-out infinite;
+    animation-delay: var(--icono-delay, 0s);
+  }
+}
+
+/* ---- Íconos flotantes — Amor y Amistad (mismo patrón que
+   .icono-flotante-navidad/regreso-a-clases/independencia, reutiliza el
+   keyframe flotarIconoNavidad tal cual, sin duplicarlo) ---- */
+.capa-iconos-amoryamistad {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.icono-flotante-amoryamistad {
+  position: absolute;
+  top: var(--icono-top, 0);
+  left: var(--icono-left, 0);
+  width: var(--icono-tamano, 28px);
+  height: var(--icono-tamano, 28px);
+  opacity: var(--icono-opacidad, 0.5);
+}
+
+.icono-flotante-amoryamistad svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .icono-flotante-amoryamistad {
+    animation: flotarIconoNavidad var(--icono-duracion, 8s) ease-in-out infinite;
+    animation-delay: var(--icono-delay, 0s);
+  }
+}
+
+/* ---- Íconos flotantes — Día del Maestro (mismo patrón, mismo
+   keyframe compartido) ---- */
+.capa-iconos-diadelmaestro {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.icono-flotante-diadelmaestro {
+  position: absolute;
+  top: var(--icono-top, 0);
+  left: var(--icono-left, 0);
+  width: var(--icono-tamano, 28px);
+  height: var(--icono-tamano, 28px);
+  opacity: var(--icono-opacidad, 0.4);
+}
+
+.icono-flotante-diadelmaestro svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .icono-flotante-diadelmaestro {
+    animation: flotarIconoNavidad var(--icono-duracion, 8s) ease-in-out infinite;
+    animation-delay: var(--icono-delay, 0s);
+  }
+}
+
+/* ---- Íconos flotantes — Fin de Curso (mismo patrón, mismo keyframe
+   compartido) ---- */
+.capa-iconos-findecurso {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.icono-flotante-findecurso {
+  position: absolute;
+  top: var(--icono-top, 0);
+  left: var(--icono-left, 0);
+  width: var(--icono-tamano, 28px);
+  height: var(--icono-tamano, 28px);
+  opacity: var(--icono-opacidad, 0.5);
+}
+
+.icono-flotante-findecurso svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .icono-flotante-findecurso {
     animation: flotarIconoNavidad var(--icono-duracion, 8s) ease-in-out infinite;
     animation-delay: var(--icono-delay, 0s);
   }

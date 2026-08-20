@@ -8841,6 +8841,199 @@ function crearCapaConfetiIndependencia() {
   document.body.appendChild(capa);
 }
 
+/* ---------------------------------------------------------
+   Efectos de "tema de evento": Amor y Amistad — quinto evento de la
+   serie, mismo patrón que Navidad/Día de Muertos/Regreso a Clases/
+   Independencia. Sin capa de partícula cayendo (nieve/pétalos/confeti):
+   solo íconos flotantes + patrón de fondo (::before, ver
+   css/style.css) — el evento no pidió una capa extra.
+   --------------------------------------------------------- */
+function activarEfectosAmorYAmistad() {
+  crearCapaIconosFlotantesAmorYAmistad();
+}
+
+// SVG inline propios, mismo criterio que ICONOS_NAVIDAD/etc.: no emoji
+// nativo (no se puede recolorear con CSS). Rojo clásico de San Valentín
+// (#E03131) y rosa vivo (#F2478E) quedan fijos SOLO acá — nunca
+// variables CSS reutilizables (Status-Color Exclusivity Rule, rojo es
+// SOLO el estado "vencido/error"), mismo criterio ya documentado en el
+// bloque de paleta del tema (commit e00a300).
+const ICONOS_AMOR_Y_AMISTAD = [
+  // Corazón (rojo clásico)
+  '<svg viewBox="0 0 24 24"><path d="M12 20.5s-7-4.4-9.5-8.8C.8 8.6 2.3 5 6 5c2 0 3.5 1.1 4 2.6C10.5 6.1 12 5 14 5c3.7 0 5.2 3.6 3.5 6.7C19 16.1 12 20.5 12 20.5Z" fill="#E03131"/></svg>',
+  // Sobre con sello de corazón
+  '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="15" rx="1.5" fill="#F5F5F0" stroke="#BB265A" stroke-width="1"/><path d="M2 6 L12 14 L22 6" stroke="#BB265A" stroke-width="1.4" fill="none"/><circle cx="12" cy="17" r="2.6" fill="#E03131"/></svg>',
+  // Listón/moño (rosa vivo)
+  '<svg viewBox="0 0 24 24"><path d="M12 12C12 12 4 8 4 4 4 2 6 2 7 3.5 8.5 6 12 12 12 12Z" fill="#F2478E"/><path d="M12 12C12 12 20 8 20 4 20 2 18 2 17 3.5 15.5 6 12 12 12 12Z" fill="#F2478E"/><circle cx="12" cy="12" r="2.2" fill="#BB265A"/><path d="M12 14 L9 21 M12 14 L15 21" stroke="#F2478E" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>',
+  // Flor de 5 pétalos (rosa medio, centro fucsia)
+  '<svg viewBox="0 0 24 24"><g fill="#F28FC2"><circle cx="12" cy="6" r="3.2"/><circle cx="17" cy="10.5" r="3.2"/><circle cx="15" cy="16.5" r="3.2"/><circle cx="9" cy="16.5" r="3.2"/><circle cx="7" cy="10.5" r="3.2"/></g><circle cx="12" cy="12" r="2.6" fill="#BB265A"/></svg>',
+  // Estrella (rosa suave, mismo turquesa del tema)
+  '<svg viewBox="0 0 24 24"><path d="M12 1 L14.7 8.6 L22.5 8.9 L16.3 13.7 L18.5 21.1 L12 16.8 L5.5 21.1 L7.7 13.7 L1.5 8.9 L9.3 8.6 Z" fill="#F2B8D3"/></svg>',
+];
+
+// 35 íconos sobre cuadrícula con jitter (generarPosicionesGridConJitter,
+// definida junto a crearCapaIconosFlotantesNavidad), ciclando entre los
+// 5 SVG de arriba — mismo mecanismo que
+// crearCapaIconosFlotantesRegresoAClases()/Independencia (tema de fondo
+// CLARO: rango base más alto que en temas oscuros, 0.45-0.6 en vez de
+// 0.35-0.45, para que se perciban igual de notorios). Flor (índice 3) y
+// estrella (índice 4) usan tonos de rosa más pálidos, cercanos al fondo
+// crema/rosa del tema — necesitan el rango elevado, mismo criterio que
+// el listón de Independencia contra su fondo claro.
+function crearCapaIconosFlotantesAmorYAmistad() {
+  const capa = document.createElement("div");
+  capa.className = "capa-iconos-amoryamistad";
+  capa.setAttribute("aria-hidden", "true");
+
+  const INDICES_TONO_PALIDO = new Set([3, 4]);
+
+  const TOTAL_ICONOS = 35;
+  const posiciones = generarPosicionesGridConJitter(TOTAL_ICONOS);
+  for (let i = 0; i < TOTAL_ICONOS; i++) {
+    const indiceIcono = i % ICONOS_AMOR_Y_AMISTAD.length;
+    const [opacidadMin, opacidadMax] = INDICES_TONO_PALIDO.has(indiceIcono) ? [0.6, 0.75] : [0.45, 0.6];
+
+    const icono = document.createElement("span");
+    icono.className = "icono-flotante-amoryamistad";
+    icono.innerHTML = ICONOS_AMOR_Y_AMISTAD[indiceIcono];
+    icono.style.setProperty("--icono-top", posiciones[i].top.toFixed(1) + "vh");
+    icono.style.setProperty("--icono-left", posiciones[i].left.toFixed(1) + "vw");
+    icono.style.setProperty("--icono-tamano", (20 + Math.random() * 16).toFixed(0) + "px");
+    icono.style.setProperty("--icono-opacidad", (opacidadMin + Math.random() * (opacidadMax - opacidadMin)).toFixed(2));
+    icono.style.setProperty("--icono-duracion", (6 + Math.random() * 6).toFixed(1) + "s");
+    icono.style.setProperty("--icono-delay", (-Math.random() * 10).toFixed(1) + "s");
+    capa.appendChild(icono);
+  }
+
+  document.body.appendChild(capa);
+}
+
+/* ---------------------------------------------------------
+   Efectos de "tema de evento": Día del Maestro — sexto evento de la
+   serie, mismo patrón que los 5 anteriores. Sin capa de partícula
+   cayendo, mismo criterio que Amor y Amistad arriba.
+   --------------------------------------------------------- */
+function activarEfectosDiaDelMaestro() {
+  crearCapaIconosFlotantesDiaDelMaestro();
+}
+
+// SVG inline propios, mismo criterio que el resto de ICONOS_*. La
+// manzana usa un rojo clásico fijo (#C41E3A) SOLO acá — mismo criterio
+// ya establecido para el rojo acebo de Navidad/el rojo patrio de
+// Independencia: nunca una variable CSS reutilizable.
+const ICONOS_DIA_DEL_MAESTRO = [
+  // Manzana (rojo clásico, hoja verde pizarrón)
+  '<svg viewBox="0 0 24 24"><path d="M12 8c-3.5 0-6 3-6 7 0 3.5 2.5 6 5 6 .8 0 1.3-.3 2-.3.7 0 1.2.3 2 .3 2.5 0 5-2.5 5-6 0-4-2.5-7-6-7-.6 0-1.2.1-1.7.3C11.9 8 12 8 12 8Z" fill="#C41E3A"/><path d="M12 8c0-1.5.6-3 2-4" stroke="#355241" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M12.5 4.5c1.2-.6 2.5-.3 3 .8-1.2.8-2.6.4-3-.8Z" fill="#355241"/></svg>',
+  // Libro abierto (dorado, lomo verde pizarrón)
+  '<svg viewBox="0 0 24 24"><path d="M12 5c-2-1.2-5-1.5-9-1v14c4-.5 7-.2 9 1 2-1.2 5-1.5 9-1V4c-4-.5-7-.2-9 1Z" fill="#C9B327"/><path d="M12 5v14" stroke="#355241" stroke-width="1.2"/></svg>',
+  // Lápiz (dorado, punta verde pizarrón)
+  '<svg viewBox="0 0 24 24"><path d="M3 21 L5 15 L15 5 L19 9 L9 19 Z" fill="#C9B327"/><path d="M15 5 L19 9 L21 7 L17 3 Z" fill="#355241"/><path d="M3 21 L5 15 L7.5 17.5 Z" fill="#355241"/></svg>',
+  // Birrete de graduación (verde pizarrón, borla dorada)
+  '<svg viewBox="0 0 24 24"><path d="M12 4 L23 9 L12 14 L1 9 Z" fill="#355241"/><path d="M6 11 V16 C6 18 9 19.5 12 19.5 C15 19.5 18 18 18 16 V11" stroke="#355241" stroke-width="1.4" fill="none"/><circle cx="23" cy="9" r="1" fill="#C9B327"/><line x1="23" y1="9" x2="23" y2="15" stroke="#C9B327" stroke-width="1"/></svg>',
+  // Estrella de reconocimiento (dorada)
+  '<svg viewBox="0 0 24 24"><path d="M12 1 L14.7 8.6 L22.5 8.9 L16.3 13.7 L18.5 21.1 L12 16.8 L5.5 21.1 L7.7 13.7 L1.5 8.9 L9.3 8.6 Z" fill="#C9B327"/></svg>',
+  // Pizarrón con gis (verde pizarrón, marco y gis dorado/blanco)
+  '<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="1" fill="#355241" stroke="#C9B327" stroke-width="1"/><path d="M6 9 H14 M6 12 H11" stroke="#F5F5F0" stroke-width="1.2" stroke-linecap="round"/><rect x="9" y="19" width="6" height="2" rx="1" fill="#C9B327"/><rect x="16" y="8" width="4" height="1.6" rx="0.8" fill="#F5F5F0"/></svg>',
+];
+
+// 35 íconos sobre cuadrícula con jitter, ciclando entre los 6 SVG de
+// arriba — mismo mecanismo que crearCapaIconosFlotantesNavidad() (tema
+// de fondo OSCURO: mismo rango base 0.35-0.45 que Navidad/Día de
+// Muertos). Birrete (índice 3) y pizarrón (índice 5) están dominados
+// por el mismo verde pizarrón del fondo — pierden contraste igual que
+// árbol/reno contra el verde de Navidad, así que necesitan el rango
+// elevado; manzana/libro/lápiz/estrella (rojo/dorado) ya contrastan
+// bien de por sí.
+function crearCapaIconosFlotantesDiaDelMaestro() {
+  const capa = document.createElement("div");
+  capa.className = "capa-iconos-diadelmaestro";
+  capa.setAttribute("aria-hidden", "true");
+
+  const INDICES_TONO_VERDE = new Set([3, 5]);
+
+  const TOTAL_ICONOS = 35;
+  const posiciones = generarPosicionesGridConJitter(TOTAL_ICONOS);
+  for (let i = 0; i < TOTAL_ICONOS; i++) {
+    const indiceIcono = i % ICONOS_DIA_DEL_MAESTRO.length;
+    const [opacidadMin, opacidadMax] = INDICES_TONO_VERDE.has(indiceIcono) ? [0.55, 0.65] : [0.35, 0.45];
+
+    const icono = document.createElement("span");
+    icono.className = "icono-flotante-diadelmaestro";
+    icono.innerHTML = ICONOS_DIA_DEL_MAESTRO[indiceIcono];
+    icono.style.setProperty("--icono-top", posiciones[i].top.toFixed(1) + "vh");
+    icono.style.setProperty("--icono-left", posiciones[i].left.toFixed(1) + "vw");
+    icono.style.setProperty("--icono-tamano", (20 + Math.random() * 16).toFixed(0) + "px");
+    icono.style.setProperty("--icono-opacidad", (opacidadMin + Math.random() * (opacidadMax - opacidadMin)).toFixed(2));
+    icono.style.setProperty("--icono-duracion", (6 + Math.random() * 6).toFixed(1) + "s");
+    icono.style.setProperty("--icono-delay", (-Math.random() * 10).toFixed(1) + "s");
+    capa.appendChild(icono);
+  }
+
+  document.body.appendChild(capa);
+}
+
+/* ---------------------------------------------------------
+   Efectos de "tema de evento": Fin de Curso — séptimo evento de la
+   serie, mismo patrón que los 6 anteriores. Sin capa de partícula
+   cayendo, mismo criterio que Amor y Amistad/Día del Maestro arriba.
+   --------------------------------------------------------- */
+function activarEfectosFinDeCurso() {
+  crearCapaIconosFlotantesFinDeCurso();
+}
+
+// SVG inline propios, mismo criterio que el resto de ICONOS_*. El sol
+// usa un naranja fijo (#F2994A) SOLO para sus rayos — mismo criterio ya
+// establecido para el rojo de Amor y Amistad/el rojo acebo de Navidad:
+// nunca una variable CSS reutilizable (naranja es SOLO
+// --color-estado-progreso/pendiente, Status-Color Exclusivity Rule).
+const ICONOS_FIN_DE_CURSO = [
+  // Sol (amarillo del tema, rayos naranja fijo)
+  '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="#FFE53C"/><g stroke="#F2994A" stroke-width="1.6" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/><line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/></g></svg>',
+  // Birrete de graduación (azul cielo, borla amarilla)
+  '<svg viewBox="0 0 24 24"><path d="M12 4 L23 9 L12 14 L1 9 Z" fill="#0284C7"/><path d="M6 11 V16 C6 18 9 19.5 12 19.5 C15 19.5 18 18 18 16 V11" stroke="#0284C7" stroke-width="1.4" fill="none"/><circle cx="23" cy="9" r="1" fill="#FFE53C"/><line x1="23" y1="9" x2="23" y2="15" stroke="#FFE53C" stroke-width="1"/></svg>',
+  // Globo (azul cielo, nudo amarillo)
+  '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="9" rx="7" ry="8" fill="#0284C7"/><path d="M12 17 L10 19 L12 21 L14 19 Z" fill="#FFE53C"/><path d="M12 21C12 21 11 22.5 12 23.5" stroke="#0284C7" stroke-width="1" fill="none"/></svg>',
+  // Avión de papel (azul cielo, ala clara)
+  '<svg viewBox="0 0 24 24"><path d="M2 12 L22 3 L14 22 L11 14 Z" fill="#0284C7"/><path d="M2 12 L11 14 L14 22 Z" fill="#65B5E3"/></svg>',
+  // Estrella (amarilla)
+  '<svg viewBox="0 0 24 24"><path d="M12 1 L14.7 8.6 L22.5 8.9 L16.3 13.7 L18.5 21.1 L12 16.8 L5.5 21.1 L7.7 13.7 L1.5 8.9 L9.3 8.6 Z" fill="#FFE53C"/></svg>',
+];
+
+// 35 íconos sobre cuadrícula con jitter, ciclando entre los 5 SVG de
+// arriba — mismo mecanismo que Regreso a Clases/Independencia (tema de
+// fondo CLARO: rango base 0.45-0.6). Birrete/globo/avión (índices 1-3)
+// están dominados por el mismo azul cielo del fondo — pierden contraste
+// igual que el listón de Independencia contra su fondo claro, así que
+// necesitan el rango elevado; sol/estrella (amarillo/naranja) ya
+// contrastan bien de por sí.
+function crearCapaIconosFlotantesFinDeCurso() {
+  const capa = document.createElement("div");
+  capa.className = "capa-iconos-findecurso";
+  capa.setAttribute("aria-hidden", "true");
+
+  const INDICES_TONO_AZUL = new Set([1, 2, 3]);
+
+  const TOTAL_ICONOS = 35;
+  const posiciones = generarPosicionesGridConJitter(TOTAL_ICONOS);
+  for (let i = 0; i < TOTAL_ICONOS; i++) {
+    const indiceIcono = i % ICONOS_FIN_DE_CURSO.length;
+    const [opacidadMin, opacidadMax] = INDICES_TONO_AZUL.has(indiceIcono) ? [0.6, 0.75] : [0.45, 0.6];
+
+    const icono = document.createElement("span");
+    icono.className = "icono-flotante-findecurso";
+    icono.innerHTML = ICONOS_FIN_DE_CURSO[indiceIcono];
+    icono.style.setProperty("--icono-top", posiciones[i].top.toFixed(1) + "vh");
+    icono.style.setProperty("--icono-left", posiciones[i].left.toFixed(1) + "vw");
+    icono.style.setProperty("--icono-tamano", (20 + Math.random() * 16).toFixed(0) + "px");
+    icono.style.setProperty("--icono-opacidad", (opacidadMin + Math.random() * (opacidadMax - opacidadMin)).toFixed(2));
+    icono.style.setProperty("--icono-duracion", (6 + Math.random() * 6).toFixed(1) + "s");
+    icono.style.setProperty("--icono-delay", (-Math.random() * 10).toFixed(1) + "s");
+    capa.appendChild(icono);
+  }
+
+  document.body.appendChild(capa);
+}
+
 /* =========================================================
    8. BARRA LATERAL / BARRA INFERIOR Y FILTRO DE GRUPO
    ========================================================= */
@@ -17961,6 +18154,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     else if (eventoActivo === "dia-de-muertos") activarEfectosDiaDeMuertos();
     else if (eventoActivo === "regreso-a-clases") activarEfectosRegresoAClases();
     else if (eventoActivo === "independencia") activarEfectosIndependencia();
+    else if (eventoActivo === "amor-y-amistad") activarEfectosAmorYAmistad();
+    else if (eventoActivo === "dia-del-maestro") activarEfectosDiaDelMaestro();
+    else if (eventoActivo === "fin-de-curso") activarEfectosFinDeCurso();
   }
 
   // Sincroniza el <select> de grupo de la barra lateral con el grupo
