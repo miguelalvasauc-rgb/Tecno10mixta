@@ -5807,6 +5807,16 @@ summary {
 }
 
 /* ---------- Formulario de contacto ---------- */
+
+/* Campo trampa anti-spam (Netlify Forms honeypot). Oculto con posición
+   fuera de pantalla, no con display:none/hidden, para que algunos bots
+   que solo revisan esos dos casos no lo detecten. aria-hidden porque no
+   debe ser alcanzable ni anunciado por lectores de pantalla. */
+.oculto-honeypot {
+  position: absolute;
+  left: -9999px;
+}
+
 .formulario-contacto {
   display: flex;
   flex-direction: column;

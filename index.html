@@ -800,8 +800,12 @@
         agregar notificación por email a [correo de la escuela o del
         responsable del sitio].
       -->
-      <form id="formulario-contacto" name="contacto" method="POST" data-netlify="true" enctype="multipart/form-data" class="formulario-contacto">
+      <form id="formulario-contacto" name="contacto" method="POST" data-netlify="true" data-netlify-honeypot="empresa" enctype="multipart/form-data" class="formulario-contacto">
         <input type="hidden" name="form-name" value="contacto">
+
+        <p class="oculto-honeypot" aria-hidden="true">
+          <label>No llenar este campo: <input name="empresa" tabindex="-1" autocomplete="off"></label>
+        </p>
 
         <div class="campo-formulario">
           <label for="contacto-nombre">Nombre</label>

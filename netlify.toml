@@ -1,0 +1,35 @@
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    X-Content-Type-Options = "nosniff"
+    # Content-Security-Policy
+    #
+    # script-src usa dos 'sha256-...' en vez de 'unsafe-inline' porque el
+    # sitio no tiene build step ni función edge para generar nonces por
+    # request. Los dos hashes cubren el <script> inline de tema/escala de
+    # texto que corre antes de css/style.css (previene flash de tema):
+    #   - sha256-SI9KHb54E97sbVgZPVAgeMglnj5zGn3xa9sLcCb/GQI=
+    #     -> el bloque completo (tema + escala de texto) presente en las
+    #        13 páginas públicas (index, cuenta, faq, guia, padres,
+    #        progreso, sitemap, trimestre-1/2/3, trimestre-1/2/3-practica).
+    #   - sha256-Ij2ZZcp4FbzbYvElzeKvSCHcgYUYxdHCB9DToHHkoPk=
+    #     -> el bloque reducido (solo tema, sin escala de texto) exclusivo
+    #        de admin.html. Es intencional, no un descuido: el panel
+    #        docente no expone control de escala de texto porque Hiram
+    #        necesita control total y sin variaciones sobre esa interfaz
+    #        para manejar grupos y funciones del panel (confirmado
+    #        2026-08-20).
+    #
+    # ADVERTENCIA: si cualquiera de estos dos <script> inline cambia en el
+    # futuro —aunque sea un espacio o un salto de línea— su hash deja de
+    # coincidir y el navegador lo bloquea SIN error visible para el
+    # usuario final (solo aparece en la consola como "Refused to execute
+    # inline script"). El sitio seguiría funcionando, pero el tema y la
+    # escala de texto dejarían de aplicarse antes del pintado (flash
+    # visual en cada carga). Si tocas ese bloque, regenera el hash con:
+    #   openssl dgst -sha256 -binary script.txt | openssl base64
+    # y actualiza AMBAS constantes aquí antes de hacer deploy.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-SI9KHb54E97sbVgZPVAgeMglnj5zGn3xa9sLcCb/GQI=' 'sha256-Ij2ZZcp4FbzbYvElzeKvSCHcgYUYxdHCB9DToHHkoPk='; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://dugfyqtzcnuwjfvijsqs.supabase.co; frame-src https://gamma.app https://www.youtube.com; form-action 'self'; base-uri 'self'; object-src 'none'"
