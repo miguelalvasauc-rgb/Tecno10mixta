@@ -381,13 +381,19 @@
             </div>
 
             <label for="popup-bienvenida-form-titulo">Título (opcional)</label>
-            <input type="text" id="popup-bienvenida-form-titulo" autocomplete="off">
+            <input type="text" id="popup-bienvenida-form-titulo" autocomplete="off"
+                   aria-describedby="popup-bienvenida-form-titulo-error">
+            <p id="popup-bienvenida-form-titulo-error" class="campo-formulario__error" role="alert" hidden></p>
 
             <label for="popup-bienvenida-form-mensaje">Mensaje</label>
-            <textarea id="popup-bienvenida-form-mensaje" rows="4"></textarea>
+            <textarea id="popup-bienvenida-form-mensaje" rows="4"
+                      aria-describedby="popup-bienvenida-form-mensaje-error"></textarea>
+            <p id="popup-bienvenida-form-mensaje-error" class="campo-formulario__error" role="alert" hidden></p>
 
             <label for="popup-bienvenida-form-imagen">Imagen (ruta en assets/ o URL — opcional)</label>
-            <input type="text" id="popup-bienvenida-form-imagen" autocomplete="off" placeholder="assets/logo-10mixta.jpg">
+            <input type="text" id="popup-bienvenida-form-imagen" autocomplete="off" placeholder="assets/logo-10mixta.jpg"
+                   aria-describedby="popup-bienvenida-form-imagen-error">
+            <p id="popup-bienvenida-form-imagen-error" class="campo-formulario__error" role="alert" hidden></p>
 
             <p id="popup-bienvenida-form-error" class="cuenta-error" role="alert" hidden></p>
 
@@ -863,7 +869,9 @@
     <h3 id="modal-nuevo-alumno-titulo">Nuevo alumno</h3>
     <form id="formulario-nuevo-alumno" novalidate>
       <label for="nuevo-alumno-nombre">Nombre completo</label>
-      <input type="text" id="nuevo-alumno-nombre" name="nombre" autocomplete="off" required>
+      <input type="text" id="nuevo-alumno-nombre" name="nombre" autocomplete="off" required
+             aria-describedby="nuevo-alumno-nombre-error">
+      <p id="nuevo-alumno-nombre-error" class="campo-formulario__error" role="alert" hidden></p>
 
       <label for="nuevo-alumno-grupo">Grupo</label>
       <select id="nuevo-alumno-grupo" name="grupo" required>
@@ -905,10 +913,14 @@
     <h3 id="modal-aviso-titulo">Nuevo aviso</h3>
     <form id="formulario-aviso" novalidate>
       <label for="aviso-titulo">Título</label>
-      <input type="text" id="aviso-titulo" name="titulo" autocomplete="off" required>
+      <input type="text" id="aviso-titulo" name="titulo" autocomplete="off" required
+             aria-describedby="aviso-titulo-error">
+      <p id="aviso-titulo-error" class="campo-formulario__error" role="alert" hidden></p>
 
       <label for="aviso-descripcion">Descripción</label>
-      <textarea id="aviso-descripcion" name="descripcion" rows="3"></textarea>
+      <textarea id="aviso-descripcion" name="descripcion" rows="3"
+                aria-describedby="aviso-descripcion-error"></textarea>
+      <p id="aviso-descripcion-error" class="campo-formulario__error" role="alert" hidden></p>
 
       <label for="aviso-fecha">Fecha</label>
       <input type="date" id="aviso-fecha" name="fecha" required>

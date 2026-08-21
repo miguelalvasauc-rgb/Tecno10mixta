@@ -805,7 +805,9 @@
 
         <div class="campo-formulario">
           <label for="contacto-nombre">Nombre</label>
-          <input type="text" id="contacto-nombre" name="nombre" autocomplete="name" required>
+          <input type="text" id="contacto-nombre" name="nombre" autocomplete="name" required
+                 aria-describedby="contacto-nombre-error">
+          <p id="contacto-nombre-error" class="campo-formulario__error" role="alert" hidden></p>
         </div>
 
         <div class="campo-formulario">
@@ -835,7 +837,9 @@
 
         <div class="campo-formulario">
           <label for="contacto-mensaje">Mensaje</label>
-          <textarea id="contacto-mensaje" name="mensaje" rows="5" required></textarea>
+          <textarea id="contacto-mensaje" name="mensaje" rows="5" required
+                    aria-describedby="contacto-mensaje-error"></textarea>
+          <p id="contacto-mensaje-error" class="campo-formulario__error" role="alert" hidden></p>
         </div>
 
         <div class="formulario__advertencia" role="note">

@@ -9912,6 +9912,21 @@ async function alEnviarContacto(evento) {
   const estado = document.getElementById("contacto-estado");
   const archivo = formulario.querySelector("#contacto-evidencia")?.files[0];
 
+  const campoNombre = formulario.querySelector("#contacto-nombre");
+  const campoMensaje = formulario.querySelector("#contacto-mensaje");
+  [campoNombre, campoMensaje].forEach(limpiarCampoInvalido);
+
+  const resultadoNombre = validarTextoSeguro(campoNombre.value.trim(), { maxLargo: 100 });
+  if (!resultadoNombre.valido) {
+    marcarCampoInvalido(campoNombre, resultadoNombre.motivo);
+    return;
+  }
+  const resultadoMensaje = validarTextoSeguro(campoMensaje.value.trim(), { maxLargo: 2000 });
+  if (!resultadoMensaje.valido) {
+    marcarCampoInvalido(campoMensaje, resultadoMensaje.motivo);
+    return;
+  }
+
   if (archivo) {
     if (!archivo.type.startsWith("image/")) {
       estado.dataset.estado = "error";
@@ -10288,6 +10303,66 @@ function activarValidadorContrasena(input, medidor, boton) {
   evaluar();
 }
 
+// Validación inline por campo (WCAG 3.3.1): cada <input>/<textarea> que
+// use este patrón trae su propio <p class="campo-formulario__error"
+// role="alert" hidden id="{input.id}-error"> referenciado por
+// aria-describedby en el HTML (estático, siempre presente — no se
+// agrega/quita el atributo en JS, solo se llena/vacía y se
+// muestra/oculta el <p> que ya apunta). marcarCampoInvalido/
+// limpiarCampoInvalido son las únicas dos funciones que tocan ese
+// estado — a nivel de módulo (no solo dentro de
+// activarFormulariosCuenta, de donde salieron) para compartirlas con
+// los formularios de contacto, nuevo alumno, aviso y popup de
+// bienvenida sin duplicar la mecánica de "encontrar el <p>-error por
+// convención de id".
+function marcarCampoInvalido(input, mensaje) {
+  input.setAttribute("aria-invalid", "true");
+  const errorEl = document.getElementById(input.id + "-error");
+  if (errorEl) {
+    errorEl.textContent = mensaje;
+    errorEl.hidden = false;
+  }
+}
+
+function limpiarCampoInvalido(input) {
+  input.removeAttribute("aria-invalid");
+  const errorEl = document.getElementById(input.id + "-error");
+  if (errorEl) {
+    errorEl.textContent = "";
+    errorEl.hidden = true;
+  }
+}
+
+// Sanitiza texto libre entrante de formularios (contacto, nuevo alumno,
+// aviso, popup de bienvenida) contra XSS almacenado: aunque hoy nada
+// pinta estos valores con innerHTML (ver renderizarAvisos/
+// mostrarPopupBienvenida, que usan textContent), es la misma clase de
+// dato que un cambio futuro sí podría insertar así por descuido — mejor
+// rechazarlo en el borde de entrada que confiar en que cada pantalla de
+// salida futura recuerde escapar. No se aplica a los campos de
+// contraseña de cuenta.html: ahí rechazar '<'/'>' bajaría la seguridad
+// de la contraseña en vez de subirla.
+function validarTextoSeguro(valor, { maxLargo } = {}) {
+  if (/[<>]/.test(valor)) {
+    return { valido: false, motivo: "No se permiten los caracteres < o >." };
+  }
+  if (/\bon\w+\s*=/i.test(valor)) {
+    return { valido: false, motivo: "El texto no puede incluir atributos tipo on... =." };
+  }
+  if (/javascript\s*:/i.test(valor) || /data:text\/html/i.test(valor)) {
+    return { valido: false, motivo: "El texto no puede incluir enlaces javascript: o data:text/html." };
+  }
+  // Caracteres de control salvo tab/salto de línea/retorno de carro
+  // (\x09/\x0A/\x0D), legítimos en los <textarea> de mensaje/descripción.
+  if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(valor)) {
+    return { valido: false, motivo: "El texto incluye caracteres no permitidos." };
+  }
+  if (typeof maxLargo === "number" && valor.length > maxLargo) {
+    return { valido: false, motivo: "El texto no puede superar los " + maxLargo + " caracteres." };
+  }
+  return { valido: true, motivo: "" };
+}
+
 // Los formularios de "Crear cuenta" / "Iniciar sesión" solo existen en
 // cuenta.html (se buscan por id y, si no están, la función no hace nada
 // en el resto de páginas).
@@ -10317,32 +10392,9 @@ function activarFormulariosCuenta() {
   // pestaña Recuperar sin navegar — mismo mostrarTab() de arriba.
   document.getElementById("boton-ir-recuperar")?.addEventListener("click", () => mostrarTab("tab-recuperar"));
 
-  // Validación inline por campo (WCAG 3.3.1): cada <input required> de
-  // cuenta.html trae su propio <p class="campo-formulario__error"
-  // role="alert" hidden id="{input.id}-error"> ya referenciado por
-  // aria-describedby en el HTML (estático, siempre presente — no se
-  // agrega/quita el atributo en JS, solo se llena/vacía y se
-  // muestra/oculta el <p> que ya apunta). marcarCampoInvalido/
-  // limpiarCampoInvalido son las únicas dos funciones que tocan ese
-  // estado, compartidas por los 2 formularios para no duplicar la
-  // mecánica de "encontrar el <p>-error por convención de id".
-  function marcarCampoInvalido(input, mensaje) {
-    input.setAttribute("aria-invalid", "true");
-    const errorEl = document.getElementById(input.id + "-error");
-    if (errorEl) {
-      errorEl.textContent = mensaje;
-      errorEl.hidden = false;
-    }
-  }
-
-  function limpiarCampoInvalido(input) {
-    input.removeAttribute("aria-invalid");
-    const errorEl = document.getElementById(input.id + "-error");
-    if (errorEl) {
-      errorEl.textContent = "";
-      errorEl.hidden = true;
-    }
-  }
+  // marcarCampoInvalido/limpiarCampoInvalido: ver definición a nivel de
+  // módulo justo arriba de esta función (compartidas con los otros
+  // formularios que usan el mismo patrón de error por campo).
 
   const formCrear = document.getElementById("formulario-crear-cuenta");
   const errorCrear = document.getElementById("crear-cuenta-error");
@@ -13194,6 +13246,7 @@ function activarBotonNuevoAlumno() {
   boton.addEventListener("click", () => {
     formulario.reset();
     document.getElementById("nuevo-alumno-error").hidden = true;
+    limpiarCampoInvalido(document.getElementById("nuevo-alumno-nombre"));
     modal.showModal();
   });
 }
@@ -13215,17 +13268,24 @@ function activarFormularioNuevoAlumno() {
       return;
     }
 
-    const nombre = document.getElementById("nuevo-alumno-nombre").value.trim();
+    const campoNombre = document.getElementById("nuevo-alumno-nombre");
+    const nombre = campoNombre.value.trim();
     const grupo = document.getElementById("nuevo-alumno-grupo").value;
     const numeroLista = Number(document.getElementById("nuevo-alumno-numero-lista").value);
     const error = document.getElementById("nuevo-alumno-error");
     const botonConfirmar = document.getElementById("nuevo-alumno-confirmar");
 
     error.hidden = true;
+    limpiarCampoInvalido(campoNombre);
 
     if (!nombre) {
       error.textContent = "El nombre no puede estar vacío.";
       error.hidden = false;
+      return;
+    }
+    const resultadoNombre = validarTextoSeguro(nombre, { maxLargo: 100 });
+    if (!resultadoNombre.valido) {
+      marcarCampoInvalido(campoNombre, resultadoNombre.motivo);
       return;
     }
     if (grupo !== "3C" && grupo !== "3E") {
@@ -13446,6 +13506,8 @@ function abrirModalAviso(aviso, fila) {
 
   formulario.reset();
   document.getElementById("aviso-error").hidden = true;
+  limpiarCampoInvalido(document.getElementById("aviso-titulo"));
+  limpiarCampoInvalido(document.getElementById("aviso-descripcion"));
 
   if (aviso) {
     avisoEditando = { aviso, fila };
@@ -13489,8 +13551,10 @@ function activarFormularioAviso() {
       return;
     }
 
-    const titulo = document.getElementById("aviso-titulo").value.trim();
-    const descripcion = document.getElementById("aviso-descripcion").value.trim();
+    const campoTitulo = document.getElementById("aviso-titulo");
+    const campoDescripcion = document.getElementById("aviso-descripcion");
+    const titulo = campoTitulo.value.trim();
+    const descripcion = campoDescripcion.value.trim();
     const fecha = document.getElementById("aviso-fecha").value;
     const grupo = document.getElementById("aviso-grupo").value;
     const prioridad = document.getElementById("aviso-prioridad").value;
@@ -13499,10 +13563,22 @@ function activarFormularioAviso() {
     const botonConfirmar = document.getElementById("aviso-confirmar");
 
     error.hidden = true;
+    limpiarCampoInvalido(campoTitulo);
+    limpiarCampoInvalido(campoDescripcion);
 
     if (!titulo) {
       error.textContent = "El título no puede estar vacío.";
       error.hidden = false;
+      return;
+    }
+    const resultadoTitulo = validarTextoSeguro(titulo, { maxLargo: 150 });
+    if (!resultadoTitulo.valido) {
+      marcarCampoInvalido(campoTitulo, resultadoTitulo.motivo);
+      return;
+    }
+    const resultadoDescripcion = validarTextoSeguro(descripcion, { maxLargo: 2000 });
+    if (!resultadoDescripcion.valido) {
+      marcarCampoInvalido(campoDescripcion, resultadoDescripcion.motivo);
       return;
     }
     if (!fecha) {
@@ -13770,12 +13846,32 @@ async function guardarPopupBienvenida(datos) {
 async function ejecutarGuardarPopupBienvenida() {
   const error = document.getElementById("popup-bienvenida-form-error");
   const botonGuardar = document.getElementById("popup-bienvenida-boton-guardar");
+  const campoTitulo = document.getElementById("popup-bienvenida-form-titulo");
+  const campoMensaje = document.getElementById("popup-bienvenida-form-mensaje");
+  const campoImagen = document.getElementById("popup-bienvenida-form-imagen");
   error.hidden = true;
+  [campoTitulo, campoMensaje, campoImagen].forEach(limpiarCampoInvalido);
 
   const datos = leerFormularioPopupBienvenida();
   if (datos.activo && !datos.mensaje) {
     error.textContent = "El mensaje no puede estar vacío mientras el popup esté activo.";
     error.hidden = false;
+    return;
+  }
+
+  const resultadoTitulo = validarTextoSeguro(datos.titulo, { maxLargo: 150 });
+  if (!resultadoTitulo.valido) {
+    marcarCampoInvalido(campoTitulo, resultadoTitulo.motivo);
+    return;
+  }
+  const resultadoMensaje = validarTextoSeguro(datos.mensaje, { maxLargo: 2000 });
+  if (!resultadoMensaje.valido) {
+    marcarCampoInvalido(campoMensaje, resultadoMensaje.motivo);
+    return;
+  }
+  const resultadoImagen = validarTextoSeguro(datos.imagenUrl, { maxLargo: 500 });
+  if (!resultadoImagen.valido) {
+    marcarCampoInvalido(campoImagen, resultadoImagen.motivo);
     return;
   }
 
