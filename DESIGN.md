@@ -55,7 +55,9 @@ typography:
     lineHeight: 1.43
 rounded:
   sm: "4px"
+  input: "6px"
   default: "8px"
+  content-card: "10px"
   md: "12px"
   lg: "16px"
   xl: "24px"
@@ -120,7 +122,7 @@ The site already names its own two moods in code comments, and DESIGN.md keeps t
 The mood is warm and encouraging, not corporate-institutional: this is a 3°C/3°E classroom portal for teenagers, so the navy/turquoise institutional palette is softened by fully-rounded corners, pill buttons and badges everywhere, and a status-color vocabulary (mint/orange/red) that makes progress feel like a game log rather than a spreadsheet. Components are tactile — generous padding, soft single-tier shadows, a consistent hover lift — built for comfortable tapping on a phone in a school hallway as much as a desktop at home.
 
 **Key Characteristics:**
-- Two-persona theming (Bitácora/light, Sala de Mando/dark) is the institutional core — hue never changes between these two, only which surface/text roles are dark vs. light. The shipped theme picker layers 12 more hue-shifted personas on top of that core (10 selectable, 4 seasonal); see **Theming** below.
+- Two-persona theming (Bitácora/light, Sala de Mando/dark) is the institutional core — hue never changes between these two, only which surface/text roles are dark vs. light. The site ships a **20-theme system** in total: 13 in the public "Elegir tema" picker (4 free Destacados + 9 trimester-gated reward themes, locked until unlocked) plus 7 event personas exclusive to the teacher panel (absent from `TEMAS_DISPONIBLES`); see **Theming** below.
 - Flat-by-default surfaces with exactly one soft ambient shadow tier, no elevation ramp.
 - Pill shape (full radius) as the default form for anything actionable: buttons, tabs, badges.
 - A dedicated 4-color status vocabulary (completado/progreso/pendiente/vencido) reserved strictly for progress and rubric state, never decoration.
@@ -151,10 +153,15 @@ Two brand hues — navy and turquoise — carry the institutional identity; ever
 
 ## Theming
 
-The two-persona system above (Bitácora/Sala de Mando) is the institutional core — the identity every other persona is a variation of. Beyond it, the site ships a **14-theme system**, switched via `data-theme` on `:root`:
+The two-persona system above (Bitácora/Sala de Mando) is the institutional core — the identity every other persona is a variation of. Beyond it, the site ships a **20-theme system**, switched via `data-theme` on `:root`:
 
-- **10 selectable personas**, chosen from the "Elegir tema" picker in Ajustes: Claro (Bitácora), Oscuro (Sala de Mando), Arcade Neón, Gamer RGB, Cyberpunk Gold, Galaxia, Rosa Pastel, Bosque Cálido, Menta Tecnológico, Editorial Sepia.
-- **4 seasonal event personas**, toggled from the teacher panel's Apariencia module rather than the public picker: Navidad, Día de Muertos, Regreso a Clases, Independencia.
+- **Public "Elegir tema" picker** (`TEMAS_DISPONIBLES`, 13 personas):
+  - **4 "⭐ Destacados"** (`SLUGS_TEMAS_DESTACADOS`), free from the start, no lock: Claro (Bitácora), Oscuro (Sala de Mando), Gamer RGB (headline font: Rajdhani, self-hosted, static 600/700 files), Menta Tecnológico.
+  - **9 "Más temas"** — one shared reward system (`TRIMESTRE_POR_TEMA_RECOMPENSA`), rendered inside the same picker's collapsed section with a 🔒 lock icon until unlocked for the student's grupo, governed from the teacher panel's Apariencia → "🏆 Temas de recompensa" module, which inserts/deletes rows in Supabase's `temas_desbloqueados_grupo` per grupo (`ejecutarCambioTemaRecompensa()`), grouped 3-per-trimestre:
+    - **Trimestre 1**: Arcade Neón, Cyberpunk Gold, Galaxia.
+    - **Trimestre 2**: Rosa Pastel (headline font: Fredoka, self-hosted, single variable file spanning weight 600–700), Bosque Cálido (headline font: Fraunces, self-hosted, single variable file spanning weight 600–700), Editorial Sepia (headline font: Playfair Display, self-hosted, single variable file spanning weight 600–700).
+    - **Trimestre 3**: Atardecer Volcánico (headline font: Anton, self-hosted, single variable file spanning weight 400–900 so 600/700 render the real glyph instead of triggering synthetic bold), Laboratorio de Ciencia, Terminal Cian (the only theme that overrides both `--font-encabezados` and `--font-cuerpo`: IBM Plex Mono, self-hosted, static 400/600 files).
+- **7 seasonal event personas** (`EVENTOS_DISPONIBLES`), entirely separate from `TEMAS_DISPONIBLES` — toggled from the teacher panel's Apariencia module rather than the public picker (`config_sitio.tema_evento_activo`, deliberately absent from `TEMAS_DISPONIBLES`/`construirGridTemas()`): Navidad, Día de Muertos, Regreso a Clases, Independencia, Amor y Amistad, Día del Maestro, Fin de Curso.
 
 ### Named Rules
 
