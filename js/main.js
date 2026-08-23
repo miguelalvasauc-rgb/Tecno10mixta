@@ -13727,6 +13727,137 @@ async function escribirValorConfigSitio(clave, valor) {
 }
 
 /* ---------------------------------------------------------
+   Asistencia (tabla "asistencia" + config_sitio umbral_faltas/umbral_retardos)
+
+   asistencia.alumno_id es un auth.uid() (mismo id que perfiles.id/
+   progreso.alumno_id, ver FK asistencia_alumno_id_fkey -> perfiles.id),
+   NO el id de la fila de alumnos_registro. Un alumno sin cuenta reclamada
+   (mismo "sinCuenta" que ya usa crearFilaAlumnoCalificacion) no puede
+   tener fila real en "asistencia" todavía -- se reporta "sin_registrar",
+   igual que un alumno con cuenta que simplemente no tiene fila ese día.
+--------------------------------------------------------- */
+
+const NOMBRES_DIA_COMPLETO = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+const TIPOS_DIA_SIN_CLASE = new Set(["vacaciones", "cte-intensiva", "cte-ordinaria", "suspension"]);
+
+// true solo si fechaISO no cae en un tipo de día sin clase (calendario
+// escolar) Y el grupo tiene al menos un horario ese día de la semana.
+function esDiaDeClasePara(grupo, fechaISO) {
+  const registroTipo = TIPOS_DIA_POR_FECHA.get(fechaISO);
+  if (registroTipo && TIPOS_DIA_SIN_CLASE.has(registroTipo.tipo)) return false;
+
+  const [anio, mes, dia] = fechaISO.split("-").map(Number);
+  const nombreDia = NOMBRES_DIA_COMPLETO[new Date(anio, mes - 1, dia).getDay()];
+  return DATOS_HORARIO.some((registro) => registro.grupo === grupo && registro.dia === nombreDia);
+}
+
+// Roster completo del grupo (alumnos_registro, igual que
+// obtenerAlumnosParaCalificacion) + su estado de asistencia de fechaISO.
+// Alumnos sin fila real ese día -- incluidos los "sin cuenta" -- se
+// reportan como estado "sin_registrar", nunca se asume "falta".
+async function obtenerAsistenciaPorFecha(grupo, fechaISO) {
+  const { data: alumnos, error: errorAlumnos } = await obtenerDatos("alumnos_registro", {
+    eq: { grupo },
+    order: { columna: "numero_lista", ascending: true },
+  });
+  if (errorAlumnos) return [];
+
+  const idsConCuenta = alumnos.filter((alumno) => alumno.auth_user_id).map((alumno) => alumno.auth_user_id);
+
+  const mapaAsistencia = new Map();
+  if (idsConCuenta.length > 0) {
+    const { data: filas, error: errorAsistencia } = await obtenerDatos("asistencia", {
+      eq: { fecha: fechaISO },
+      in: { alumno_id: idsConCuenta },
+    });
+    if (errorAsistencia) return [];
+    filas.forEach((fila) => mapaAsistencia.set(fila.alumno_id, fila));
+  }
+
+  return alumnos.map((alumno) => {
+    const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
+    const fila = sinCuenta ? null : mapaAsistencia.get(alumno.auth_user_id);
+    return {
+      alumno,
+      sinCuenta,
+      estado: fila?.estado || "sin_registrar",
+      notas: fila?.notas || null,
+    };
+  });
+}
+
+// Upsert batch de asistencia para un grupo/fecha (onConflict alumno_id,fecha:
+// retomar la misma fecha actualiza en vez de duplicar fila). registros:
+// [{ alumno_id, estado, notas }], alumno_id = auth_user_id del alumno (ver
+// nota de cabecera de esta sección). grupo no se persiste (la tabla
+// "asistencia" no tiene columna grupo, ya viaja implícito vía alumno_id) --
+// se recibe solo para que el llamador no tenga que reconstruir el batch.
+async function guardarAsistenciaLote(grupo, fechaISO, trimestre, registros) {
+  const {
+    data: { session },
+  } = await clienteSupabase.auth.getSession();
+
+  const filas = registros.map((registro) => ({
+    alumno_id: registro.alumno_id,
+    fecha: fechaISO,
+    trimestre,
+    estado: registro.estado,
+    notas: registro.notas || null,
+    registrado_por: session?.user?.id ?? null,
+    actualizado_en: new Date().toISOString(),
+  }));
+
+  const { error } = await clienteSupabase.from("asistencia").upsert(filas, { onConflict: "alumno_id,fecha" });
+  if (error) throw error;
+}
+
+// Resumen de asistencia de un alumno en un trimestre: conteo por estado
+// (sin_registrar no aplica -- esa palabra nunca se inserta, solo existen
+// filas reales) + racha actual de asistencia consecutiva. Mismo espíritu
+// que calcularRachaPuntualidad(): solo presente/justificada mantienen la
+// racha, cualquier otro estado real (falta/retardo/salida_anticipada) la
+// corta -- es una racha de asistencia perfecta, no solo "no faltó".
+async function calcularResumenAsistencia(alumnoId, trimestre) {
+  const { data: filas, error } = await obtenerDatos("asistencia", {
+    eq: { alumno_id: alumnoId, trimestre },
+    order: { columna: "fecha", ascending: true },
+  });
+  if (error) return null;
+
+  const conteoPorEstado = { presente: 0, falta: 0, retardo: 0, justificada: 0, salida_anticipada: 0 };
+  filas.forEach((fila) => {
+    if (fila.estado in conteoPorEstado) conteoPorEstado[fila.estado]++;
+  });
+
+  const evaluables = filas.length;
+  const asistencias = conteoPorEstado.presente + conteoPorEstado.justificada;
+  const pctAsistencia = evaluables === 0 ? null : Math.round((asistencias / evaluables) * 100);
+
+  let racha = 0;
+  for (let i = filas.length - 1; i >= 0; i--) {
+    if (filas[i].estado !== "presente" && filas[i].estado !== "justificada") break;
+    racha++;
+  }
+
+  return { conteoPorEstado, pctAsistencia, racha };
+}
+
+// Umbrales para alertas de asistencia (config_sitio, claves "umbral_faltas"/
+// "umbral_retardos"). Mismo patrón async que obtenerTrimestreDesbloqueado:
+// fallback conservador (3/5, acordado con Hiram) si la fila no existe o
+// falla la consulta.
+async function obtenerUmbralesAsistencia() {
+  const [faltas, retardos] = await Promise.all([
+    leerValorConfigSitio("umbral_faltas").catch(() => null),
+    leerValorConfigSitio("umbral_retardos").catch(() => null),
+  ]);
+  return {
+    umbralFaltas: faltas !== null ? Number(faltas) : 3,
+    umbralRetardos: retardos !== null ? Number(retardos) : 5,
+  };
+}
+
+/* ---------------------------------------------------------
    Popup de bienvenida (config_sitio, clave "popup_bienvenida")
 
    Overlay configurable desde el admin (tab-avisos) que aparece SOLO en
