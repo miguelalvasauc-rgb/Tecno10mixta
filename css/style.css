@@ -1433,8 +1433,10 @@ a {
   min-width: 0;
 }
 
-.selector-trimestre__tab:hover {
-  background-color: rgba(255, 255, 255, 0.14);
+@media (hover: hover) and (pointer: fine) {
+  .selector-trimestre__tab:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+  }
 }
 
 .selector-trimestre__tab--activo,
@@ -1445,10 +1447,16 @@ a {
 
 /* Mismo bug de contraste documentado en el resto del sitio: turquesa +
    texto blanco falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
-:root[data-theme="claro"] .selector-trimestre__tab--activo,
-:root[data-theme="claro"] .selector-trimestre__tab--activo:hover {
+:root[data-theme="claro"] .selector-trimestre__tab--activo {
   background-color: var(--color-primario);
   color: var(--color-primario-texto);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :root[data-theme="claro"] .selector-trimestre__tab--activo:hover {
+    background-color: var(--color-primario);
+    color: var(--color-primario-texto);
+  }
 }
 
 /* Migas de pan (páginas de trimestre) */
@@ -3234,8 +3242,10 @@ summary {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.control-vista-secuencias__boton:hover {
-  color: var(--color-texto);
+@media (hover: hover) and (pointer: fine) {
+  .control-vista-secuencias__boton:hover {
+    color: var(--color-texto);
+  }
 }
 
 .control-vista-secuencias__boton:focus-visible {
@@ -4838,8 +4848,10 @@ summary {
   transition: transform 0.15s ease;
 }
 
-.tarjeta-presentacion__boton-ver:hover {
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .tarjeta-presentacion__boton-ver:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .tarjeta-presentacion__info {
@@ -4871,8 +4883,10 @@ summary {
   white-space: nowrap;
 }
 
-.tarjeta-presentacion__abrir:hover {
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .tarjeta-presentacion__abrir:hover {
+    text-decoration: underline;
+  }
 }
 
 /* ---------- Examen de diagnóstico ---------- */
@@ -4918,8 +4932,10 @@ summary {
   transition: transform 0.15s ease;
 }
 
-.tarjeta-examen-diagnostico__boton:hover {
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .tarjeta-examen-diagnostico__boton:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .tarjeta-examen-diagnostico__descartar {
@@ -4934,8 +4950,10 @@ summary {
   white-space: nowrap;
 }
 
-.tarjeta-examen-diagnostico__descartar:hover {
-  color: var(--color-texto);
+@media (hover: hover) and (pointer: fine) {
+  .tarjeta-examen-diagnostico__descartar:hover {
+    color: var(--color-texto);
+  }
 }
 
 .tarjeta-examen-diagnostico__aviso {
@@ -4993,8 +5011,10 @@ summary {
   transition: opacity 0.15s ease;
 }
 
-.calendario__flecha:hover:not(:disabled) {
-  background-color: var(--color-superficie-alterna);
+@media (hover: hover) and (pointer: fine) {
+  .calendario__flecha:hover:not(:disabled) {
+    background-color: var(--color-superficie-alterna);
+  }
 }
 
 .calendario__flecha:disabled {
@@ -6446,8 +6466,10 @@ summary {
   color: var(--color-turquesa);
 }
 
-.reglamento-boton-expandir:hover {
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .reglamento-boton-expandir:hover {
+    text-decoration: underline;
+  }
 }
 
 .reglamento-boton-expandir:focus-visible {
@@ -7217,8 +7239,10 @@ summary {
   cursor: pointer;
 }
 
-.materiales-tabs-bloque__boton:hover {
-  border-color: var(--color-turquesa);
+@media (hover: hover) and (pointer: fine) {
+  .materiales-tabs-bloque__boton:hover {
+    border-color: var(--color-turquesa);
+  }
 }
 
 .materiales-tabs-bloque__boton--activo {
@@ -7487,13 +7511,17 @@ summary {
   text-decoration: none;
 }
 
-.mapa-sitio__pagina:hover {
-  color: var(--color-turquesa);
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .mapa-sitio__pagina:hover {
+    color: var(--color-turquesa);
+    text-decoration: underline;
+  }
 }
 
-:root[data-theme="claro"] .mapa-sitio__pagina:hover {
-  color: var(--color-primario);
+@media (hover: hover) and (pointer: fine) {
+  :root[data-theme="claro"] .mapa-sitio__pagina:hover {
+    color: var(--color-primario);
+  }
 }
 
 .mapa-sitio__nivel-2 {
@@ -7516,9 +7544,11 @@ summary {
   font-size: var(--tamano-fuente-accion);
 }
 
-.mapa-sitio__nivel-2 a:hover {
-  color: var(--color-texto);
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .mapa-sitio__nivel-2 a:hover {
+    color: var(--color-texto);
+    text-decoration: underline;
+  }
 }
 
 .mapa-sitio__etiqueta {
@@ -8402,9 +8432,11 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   border-left: 3px solid transparent;
 }
 
-.riel-flyout__enlace:hover {
-  background-color: var(--color-superficie-baja);
-  color: var(--color-texto);
+@media (hover: hover) and (pointer: fine) {
+  .riel-flyout__enlace:hover {
+    background-color: var(--color-superficie-baja);
+    color: var(--color-texto);
+  }
 }
 
 .riel-flyout__enlace.nav-link--activo {
@@ -8434,9 +8466,11 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   border-radius: 999px;
 }
 
-.riel-flyout__trimestre-tab:hover {
-  background-color: var(--color-superficie);
-  color: var(--color-texto);
+@media (hover: hover) and (pointer: fine) {
+  .riel-flyout__trimestre-tab:hover {
+    background-color: var(--color-superficie);
+    color: var(--color-texto);
+  }
 }
 
 .riel-flyout__trimestre-tab--activo,
@@ -8447,10 +8481,16 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
 
 /* Mismo bug de contraste documentado en el resto del sitio: turquesa +
    texto claro falla AA en modo claro (~2.5:1). Se usa navy + texto claro. */
-:root[data-theme="claro"] .riel-flyout__trimestre-tab--activo,
-:root[data-theme="claro"] .riel-flyout__trimestre-tab--activo:hover {
+:root[data-theme="claro"] .riel-flyout__trimestre-tab--activo {
   background-color: var(--color-primario);
   color: var(--color-primario-texto);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :root[data-theme="claro"] .riel-flyout__trimestre-tab--activo:hover {
+    background-color: var(--color-primario);
+    color: var(--color-primario-texto);
+  }
 }
 
 /* Selector Teoría/Práctica (Opción B: tarjetas grandes) — vive dentro de
@@ -8480,8 +8520,10 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.riel-flyout__modo-tarjeta:hover {
-  border-color: var(--color-turquesa);
+@media (hover: hover) and (pointer: fine) {
+  .riel-flyout__modo-tarjeta:hover {
+    border-color: var(--color-turquesa);
+  }
 }
 
 .riel-flyout__modo-tarjeta__icono {
@@ -8601,8 +8643,10 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   transition: opacity 0.15s ease;
 }
 
-.control-escala-texto__boton:hover:not(:disabled) {
-  background-color: var(--color-superficie-alterna);
+@media (hover: hover) and (pointer: fine) {
+  .control-escala-texto__boton:hover:not(:disabled) {
+    background-color: var(--color-superficie-alterna);
+  }
 }
 
 .control-escala-texto__boton:disabled {
@@ -9772,8 +9816,10 @@ a.boton-secundario {
   min-height: 46px;
 }
 
-.asistencia-chip:hover {
-  border-color: var(--color-turquesa);
+@media (hover: hover) and (pointer: fine) {
+  .asistencia-chip:hover {
+    border-color: var(--color-turquesa);
+  }
 }
 
 .asistencia-chip:focus-visible {
@@ -10578,8 +10624,10 @@ button.badge-estado {
   cursor: pointer;
 }
 
-.calificacion-tabs-tipo__boton:hover {
-  border-color: var(--color-turquesa);
+@media (hover: hover) and (pointer: fine) {
+  .calificacion-tabs-tipo__boton:hover {
+    border-color: var(--color-turquesa);
+  }
 }
 
 .calificacion-tabs-tipo__boton--activo {
@@ -11181,8 +11229,10 @@ button.badge-estado {
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.trimestre-opcion:hover {
-  border-color: var(--color-turquesa);
+@media (hover: hover) and (pointer: fine) {
+  .trimestre-opcion:hover {
+    border-color: var(--color-turquesa);
+  }
 }
 
 .trimestre-opcion:has(input:checked) {
@@ -11857,8 +11907,10 @@ button.badge-estado {
   cursor: pointer;
 }
 
-.calificar-valor-rapido__boton:hover {
-  border-color: var(--color-turquesa);
+@media (hover: hover) and (pointer: fine) {
+  .calificar-valor-rapido__boton:hover {
+    border-color: var(--color-turquesa);
+  }
 }
 
 .calificar-valor-rapido__boton--activo {
