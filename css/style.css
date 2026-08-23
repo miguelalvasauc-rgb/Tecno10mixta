@@ -1439,10 +1439,16 @@ a {
   }
 }
 
-.selector-trimestre__tab--activo,
-.selector-trimestre__tab--activo:hover {
+.selector-trimestre__tab--activo {
   background-color: var(--color-turquesa);
   color: var(--color-acento-texto);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .selector-trimestre__tab--activo:hover {
+    background-color: var(--color-turquesa);
+    color: var(--color-acento-texto);
+  }
 }
 
 /* Mismo bug de contraste documentado en el resto del sitio: turquesa +
@@ -8473,10 +8479,16 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   }
 }
 
-.riel-flyout__trimestre-tab--activo,
-.riel-flyout__trimestre-tab--activo:hover {
+.riel-flyout__trimestre-tab--activo {
   background-color: var(--color-turquesa);
   color: var(--color-acento-texto);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .riel-flyout__trimestre-tab--activo:hover {
+    background-color: var(--color-turquesa);
+    color: var(--color-acento-texto);
+  }
 }
 
 /* Mismo bug de contraste documentado en el resto del sitio: turquesa +
@@ -8984,10 +8996,15 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
    :hover/--activo mientras el sheet de ese ícono está abierto (Inicio,
    Trimestre, Perfil son <button> con aria-expanded; FAQ/Padres son <a>
    simples y nunca lo tienen). */
-.barra-inferior__item:hover,
 .barra-inferior__item--activo,
 .barra-inferior__item[aria-expanded="true"] {
   color: var(--md-secondary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .barra-inferior__item:hover {
+    color: var(--md-secondary);
+  }
 }
 
 /* Envoltura relativa para el badge del ícono "Trimestre" (.trimestre-badge,
