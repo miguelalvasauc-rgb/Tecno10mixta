@@ -387,13 +387,13 @@
         <button type="button" id="guia-boton-reiniciar" class="guia-wizard__reiniciar" hidden>🔄 Reiniciar guía desde el paso 1</button>
       </div>
 
-      <!-- Indicador + stepper: solo tienen sentido dentro de los 7 pasos
+      <!-- Indicador + stepper: solo tienen sentido dentro de los 13 pasos
            numerados (no en Bienvenida ni en Cierre) — activarGuiaAlumno()
            en js/main.js los oculta fuera de esas pantallas. -->
       <div id="guia-wizard-progreso" class="guia-wizard__progreso" hidden>
-        <p id="guia-wizard-indicador" class="guia-wizard__indicador" aria-live="polite">Paso 1 de 7</p>
+        <p id="guia-wizard-indicador" class="guia-wizard__indicador" aria-live="polite">Paso 1 de 13</p>
         <div class="barra-progreso">
-          <div id="guia-wizard-barra-relleno" class="barra-progreso__relleno" style="width: 14.2857%;"></div>
+          <div id="guia-wizard-barra-relleno" class="barra-progreso__relleno" style="width: 7.6923%;"></div>
         </div>
         <div id="guia-wizard-stepper" class="guia-wizard__stepper" role="tablist" aria-label="Ir a un paso específico">
           <button type="button" class="guia-wizard__stepper-numero guia-wizard__stepper-numero--activo" data-ir-a-paso="1" role="tab" aria-selected="true">1</button>
@@ -403,6 +403,12 @@
           <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="5" role="tab" aria-selected="false">5</button>
           <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="6" role="tab" aria-selected="false">6</button>
           <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="7" role="tab" aria-selected="false">7</button>
+          <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="8" role="tab" aria-selected="false">8</button>
+          <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="9" role="tab" aria-selected="false">9</button>
+          <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="10" role="tab" aria-selected="false">10</button>
+          <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="11" role="tab" aria-selected="false">11</button>
+          <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="12" role="tab" aria-selected="false">12</button>
+          <button type="button" class="guia-wizard__stepper-numero" data-ir-a-paso="13" role="tab" aria-selected="false">13</button>
         </div>
       </div>
 
@@ -434,11 +440,29 @@
         </div>
       </div>
 
-      <!-- ===================== PASO 2 — Cómo moverte por el sitio ===================== -->
+      <!-- ===================== PASO 2 — ¿Olvidaste tu contraseña? ===================== -->
       <div id="guia-pantalla-paso-2" class="guia-pantalla" data-pantalla="paso" data-paso="2">
+        <h2 tabindex="-1">🔓 ¿Olvidaste tu contraseña?</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso2-recuperar-contrasena.png" alt="Pestaña de recuperar contraseña en Mi cuenta" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> No necesitas pedirle a tu profesor un código nuevo solo porque olvidaste tu contraseña — se recupera tú mismo en un minuto.</p>
+        <ol class="guia-paso__lista">
+          <li>En "Mi cuenta", toca la pestaña "Recuperar contraseña".</li>
+          <li>Escribe el mismo correo con el que creaste tu cuenta.</li>
+          <li>Revisa tu bandeja de entrada (y también spam, por si acaso) — llega un enlace para crear una nueva contraseña.</li>
+          <li>Sigue el enlace, define tu nueva contraseña y vuelve a iniciar sesión con ella.</li>
+        </ol>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> Llevas semanas sin entrar y ya no recuerdas tu contraseña. En vez de crear una cuenta nueva (que perdería tu progreso), usas "Recuperar contraseña" con tu correo de siempre.</p>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 3 — Cómo moverte por el sitio ===================== -->
+      <div id="guia-pantalla-paso-3" class="guia-pantalla" data-pantalla="paso" data-paso="3">
         <h2 tabindex="-1">🧭 Cómo moverte por el sitio</h2>
         <div class="guia-paso__imagen-marco">
-          <img src="assets/guia/paso2-navegacion.png" alt="Barra lateral con selector de grupo y tema" class="guia-paso__imagen" loading="lazy">
+          <img src="assets/guia/paso3-navegacion.png" alt="Barra lateral con selector de grupo y tema" class="guia-paso__imagen" loading="lazy">
         </div>
         <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> El sitio tiene bastante contenido (3 trimestres, cada uno con 9 secciones), así que conocer el mapa te ahorra tiempo cada vez que entras.</p>
         <ol class="guia-paso__lista">
@@ -453,33 +477,96 @@
         </div>
       </div>
 
-      <!-- ===================== PASO 3 — Tu Trimestre ===================== -->
-      <div id="guia-pantalla-paso-3" class="guia-pantalla" data-pantalla="paso" data-paso="3">
-        <h2 tabindex="-1">📚 Tu Trimestre</h2>
+      <!-- ===================== PASO 4 — Ajusta el tamaño de texto ===================== -->
+      <div id="guia-pantalla-paso-4" class="guia-pantalla" data-pantalla="paso" data-paso="4">
+        <h2 tabindex="-1">🔤 Ajusta el tamaño de texto</h2>
         <div class="guia-paso__imagen-marco">
-          <img src="assets/guia/paso3-trimestre.png" alt="Rúbrica desplegada mostrando niveles de evaluación" class="guia-paso__imagen" loading="lazy">
+          <img src="assets/guia/paso4-tamano-texto.png" alt="Control de tamaño de texto A menos, A más en Ajustes" class="guia-paso__imagen" loading="lazy">
         </div>
-        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Aquí vive todo el contenido del curso: lo que vas a aprender, cómo te van a evaluar, y qué tienes que entregar.</p>
-        <p>Cada trimestre tiene 8 secciones (más la Entrega de trabajos, que tiene su propio paso a continuación):</p>
-        <ul class="guia-paso__lista guia-paso__lista--sin-numerar">
-          <li><strong>Temario:</strong> los temas de cada secuencia. Toca "Ver más" en cualquier tema para ver qué vas a aprender, por qué importa, y un dato curioso.</li>
-          <li><strong>Infografías:</strong> un resumen visual de cada secuencia — toca una para verla en grande.</li>
-          <li><strong>Presentaciones:</strong> diapositivas de apoyo de cada secuencia, por si quieres repasar.</li>
-          <li><strong>Rúbricas:</strong> toca una para desplegarla y ver los niveles (Excelente / Bueno / Regular / Deficiente) y cuántos puntos vale cada uno.</li>
-          <li><strong>Tareas / Actividades / Proyectos:</strong> tarjetas con la descripción y la fecha límite de cada entregable.</li>
-          <li><strong>Videos:</strong> material audiovisual corto para repasar dudas puntuales.</li>
-        </ul>
-        <p>Los trimestres se van desbloqueando conforme avanza el ciclo: en "Elige tu trimestre" (portada) cada tarjeta muestra su estado — <strong>Actual</strong>, <strong>Finalizado</strong>, o <strong>🔒 Próximamente</strong> si todavía no toca verlo.</p>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Si te cuesta leer letra pequeña en el celular o la computadora del taller, puedes agrandarla sin depender del zoom del navegador.</p>
+        <ol class="guia-paso__lista">
+          <li>En Ajustes, junto al botón de tema, encuentras el control A- / A+.</li>
+          <li>Tiene 3 niveles: normal, grande, muy grande.</li>
+          <li>Tu elección se guarda sola y se aplica en todas las páginas del sitio.</li>
+        </ol>
         <div class="guia-paso__ejemplo">
-          <p><strong>Ejemplo típico:</strong> Antes de entregar tu proyecto integrador, abres su rúbrica y ves que "Excelente" pide incluir una conclusión — y tú no la tenías. La agregas antes de entregar y así aseguras más puntos, en vez de enterarte hasta que ya te calificaron.</p>
+          <p><strong>Ejemplo típico:</strong> Estás en la computadora del taller y el texto se ve muy pequeño desde tu lugar. Tocas A+ dos veces y todo el sitio (no solo esta página) se ve más grande de ahí en adelante.</p>
         </div>
       </div>
 
-      <!-- ===================== PASO 4 — Cómo entregar tus trabajos ===================== -->
-      <div id="guia-pantalla-paso-4" class="guia-pantalla" data-pantalla="paso" data-paso="4">
+      <!-- ===================== PASO 5 — Contenido de tu Trimestre ===================== -->
+      <div id="guia-pantalla-paso-5" class="guia-pantalla" data-pantalla="paso" data-paso="5">
+        <h2 tabindex="-1">📚 Contenido de tu Trimestre</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso5-contenido-trimestre.png" alt="Temario e infografías de una secuencia" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Aquí está todo el material para aprender antes de que te evalúen — repasarlo te ahorra dudas después.</p>
+        <ul class="guia-paso__lista guia-paso__lista--sin-numerar">
+          <li><strong>Temario:</strong> los temas de cada secuencia. Toca "Ver más" para ver qué vas a aprender, por qué importa, y un dato curioso.</li>
+          <li><strong>Infografías:</strong> resumen visual de cada secuencia — toca una para verla en grande.</li>
+          <li><strong>Presentaciones:</strong> diapositivas de apoyo, por si quieres repasar.</li>
+          <li><strong>Videos:</strong> material audiovisual corto para dudas puntuales.</li>
+        </ul>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> No entendiste bien un tema en clase. Antes de preguntarle al profesor, revisas su infografía y su video — muchas veces con eso se resuelve la duda.</p>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 6 — Rúbricas y trimestres bloqueados ===================== -->
+      <div id="guia-pantalla-paso-6" class="guia-pantalla" data-pantalla="paso" data-paso="6">
+        <h2 tabindex="-1">📋 Rúbricas y trimestres bloqueados</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso6-rubricas-bloqueo.png" alt="Rúbrica desplegada y tarjeta de trimestre bloqueado" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Saber cómo te van a calificar antes de entregar, y entender por qué a veces no puedes ver el trimestre siguiente todavía.</p>
+        <ol class="guia-paso__lista">
+          <li>Toca una rúbrica para desplegarla y ver los niveles (Excelente / Bueno / Regular / Deficiente) y cuántos puntos vale cada uno.</li>
+          <li>En "Elige tu trimestre" (portada), cada tarjeta muestra su estado: Actual, Finalizado, o 🔒 Próximamente si tu profesor todavía no lo habilita.</li>
+        </ol>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> Antes de entregar tu proyecto integrador, ves que "Excelente" pide una conclusión — y no la tenías. La agregas antes de entregar, en vez de enterarte hasta que ya te calificaron.</p>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 7 — Retos de grupo ===================== -->
+      <div id="guia-pantalla-paso-7" class="guia-pantalla" data-pantalla="paso" data-paso="7">
+        <h2 tabindex="-1">🏆 Retos de grupo</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso7-retos-grupo.png" alt="Sección Aplica tus conocimientos con el reto del trimestre" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Cada trimestre hay un reto especial que se resuelve entre todo el grupo, en persona con tu profesor — no es una tarea individual.</p>
+        <ol class="guia-paso__lista">
+          <li>En la sección "🏆 Aplica tus conocimientos" de tu trimestre, ves el planteamiento de un reto de 3 partes (una por cada secuencia vista en clase).</li>
+          <li>El sitio solo muestra el planteamiento, nunca la respuesta — la resuelven en clase con tu profesor.</li>
+          <li>Si todo el grupo lo resuelve correctamente, tu profesor desbloquea 3 temas visuales nuevos para todos.</li>
+        </ol>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> Tu grupo resuelve el reto del Trimestre 1 en clase. Unos días después, ves un aviso de "¡Nuevo tema desbloqueado!" la próxima vez que entras al sitio.</p>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 8 — Temas de recompensa ===================== -->
+      <div id="guia-pantalla-paso-8" class="guia-pantalla" data-pantalla="paso" data-paso="8">
+        <h2 tabindex="-1">🎨 Temas de recompensa</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso8-temas-recompensa.png" alt="Selector de temas con sección Más temas bloqueados" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> No todos los temas están disponibles desde el inicio — algunos se ganan como grupo, y verlos bloqueados no es un error.</p>
+        <ol class="guia-paso__lista">
+          <li>Al abrir el selector de temas, verás "⭐ Destacados" (siempre disponibles) y "🔒 Más temas" (bloqueados hasta que tu grupo los desbloquee con un reto, Paso anterior).</li>
+          <li>Un tema bloqueado muestra 🔒 y en qué trimestre se desbloquea.</li>
+          <li>Cuando tu grupo desbloquea uno, aparece una celebración 🎉 la próxima vez que entras — desde ahí puedes aplicarlo directo.</li>
+        </ol>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> Ves un tema con candado que dice "Se desbloquea en Trimestre 2". No es que tu cuenta tenga un problema — simplemente tu grupo aún no ha resuelto ese reto.</p>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 9 — Cómo entregar tus trabajos ===================== -->
+      <div id="guia-pantalla-paso-9" class="guia-pantalla" data-pantalla="paso" data-paso="9">
         <h2 tabindex="-1">📤 Cómo entregar tus trabajos</h2>
         <div class="guia-paso__imagen-marco">
-          <img src="assets/guia/paso4-entrega.png" alt="Sección de entrega de trabajos con botón del formulario" class="guia-paso__imagen" loading="lazy">
+          <img src="assets/guia/paso9-entrega.png" alt="Sección de entrega de trabajos con botón del formulario" class="guia-paso__imagen" loading="lazy">
         </div>
         <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> La entrega real siempre es por el formulario de Google — no existe un botón de "marcar como entregado" dentro del sitio, así que este paso es el que de verdad cuenta para tu calificación.</p>
         <ol class="guia-paso__lista">
@@ -494,11 +581,11 @@
         </div>
       </div>
 
-      <!-- ===================== PASO 5 — Tu Progreso ===================== -->
-      <div id="guia-pantalla-paso-5" class="guia-pantalla" data-pantalla="paso" data-paso="5">
+      <!-- ===================== PASO 10 — Tu Progreso ===================== -->
+      <div id="guia-pantalla-paso-10" class="guia-pantalla" data-pantalla="paso" data-paso="10">
         <h2 tabindex="-1">📊 Tu Progreso</h2>
         <div class="guia-paso__imagen-marco">
-          <img src="assets/guia/paso5-progreso.png" alt="Página de progreso con leyenda de estados e insignias" class="guia-paso__imagen" loading="lazy">
+          <img src="assets/guia/paso10-progreso.png" alt="Página de progreso con leyenda de estados e insignias" class="guia-paso__imagen" loading="lazy">
         </div>
         <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Aquí ves, sin tener que preguntarle al profesor, qué llevas entregado y qué te falta — y también vas ganando reconocimientos por tu constancia.</p>
         <p>Qué significa cada ícono:</p>
@@ -519,11 +606,27 @@
         </div>
       </div>
 
-      <!-- ===================== PASO 6 — Avisos y Calendario ===================== -->
-      <div id="guia-pantalla-paso-6" class="guia-pantalla" data-pantalla="paso" data-paso="6">
+      <!-- ===================== PASO 11 — Tu asistencia ===================== -->
+      <div id="guia-pantalla-paso-11" class="guia-pantalla" data-pantalla="paso" data-paso="11">
+        <h2 tabindex="-1">📋 Tu asistencia</h2>
+        <div class="guia-paso__imagen-marco">
+          <img src="assets/guia/paso11-asistencia.png" alt="Resumen de asistencia en la página de progreso" class="guia-paso__imagen" loading="lazy">
+        </div>
+        <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Además de tus entregas, tu asistencia también se registra y puedes consultarla tú mismo, sin preguntar.</p>
+        <ol class="guia-paso__lista">
+          <li>En "Mi progreso", ves un resumen con tus Presentes, Faltas, Retardos y Justificadas del trimestre.</li>
+          <li>También llevas una racha 🎯 de asistencia: se desbloquea al llevar 3 clases seguidas presente. Una falta o un retardo la reinicia.</li>
+        </ol>
+        <div class="guia-paso__ejemplo">
+          <p><strong>Ejemplo típico:</strong> Llevas 2 clases seguidas de asistencia perfecta — te falta solo una más para desbloquear tu racha 🎯, igual que la de puntualidad en entregas.</p>
+        </div>
+      </div>
+
+      <!-- ===================== PASO 12 — Avisos y Calendario ===================== -->
+      <div id="guia-pantalla-paso-12" class="guia-pantalla" data-pantalla="paso" data-paso="12">
         <h2 tabindex="-1">📢 Avisos y Calendario</h2>
         <div class="guia-paso__imagen-marco">
-          <img src="assets/guia/paso6-avisos.png" alt="Sección de avisos y calendario en la portada" class="guia-paso__imagen" loading="lazy">
+          <img src="assets/guia/paso12-avisos.png" alt="Sección de avisos y calendario en la portada" class="guia-paso__imagen" loading="lazy">
         </div>
         <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Aquí se anuncian cambios de fecha, recordatorios y días sin clases — es lo primero que deberías revisar al entrar.</p>
         <ol class="guia-paso__lista">
@@ -535,11 +638,11 @@
         </div>
       </div>
 
-      <!-- ===================== PASO 7 — ¿Algo no funciona o tienes dudas? ===================== -->
-      <div id="guia-pantalla-paso-7" class="guia-pantalla" data-pantalla="paso" data-paso="7">
+      <!-- ===================== PASO 13 — ¿Algo no funciona o tienes dudas? ===================== -->
+      <div id="guia-pantalla-paso-13" class="guia-pantalla" data-pantalla="paso" data-paso="13">
         <h2 tabindex="-1">❓ ¿Algo no funciona o tienes dudas?</h2>
         <div class="guia-paso__imagen-marco">
-          <img src="assets/guia/paso7-faq.png" alt="Página de preguntas frecuentes" class="guia-paso__imagen" loading="lazy">
+          <img src="assets/guia/paso13-faq.png" alt="Página de preguntas frecuentes" class="guia-paso__imagen" loading="lazy">
         </div>
         <p class="guia-paso__por-que"><strong>¿Por qué importa?</strong> Antes de preocuparte o preguntarle directo al profesor en medio de la clase, la mayoría de las dudas comunes ya están resueltas.</p>
         <ol class="guia-paso__lista">

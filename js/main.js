@@ -19151,7 +19151,7 @@ async function inicializarModuloDashboard() {
 // criterio que CLAVE_ULTIMO_TRIMESTRE de la sección 3). Solo actúa en
 // guia.html: #guia-wizard no existe en el resto de páginas.
 const CLAVE_GUIA_PASO = "guiaAlumnoPasoActual";
-const GUIA_TOTAL_PASOS = 7;
+const GUIA_TOTAL_PASOS = 13;
 
 function activarGuiaAlumno() {
   const wizard = document.getElementById("guia-wizard");
