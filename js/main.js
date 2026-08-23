@@ -13813,10 +13813,10 @@ async function guardarAsistenciaLote(grupo, fechaISO, trimestre, registros) {
 
 // Resumen de asistencia de un alumno en un trimestre: conteo por estado
 // (sin_registrar no aplica -- esa palabra nunca se inserta, solo existen
-// filas reales) + racha actual de asistencia consecutiva. Mismo espíritu
-// que calcularRachaPuntualidad(): solo presente/justificada mantienen la
-// racha, cualquier otro estado real (falta/retardo/salida_anticipada) la
-// corta -- es una racha de asistencia perfecta, no solo "no faltó".
+// filas reales) + racha actual de asistencia consecutiva. Se corta solo
+// con falta/retardo; presente/justificada/salida_anticipada la mantienen
+// (a diferencia de calcularRachaPuntualidad, acá "haber estado" basta,
+// no hace falta que la salida haya sido a la hora exacta).
 async function calcularResumenAsistencia(alumnoId, trimestre) {
   const { data: filas, error } = await obtenerDatos("asistencia", {
     eq: { alumno_id: alumnoId, trimestre },
@@ -13835,7 +13835,7 @@ async function calcularResumenAsistencia(alumnoId, trimestre) {
 
   let racha = 0;
   for (let i = filas.length - 1; i >= 0; i--) {
-    if (filas[i].estado !== "presente" && filas[i].estado !== "justificada") break;
+    if (filas[i].estado === "falta" || filas[i].estado === "retardo") break;
     racha++;
   }
 
