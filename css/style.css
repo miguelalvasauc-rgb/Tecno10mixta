@@ -12246,20 +12246,66 @@ button.badge-estado {
 /* Tendencia semanal de % de asistencia (dashboard-asistencia-kpi): barras
    simples con divs a propósito, NO el sparkline SVG de arriba (pedido
    explícito) — turquesa lisa, mismo token de acento que .kpi-tarjeta__relleno,
-   ya correcto por tema (Theme-Owns-Its-Accent Rule de DESIGN.md). */
+   ya correcto por tema (Theme-Owns-Its-Accent Rule de DESIGN.md). Sin
+   altura fija: cada .asistencia-kpi__barra ya trae su alto en px vía JS
+   (construirTendenciaBarrasAsistencia en js/main.js, hasta
+   ALTO_MAXIMO_BARRA_ASISTENCIA=90px, subido de los 56px totales de antes
+   para que se lea sin entrecerrar los ojos), así que el alto real del
+   contenedor lo define la barra más alta + la etiqueta de fecha debajo. */
 .asistencia-kpi__barras {
   display: flex;
   align-items: flex-end;
   gap: 4px;
-  height: 56px;
   margin-top: 0.85rem;
 }
 
-.asistencia-kpi__barra {
+/* Una columna por semana: barra + etiqueta de fecha, apiladas y
+   centradas — min-width:0 es necesario para que text-overflow/ellipsis
+   de la etiqueta (abajo) funcione dentro de un hijo flex angosto. */
+.asistencia-kpi__columna {
   flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.asistencia-kpi__barra {
+  width: 100%;
   min-width: 6px;
   background-color: var(--color-turquesa);
   border-radius: 3px 3px 0 0;
+}
+
+/* Fecha de inicio de cada semana, visible siempre (no solo en el title
+   del hover) — mismo tamaño de fuente que las etiquetas secundarias de
+   la otra gráfica del Dashboard (.dashboard-grafica__etiqueta-barra). */
+.asistencia-kpi__barra-etiqueta {
+  font-size: var(--tamano-fuente-meta-micro);
+  color: var(--color-texto-suave);
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Con 10-22 barras (un trimestre completo) el ancho por columna en un
+   celular real (~390px) no alcanza para "11 ago" en horizontal sin que
+   se corten o se encimen entre sí — se gira 90° (mismo criterio que
+   pidió Hiram: "gira el texto o abrevia, pero no lo quites") en vez de
+   truncar la fecha. writing-mode en vez de transform:rotate(): con
+   transform, el cuadro de layout del texto sigue siendo el ancho
+   original (solo gira visualmente), así que columnas angostas igual se
+   encimarían; writing-mode cambia el flujo real del texto a vertical,
+   angosto de verdad. rotate(180deg) para que se lea de abajo hacia
+   arriba (con vertical-rl solo, quedaría al revés). */
+@media (max-width: 480px) {
+  .asistencia-kpi__barra-etiqueta {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    max-height: 3.2rem;
+  }
 }
 
 /* Ficha de análisis del grupo: mismo grid mobile-first que

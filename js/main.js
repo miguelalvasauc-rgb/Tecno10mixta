@@ -18864,35 +18864,82 @@ async function obtenerTendenciaSemanalAsistencia(trimestre, idsAlumnos) {
   const clavesOrdenadas = [...semanas.keys()].sort();
   if (clavesOrdenadas.length < 3) return [];
 
+  // { clave, valor } en vez de solo el número: clave (lunes de esa semana,
+  // "YYYY-MM-DD") es lo que construirTendenciaBarrasAsistencia() necesita
+  // para pintar la etiqueta visible de cada barra (antes se descartaba
+  // aquí mismo y esa función solo recibía el número, sin fecha real que
+  // mostrar).
   return clavesOrdenadas.map((clave) => {
     const bucket = semanas.get(clave);
-    return bucket.total === 0 ? 0 : Math.round((bucket.asistio / bucket.total) * 100);
+    const valor = bucket.total === 0 ? 0 : Math.round((bucket.asistio / bucket.total) * 100);
+    return { clave, valor };
   });
 }
+
+// Meses cortos en español, escritos a mano en vez de
+// toLocaleDateString("es-MX", {month:"short"}): el formato exacto de esa
+// llamada depende del motor ICU de cada navegador (Node da "31-ago" con
+// guion y sin espacio; un navegador real puede dar otra cosa) — con 10-22
+// barras en esta gráfica, cualquier variación de ancho/puntuación entre
+// navegadores se nota. Un arreglo fijo es determinista en todos lados.
+const MESES_CORTOS_ES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
+// Etiqueta visible de cada barra: solo el día de inicio de esa semana
+// (el lunes que ya calcula inicioSemanaISO en obtenerTendenciaSemanalAsistencia),
+// no el rango completo lunes-viernes — un rango fabricado sería engañoso
+// aquí, porque cada grupo solo tiene clase 2 días de esa semana (ver
+// DATOS_HORARIO), no los 5, y además una semana que cruza de mes (ej.
+// 31 ago-4 sep) necesitaría mostrar 2 meses para no ser incorrecta.
+// "al menos el día de inicio" ya es suficiente para ubicar la semana en
+// el calendario sin ese riesgo.
+function formatearInicioSemanaCorto(claveISO) {
+  const fecha = new Date(claveISO + "T00:00:00");
+  return fecha.getDate() + " " + MESES_CORTOS_ES[fecha.getMonth()];
+}
+
+// Alto máximo de barra: antes el contenedor entero medía 56px vía CSS y
+// cada barra tomaba un % de ESE alto; ahora cada barra recibe su alto en
+// px calculado aquí mismo, porque el contenedor ya no tiene una altura
+// fija — su alto real lo define la barra más alta + la etiqueta de fecha
+// debajo (ver .asistencia-kpi__columna en css/style.css).
+const ALTO_MAXIMO_BARRA_ASISTENCIA = 90;
 
 // role="img" + aria-label con el resumen (primer/último valor): cada
 // barra individual es decorativa (::before/title no llega de forma
 // confiable a lectores de pantalla), así que el resumen en el
-// contenedor es la única vía accesible de verdad para esta gráfica.
-function construirTendenciaBarrasAsistencia(valoresSemanales) {
+// contenedor es la única vía accesible de verdad para esta gráfica. La
+// etiqueta de fecha bajo cada barra sí es texto real y visible siempre
+// (no solo en :hover/title), así que se marca aria-hidden para no
+// duplicar información que el resumen del contenedor ya cubre.
+function construirTendenciaBarrasAsistencia(tendenciaSemanal) {
   const contenedor = document.createElement("div");
   contenedor.className = "asistencia-kpi__barras";
   contenedor.setAttribute("role", "img");
   contenedor.setAttribute(
     "aria-label",
     "Tendencia semanal de asistencia del grupo: de " +
-      valoresSemanales[0] +
+      tendenciaSemanal[0].valor +
       "% a " +
-      valoresSemanales[valoresSemanales.length - 1] +
+      tendenciaSemanal[tendenciaSemanal.length - 1].valor +
       "%"
   );
 
-  valoresSemanales.forEach((valor, indice) => {
+  tendenciaSemanal.forEach(({ clave, valor }) => {
+    const columna = document.createElement("div");
+    columna.className = "asistencia-kpi__columna";
+
     const barra = document.createElement("div");
     barra.className = "asistencia-kpi__barra";
-    barra.style.height = Math.max(4, valor) + "%";
-    barra.title = "Semana " + (indice + 1) + ": " + valor + "%";
-    contenedor.appendChild(barra);
+    barra.style.height = Math.max(4, Math.round((valor / 100) * ALTO_MAXIMO_BARRA_ASISTENCIA)) + "px";
+    barra.title = formatearInicioSemanaCorto(clave) + ": " + valor + "%";
+
+    const etiqueta = document.createElement("span");
+    etiqueta.className = "asistencia-kpi__barra-etiqueta";
+    etiqueta.setAttribute("aria-hidden", "true");
+    etiqueta.textContent = formatearInicioSemanaCorto(clave);
+
+    columna.append(barra, etiqueta);
+    contenedor.appendChild(columna);
   });
 
   return contenedor;
