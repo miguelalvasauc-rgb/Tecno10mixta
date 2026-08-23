@@ -7761,6 +7761,15 @@ summary {
   .toast--con-progreso::after {
     animation: toast-progreso var(--duracion-toast, 2500ms) linear forwards;
   }
+
+  /* Pausa visual en sincronía con pausarToastSiActivo() en js/main.js
+     (mouse encima o pestaña oculta): sin esto la barra seguiría llegando
+     a 0 aunque el setTimeout real ya esté pausado, contradiciendo el
+     propio diseño de la barra (que la salida coincida con que llegue a
+     0, ver comentario junto a .toast::after arriba). */
+  .toast--pausado.toast--con-progreso::after {
+    animation-play-state: paused;
+  }
 }
 
 @keyframes toast-progreso {

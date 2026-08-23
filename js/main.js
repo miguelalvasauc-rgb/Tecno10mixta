@@ -7421,6 +7421,74 @@ async function renderizarCalendario() {
 // que ya no tiene sentido con varios a la vez.
 const pilaToasts = new Map();
 
+// Un solo listener de visibilitychange para TODO el sistema de toasts —
+// no uno por toast: un listener puesto en "document" no muere solo
+// cuando el toast que lo motivó se destruye (a diferencia de
+// mouseenter/mouseleave en el propio elemento, que sí se recolectan con
+// él), así que uno por toast se acumularía para siempre en la sesión.
+// Guarda + registro único, mismo patrón que
+// tooltipsDocumentListenerActivo en activarTooltipsInfo(). Recorre
+// pilaToasts completa (no "el toast activo") porque hasta 3 pueden estar
+// visibles a la vez (ver límite en crearYMostrarToast), cada uno con su
+// propio timer independiente.
+let listenerVisibilidadToastsActivo = false;
+function activarPausaToastsPorVisibilidad() {
+  if (listenerVisibilidadToastsActivo) return;
+  listenerVisibilidadToastsActivo = true;
+  document.addEventListener("visibilitychange", () => {
+    for (const toast of pilaToasts.keys()) {
+      const registro = pilaToasts.get(toast);
+      registro.pausadoPorPestana = document.hidden;
+      if (document.hidden) {
+        pausarToastSiActivo(toast);
+      } else {
+        reanudarToastSiCorresponde(toast);
+      }
+    }
+  });
+}
+
+// Pausa el setTimeout de salida de "toast" sin perder el tiempo ya
+// transcurrido (resta lo corrido de msRestante) y pausa también la barra
+// de progreso CSS (ver .toast--pausado en css/style.css). No-op si el
+// toast no tiene timer corriendo: "carga" (persistente, sin
+// agendarAutodesaparicion todavía) o uno que "Reintentar" ya canceló del
+// todo (ver actualizarToastCarga) — msRestante queda null en esos casos,
+// así que reanudarToastSiCorresponde tampoco revive nada por error.
+function pausarToastSiActivo(toast) {
+  const registro = pilaToasts.get(toast);
+  if (!registro || registro.timerId === null) return;
+
+  clearTimeout(registro.timerId);
+  registro.timerId = null;
+  registro.msRestante -= Date.now() - registro.inicioCuentaRegresiva;
+  toast.classList.add("toast--pausado");
+}
+
+// Reanuda "toast" SOLO si ninguna de las dos causas de pausa sigue
+// activa (ej. el mouse puede seguir encima cuando la pestaña vuelve a
+// estar visible: debe seguir pausado hasta que también salga el mouse).
+function reanudarToastSiCorresponde(toast) {
+  const registro = pilaToasts.get(toast);
+  if (!registro) return;
+  if (registro.pausadoPorMouse || registro.pausadoPorPestana) return;
+  if (registro.timerId !== null) return;
+  if (registro.msRestante === null) return;
+
+  toast.classList.remove("toast--pausado");
+  iniciarCuentaRegresivaToast(toast, Math.max(registro.msRestante, 0));
+}
+
+// Arranca (o reinicia tras una pausa) el setTimeout de salida con "ms"
+// restantes, guardando el instante de inicio para que
+// pausarToastSiActivo pueda calcular cuánto faltaba si se pausa a medias.
+function iniciarCuentaRegresivaToast(toast, ms) {
+  const registro = pilaToasts.get(toast);
+  if (!registro) return;
+  registro.inicioCuentaRegresiva = Date.now();
+  registro.timerId = setTimeout(() => ocultarYQuitarToast(toast), ms);
+}
+
 // Dispara la animación de salida y quita "toast" del DOM/pila. Único
 // lugar con esta mecánica: la usan tanto la autodesaparición normal
 // (agendarAutodesaparicion) como el descarte forzado por límite de pila
@@ -7467,6 +7535,8 @@ function crearYMostrarToast(tipo, mensaje, { icono = "", spinner = false } = {})
   const contenedor = document.getElementById("contenedor-toast");
   if (!contenedor) return null;
 
+  activarPausaToastsPorVisibilidad();
+
   // Colapso de duplicados: mismo texto Y mismo tipo ya visible → no se
   // crea un nodo nuevo, solo un pulso visual. El llamador (mostrarToast/
   // mostrarToastAdvertencia) igual llama agendarAutodesaparicion() con
@@ -7510,7 +7580,33 @@ function crearYMostrarToast(tipo, mensaje, { icono = "", spinner = false } = {})
 
   toast.append(iconoEl, textoEl);
   contenedor.prepend(toast);
-  pilaToasts.set(toast, { timerId: null, tipo, mensaje });
+  pilaToasts.set(toast, {
+    timerId: null,
+    tipo,
+    mensaje,
+    msRestante: null,
+    inicioCuentaRegresiva: null,
+    pausadoPorMouse: false,
+    pausadoPorPestana: false,
+  });
+
+  // Pausa/reanuda al pasar el mouse — directo sobre el elemento, no hace
+  // falta limpiarlos explícitamente: cuando ocultarYQuitarToast() borra
+  // "toast" de pilaToasts (la única referencia fuerte que quedaba) y lo
+  // saca del DOM, nada más lo referencia y se recolecta junto con estos
+  // listeners.
+  toast.addEventListener("mouseenter", () => {
+    const registro = pilaToasts.get(toast);
+    if (!registro) return;
+    registro.pausadoPorMouse = true;
+    pausarToastSiActivo(toast);
+  });
+  toast.addEventListener("mouseleave", () => {
+    const registro = pilaToasts.get(toast);
+    if (!registro) return;
+    registro.pausadoPorMouse = false;
+    reanudarToastSiCorresponde(toast);
+  });
 
   // Fuerza un reflow antes de quitar "toast--oculto": si se agrega y se
   // quita la clase en el mismo tick, el navegador nunca pinta el estado
@@ -7538,12 +7634,25 @@ function crearYMostrarToast(tipo, mensaje, { icono = "", spinner = false } = {})
 function agendarAutodesaparicion(toast, ms) {
   const registro = pilaToasts.get(toast);
   if (registro?.timerId) clearTimeout(registro.timerId);
+  if (!registro) return;
 
   toast.style.setProperty("--duracion-toast", ms + "ms");
   toast.classList.add("toast--con-progreso");
+  registro.msRestante = ms;
+  registro.timerId = null;
 
-  const timerId = setTimeout(() => ocultarYQuitarToast(toast), ms);
-  if (registro) registro.timerId = timerId;
+  // Si el mouse ya estaba encima o la pestaña ya estaba oculta cuando
+  // este toast arrancó su cuenta (ej. actualizarToastCarga lo transiciona
+  // de "carga" a "éxito" mientras el usuario lo está leyendo), arranca
+  // pausado de una vez — reanudarToastSiCorresponde lo retoma solo
+  // cuando termine esa pausa.
+  if (registro.pausadoPorMouse || registro.pausadoPorPestana) {
+    toast.classList.add("toast--pausado");
+    return;
+  }
+
+  toast.classList.remove("toast--pausado");
+  iniciarCuentaRegresivaToast(toast, ms);
 }
 
 // mensaje: texto corto de una sola línea. opciones.icono: string, por
@@ -7617,12 +7726,17 @@ function actualizarToastCarga(referencia, opciones) {
     botonReintentar.addEventListener("click", () => {
       // Cancela la autodesaparición pendiente: el resultado del
       // reintento (otro mostrarToastCarga/actualizarToastCarga) decide
-      // qué pasa después, no este temporizador viejo.
+      // qué pasa después, no este temporizador viejo. msRestante también
+      // a null: si el mouse sigue encima y luego sale, no debe reanudar
+      // solo una cuenta regresiva que ya se canceló del todo (ver
+      // reanudarToastSiCorresponde).
       const registro = pilaToasts.get(referencia);
       if (registro?.timerId) {
         clearTimeout(registro.timerId);
         registro.timerId = null;
       }
+      if (registro) registro.msRestante = null;
+      referencia.classList.remove("toast--pausado");
       onReintentar();
     });
     referencia.appendChild(botonReintentar);
