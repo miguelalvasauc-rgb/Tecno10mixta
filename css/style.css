@@ -9043,6 +9043,40 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
     padding-left: 64px;
   }
 
+  /* .seccion/.seccion--alterna > * ya centran con margin:0 auto, pero
+     ESE auto centra dentro del content-box de <body> -- que a este ancho
+     ya viene recortado por el padding-left de arriba (barra fija). El
+     resultado es que el bloque de 1180px queda centrado en el espacio
+     sobrante a la derecha de la barra, no en la ventana completa (se lee
+     como "pegado a la izquierda" en monitores anchos). Estos overrides
+     fuerzan un margin-left explícito que resta la mitad del padding-left
+     correspondiente, para que el conjunto barra+contenido quede centrado
+     de verdad respecto a toda la ventana. 590px = mitad de max-width
+     1180px; 30px/128px = mitad de 60px/256px (el padding-left de
+     .riel/.barra-lateral arriba). .barra-lateral ya no la dispara
+     ninguna página (ver nota de arriba), pero se agrega igual por
+     simetría con esa regla ya existente.
+
+     :not(.seccion--alterna) en el primer selector de cada par es
+     necesario: un <section class="seccion seccion--alterna"> coincide
+     con AMBas clases a la vez, y ese elemento (el que pinta la franja de
+     fondo alterno a todo el ancho, max-width:none) no debe recibir este
+     margin-left -- si lo recibe dejaría de llegar al borde de la
+     ventana, partiendo la franja en dos huecos sin fondo a los lados.
+     Solo sus hijos directos (.seccion--alterna > *, el contenido real
+     adentro) se centran. */
+  body:has(.riel) .seccion:not(.seccion--alterna),
+  body:has(.riel) .seccion--alterna > * {
+    margin-left: calc(50% - 590px - 30px);
+    margin-right: auto;
+  }
+
+  body:has(.barra-lateral) .seccion:not(.seccion--alterna),
+  body:has(.barra-lateral) .seccion--alterna > * {
+    margin-left: calc(50% - 590px - 128px);
+    margin-right: auto;
+  }
+
   .migas-de-pan,
   .banner-trimestre {
     padding-left: var(--margen-desktop);
