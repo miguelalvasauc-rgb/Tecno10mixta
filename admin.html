@@ -670,6 +670,15 @@
           </div>
         </div>
 
+        <!-- Aviso "no has tomado lista hoy" (ver renderizarAvisoAsistenciaHoy()
+             en js/main.js): SIEMPRE chequea los 2 grupos, sin importar el
+             filtro Grupo de arriba -- un docente filtrado en 3°C no debe
+             perderse el aviso de que 3°E, que hoy sí tiene clase, sigue sin
+             registro. Reutiliza .formulario__advertencia tal cual (mismo
+             color de advertencia ya reservado en el sitio, ver esa clase en
+             css/style.css). Oculto por defecto; solo se muestra si aplica. -->
+        <div id="dashboard-aviso-asistencia" role="alert" hidden></div>
+
         <!-- KPIs: .kpi-contenedor/.kpi-tarjeta propios del Dashboard (ver
              css/style.css), desacoplados de .criterios-contenedor/
              .criterio-tarjeta (vista pública "Criterios de evaluación" en
@@ -704,6 +713,51 @@
             <div id="dashboard-cronograma" aria-live="polite"></div>
           </div>
         </div>
+
+        <!-- Módulo Asistencia del Dashboard: KPI de % del grupo + tendencia
+             semanal (barras simples con divs, ver construirTendenciaBarrasAsistencia()
+             en js/main.js -- deliberadamente distinto del sparkline SVG de
+             las 4 KPIs de arriba, pedido explícito) y tabla de faltas/
+             retardos con chips de filtro (mismas clases .calificacion-tabs-tipo__botón
+             que el sub-filtro de Tipo en Calificación) + impresión (mismo
+             patrón que "Imprimir mi resumen" de progreso.html: arma
+             #plantilla-impresion-asistencia y llama a window.print(), sin
+             generar ningún PDF en servidor). -->
+        <h3>🗓️ Asistencia</h3>
+        <div class="dashboard-ficha">
+          <div class="dashboard-ficha__celda">
+            <h4 class="dashboard-ficha__titulo-celda">📅 % de asistencia del grupo</h4>
+            <div id="dashboard-asistencia-kpi" aria-live="polite"></div>
+          </div>
+          <div class="dashboard-ficha__celda dashboard-ficha__celda--ancha">
+            <h4 class="dashboard-ficha__titulo-celda">🚩 Alumnos con más faltas/retardos</h4>
+            <div class="calificacion-tabs-tipo" role="tablist" aria-label="Filtrar alumnos por seguimiento de asistencia" id="dashboard-asistencia-filtros">
+              <button type="button" class="calificacion-tabs-tipo__boton calificacion-tabs-tipo__boton--activo"
+                      id="dashboard-asistencia-filtro-todos" role="tab" aria-selected="true" data-filtro="todos">
+                Todos
+              </button>
+              <button type="button" class="calificacion-tabs-tipo__boton"
+                      id="dashboard-asistencia-filtro-seguimiento" role="tab" aria-selected="false" data-filtro="seguimiento">
+                En seguimiento
+              </button>
+              <button type="button" class="calificacion-tabs-tipo__boton"
+                      id="dashboard-asistencia-filtro-perfecta" role="tab" aria-selected="false" data-filtro="perfecta">
+                Asistencia perfecta
+              </button>
+            </div>
+            <div class="calificacion-acciones">
+              <button type="button" id="dashboard-asistencia-boton-imprimir" class="boton-secundario">
+                🖨️ Exportar/Imprimir reporte de asistencia
+              </button>
+            </div>
+            <div id="dashboard-asistencia-tabla-contenedor" class="calificacion-tabla-contenedor" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <!-- Nunca visible en pantalla: solo se llena y se muestra al
+             imprimir (ver generarVistaImpresionAsistencia() en js/main.js),
+             mismo criterio que #calificacion-impresion-por-tipo arriba. -->
+        <div id="plantilla-impresion-asistencia"></div>
 
         <h3>📊 Métricas adicionales</h3>
         <div class="dashboard-ficha">

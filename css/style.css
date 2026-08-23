@@ -10156,6 +10156,45 @@ button.badge-estado {
   display: none;
 }
 
+/* Mismo criterio: nunca visible en pantalla, solo se llena y se muestra
+   al imprimir (ver generarVistaImpresionAsistencia() en js/main.js). */
+#plantilla-impresion-asistencia {
+  display: none;
+}
+
+@media print {
+  /* Mismo aislamiento "ocultar todo, mostrar solo lo mío" que ya usan
+     .calificacion--imprimiendo-historial/-por-tipo arriba (ver el
+     comentario largo junto a esas reglas): scoped a admin.html y a esta
+     clase específica para no pisar ni ser pisado por las otras 2
+     variantes de impresión del panel. */
+  body[data-pagina="admin"].dashboard--imprimiendo-asistencia * {
+    visibility: hidden;
+  }
+
+  body[data-pagina="admin"].dashboard--imprimiendo-asistencia #plantilla-impresion-asistencia,
+  body[data-pagina="admin"].dashboard--imprimiendo-asistencia #plantilla-impresion-asistencia * {
+    visibility: visible;
+  }
+
+  body[data-pagina="admin"].dashboard--imprimiendo-asistencia #plantilla-impresion-asistencia {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    color: #000;
+    background: #fff;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  body[data-pagina="admin"].dashboard--imprimiendo-asistencia #plantilla-impresion-asistencia * {
+    color: #000 !important;
+    background: #fff !important;
+  }
+}
+
 .calificacion-impresion-bloque h3 {
   margin: 0 0 0.75rem;
 }
@@ -11930,6 +11969,25 @@ button.badge-estado {
   font-style: italic;
 }
 
+/* Tendencia semanal de % de asistencia (dashboard-asistencia-kpi): barras
+   simples con divs a propósito, NO el sparkline SVG de arriba (pedido
+   explícito) — turquesa lisa, mismo token de acento que .kpi-tarjeta__relleno,
+   ya correcto por tema (Theme-Owns-Its-Accent Rule de DESIGN.md). */
+.asistencia-kpi__barras {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 56px;
+  margin-top: 0.85rem;
+}
+
+.asistencia-kpi__barra {
+  flex: 1 1 0;
+  min-width: 6px;
+  background-color: var(--color-turquesa);
+  border-radius: 3px 3px 0 0;
+}
+
 /* Ficha de análisis del grupo: mismo grid mobile-first que
    .cuadricula-temario (1 columna en mobile, 2 desde 640px) — el único
    grid de 2 columnas ya establecido en el sitio para tarjetas
@@ -12100,6 +12158,18 @@ button.badge-estado {
 
 .dashboard-riesgo-lista__item--zona-roja {
   border-color: var(--color-estado-vencido);
+}
+
+/* Fila "en seguimiento" de la tabla Alumnos con más faltas/retardos
+   (cruzó umbral_faltas/umbral_retardos, ver obtenerUmbralesAsistencia()):
+   reutiliza --color-toast-advertencia + #2A1D02 (mismo par que
+   .formulario__advertencia, ya documentado ahí como el color de
+   advertencia genérico y reutilizable del sitio — eje "advertencia", no
+   el de --color-estado-* de progreso/rúbricas, así que no viola la Regla
+   de Exclusividad de Colores de Estado). */
+.fila-asistencia--seguimiento td {
+  background-color: var(--color-toast-advertencia);
+  color: #2A1D02;
 }
 
 .dashboard-riesgo-lista__info {

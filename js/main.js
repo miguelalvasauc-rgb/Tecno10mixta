@@ -18373,6 +18373,337 @@ function renderizarCronogramaDashboard() {
   contenedor.appendChild(barra);
 }
 
+/* ---------------------------------------------------------
+   Módulo "Asistencia" del Dashboard (dentro de tab-dashboard)
+
+   KPI de % de asistencia + tendencia semanal, tabla "Alumnos con más
+   faltas/retardos" con chips de filtro, impresión de reporte, y el aviso
+   "no has tomado lista hoy" -- todo sobre resumenAlumnos, ya calculado por
+   renderizarDashboard() (mismos alumnos con cuenta activa que las demás
+   piezas de este módulo, ver construirResumenAlumnosDashboard).
+   --------------------------------------------------------- */
+
+// Caché en memoria de la última tabla calculada (grupo/trimestre
+// actuales de estadoDashboard) -- los chips de filtro y la impresión la
+// reutilizan tal cual, sin volver a consultar Supabase.
+let filasAsistenciaDashboard = [];
+let filtroAsistenciaDashboard = "todos";
+
+// Una fila por alumno con cuenta activa (mismo resumenAlumnos que el
+// resto del Dashboard): Faltas/Retardos/Justificadas de conteoPorEstado
+// (ver calcularResumenAsistencia) + el mismo pctAsistencia ya calculado
+// ahí, para no tener 2 fórmulas de "% asistencia" distintas en el sitio.
+// "perfecta" se deriva de ESE MISMO pctAsistencia (100% implica 0 faltas
+// y 0 retardos, ya que solo presente/justificada cuentan en el
+// numerador) en vez de una condición aparte. Ordenada de mayor a menor
+// por faltas+retardos, como pide el prompt.
+async function construirFilasAsistenciaDashboard(resumenAlumnos, trimestre) {
+  const umbrales = await obtenerUmbralesAsistencia();
+
+  const filas = await Promise.all(
+    resumenAlumnos.map(async ({ alumno }) => {
+      const resumen = await calcularResumenAsistencia(alumno.auth_user_id, trimestre);
+      const faltas = resumen?.conteoPorEstado.falta || 0;
+      const retardos = resumen?.conteoPorEstado.retardo || 0;
+      const justificadas = resumen?.conteoPorEstado.justificada || 0;
+      const pctAsistencia = resumen?.pctAsistencia ?? null;
+
+      return {
+        alumno,
+        faltas,
+        retardos,
+        justificadas,
+        pctAsistencia,
+        enSeguimiento: faltas >= umbrales.umbralFaltas || retardos >= umbrales.umbralRetardos,
+        perfecta: pctAsistencia === 100,
+      };
+    })
+  );
+
+  filas.sort((a, b) => b.faltas + b.retardos - (a.faltas + a.retardos));
+  return filas;
+}
+
+function filasAsistenciaFiltradas() {
+  return filasAsistenciaDashboard.filter((fila) => {
+    if (filtroAsistenciaDashboard === "seguimiento") return fila.enSeguimiento;
+    if (filtroAsistenciaDashboard === "perfecta") return fila.perfecta;
+    return true;
+  });
+}
+
+const ENCABEZADOS_TABLA_ASISTENCIA = ["Nombre", "Faltas", "Retardos", "Justificadas", "% Asistencia"];
+
+function valoresFilaAsistencia(fila) {
+  return [
+    fila.alumno.nombre,
+    String(fila.faltas),
+    String(fila.retardos),
+    String(fila.justificadas),
+    fila.pctAsistencia == null ? "—" : fila.pctAsistencia + "%",
+  ];
+}
+
+function renderizarTablaAsistenciaDashboard() {
+  const contenedor = document.getElementById("dashboard-asistencia-tabla-contenedor");
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  const filtradas = filasAsistenciaFiltradas();
+  if (filtradas.length === 0) {
+    mostrarSinResultados(contenedor, "Sin alumnos que coincidan con este filtro.");
+    return;
+  }
+
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-calificacion";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  ENCABEZADOS_TABLA_ASISTENCIA.forEach((texto) => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  filtradas.forEach((fila) => {
+    const tr = document.createElement("tr");
+    if (fila.enSeguimiento) tr.classList.add("fila-asistencia--seguimiento");
+
+    valoresFilaAsistencia(fila).forEach((valor) => {
+      const td = document.createElement("td");
+      td.textContent = valor;
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+  tabla.appendChild(tbody);
+  contenedor.appendChild(tabla);
+}
+
+function activarFiltrosAsistenciaDashboard() {
+  const botones = Array.from(document.querySelectorAll("#dashboard-asistencia-filtros .calificacion-tabs-tipo__boton"));
+  if (botones.length === 0) return;
+
+  botones.forEach((boton) => {
+    boton.addEventListener("click", () => {
+      botones.forEach((otro) => {
+        const activo = otro === boton;
+        otro.classList.toggle("calificacion-tabs-tipo__boton--activo", activo);
+        otro.setAttribute("aria-selected", String(activo));
+      });
+      filtroAsistenciaDashboard = boton.dataset.filtro;
+      renderizarTablaAsistenciaDashboard();
+    });
+  });
+}
+
+// Tendencia semanal de % de asistencia del GRUPO (no por alumno): barras
+// simples con divs a propósito (pedido explícito), distinto del
+// sparkline SVG que ya usan las 4 KPIs de arriba (ver construirSparklineSVG).
+// Mismo umbral ">=3 semanas" que obtenerTendenciasSemanalesDashboard: con
+// menos puntos una barra no comunica una tendencia real.
+//
+// A diferencia de esa función (agrupa por actualizado_en, un timestamptz,
+// con inicioSemanaISO en UTC), "asistencia.fecha" ya es una columna date
+// pura ("YYYY-MM-DD" sin hora) -- parsear con "T00:00:00" evita el
+// corrimiento de día que toISOString() (UTC) podría introducir cerca de
+// medianoche, mismo criterio que ya usa formatearClaveFecha().
+async function obtenerTendenciaSemanalAsistencia(trimestre, idsAlumnos) {
+  if (idsAlumnos.length === 0) return [];
+
+  const { data, error } = await obtenerDatos("asistencia", {
+    select: "estado, fecha",
+    eq: { trimestre },
+    in: { alumno_id: idsAlumnos },
+    order: { columna: "fecha", ascending: true },
+  });
+  if (error || !data || data.length === 0) return [];
+
+  const inicioSemanaISO = (fechaISO) => {
+    const fecha = new Date(fechaISO + "T00:00:00");
+    const diaISO = (fecha.getDay() + 6) % 7; // lunes = 0
+    fecha.setDate(fecha.getDate() - diaISO);
+    return formatearClaveFecha(fecha);
+  };
+
+  const semanas = new Map();
+  data.forEach((fila) => {
+    const clave = inicioSemanaISO(fila.fecha);
+    if (!semanas.has(clave)) semanas.set(clave, { asistio: 0, total: 0 });
+    const bucket = semanas.get(clave);
+    bucket.total++;
+    if (fila.estado === "presente" || fila.estado === "justificada") bucket.asistio++;
+  });
+
+  const clavesOrdenadas = [...semanas.keys()].sort();
+  if (clavesOrdenadas.length < 3) return [];
+
+  return clavesOrdenadas.map((clave) => {
+    const bucket = semanas.get(clave);
+    return bucket.total === 0 ? 0 : Math.round((bucket.asistio / bucket.total) * 100);
+  });
+}
+
+// role="img" + aria-label con el resumen (primer/último valor): cada
+// barra individual es decorativa (::before/title no llega de forma
+// confiable a lectores de pantalla), así que el resumen en el
+// contenedor es la única vía accesible de verdad para esta gráfica.
+function construirTendenciaBarrasAsistencia(valoresSemanales) {
+  const contenedor = document.createElement("div");
+  contenedor.className = "asistencia-kpi__barras";
+  contenedor.setAttribute("role", "img");
+  contenedor.setAttribute(
+    "aria-label",
+    "Tendencia semanal de asistencia del grupo: de " +
+      valoresSemanales[0] +
+      "% a " +
+      valoresSemanales[valoresSemanales.length - 1] +
+      "%"
+  );
+
+  valoresSemanales.forEach((valor, indice) => {
+    const barra = document.createElement("div");
+    barra.className = "asistencia-kpi__barra";
+    barra.style.height = Math.max(4, valor) + "%";
+    barra.title = "Semana " + (indice + 1) + ": " + valor + "%";
+    contenedor.appendChild(barra);
+  });
+
+  return contenedor;
+}
+
+// % de asistencia del grupo = promedio de pctAsistencia por alumno
+// (mismo criterio que ya usan promedioGeneral/promedioTarde en
+// renderizarKPIsDashboard/renderizarTasaEntregaDashboard: promedio de
+// valores por alumno, no un agregado global de filas), excluyendo a
+// quien no tenga ningún día registrado todavía (pctAsistencia null).
+async function renderizarAsistenciaKPIDashboard(trimestre, idsAlumnos) {
+  const contenedor = document.getElementById("dashboard-asistencia-kpi");
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  const pctsValidos = filasAsistenciaDashboard.map((fila) => fila.pctAsistencia).filter((valor) => valor != null);
+  const pctGrupo =
+    pctsValidos.length === 0 ? null : Math.round(pctsValidos.reduce((suma, valor) => suma + valor, 0) / pctsValidos.length);
+
+  const valor = document.createElement("div");
+  valor.className = "kpi-tarjeta__valor";
+  valor.textContent = pctGrupo == null ? "—" : pctGrupo + "%";
+  contenedor.appendChild(valor);
+
+  const tendenciaSemanal = await obtenerTendenciaSemanalAsistencia(trimestre, idsAlumnos);
+  contenedor.appendChild(
+    tendenciaSemanal.length >= 3
+      ? construirTendenciaBarrasAsistencia(tendenciaSemanal)
+      : construirMensajeTendenciaPendiente(true)
+  );
+}
+
+// Ambos grupos SIEMPRE, sin importar el filtro Grupo del dashboard (ver
+// comentario del HTML junto a #dashboard-aviso-asistencia): un docente
+// filtrado en 3°C no debe perderse el aviso de que 3°E, que hoy también
+// tiene clase, sigue sin ningún registro. "Parcialmente guardado" ya
+// cuenta como registrado -- basta con que UN alumno tenga estado real
+// ese día para que el grupo salga de la lista (ver obtenerAsistenciaPorFecha,
+// que nunca reporta "falta" por default, así que "algo distinto de
+// sin_registrar" es la única señal confiable de que ya se guardó).
+async function obtenerGruposSinRegistrarHoy() {
+  const hoy = formatearClaveFecha(new Date());
+  const sinRegistrar = [];
+
+  for (const grupo of ["3C", "3E"]) {
+    if (!esDiaDeClasePara(grupo, hoy)) continue;
+    const filas = await obtenerAsistenciaPorFecha(grupo, hoy);
+    const hayRegistroReal = filas.some((fila) => fila.estado !== "sin_registrar");
+    if (!hayRegistroReal) sinRegistrar.push(grupo);
+  }
+
+  return sinRegistrar;
+}
+
+function renderizarAvisoAsistenciaHoy(gruposSinRegistrar) {
+  const aviso = document.getElementById("dashboard-aviso-asistencia");
+  if (!aviso) return;
+
+  if (gruposSinRegistrar.length === 0) {
+    aviso.hidden = true;
+    aviso.innerHTML = "";
+    return;
+  }
+
+  aviso.hidden = false;
+  aviso.className = "formulario__advertencia";
+  aviso.textContent = "⚠️ No has registrado asistencia de hoy para " + gruposSinRegistrar.map(textoGrupo).join(" y ") + ".";
+}
+
+// Mismo mecanismo que generarVistaImpresionProgreso() (progreso.html):
+// arma #plantilla-impresion-asistencia en el momento y llama a
+// window.print() -- ninguna generación de PDF en servidor. Imprime la
+// tabla TAL CUAL está filtrada en pantalla (mismos chips Todos/En
+// seguimiento/Asistencia perfecta), para que el papel refleje justo lo
+// que el docente está viendo.
+function generarVistaImpresionAsistencia() {
+  const contenedor = document.getElementById("plantilla-impresion-asistencia");
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  const encabezado = document.createElement("div");
+  encabezado.className = "impresion-progreso__encabezado";
+
+  const titulo = document.createElement("h2");
+  titulo.textContent =
+    "Reporte de asistencia — " + textoGrupo(estadoDashboard.grupo) + " · Trimestre " + estadoDashboard.trimestre;
+  const fecha = document.createElement("p");
+  fecha.textContent =
+    "Generado el " + new Date().toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" });
+  encabezado.append(titulo, fecha);
+  contenedor.appendChild(encabezado);
+
+  const tabla = document.createElement("table");
+  tabla.className = "impresion-progreso__tabla";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  ENCABEZADOS_TABLA_ASISTENCIA.forEach((texto) => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  filasAsistenciaFiltradas().forEach((fila) => {
+    const tr = document.createElement("tr");
+    valoresFilaAsistencia(fila).forEach((valor) => {
+      const td = document.createElement("td");
+      td.textContent = valor;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  tabla.appendChild(tbody);
+  contenedor.appendChild(tabla);
+
+  document.body.classList.add("dashboard--imprimiendo-asistencia");
+  window.print();
+}
+
+function activarImpresionAsistenciaDashboard() {
+  const boton = document.getElementById("dashboard-asistencia-boton-imprimir");
+  if (!boton) return;
+
+  boton.addEventListener("click", generarVistaImpresionAsistencia);
+  window.addEventListener("afterprint", () => {
+    document.body.classList.remove("dashboard--imprimiendo-asistencia");
+  });
+}
+
 async function renderizarDashboard() {
   const contenedorKpis = document.getElementById("dashboard-kpis");
   if (!contenedorKpis) return;
@@ -18392,6 +18723,13 @@ async function renderizarDashboard() {
   renderizarTasaEntregaDashboard(resumenAlumnos);
   renderizarTop5RiesgoDashboard(resumenAlumnos);
   renderizarPuntualidadPorTipoDashboard(resumenAlumnos);
+
+  filasAsistenciaDashboard = await construirFilasAsistenciaDashboard(resumenAlumnos, trimestre);
+  renderizarTablaAsistenciaDashboard();
+  await renderizarAsistenciaKPIDashboard(trimestre, idsAlumnos);
+  // Ambos grupos, no solo el filtrado arriba -- ver la nota junto a
+  // obtenerGruposSinRegistrarHoy().
+  renderizarAvisoAsistenciaHoy(await obtenerGruposSinRegistrarHoy());
 
   const [resumenPorGrupo, evolucionSecuencia, actividadReciente] = await Promise.all([
     construirResumenPorGrupoDashboard(trimestre, resumenAlumnos, grupo),
@@ -18421,6 +18759,8 @@ async function inicializarModuloDashboard() {
   selectGrupo.value = estadoDashboard.grupo;
 
   renderizarCronogramaDashboard();
+  activarFiltrosAsistenciaDashboard();
+  activarImpresionAsistenciaDashboard();
   await renderizarDashboard();
 
   selectTrimestre.addEventListener("change", async () => {
