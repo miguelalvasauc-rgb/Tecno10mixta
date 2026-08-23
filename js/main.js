@@ -13788,6 +13788,18 @@ async function renderizarListaAsistencia() {
 }
 
 async function guardarAsistenciaDesdeUI() {
+  // demoModeActivo() también se revisa aquí (no solo dentro de
+  // guardarAsistenciaLote): esta función, tras el await, siempre muestra
+  // "Asistencia guardada" y refresca la lista — si guardarAsistenciaLote
+  // solo abriera el modal de demo y retornara, este código igual
+  // ejecutaría ambas cosas, y renderizarListaAsistencia() revertiría los
+  // chips que el docente acababa de tocar a su estado original de
+  // DEMO_ASISTENCIA (parecería que "se guardó" y luego se deshizo solo).
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
+
   const contenedor = document.getElementById("asistencia-lista-contenedor");
   const botonGuardar = document.getElementById("asistencia-boton-guardar");
   const gruposChips = Array.from(contenedor.querySelectorAll(".asistencia-chips"));
@@ -14280,6 +14292,11 @@ async function obtenerAsistenciaPorFecha(grupo, fechaISO) {
 // "asistencia" no tiene columna grupo, ya viaja implícito vía alumno_id) --
 // se recibe solo para que el llamador no tenga que reconstruir el batch.
 async function guardarAsistenciaLote(grupo, fechaISO, trimestre, registros) {
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
+
   const {
     data: { session },
   } = await clienteSupabase.auth.getSession();
