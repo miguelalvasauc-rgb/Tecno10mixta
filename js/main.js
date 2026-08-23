@@ -4149,6 +4149,61 @@ function crearBotonVerDetalle(item) {
   return boton;
 }
 
+// Anima la salida de cualquier <dialog> del sitio antes de cerrarlo de
+// verdad: un <dialog> no anima su propio close() nativo (deja de
+// renderizarse de golpe), así que se aplica "dialog--cerrando" —mismo
+// estado que ya usa @starting-style para la entrada, ver css/style.css—
+// y se espera a que la transición termine antes de llamar a .close().
+// Con prefers-reduced-motion activo esa transición no existe (mismo gate
+// que el resto del sitio), así que transitionend nunca llegaría a
+// disparar: se detecta aquí y se cierra directo, sin esperar. Reutilizada
+// por los 15 <dialog> del sitio en vez de repetir el patrón en cada uno.
+// Devuelve una promesa por si algún llamador necesita esperar a que el
+// dialog termine de cerrarse antes de abrir otro — los 7 sitios que hoy
+// abren #modal-demo o #modal-tema justo después de cerrar el suyo
+// (modo demo en los formularios del admin, y "Ver tema" del modal de
+// celebración) le hacen await; el resto no lo necesita.
+function cerrarDialogoAnimado(dialogo) {
+  return new Promise((resolve) => {
+    if (!dialogo || !dialogo.open) {
+      resolve();
+      return;
+    }
+
+    const prefiereMovimientoReducido = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (prefiereMovimientoReducido) {
+      dialogo.close();
+      resolve();
+      return;
+    }
+
+    let resuelto = false;
+    const terminar = () => {
+      if (resuelto) return;
+      resuelto = true;
+      dialogo.removeEventListener("transitionend", alTerminarTransicion);
+      dialogo.classList.remove("dialog--cerrando");
+      dialogo.close();
+      resolve();
+    };
+    const alTerminarTransicion = (evento) => {
+      if (evento.target !== dialogo) return;
+      terminar();
+    };
+
+    dialogo.addEventListener("transitionend", alTerminarTransicion);
+    // Salvavidas: si por lo que sea transitionend no llega (ej. algún
+    // navegador que no dispara el evento como se espera), el dialog no
+    // debe quedar atorado sin cerrar — 250ms cubre de sobra los 160ms
+    // declarados en css/style.css.
+    setTimeout(terminar, 250);
+
+    dialogo.classList.add("dialog--cerrando");
+  });
+}
+
 // Llena el <dialog id="modal-detalle"> de la página actual con el
 // título y el texto largo del item, y lo muestra.
 // "detalleCompleto" es HTML de confianza (escrito a mano en DATOS_*,
@@ -4208,11 +4263,11 @@ function activarCierreModalDetalle() {
 
   const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
   if (botonCerrar) {
-    botonCerrar.addEventListener("click", () => modal.close());
+    botonCerrar.addEventListener("click", () => cerrarDialogoAnimado(modal));
   }
 
   modal.addEventListener("click", (evento) => {
-    if (evento.target === modal) modal.close();
+    if (evento.target === modal) cerrarDialogoAnimado(modal);
   });
 
   // Quita la variante de ancho de abrirModalImagenInfografia() (ver
@@ -4244,11 +4299,11 @@ function activarCierreModalDemo() {
 
   const botonCerrar = modal.querySelector(".modal-demo__cerrar");
   if (botonCerrar) {
-    botonCerrar.addEventListener("click", () => modal.close());
+    botonCerrar.addEventListener("click", () => cerrarDialogoAnimado(modal));
   }
 
   modal.addEventListener("click", (evento) => {
-    if (evento.target === modal) modal.close();
+    if (evento.target === modal) cerrarDialogoAnimado(modal);
   });
 }
 
@@ -7710,7 +7765,7 @@ async function seleccionarTema(tema) {
   aplicarTema(tema);
 
   const modal = document.getElementById("modal-tema");
-  if (modal?.open) modal.close();
+  if (modal?.open) cerrarDialogoAnimado(modal);
 
   // La sección "🎨 Personalización" de cuenta.html (a diferencia del
   // modal, que simplemente se cierra) se queda visible después de
@@ -7899,16 +7954,16 @@ function activarModalCelebracionTema() {
   const botonCerrar = modal.querySelector(".modal-celebracion-tema__cerrar");
   const botonCerrarSecundario = document.getElementById("modal-celebracion-tema-cerrar-secundario");
   [botonCerrar, botonCerrarSecundario].forEach((boton) => {
-    boton?.addEventListener("click", () => modal.close());
+    boton?.addEventListener("click", () => cerrarDialogoAnimado(modal));
   });
 
   modal.addEventListener("click", (evento) => {
-    if (evento.target === modal) modal.close();
+    if (evento.target === modal) cerrarDialogoAnimado(modal);
   });
 
   const botonVer = document.getElementById("modal-celebracion-tema-ver");
-  botonVer?.addEventListener("click", () => {
-    modal.close();
+  botonVer?.addEventListener("click", async () => {
+    await cerrarDialogoAnimado(modal);
     abrirSelectorTemaDesdeCelebracion();
   });
 }
@@ -8484,9 +8539,9 @@ function activarSelectorTema() {
     });
   });
 
-  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+  if (botonCerrar) botonCerrar.addEventListener("click", () => cerrarDialogoAnimado(modal));
   modal.addEventListener("click", (evento) => {
-    if (evento.target === modal) modal.close();
+    if (evento.target === modal) cerrarDialogoAnimado(modal);
   });
 }
 
@@ -11969,10 +12024,10 @@ function activarCierreModalHistorialCalificacion() {
   if (!modal) return;
 
   const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
-  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+  if (botonCerrar) botonCerrar.addEventListener("click", () => cerrarDialogoAnimado(modal));
 
   modal.addEventListener("click", (evento) => {
-    if (evento.target === modal) modal.close();
+    if (evento.target === modal) cerrarDialogoAnimado(modal);
   });
 }
 
@@ -12102,7 +12157,7 @@ function activarFormularioEditarEntrega() {
       // Cierra este dialog antes de abrir modal-demo: sin esto, los dos
       // <dialog> quedarían apilados uno encima del otro (ambos usan
       // showModal(), que no cierra el anterior solo).
-      modal.close();
+      await cerrarDialogoAnimado(modal);
       abrirModalDemo();
       return;
     }
@@ -12126,7 +12181,7 @@ function activarFormularioEditarEntrega() {
         fecha: campoFecha.value,
         nota: campoNota.value.trim(),
       });
-      modal.close();
+      cerrarDialogoAnimado(modal);
       alGuardar(nuevaFila);
     } catch (err) {
       // No se cierra el dialog ni se pierde lo que el docente ya
@@ -12138,12 +12193,12 @@ function activarFormularioEditarEntrega() {
     }
   });
 
-  document.getElementById("editar-entrega-cancelar").addEventListener("click", () => modal.close());
+  document.getElementById("editar-entrega-cancelar").addEventListener("click", () => cerrarDialogoAnimado(modal));
 
   document.getElementById("editar-entrega-deshacer").addEventListener("click", async () => {
     if (!contextoEdicionEntrega?.filaProgreso) return;
     if (demoModeActivo()) {
-      modal.close();
+      await cerrarDialogoAnimado(modal);
       abrirModalDemo();
       return;
     }
@@ -12155,7 +12210,7 @@ function activarFormularioEditarEntrega() {
 
     try {
       await eliminarEntregaManual(contextoEdicionEntrega.filaProgreso);
-      modal.close();
+      cerrarDialogoAnimado(modal);
       contextoEdicionEntrega.alDeshacer();
     } catch (err) {
       error.textContent = "No se pudo deshacer: " + (err?.message || "intenta de nuevo.");
@@ -12164,10 +12219,10 @@ function activarFormularioEditarEntrega() {
   });
 
   const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
-  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+  if (botonCerrar) botonCerrar.addEventListener("click", () => cerrarDialogoAnimado(modal));
 
   modal.addEventListener("click", (evento) => {
-    if (evento.target === modal) modal.close();
+    if (evento.target === modal) cerrarDialogoAnimado(modal);
   });
 }
 
@@ -13103,10 +13158,10 @@ function activarCierreModalCodigoInvitacion() {
   if (!modal) return;
 
   const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
-  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+  if (botonCerrar) botonCerrar.addEventListener("click", () => cerrarDialogoAnimado(modal));
 
   modal.addEventListener("click", (evento) => {
-    if (evento.target === modal) modal.close();
+    if (evento.target === modal) cerrarDialogoAnimado(modal);
   });
 }
 
@@ -13361,7 +13416,7 @@ function activarFormularioNuevoAlumno() {
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     if (demoModeActivo()) {
-      modal.close();
+      await cerrarDialogoAnimado(modal);
       abrirModalDemo();
       return;
     }
@@ -13415,7 +13470,7 @@ function activarFormularioNuevoAlumno() {
         .single();
       if (errorInsert) throw errorInsert;
 
-      modal.close();
+      cerrarDialogoAnimado(modal);
       formulario.reset();
       await renderizarTablaAlumnos();
       mostrarModalCodigoInvitacion(data, codigo);
@@ -13429,19 +13484,19 @@ function activarFormularioNuevoAlumno() {
 
   document.getElementById("nuevo-alumno-cancelar").addEventListener("click", () => {
     formulario.reset();
-    modal.close();
+    cerrarDialogoAnimado(modal);
   });
 
   const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
   if (botonCerrar) {
     botonCerrar.addEventListener("click", () => {
       formulario.reset();
-      modal.close();
+      cerrarDialogoAnimado(modal);
     });
   }
 
   modal.addEventListener("click", (evento) => {
-    if (evento.target === modal) modal.close();
+    if (evento.target === modal) cerrarDialogoAnimado(modal);
   });
 }
 
@@ -13863,7 +13918,7 @@ function activarFormularioAviso() {
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     if (demoModeActivo()) {
-      modal.close();
+      await cerrarDialogoAnimado(modal);
       abrirModalDemo();
       return;
     }
@@ -13924,7 +13979,7 @@ function activarFormularioAviso() {
           .single();
         if (errorUpdate) throw errorUpdate;
 
-        modal.close();
+        cerrarDialogoAnimado(modal);
         formulario.reset();
         avisoEditando.fila.replaceWith(crearFilaAviso(data));
         avisoEditando = null;
@@ -13932,7 +13987,7 @@ function activarFormularioAviso() {
         const { error: errorInsert } = await clienteSupabase.from("avisos").insert(payload);
         if (errorInsert) throw errorInsert;
 
-        modal.close();
+        cerrarDialogoAnimado(modal);
         formulario.reset();
         await renderizarTablaAvisos();
       }
@@ -13946,19 +14001,19 @@ function activarFormularioAviso() {
 
   document.getElementById("aviso-cancelar").addEventListener("click", () => {
     formulario.reset();
-    modal.close();
+    cerrarDialogoAnimado(modal);
   });
 
   const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
   if (botonCerrar) {
     botonCerrar.addEventListener("click", () => {
       formulario.reset();
-      modal.close();
+      cerrarDialogoAnimado(modal);
     });
   }
 
   modal.addEventListener("click", (evento) => {
-    if (evento.target === modal) modal.close();
+    if (evento.target === modal) cerrarDialogoAnimado(modal);
   });
 }
 
@@ -14261,7 +14316,7 @@ function mostrarPopupBienvenida(datos, onCerrar) {
 
   const botonCerrar = document.getElementById("popup-bienvenida-cerrar");
   botonCerrar.onclick = () => {
-    dialogo.close();
+    cerrarDialogoAnimado(dialogo);
     if (onCerrar) onCerrar();
   };
 
@@ -14611,7 +14666,7 @@ function activarFormularioTrimestre() {
     if (nuevoPendiente === null) return;
 
     const nuevoTrimestre = nuevoPendiente;
-    modal.close();
+    cerrarDialogoAnimado(modal);
     await ejecutarCambioTrimestre(nuevoTrimestre);
   });
 
@@ -14621,21 +14676,21 @@ function activarFormularioTrimestre() {
   // del <dialog> (Escape nativo sí lo dispara, así que ese caso también
   // queda cubierto por el listener de abajo).
   document.getElementById("trimestre-confirmar-cancelar").addEventListener("click", () => {
-    modal.close();
+    cerrarDialogoAnimado(modal);
     actualizarUITrimestreModulo();
   });
 
   const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
   if (botonCerrar) {
     botonCerrar.addEventListener("click", () => {
-      modal.close();
+      cerrarDialogoAnimado(modal);
       actualizarUITrimestreModulo();
     });
   }
 
   modal.addEventListener("click", (evento) => {
     if (evento.target === modal) {
-      modal.close();
+      cerrarDialogoAnimado(modal);
       actualizarUITrimestreModulo();
     }
   });
@@ -15421,10 +15476,10 @@ function activarFormularioEditarFecha() {
   const formulario = document.getElementById("formulario-editar-fecha");
   if (!modal || !formulario) return;
 
-  formulario.addEventListener("submit", (evento) => {
+  formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     if (demoModeActivo()) {
-      modal.close();
+      await cerrarDialogoAnimado(modal);
       abrirModalDemo();
       return;
     }
@@ -15440,7 +15495,7 @@ function activarFormularioEditarFecha() {
     });
 
     if (cambios.length === 0) {
-      modal.close();
+      cerrarDialogoAnimado(modal);
       fechaEditando = null;
       return;
     }
@@ -15456,7 +15511,7 @@ function activarFormularioEditarFecha() {
 
   document.getElementById("fechas-editar-cancelar").addEventListener("click", () => {
     formulario.reset();
-    modal.close();
+    cerrarDialogoAnimado(modal);
     fechaEditando = null;
   });
 
@@ -15464,7 +15519,7 @@ function activarFormularioEditarFecha() {
   if (botonCerrar) {
     botonCerrar.addEventListener("click", () => {
       formulario.reset();
-      modal.close();
+      cerrarDialogoAnimado(modal);
       fechaEditando = null;
     });
   }
@@ -15472,7 +15527,7 @@ function activarFormularioEditarFecha() {
   modal.addEventListener("click", (evento) => {
     if (evento.target === modal) {
       formulario.reset();
-      modal.close();
+      cerrarDialogoAnimado(modal);
       fechaEditando = null;
     }
   });
@@ -15522,8 +15577,8 @@ function activarConfirmarFecha() {
       await guardarCambiosFecha();
 
       const { item, campoFecha, fila } = fechaEditando;
-      modalConfirmar.close();
-      modalEditar.close();
+      cerrarDialogoAnimado(modalConfirmar);
+      cerrarDialogoAnimado(modalEditar);
       document.getElementById("formulario-editar-fecha").reset();
       await refrescarFilaFecha(item.id, campoFecha, fila);
       fechaEditando = null;
@@ -15535,13 +15590,13 @@ function activarConfirmarFecha() {
     }
   });
 
-  document.getElementById("fechas-confirmar-cancelar").addEventListener("click", () => modalConfirmar.close());
+  document.getElementById("fechas-confirmar-cancelar").addEventListener("click", () => cerrarDialogoAnimado(modalConfirmar));
 
   const botonCerrar = modalConfirmar.querySelector(".modal-detalle__cerrar");
-  if (botonCerrar) botonCerrar.addEventListener("click", () => modalConfirmar.close());
+  if (botonCerrar) botonCerrar.addEventListener("click", () => cerrarDialogoAnimado(modalConfirmar));
 
   modalConfirmar.addEventListener("click", (evento) => {
-    if (evento.target === modalConfirmar) modalConfirmar.close();
+    if (evento.target === modalConfirmar) cerrarDialogoAnimado(modalConfirmar);
   });
 }
 
@@ -15680,21 +15735,21 @@ function activarRecorridoFechas() {
   });
 
   document.getElementById("fechas-recorrido-cancelar").addEventListener("click", () => {
-    modal.close();
+    cerrarDialogoAnimado(modal);
     recorridoPendiente = null;
   });
 
   const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
   if (botonCerrar) {
     botonCerrar.addEventListener("click", () => {
-      modal.close();
+      cerrarDialogoAnimado(modal);
       recorridoPendiente = null;
     });
   }
 
   modal.addEventListener("click", (evento) => {
     if (evento.target === modal) {
-      modal.close();
+      cerrarDialogoAnimado(modal);
       recorridoPendiente = null;
     }
   });
@@ -15748,7 +15803,7 @@ async function aplicarRecorridoFechas() {
   // diferencia de refrescarFilaFecha en la edición individual, aquí
   // cambiaron todos los items visibles, no solo uno).
   if (fallidas.length === 0) {
-    document.getElementById("modal-recorrido-fechas").close();
+    cerrarDialogoAnimado(document.getElementById("modal-recorrido-fechas"));
     document.getElementById("fechas-recorrido-dias").value = "";
     recorridoPendiente = null;
     await renderizarTablaFechas();
@@ -16239,7 +16294,7 @@ function activarFormularioCalificar() {
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     if (demoModeActivo()) {
-      modal.close();
+      await cerrarDialogoAnimado(modal);
       abrirModalDemo();
       return;
     }
@@ -16269,7 +16324,7 @@ function activarFormularioCalificar() {
     botonConfirmar.disabled = true;
     try {
       const nuevaFila = await guardarCalificacion(filaProgreso, valor);
-      modal.close();
+      cerrarDialogoAnimado(modal);
       alGuardar(nuevaFila);
     } catch (err) {
       error.textContent = "No se pudo guardar: " + (err?.message || "intenta de nuevo.");
@@ -16279,13 +16334,13 @@ function activarFormularioCalificar() {
     }
   });
 
-  document.getElementById("calificar-cancelar").addEventListener("click", () => modal.close());
+  document.getElementById("calificar-cancelar").addEventListener("click", () => cerrarDialogoAnimado(modal));
 
   const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
-  if (botonCerrar) botonCerrar.addEventListener("click", () => modal.close());
+  if (botonCerrar) botonCerrar.addEventListener("click", () => cerrarDialogoAnimado(modal));
 
   modal.addEventListener("click", (evento) => {
-    if (evento.target === modal) modal.close();
+    if (evento.target === modal) cerrarDialogoAnimado(modal);
   });
 }
 

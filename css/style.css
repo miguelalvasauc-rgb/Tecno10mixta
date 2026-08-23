@@ -1623,6 +1623,57 @@ summary {
   }
 }
 
+/* Auditoría de animaciones (2026-08-22), punto 2: los 15 <dialog> del
+   sitio abrían/cerraban de golpe, sin transition/opacity/transform. Regla
+   compartida por los 15 (ver mejoras-diseno-animaciones.md) — mismo
+   criterio de "un solo lugar" que la regla de :active de arriba.
+   @starting-style es el mecanismo NATIVO de entrada: sin fallback JS para
+   navegadores que no lo soportan (mismo criterio que ya usa el sitio en
+   @supports (animation-timeline: view())) — ahí simplemente no hay
+   animación de entrada, el <dialog> aparece directo, nunca roto.
+   La SALIDA sí necesita JS (cerrarDialogoAnimado() en main.js): un
+   <dialog> no anima su propio close() nativo (deja de renderizarse de
+   golpe), así que esa función aplica esta misma clase "cerrando" —
+   reutiliza el estado "no abierto" de abajo — y espera a que la
+   transición termine antes de llamar a .close() de verdad. */
+@media (prefers-reduced-motion: no-preference) {
+  dialog {
+    transform-origin: center;
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 200ms ease-out, transform 200ms ease-out;
+  }
+
+  @starting-style {
+    dialog[open] {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  dialog.dialog--cerrando {
+    opacity: 0;
+    transform: scale(0.96);
+    transition-duration: 160ms;
+  }
+
+  dialog::backdrop {
+    opacity: 1;
+    transition: opacity 200ms ease-out;
+  }
+
+  @starting-style {
+    dialog[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  dialog.dialog--cerrando::backdrop {
+    opacity: 0;
+    transition-duration: 160ms;
+  }
+}
+
 /* Excepción: el header (.encabezado) es navy en AMBOS temas, así que un
    anillo navy ahí sería invisible (1:1 de contraste). Sus controles
    (selector de grupo, toggle de tema, pestañas de trimestre, botón de
