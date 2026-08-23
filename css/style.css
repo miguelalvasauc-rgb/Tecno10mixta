@@ -1615,7 +1615,10 @@ summary {
   .tarjeta-trimestre:active,
   .tarjeta-temario:active,
   .tarjeta-infografia:active,
-  summary:active {
+  summary:active,
+  .modal-editar-entrega__confirmar:active,
+  .modal-detalle__cerrar:active,
+  .evidencia-preview__quitar:active {
     transform: scale(0.97);
   }
 }
