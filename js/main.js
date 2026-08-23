@@ -6137,6 +6137,94 @@ async function construirTarjetaRachaPuntualidad() {
   return tarjeta;
 }
 
+// Resumen de asistencia dentro de #progreso-resumen-general: tarjeta de
+// conteo (presentes/faltas/retardos/justificadas) + insignia de racha.
+// Mismo gate de página que construirTarjetaRachaPuntualidad()/
+// construirTarjetaNivel (#progreso-detalle-trimestres: solo progreso.html),
+// y UNA sola llamada a calcularResumenAsistencia() para las 2 piezas, para
+// no duplicar la consulta a Supabase. perfilActivoCache no trae el id
+// (solo nombre/grupo, ver sincronizarPerfilActivo), así que el auth.uid()
+// se resuelve aquí con getSession(), mismo patrón ya usado en
+// escribirValorConfigSitio()/guardarAsistenciaLote(). { tarjetaConteo:
+// null, tarjetaRacha: null } si no aplica (fuera de progreso.html, sin
+// sesión) o si el alumno no tiene ningún día de asistencia registrado
+// todavía (evita una tarjeta en blanco con puros ceros y una insignia
+// "0 de 3" sin sentido).
+async function construirResumenAsistenciaProgreso(trimestre) {
+  const vacio = { tarjetaConteo: null, tarjetaRacha: null };
+  if (!document.getElementById("progreso-detalle-trimestres")) return vacio;
+
+  const {
+    data: { session },
+  } = await clienteSupabase.auth.getSession();
+  if (!session) return vacio;
+
+  const resumen = await calcularResumenAsistencia(session.user.id, trimestre);
+  const totalRegistros = resumen
+    ? Object.values(resumen.conteoPorEstado).reduce((suma, cantidad) => suma + cantidad, 0)
+    : 0;
+  if (totalRegistros === 0) return vacio;
+
+  const tarjetaConteo = document.createElement("div");
+  tarjetaConteo.className = "resumen-asistencia";
+
+  const titulo = document.createElement("p");
+  titulo.className = "resumen-asistencia__titulo";
+  titulo.textContent = "📋 Asistencia — Trimestre " + trimestre;
+  tarjetaConteo.appendChild(titulo);
+
+  const grid = document.createElement("div");
+  grid.className = "resumen-asistencia__grid";
+  [
+    ["presente", "Presentes"],
+    ["falta", "Faltas"],
+    ["retardo", "Retardos"],
+    ["justificada", "Justificadas"],
+  ].forEach(([clave, etiqueta]) => {
+    const stat = document.createElement("div");
+    stat.className = "resumen-asistencia__stat";
+
+    const valor = document.createElement("span");
+    valor.className = "resumen-asistencia__valor";
+    valor.textContent = String(resumen.conteoPorEstado[clave] || 0);
+
+    const etiquetaEl = document.createElement("span");
+    etiquetaEl.className = "resumen-asistencia__etiqueta";
+    etiquetaEl.textContent = etiqueta;
+
+    stat.append(valor, etiquetaEl);
+    grid.appendChild(stat);
+  });
+  tarjetaConteo.appendChild(grid);
+
+  // Mismo umbral (racha >= 3) y mismo estilo visual (.insignia-racha) que
+  // construirTarjetaRachaPuntualidad(), pero para asistencia -- iconos
+  // distintos (🎯 en vez de 🔥) para que las 2 insignias no se lean como
+  // duplicadas al vivir una junto a la otra. racha ya viene calculada por
+  // calcularResumenAsistencia() (solo corta con falta/retardo, ver esa
+  // función), no hace falta recalcularla aquí.
+  const desbloqueada = resumen.racha >= 3;
+  const tarjetaRacha = document.createElement("div");
+  tarjetaRacha.className = "insignia-racha";
+  tarjetaRacha.dataset.estado = desbloqueada ? "ganada" : "bloqueada";
+  if (desbloqueada) {
+    tarjetaRacha.classList.add("borde-animado-acento", "borde-animado-acento--compacto");
+  }
+
+  const icono = document.createElement("span");
+  icono.className = "insignia-racha__icono";
+  icono.setAttribute("aria-hidden", "true");
+  icono.textContent = desbloqueada ? "🎯" : "🔒";
+
+  const texto = document.createElement("span");
+  texto.className = "insignia-racha__texto";
+  texto.textContent = desbloqueada ? "Racha de asistencia" : resumen.racha + " de 3 asistencias seguidas";
+
+  tarjetaRacha.append(icono, texto);
+
+  return { tarjetaConteo, tarjetaRacha };
+}
+
 // "Nivel": gamificación visual sobre el % de avance general del ciclo
 // (el MISMO porcentaje que ya calculan renderizarProgreso()/
 // renderizarProgresoDetallado() para su barra de progreso — no una
@@ -6277,6 +6365,8 @@ async function renderizarProgreso() {
   // semáforo. Con la promesa ya resuelta aquí, todo el tramo de abajo queda
   // como un solo bloque síncrono, sin punto de interleaving posible.
   const tarjetaRacha = await construirTarjetaRachaPuntualidad();
+  const { tarjetaConteo: tarjetaConteoAsistencia, tarjetaRacha: tarjetaRachaAsistencia } =
+    await construirResumenAsistenciaProgreso(String(trimestreDesbloqueado));
 
   const porcentaje = totalGeneral === 0 ? 0 : Math.round((completadasGeneral / totalGeneral) * 100);
 
@@ -6335,6 +6425,9 @@ async function renderizarProgreso() {
 
     const tarjetaNivel = construirTarjetaNivel(porcentaje);
     if (tarjetaNivel) resumen.appendChild(tarjetaNivel);
+
+    if (tarjetaConteoAsistencia) resumen.appendChild(tarjetaConteoAsistencia);
+    if (tarjetaRachaAsistencia) resumen.appendChild(tarjetaRachaAsistencia);
   }
 
   const bloques = document.getElementById("progreso-por-trimestre");
@@ -6689,6 +6782,8 @@ async function renderizarProgresoDetallado() {
   // queda como un solo bloque síncrono, sin hueco donde un renderizarTodo()
   // concurrente pueda intercalar su propio innerHTML="" y duplicar contenido.
   const tarjetaRacha = await construirTarjetaRachaPuntualidad();
+  const { tarjetaConteo: tarjetaConteoAsistencia, tarjetaRacha: tarjetaRachaAsistencia } =
+    await construirResumenAsistenciaProgreso(String(trimestreDesbloqueado));
 
   const porcentaje = totalGeneral === 0 ? 0 : Math.round((completadasGeneral / totalGeneral) * 100);
 
@@ -6723,6 +6818,9 @@ async function renderizarProgresoDetallado() {
 
     const tarjetaNivel = construirTarjetaNivel(porcentaje);
     if (tarjetaNivel) resumen.appendChild(tarjetaNivel);
+
+    if (tarjetaConteoAsistencia) resumen.appendChild(tarjetaConteoAsistencia);
+    if (tarjetaRachaAsistencia) resumen.appendChild(tarjetaRachaAsistencia);
   }
 
   // Semáforo de pendientes + próxima entrega (guard de "solo progreso.html"

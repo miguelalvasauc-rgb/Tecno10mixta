@@ -3836,6 +3836,70 @@ summary {
   padding: 0.1rem 0.5rem;
 }
 
+/* Tarjeta de conteo de asistencia (solo progreso.html, ver
+   construirResumenAsistenciaProgreso() en js/main.js) — mismo borde/
+   padding/radio que .insignia-racha (misma familia visual dentro de
+   #progreso-resumen-general), pero de ancho completo porque contiene un
+   grid de 4 números en vez de un ícono + una línea de texto. La insignia
+   de racha de asistencia que la acompaña NO tiene clase propia: reutiliza
+   .insignia-racha tal cual (mismo estilo visual pedido, solo cambia
+   ícono/texto/umbral vía JS). */
+.resumen-asistencia {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+}
+
+.resumen-asistencia__titulo {
+  margin: 0 0 0.6rem;
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 700;
+  color: var(--color-texto-suave);
+}
+
+.resumen-asistencia__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+}
+
+@media (min-width: 640px) {
+  .resumen-asistencia__grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.resumen-asistencia__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  text-align: center;
+}
+
+/* Mismo criterio ya validado AA en .kpi-tarjeta__valor: navy por defecto
+   falla AA como acento sobre superficie clara en modo claro (~2.5:1),
+   turquesa solo se habilita en oscuro. */
+.resumen-asistencia__valor {
+  font-family: "Quicksand", sans-serif;
+  font-size: var(--tamano-fuente-titular);
+  font-weight: 700;
+  color: var(--color-primario);
+  line-height: 1.1;
+}
+
+:root[data-theme="oscuro"] .resumen-asistencia__valor {
+  color: var(--color-turquesa);
+}
+
+.resumen-asistencia__etiqueta {
+  font-size: var(--tamano-fuente-meta-micro);
+  color: var(--color-texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .indicador-progreso {
   display: flex;
   align-items: center;
