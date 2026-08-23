@@ -13470,21 +13470,24 @@ async function inicializarModuloAlumnos() {
 /* ---------------------------------------------------------
    Módulo "Tomar asistencia" (tab-asistencia)
 
-   Roster real (alumnos_registro) del grupo/fecha elegidos, con un botón
-   grande por alumno que cicla por los 5 estados (ver
-   CICLO_ESTADOS_ASISTENCIA); "Guardar asistencia" persiste el batch
-   completo de una sola vez vía guardarAsistenciaLote(). Los alumnos "sin
-   cuenta" (ver nota de cabecera de obtenerAsistenciaPorFecha: sin
-   auth_user_id no hay id utilizable como asistencia.alumno_id) no reciben
-   botón -- se muestran con el mismo badge de 4 estados que ya usa el
-   módulo Alumnos (estadoCuentaAlumno()) y quedan fuera del batch a
-   guardar, mismo criterio que ya usa crearFilaAlumnoCalificacion() en
-   Calificación.
+   Roster real (alumnos_registro) del grupo/fecha elegidos, con un grupo
+   de 5 chips por alumno (ver ESTADOS_ASISTENCIA_CHIPS) -- selección
+   directa, sin ciclar: tocar cualquier chip lo activa de inmediato
+   (actualización optimista en el DOM, ver seleccionarChipAsistencia());
+   "Guardar asistencia" es quien persiste el batch completo de una sola
+   vez vía guardarAsistenciaLote(). Los alumnos "sin cuenta" (ver nota de
+   cabecera de obtenerAsistenciaPorFecha: sin auth_user_id no hay id
+   utilizable como asistencia.alumno_id) no reciben chips -- se muestran
+   con el mismo badge de 4 estados que ya usa el módulo Alumnos
+   (estadoCuentaAlumno()) y quedan fuera del batch a guardar, mismo
+   criterio que ya usa crearFilaAlumnoCalificacion() en Calificación.
    --------------------------------------------------------- */
 
 const estadoAsistencia = { grupo: "3C", fecha: null, trimestre: null };
 
-const CICLO_ESTADOS_ASISTENCIA = ["presente", "falta", "retardo", "justificada", "salida_anticipada"];
+// Texto completo (aria-label del chip) vs. abreviatura visible (pedido
+// explícito: "Pres./Ret./Just./Sal." para que los 5 quepan en una sola
+// fila incluso en 390px, ver .asistencia-chips en css/style.css).
 const TEXTO_ESTADO_ASISTENCIA = {
   presente: "Presente",
   falta: "Falta",
@@ -13492,6 +13495,14 @@ const TEXTO_ESTADO_ASISTENCIA = {
   justificada: "Justificada",
   salida_anticipada: "Salida anticipada",
 };
+
+const ESTADOS_ASISTENCIA_CHIPS = [
+  { estado: "presente", icono: "✅", texto: "Pres." },
+  { estado: "falta", icono: "❌", texto: "Falta" },
+  { estado: "retardo", icono: "⏰", texto: "Ret." },
+  { estado: "justificada", icono: "📄", texto: "Just." },
+  { estado: "salida_anticipada", icono: "🚪", texto: "Sal." },
+];
 
 function crearFilaAsistenciaAlumno(fila) {
   const { alumno, sinCuenta, estado, notas } = fila;
@@ -13525,33 +13536,54 @@ function crearFilaAsistenciaAlumno(fila) {
   // (estado === "sin_registrar"); si ya existe registro real, precarga
   // ese estado tal cual -- nunca se asume "falta".
   const estadoInicial = estado === "sin_registrar" ? "presente" : estado;
-  const boton = document.createElement("button");
-  boton.type = "button";
-  boton.className = "asistencia-boton-estado";
-  boton.dataset.alumnoId = alumno.auth_user_id;
-  boton.dataset.estadoAsistencia = estadoInicial;
-  boton.dataset.notasPrevias = notas || "";
-  boton.textContent = TEXTO_ESTADO_ASISTENCIA[estadoInicial];
-  // aria-live para que un lector de pantalla anuncie el nuevo estado al
-  // ciclar, sin depender de que el foco se mueva (el foco se queda en
-  // este mismo botón entre un tap y el siguiente).
-  boton.setAttribute("aria-live", "polite");
-  boton.setAttribute(
-    "aria-label",
-    alumno.nombre + ": " + TEXTO_ESTADO_ASISTENCIA[estadoInicial] + ". Toca para cambiar de estado."
-  );
-  boton.addEventListener("click", () => ciclarEstadoAsistencia(boton, alumno.nombre));
-  envoltura.appendChild(boton);
 
+  const grupoChips = document.createElement("div");
+  grupoChips.className = "asistencia-chips";
+  grupoChips.setAttribute("role", "radiogroup");
+  grupoChips.setAttribute("aria-label", "Estado de asistencia de " + alumno.nombre);
+  grupoChips.dataset.alumnoId = alumno.auth_user_id;
+  grupoChips.dataset.notasPrevias = notas || "";
+
+  ESTADOS_ASISTENCIA_CHIPS.forEach(({ estado: estadoChip, icono, texto }) => {
+    const activo = estadoChip === estadoInicial;
+
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "asistencia-chip" + (activo ? " asistencia-chip--activo" : "");
+    chip.dataset.estado = estadoChip;
+    chip.setAttribute("role", "radio");
+    chip.setAttribute("aria-checked", String(activo));
+    chip.setAttribute("aria-label", TEXTO_ESTADO_ASISTENCIA[estadoChip]);
+
+    const iconoEl = document.createElement("span");
+    iconoEl.className = "asistencia-chip__icono";
+    iconoEl.setAttribute("aria-hidden", "true");
+    iconoEl.textContent = icono;
+
+    const textoEl = document.createElement("span");
+    textoEl.className = "asistencia-chip__texto";
+    textoEl.setAttribute("aria-hidden", "true");
+    textoEl.textContent = texto;
+
+    chip.append(iconoEl, textoEl);
+    chip.addEventListener("click", () => seleccionarChipAsistencia(grupoChips, chip));
+    grupoChips.appendChild(chip);
+  });
+
+  envoltura.appendChild(grupoChips);
   return envoltura;
 }
 
-function ciclarEstadoAsistencia(boton, nombreAlumno) {
-  const indiceActual = CICLO_ESTADOS_ASISTENCIA.indexOf(boton.dataset.estadoAsistencia);
-  const siguiente = CICLO_ESTADOS_ASISTENCIA[(indiceActual + 1) % CICLO_ESTADOS_ASISTENCIA.length];
-  boton.dataset.estadoAsistencia = siguiente;
-  boton.textContent = TEXTO_ESTADO_ASISTENCIA[siguiente];
-  boton.setAttribute("aria-label", nombreAlumno + ": " + TEXTO_ESTADO_ASISTENCIA[siguiente] + ". Toca para cambiar de estado.");
+// Selección directa (sin ciclar): marca el chip tocado como activo y
+// desmarca a los otros 4 del mismo grupo. Actualización optimista en el
+// DOM nada más -- guardarAsistenciaDesdeUI() es quien persiste de verdad,
+// solo al presionar "Guardar asistencia".
+function seleccionarChipAsistencia(grupoChips, chipTocado) {
+  Array.from(grupoChips.querySelectorAll(".asistencia-chip")).forEach((chip) => {
+    const activo = chip === chipTocado;
+    chip.classList.toggle("asistencia-chip--activo", activo);
+    chip.setAttribute("aria-checked", String(activo));
+  });
 }
 
 async function renderizarListaAsistencia() {
@@ -13588,13 +13620,13 @@ async function renderizarListaAsistencia() {
 async function guardarAsistenciaDesdeUI() {
   const contenedor = document.getElementById("asistencia-lista-contenedor");
   const botonGuardar = document.getElementById("asistencia-boton-guardar");
-  const botones = Array.from(contenedor.querySelectorAll(".asistencia-boton-estado"));
-  if (botones.length === 0) return;
+  const gruposChips = Array.from(contenedor.querySelectorAll(".asistencia-chips"));
+  if (gruposChips.length === 0) return;
 
-  const registros = botones.map((boton) => ({
-    alumno_id: boton.dataset.alumnoId,
-    estado: boton.dataset.estadoAsistencia,
-    notas: boton.dataset.notasPrevias || null,
+  const registros = gruposChips.map((grupoChips) => ({
+    alumno_id: grupoChips.dataset.alumnoId,
+    estado: grupoChips.querySelector(".asistencia-chip--activo").dataset.estado,
+    notas: grupoChips.dataset.notasPrevias || null,
   }));
 
   botonGuardar.disabled = true;

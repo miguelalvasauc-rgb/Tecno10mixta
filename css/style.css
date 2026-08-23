@@ -9630,72 +9630,116 @@ a.boton-secundario {
   color: var(--color-texto-suave);
 }
 
-/* Botón cíclico de estado: min-height 48px es el tamaño mínimo de
-   objetivo táctil recomendado (WCAG 2.5.5/Material Design) — "cómodo de
-   tocar con el pulgar", no solo un botón que se ve bien en desktop. */
-.asistencia-boton-estado {
+/* Grupo de 5 chips de estado (radiogroup: selección única, tocable
+   directo, sin ciclar) -- mismo estilo base que .calificacion-tabs-tipo__boton
+   (píldora, borde --color-borde, relleno --color-superficie, texto suave
+   en reposo) adaptado a compacto/vertical (ícono arriba, texto abajo) en
+   vez de inventar un chip nuevo. flex:1 1 0 en cada chip + gap chico en
+   el grupo es lo que permite que los 5 quepan en una sola fila incluso en
+   390px sin scroll horizontal (ver @media abajo para el ancho real). */
+.asistencia-chips {
+  display: flex;
+  gap: 4px;
+  /* Sin width:100% a propósito: en desktop .asistencia-alumno es fila, y
+     un ancho forzado aquí competía por todo el espacio del nombre del
+     alumno (lo truncaba). flex-shrink:0 mantiene el grupo en su ancho
+     compacto natural (5 chips) sin que .asistencia-alumno__info tenga que
+     cederle espacio de más. En mobile no hace falta: .asistencia-alumno
+     pasa a columna con align-items:stretch (ver @media abajo), que ya
+     estira este grupo a todo el ancho de la fila sin declararlo aquí. */
   flex-shrink: 0;
-  min-height: 48px;
-  min-width: 150px;
-  padding: 0.6rem 1.1rem;
-  border: none;
-  border-radius: 999px;
-  font-size: var(--tamano-fuente-accion);
-  font-weight: 700;
+}
+
+.asistencia-chip {
+  flex: 1 1 0;
+  /* min-width real (no 0): con 0 el navegador calculaba el ancho
+     intrínseco de .asistencia-chips (su padre) como ~0 -- los 5 chips se
+     veían aplastados incluso con espacio de sobra en desktop. Con un piso
+     real, .asistencia-chips mide su ancho natural en desktop (los chips
+     se quedan en ese piso, no hay espacio extra que repartir) y en mobile
+     (donde align-items:stretch del padre .asistencia-alumno en columna
+     estira el grupo a todo el ancho de la fila) flex-grow:1 sí reparte el
+     espacio extra entre los 5, quedando más cómodos de tocar. */
+  min-width: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0.4rem 0.15rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto-suave);
   cursor: pointer;
-  text-align: center;
-  transition: filter 0.15s ease, transform 0.1s ease;
+  min-height: 46px;
 }
 
-.asistencia-boton-estado:hover {
-  filter: brightness(1.08);
+.asistencia-chip:hover {
+  border-color: var(--color-turquesa);
 }
 
-.asistencia-boton-estado:active {
-  transform: scale(0.97);
-}
-
-.asistencia-boton-estado:focus-visible {
+.asistencia-chip:focus-visible {
   outline: 3px solid var(--color-focus-outline);
   outline-offset: 2px;
 }
 
-.asistencia-boton-estado[data-estado-asistencia="presente"] {
+.asistencia-chip__icono {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.asistencia-chip__texto {
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Estado activo: relleno sólido con el color de asistencia correspondiente
+   (--color-asistencia-*, Fase B) -- mismos pares texto/fondo ya
+   verificados AA ahí, sin repetirlos aquí. Los otros 4 chips se quedan en
+   el estilo base de arriba (contorno + atenuado), mismo criterio que
+   .calificacion-tabs-tipo__boton--activo frente al resto de sus tabs. */
+.asistencia-chip--activo {
+  border-color: transparent;
+}
+
+.asistencia-chip--activo[data-estado="presente"] {
   background-color: var(--color-asistencia-presente);
   color: #12202E;
 }
 
-.asistencia-boton-estado[data-estado-asistencia="falta"] {
+.asistencia-chip--activo[data-estado="falta"] {
   background-color: var(--color-asistencia-falta);
   color: var(--color-claro-sobre-navy);
 }
 
-.asistencia-boton-estado[data-estado-asistencia="retardo"] {
+.asistencia-chip--activo[data-estado="retardo"] {
   background-color: var(--color-asistencia-retardo);
   color: var(--color-claro-sobre-navy);
 }
 
-.asistencia-boton-estado[data-estado-asistencia="justificada"] {
+.asistencia-chip--activo[data-estado="justificada"] {
   background-color: var(--color-asistencia-justificada);
   color: var(--color-claro-sobre-navy);
 }
 
-.asistencia-boton-estado[data-estado-asistencia="salida_anticipada"] {
+.asistencia-chip--activo[data-estado="salida_anticipada"] {
   background-color: var(--color-asistencia-salida-anticipada);
   color: var(--color-claro-sobre-navy);
 }
 
 /* Mobile: misma pila vertical que .apariencia-opcion en breakpoints
-   angostos — el botón pasa a ancho completo para que sea un objetivo
-   fácil con el pulgar en vez de competir por espacio junto al nombre. */
+   angostos -- el grupo de chips pasa a ancho completo (el flex:1 1 0 de
+   cada chip ya reparte ese ancho entre los 5 en una sola fila, ver arriba). */
 @media (max-width: 640px) {
   .asistencia-alumno {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .asistencia-boton-estado {
-    width: 100%;
   }
 }
 
