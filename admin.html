@@ -180,6 +180,10 @@
           Alumnos
         </button>
         <button type="button" class="admin-tabs__boton"
+                id="tab-asistencia" role="tab" aria-selected="false" aria-controls="panel-asistencia">
+          📋 Asistencia
+        </button>
+        <button type="button" class="admin-tabs__boton"
                 id="tab-avisos" role="tab" aria-selected="false" aria-controls="panel-avisos">
           Avisos
         </button>
@@ -343,6 +347,50 @@
         </div>
 
         <div id="alumnos-tabla-contenedor" aria-live="polite"></div>
+      </section>
+
+      <section id="panel-asistencia" class="admin-panel" role="tabpanel" aria-labelledby="tab-asistencia" hidden>
+        <h3>📋 Tomar asistencia</h3>
+
+        <div class="calificacion-filtros">
+          <div class="calificacion-filtro">
+            <label for="asistencia-filtro-grupo">Grupo</label>
+            <select id="asistencia-filtro-grupo">
+              <option value="3C">3°C</option>
+              <option value="3E">3°E</option>
+            </select>
+          </div>
+          <div class="calificacion-filtro">
+            <label for="asistencia-filtro-fecha">Fecha</label>
+            <input type="date" id="asistencia-filtro-fecha">
+          </div>
+          <!-- guardarAsistenciaLote() necesita un trimestre explícito y
+               ninguna fuente ya existente en el sitio deriva trimestre a
+               partir de una fecha (TRIMESTRE_ACTUAL solo existe en
+               trimestre-1/2/3.html, no en admin.html) -- se agrega este
+               selector, con el trimestre desbloqueado actual como default
+               (ver inicializarModuloAsistencia() en js/main.js), para
+               poder registrar asistencia retroactiva de otro trimestre
+               sin bloquear el flujo normal. -->
+          <div class="calificacion-filtro">
+            <label for="asistencia-filtro-trimestre">Trimestre</label>
+            <select id="asistencia-filtro-trimestre">
+              <option value="1">1° Trimestre</option>
+              <option value="2">2° Trimestre</option>
+              <option value="3">3° Trimestre</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="asistencia-aviso-no-clase" aria-live="polite" hidden></div>
+
+        <div id="asistencia-lista-contenedor" class="asistencia-lista" aria-live="polite"></div>
+
+        <div class="calificacion-acciones">
+          <button type="button" id="asistencia-boton-guardar" class="modal-editar-entrega__confirmar" hidden>
+            💾 Guardar asistencia
+          </button>
+        </div>
       </section>
 
       <section id="panel-avisos" class="admin-panel" role="tabpanel" aria-labelledby="tab-avisos" hidden>

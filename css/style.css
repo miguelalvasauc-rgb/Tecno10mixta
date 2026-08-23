@@ -859,6 +859,22 @@
   --color-estado-registro-incompleto: #D4A017;
   --color-estado-cuenta-activa: #2F9E44;
 
+  /* Estados del módulo "Tomar asistencia" (panel docente): eje semántico
+     propio, distinto de --color-estado-* (progreso/rúbricas) y de los
+     rojos/naranjas ya en uso en el sitio (--color-estado-vencido,
+     --color-toast-error, --dia-suspension, --color-estado-progreso/
+     pendiente, --dia-cte-ordinaria) — "falta" no es "vencido", así que
+     no repurposea ese rojo (misma Regla de Exclusividad de Colores de
+     Estado). "falta" usa un gris-azulado neutro a propósito (pedido
+     explícito: nada de rojo/naranja para ese estado). Valores fijos (no
+     varían por tema), contraste ≥4.5:1 verificado contra su texto fijo
+     (#12202E o --color-claro-sobre-navy según el caso) en ambos temas. */
+  --color-asistencia-presente: #1E9E63;
+  --color-asistencia-falta: #59626D;
+  --color-asistencia-retardo: #7457C4;
+  --color-asistencia-justificada: #1A6F9C;
+  --color-asistencia-salida-anticipada: #953C8C;
+
   /* Foco de accesibilidad de alto contraste, obligatorio en todo elemento
      interactivo nuevo del rediseño (sidebar, modal de perfil, panel de
      progreso). Los focus-visible ya existentes (turquesa/navy) se
@@ -9503,6 +9519,120 @@ a.boton-secundario {
 
 .fila-alumno--inactivo .calificacion-tabla__alumno-nombre {
   text-decoration: line-through;
+}
+
+/* ---------- Módulo "Tomar asistencia" (tab-asistencia) ----------
+   Lista de tarjetas (no tabla: un solo botón grande por alumno, no
+   columnas) — reutiliza .fila-alumno--inactivo/.calificacion-tabla__alumno-nombre
+   para el mismo atenuado de "dado de baja" que ya usan Calificación/
+   Alumnos, y .badge-estado[data-estado-cuenta] para los alumnos "sin
+   cuenta" (mismos 4 estados que el módulo Alumnos, ver estadoCuentaAlumno()
+   en js/main.js) en vez de un botón que no podrían guardar de verdad. */
+.asistencia-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.asistencia-alumno {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  background-color: var(--color-superficie);
+}
+
+.asistencia-alumno__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.asistencia-alumno__nombre {
+  font-weight: 600;
+  color: var(--color-texto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.asistencia-alumno__numero {
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto-suave);
+}
+
+/* Botón cíclico de estado: min-height 48px es el tamaño mínimo de
+   objetivo táctil recomendado (WCAG 2.5.5/Material Design) — "cómodo de
+   tocar con el pulgar", no solo un botón que se ve bien en desktop. */
+.asistencia-boton-estado {
+  flex-shrink: 0;
+  min-height: 48px;
+  min-width: 150px;
+  padding: 0.6rem 1.1rem;
+  border: none;
+  border-radius: 999px;
+  font-size: var(--tamano-fuente-accion);
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.asistencia-boton-estado:hover {
+  filter: brightness(1.08);
+}
+
+.asistencia-boton-estado:active {
+  transform: scale(0.97);
+}
+
+.asistencia-boton-estado:focus-visible {
+  outline: 3px solid var(--color-focus-outline);
+  outline-offset: 2px;
+}
+
+.asistencia-boton-estado[data-estado-asistencia="presente"] {
+  background-color: var(--color-asistencia-presente);
+  color: #12202E;
+}
+
+.asistencia-boton-estado[data-estado-asistencia="falta"] {
+  background-color: var(--color-asistencia-falta);
+  color: var(--color-claro-sobre-navy);
+}
+
+.asistencia-boton-estado[data-estado-asistencia="retardo"] {
+  background-color: var(--color-asistencia-retardo);
+  color: var(--color-claro-sobre-navy);
+}
+
+.asistencia-boton-estado[data-estado-asistencia="justificada"] {
+  background-color: var(--color-asistencia-justificada);
+  color: var(--color-claro-sobre-navy);
+}
+
+.asistencia-boton-estado[data-estado-asistencia="salida_anticipada"] {
+  background-color: var(--color-asistencia-salida-anticipada);
+  color: var(--color-claro-sobre-navy);
+}
+
+/* Mobile: misma pila vertical que .apariencia-opcion en breakpoints
+   angostos — el botón pasa a ancho completo para que sea un objetivo
+   fácil con el pulgar en vez de competir por espacio junto al nombre. */
+@media (max-width: 640px) {
+  .asistencia-alumno {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .asistencia-boton-estado {
+    width: 100%;
+  }
 }
 
 .calificacion-tabla__celda {

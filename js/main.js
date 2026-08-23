@@ -13370,6 +13370,193 @@ async function inicializarModuloAlumnos() {
 }
 
 /* ---------------------------------------------------------
+   Módulo "Tomar asistencia" (tab-asistencia)
+
+   Roster real (alumnos_registro) del grupo/fecha elegidos, con un botón
+   grande por alumno que cicla por los 5 estados (ver
+   CICLO_ESTADOS_ASISTENCIA); "Guardar asistencia" persiste el batch
+   completo de una sola vez vía guardarAsistenciaLote(). Los alumnos "sin
+   cuenta" (ver nota de cabecera de obtenerAsistenciaPorFecha: sin
+   auth_user_id no hay id utilizable como asistencia.alumno_id) no reciben
+   botón -- se muestran con el mismo badge de 4 estados que ya usa el
+   módulo Alumnos (estadoCuentaAlumno()) y quedan fuera del batch a
+   guardar, mismo criterio que ya usa crearFilaAlumnoCalificacion() en
+   Calificación.
+   --------------------------------------------------------- */
+
+const estadoAsistencia = { grupo: "3C", fecha: null, trimestre: null };
+
+const CICLO_ESTADOS_ASISTENCIA = ["presente", "falta", "retardo", "justificada", "salida_anticipada"];
+const TEXTO_ESTADO_ASISTENCIA = {
+  presente: "Presente",
+  falta: "Falta",
+  retardo: "Retardo",
+  justificada: "Justificada",
+  salida_anticipada: "Salida anticipada",
+};
+
+function crearFilaAsistenciaAlumno(fila) {
+  const { alumno, sinCuenta, estado, notas } = fila;
+
+  const envoltura = document.createElement("div");
+  envoltura.className = "asistencia-alumno";
+  if (alumno.activo === false) envoltura.classList.add("fila-alumno--inactivo");
+
+  const info = document.createElement("div");
+  info.className = "asistencia-alumno__info";
+  const nombre = document.createElement("span");
+  nombre.className = "asistencia-alumno__nombre calificacion-tabla__alumno-nombre";
+  nombre.textContent = alumno.nombre;
+  const numero = document.createElement("span");
+  numero.className = "asistencia-alumno__numero";
+  numero.textContent = "N.° " + alumno.numero_lista;
+  info.append(nombre, numero);
+  envoltura.appendChild(info);
+
+  if (sinCuenta) {
+    const { estado: estadoCuenta, texto } = estadoCuentaAlumno(alumno);
+    const badge = document.createElement("span");
+    badge.className = "badge-estado";
+    badge.dataset.estadoCuenta = estadoCuenta;
+    badge.textContent = texto;
+    envoltura.appendChild(badge);
+    return envoltura;
+  }
+
+  // Default visual "Presente" cuando no hay fila guardada ese día
+  // (estado === "sin_registrar"); si ya existe registro real, precarga
+  // ese estado tal cual -- nunca se asume "falta".
+  const estadoInicial = estado === "sin_registrar" ? "presente" : estado;
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "asistencia-boton-estado";
+  boton.dataset.alumnoId = alumno.auth_user_id;
+  boton.dataset.estadoAsistencia = estadoInicial;
+  boton.dataset.notasPrevias = notas || "";
+  boton.textContent = TEXTO_ESTADO_ASISTENCIA[estadoInicial];
+  // aria-live para que un lector de pantalla anuncie el nuevo estado al
+  // ciclar, sin depender de que el foco se mueva (el foco se queda en
+  // este mismo botón entre un tap y el siguiente).
+  boton.setAttribute("aria-live", "polite");
+  boton.setAttribute(
+    "aria-label",
+    alumno.nombre + ": " + TEXTO_ESTADO_ASISTENCIA[estadoInicial] + ". Toca para cambiar de estado."
+  );
+  boton.addEventListener("click", () => ciclarEstadoAsistencia(boton, alumno.nombre));
+  envoltura.appendChild(boton);
+
+  return envoltura;
+}
+
+function ciclarEstadoAsistencia(boton, nombreAlumno) {
+  const indiceActual = CICLO_ESTADOS_ASISTENCIA.indexOf(boton.dataset.estadoAsistencia);
+  const siguiente = CICLO_ESTADOS_ASISTENCIA[(indiceActual + 1) % CICLO_ESTADOS_ASISTENCIA.length];
+  boton.dataset.estadoAsistencia = siguiente;
+  boton.textContent = TEXTO_ESTADO_ASISTENCIA[siguiente];
+  boton.setAttribute("aria-label", nombreAlumno + ": " + TEXTO_ESTADO_ASISTENCIA[siguiente] + ". Toca para cambiar de estado.");
+}
+
+async function renderizarListaAsistencia() {
+  const contenedor = document.getElementById("asistencia-lista-contenedor");
+  const aviso = document.getElementById("asistencia-aviso-no-clase");
+  const botonGuardar = document.getElementById("asistencia-boton-guardar");
+  const { grupo, fecha } = estadoAsistencia;
+  if (!contenedor || !fecha) return;
+
+  if (!esDiaDeClasePara(grupo, fecha)) {
+    contenedor.innerHTML = "";
+    botonGuardar.hidden = true;
+    aviso.hidden = false;
+    mostrarSinResultados(aviso, "Este día no hay clase para este grupo.", "📅");
+    return;
+  }
+
+  aviso.hidden = true;
+  aviso.innerHTML = "";
+
+  const filas = await obtenerAsistenciaPorFecha(grupo, fecha);
+  contenedor.innerHTML = "";
+
+  if (filas.length === 0) {
+    mostrarSinResultados(contenedor, "Este grupo no tiene alumnos registrados.", "🧑‍🎓");
+    botonGuardar.hidden = true;
+    return;
+  }
+
+  filas.forEach((fila) => contenedor.appendChild(crearFilaAsistenciaAlumno(fila)));
+  botonGuardar.hidden = false;
+}
+
+async function guardarAsistenciaDesdeUI() {
+  const contenedor = document.getElementById("asistencia-lista-contenedor");
+  const botonGuardar = document.getElementById("asistencia-boton-guardar");
+  const botones = Array.from(contenedor.querySelectorAll(".asistencia-boton-estado"));
+  if (botones.length === 0) return;
+
+  const registros = botones.map((boton) => ({
+    alumno_id: boton.dataset.alumnoId,
+    estado: boton.dataset.estadoAsistencia,
+    notas: boton.dataset.notasPrevias || null,
+  }));
+
+  botonGuardar.disabled = true;
+  try {
+    await guardarAsistenciaLote(
+      estadoAsistencia.grupo,
+      estadoAsistencia.fecha,
+      Number(estadoAsistencia.trimestre),
+      registros
+    );
+    mostrarToast("Asistencia guardada");
+    await renderizarListaAsistencia();
+  } catch (error) {
+    mostrarToastAdvertencia("No se pudo guardar la asistencia. Intenta de nuevo.");
+  } finally {
+    botonGuardar.disabled = false;
+  }
+}
+
+async function inicializarModuloAsistencia() {
+  const contenedor = document.getElementById("asistencia-lista-contenedor");
+  if (!contenedor) return; // no es admin.html
+
+  // Mismo guard que Alumnos/Calificación: alumnos_registro/asistencia
+  // están protegidas por RLS para el rol docente.
+  await promesaGuardPanelDocente;
+
+  const selectGrupo = document.getElementById("asistencia-filtro-grupo");
+  const inputFecha = document.getElementById("asistencia-filtro-fecha");
+  const selectTrimestre = document.getElementById("asistencia-filtro-trimestre");
+
+  // Local (no toISOString(), que es UTC): esDiaDeClasePara()/
+  // TIPOS_DIA_POR_FECHA ya arman sus claves de fecha con
+  // formatearClaveFecha() -- misma fuente de verdad para "hoy", para que
+  // el default nunca quede un día desfasado cerca de medianoche.
+  inputFecha.value = formatearClaveFecha(new Date());
+  selectTrimestre.value = String(trimestreDesbloqueado || 1);
+
+  estadoAsistencia.grupo = selectGrupo.value;
+  estadoAsistencia.fecha = inputFecha.value;
+  estadoAsistencia.trimestre = selectTrimestre.value;
+
+  await renderizarListaAsistencia();
+
+  selectGrupo.addEventListener("change", async () => {
+    estadoAsistencia.grupo = selectGrupo.value;
+    await renderizarListaAsistencia();
+  });
+  inputFecha.addEventListener("change", async () => {
+    estadoAsistencia.fecha = inputFecha.value;
+    await renderizarListaAsistencia();
+  });
+  selectTrimestre.addEventListener("change", () => {
+    estadoAsistencia.trimestre = selectTrimestre.value;
+  });
+
+  document.getElementById("asistencia-boton-guardar").addEventListener("click", guardarAsistenciaDesdeUI);
+}
+
+/* ---------------------------------------------------------
    Módulo "Avisos" (tab-avisos)
 
    CRUD completo sobre la tabla avisos, directo desde este módulo (no
@@ -18478,6 +18665,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarTabsMateriales();
   await inicializarModuloCalificacion();
   await inicializarModuloAlumnos();
+  await inicializarModuloAsistencia();
   await inicializarModuloAvisos();
   await inicializarModuloTrimestre();
   await inicializarModuloFechas();
