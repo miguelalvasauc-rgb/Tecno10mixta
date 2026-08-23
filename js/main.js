@@ -14199,7 +14199,7 @@ async function obtenerUmbralesAsistencia() {
 // activo:false por defecto/seguro — hasta que se guarde explícito desde
 // el admin, nadie ve nada (ni siquiera si la fila de Supabase no
 // existiera todavía).
-const POPUP_BIENVENIDA_DEFECTO = { activo: false, titulo: "", mensaje: "", imagenUrl: "" };
+const POPUP_BIENVENIDA_DEFECTO = { activo: false, titulo: "", mensaje: "", imagenUrl: "", textoAlt: "" };
 
 // Nunca se cierra con Escape: <dialog> dispara "cancel" antes de
 // cerrarse por Escape, y aquí se bloquea a propósito con
@@ -14250,10 +14250,12 @@ function mostrarPopupBienvenida(datos, onCerrar) {
     imagenEl.onerror = () => {
       imagenWrap.hidden = true;
     };
+    imagenEl.alt = datos.textoAlt || "";
     imagenEl.src = datos.imagenUrl;
     imagenWrap.hidden = false;
   } else {
     imagenEl.removeAttribute("src");
+    imagenEl.alt = "";
     imagenWrap.hidden = true;
   }
 
@@ -14271,6 +14273,7 @@ function poblarFormularioPopupBienvenida(datos) {
   document.getElementById("popup-bienvenida-form-titulo").value = datos.titulo || "";
   document.getElementById("popup-bienvenida-form-mensaje").value = datos.mensaje || "";
   document.getElementById("popup-bienvenida-form-imagen").value = datos.imagenUrl || "";
+  document.getElementById("popup-bienvenida-form-alt").value = datos.textoAlt || "";
 }
 
 function leerFormularioPopupBienvenida() {
@@ -14279,6 +14282,7 @@ function leerFormularioPopupBienvenida() {
     titulo: document.getElementById("popup-bienvenida-form-titulo").value.trim(),
     mensaje: document.getElementById("popup-bienvenida-form-mensaje").value.trim(),
     imagenUrl: document.getElementById("popup-bienvenida-form-imagen").value.trim(),
+    textoAlt: document.getElementById("popup-bienvenida-form-alt").value.trim(),
   };
 }
 
