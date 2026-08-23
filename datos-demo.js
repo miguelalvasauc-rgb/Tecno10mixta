@@ -470,3 +470,123 @@ const DEMO_POPUP_BIENVENIDA = {
   mensaje: "Aquí encontrarás tareas, actividades y proyectos de Educación Tecnológica para 3°C y 3°E. Explora el sitio y revisa tu progreso cuando quieras.",
   imagenUrl: "assets/logo-10mixta.jpg",
 };
+
+/* ---------------------------------------------------------
+   asistencia — Trimestre 1 únicamente, generada a partir de los días de
+   clase REALES de cada grupo (DATOS_HORARIO en js/main.js: 3C = lunes y
+   martes, 3E = martes y miércoles) entre el inicio de clases real
+   (2026-08-31) y la Evaluación de Trimestre 1 (2026-11-13), ambos del
+   calendario oficial ya usado en DATOS_EVENTOS. Se excluye 2026-11-02
+   (Día de Muertos, suspensión que cae lunes — afecta solo a 3C). Mismo
+   esqueleto que progreso (config por alumno + generador + flatMap +
+   .map final con id secuencial): nada de filas escritas a mano.
+
+   Estados no-"presente" colocados en posiciones ESPACIADAS del ciclo
+   real de cada alumno (nunca al azar ni consecutivas) con un corrimiento
+   por índice en DEMO_ALUMNOS, mismo criterio ya documentado en
+   demoOffsetAvancePorTrimestre: determinista y auditable, no
+   Math.random() — acá una decisión categórica (qué día es "falta" vs
+   "presente") si necesita ser reproducible en cada carga, a diferencia
+   de la calificación numérica de progreso, donde el rango sí tolera
+   variar.
+
+   3 alumnos con perfil explícito (el resto usa el patrón cíclico
+   "normal" de abajo):
+     - demo-uid-01 (Valeria): 0 en todo, 100% presente — racha de
+       asistencia perfecta para probar la tarjeta de progreso.html.
+     - demo-uid-16 (Antonia, 3C): 4 faltas — cruza umbral_faltas (3,
+       config_sitio) para ver la fila resaltada del Dashboard.
+     - demo-uid-21 (Alonso, 3E): 6 retardos — cruza umbral_retardos (5)
+       por la otra condición del umbral, en el otro grupo.
+   registrado_por:null (no un id "demo-" falso) sigue el mismo criterio
+   que creado_por:null en DEMO_FECHAS_OVERRIDE: no hay sesión real de
+   docente en modo demo, así que no se inventa un uuid. --------------- */
+
+const DEMO_DIA_INICIO_CLASES_T1 = "2026-08-31";
+const DEMO_DIA_EVALUACION_T1 = "2026-11-13";
+const DEMO_DIAS_SUSPENDIDOS_T1 = ["2026-11-02"];
+
+const DEMO_DIAS_SEMANA_POR_GRUPO = {
+  "3C": [1, 2], // lunes, martes (Date.getUTCDay(): 0=domingo)
+  "3E": [2, 3], // martes, miércoles
+};
+
+function demoGenerarDiasClaseT1(grupo) {
+  const diasSemana = DEMO_DIAS_SEMANA_POR_GRUPO[grupo];
+  const dias = [];
+  const cursor = new Date(DEMO_DIA_INICIO_CLASES_T1 + "T12:00:00Z");
+  const fin = new Date(DEMO_DIA_EVALUACION_T1 + "T12:00:00Z");
+  while (cursor <= fin) {
+    const iso = cursor.toISOString().slice(0, 10);
+    if (diasSemana.includes(cursor.getUTCDay()) && !DEMO_DIAS_SUSPENDIDOS_T1.includes(iso)) {
+      dias.push(iso);
+    }
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return dias;
+}
+
+const DEMO_CONFIG_ASISTENCIA_ALUMNOS = DEMO_ALUMNOS.map((alumno, indice) => {
+  if (alumno.auth_user_id === "demo-uid-01") {
+    return { authUserId: alumno.auth_user_id, grupo: alumno.grupo, indice, faltas: 0, retardos: 0, justificadas: 0, salidasAnticipadas: 0 };
+  }
+  if (alumno.auth_user_id === "demo-uid-16") {
+    return { authUserId: alumno.auth_user_id, grupo: alumno.grupo, indice, faltas: 4, retardos: 1, justificadas: 0, salidasAnticipadas: 0 };
+  }
+  if (alumno.auth_user_id === "demo-uid-21") {
+    return { authUserId: alumno.auth_user_id, grupo: alumno.grupo, indice, faltas: 0, retardos: 6, justificadas: 0, salidasAnticipadas: 0 };
+  }
+  return {
+    authUserId: alumno.auth_user_id,
+    grupo: alumno.grupo,
+    indice,
+    faltas: 0,
+    retardos: indice % 4, // 0-3, cíclico
+    justificadas: (indice + 2) % 3, // 0-2, offset distinto al de retardos para no calcar el mismo patrón
+    salidasAnticipadas: indice % 6 === 0 ? 1 : 0, // ocasional
+  };
+});
+
+function demoGenerarAsistenciaAlumno({ authUserId, grupo, indice, faltas, retardos, justificadas, salidasAnticipadas }) {
+  const dias = demoGenerarDiasClaseT1(grupo);
+  const estados = new Array(dias.length).fill("presente");
+
+  // Reparte "cantidad" ocurrencias de "estado" a intervalos regulares del
+  // ciclo (no consecutivas), con corrimiento por "indice" para que dos
+  // alumnos con el mismo conteo no caigan en las mismas fechas; si el
+  // día calculado ya tiene otro estado (choque entre los conteos del
+  // mismo alumno), avanza al siguiente día libre.
+  const distribuir = (cantidad, estado) => {
+    if (cantidad <= 0 || dias.length === 0) return;
+    const paso = Math.max(1, Math.floor(dias.length / (cantidad + 1)));
+    for (let k = 0; k < cantidad; k++) {
+      let idx = (paso * (k + 1) + indice * 3) % dias.length;
+      let vueltas = 0;
+      while (estados[idx] !== "presente" && vueltas < dias.length) {
+        idx = (idx + 1) % dias.length;
+        vueltas++;
+      }
+      estados[idx] = estado;
+    }
+  };
+
+  distribuir(retardos, "retardo");
+  distribuir(justificadas, "justificada");
+  distribuir(salidasAnticipadas, "salida_anticipada");
+  distribuir(faltas, "falta");
+
+  return dias.map((fecha, i) => ({
+    alumno_id: authUserId,
+    fecha,
+    trimestre: 1,
+    estado: estados[i],
+    notas: null,
+    registrado_por: null,
+    actualizado_en: fecha + "T14:00:00.000Z",
+  }));
+}
+
+const DEMO_ASISTENCIA = DEMO_CONFIG_ASISTENCIA_ALUMNOS.flatMap(demoGenerarAsistenciaAlumno).map((fila, indice) => ({
+  id: "demo-asist-" + (indice + 1),
+  ...fila,
+}));

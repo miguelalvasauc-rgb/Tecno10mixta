@@ -3656,6 +3656,7 @@ const DEMO_TABLAS = {
   alumnos_registro: () => DEMO_ALUMNOS,
   perfiles: () => DEMO_PERFILES,
   progreso: () => DEMO_PROGRESO,
+  asistencia: () => DEMO_ASISTENCIA,
   avisos: () => DEMO_AVISOS,
   fechas_override: () => DEMO_FECHAS_OVERRIDE,
   // Fase 12: a diferencia de las tablas de arriba, no viene de un DEMO_
