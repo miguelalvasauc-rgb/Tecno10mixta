@@ -3232,6 +3232,147 @@ const DATOS_TEMARIO = {
   ],
 };
 
+// Glosario (página glosario.html): 108 términos oficiales del material
+// curricular (fuente: glosario-tecno10mixta-borrador.md, tabla "GLOSARIO
+// DE TÉRMINOS CLAVE" de cada SECUENCIA_X_*.docx), agrupados por Bloque →
+// Secuencia. Mismo criterio que DATOS_TEMARIO: "secuenciaTitulo" reutiliza
+// tal cual el texto/emoji que ya usa esa función para las mismas 9
+// secuencias — no se inventan íconos nuevos. Los términos repetidos entre
+// secuencias (Algoritmo, Big Data, Sensor/Actuador, Prototipo, Sesgo
+// algorítmico) se transcriben completos en cada una — decisión ya cerrada
+// con Hiram, no se deduplican.
+const DATOS_GLOSARIO = {
+  1: [
+    // ===== SECUENCIA 1 — INTELIGENCIA ARTIFICIAL =====
+    { id: "gl-b1-1", secuencia: 1, secuenciaTitulo: "🧠 Secuencia 1 — Inteligencia Artificial", termino: "IA (Inteligencia Artificial)", definicion: "Máquinas que imitan capacidades humanas como aprender y decidir" },
+    { id: "gl-b1-2", secuencia: 1, secuenciaTitulo: "🧠 Secuencia 1 — Inteligencia Artificial", termino: "Machine Learning", definicion: "Máquinas que aprenden patrones de datos sin programación explícita" },
+    { id: "gl-b1-3", secuencia: 1, secuenciaTitulo: "🧠 Secuencia 1 — Inteligencia Artificial", termino: "NLP (Procesamiento de Lenguaje Natural)", definicion: "Capacidad de computadoras para entender y generar lenguaje humano" },
+    { id: "gl-b1-4", secuencia: 1, secuenciaTitulo: "🧠 Secuencia 1 — Inteligencia Artificial", termino: "Red Neuronal", definicion: "Sistema de computación inspirado en el cerebro humano" },
+    { id: "gl-b1-5", secuencia: 1, secuenciaTitulo: "🧠 Secuencia 1 — Inteligencia Artificial", termino: "Algoritmo", definicion: "Conjunto de instrucciones paso a paso para resolver un problema" },
+    { id: "gl-b1-6", secuencia: 1, secuenciaTitulo: "🧠 Secuencia 1 — Inteligencia Artificial", termino: "Chatbot", definicion: "Programa que simula conversación humana" },
+    { id: "gl-b1-7", secuencia: 1, secuenciaTitulo: "🧠 Secuencia 1 — Inteligencia Artificial", termino: "Asistente Virtual", definicion: "Software con IA que responde comandos de voz o texto" },
+    { id: "gl-b1-8", secuencia: 1, secuenciaTitulo: "🧠 Secuencia 1 — Inteligencia Artificial", termino: "Big Data", definicion: "Conjuntos de datos masivos que requieren herramientas especiales" },
+    { id: "gl-b1-9", secuencia: 1, secuenciaTitulo: "🧠 Secuencia 1 — Inteligencia Artificial", termino: "Sesgo Algorítmico", definicion: "Cuando un algoritmo produce resultados injustos por datos de entrenamiento limitados" },
+    { id: "gl-b1-10", secuencia: 1, secuenciaTitulo: "🧠 Secuencia 1 — Inteligencia Artificial", termino: "IA Generativa", definicion: "IA que crea contenido nuevo: texto, imágenes, música, video" },
+
+    // ===== SECUENCIA 2 — REALIDAD VIRTUAL =====
+    { id: "gl-b1-11", secuencia: 2, secuenciaTitulo: "🥽 Secuencia 2 — Realidad Virtual", termino: "Realidad Virtual (VR)", definicion: "Mundo digital completamente inmersivo que reemplaza al real" },
+    { id: "gl-b1-12", secuencia: 2, secuenciaTitulo: "🥽 Secuencia 2 — Realidad Virtual", termino: "Realidad Aumentada (AR)", definicion: "Capa de información digital sobre el mundo real" },
+    { id: "gl-b1-13", secuencia: 2, secuenciaTitulo: "🥽 Secuencia 2 — Realidad Virtual", termino: "Realidad Mixta (MR)", definicion: "Objetos digitales que interactúan con el mundo real" },
+    { id: "gl-b1-14", secuencia: 2, secuenciaTitulo: "🥽 Secuencia 2 — Realidad Virtual", termino: "Inmersión", definicion: "Sensación de \"estar realmente dentro\" de un entorno digital" },
+    { id: "gl-b1-15", secuencia: 2, secuenciaTitulo: "🥽 Secuencia 2 — Realidad Virtual", termino: "Interacción", definicion: "Capacidad de manipular objetos y moverse dentro del mundo virtual" },
+    { id: "gl-b1-16", secuencia: 2, secuenciaTitulo: "🥽 Secuencia 2 — Realidad Virtual", termino: "Avatar", definicion: "Representación digital del usuario dentro del mundo virtual" },
+    { id: "gl-b1-17", secuencia: 2, secuenciaTitulo: "🥽 Secuencia 2 — Realidad Virtual", termino: "Metaverso", definicion: "Espacio virtual persistente, compartido y económico" },
+    { id: "gl-b1-18", secuencia: 2, secuenciaTitulo: "🥽 Secuencia 2 — Realidad Virtual", termino: "Háptico", definicion: "Tecnología que simula el tacto (vibraciones, resistencia)" },
+    { id: "gl-b1-19", secuencia: 2, secuenciaTitulo: "🥽 Secuencia 2 — Realidad Virtual", termino: "Renderizado", definicion: "Proceso de generar imágenes 3D a partir de modelos" },
+    { id: "gl-b1-20", secuencia: 2, secuenciaTitulo: "🥽 Secuencia 2 — Realidad Virtual", termino: "Tracking", definicion: "Seguimiento de movimientos del usuario para reflejarlos en VR" },
+
+    // ===== SECUENCIA 3 — ROBÓTICA =====
+    { id: "gl-b1-21", secuencia: 3, secuenciaTitulo: "🤖 Secuencia 3 — Robótica", termino: "Robot", definicion: "Máquina programable que realiza tareas automáticamente" },
+    { id: "gl-b1-22", secuencia: 3, secuenciaTitulo: "🤖 Secuencia 3 — Robótica", termino: "Sensor", definicion: "Dispositivo que detecta información del entorno" },
+    { id: "gl-b1-23", secuencia: 3, secuenciaTitulo: "🤖 Secuencia 3 — Robótica", termino: "Actuador", definicion: "Dispositivo que ejecuta acciones físicas" },
+    { id: "gl-b1-24", secuencia: 3, secuenciaTitulo: "🤖 Secuencia 3 — Robótica", termino: "Procesador", definicion: "\"Cerebro\" del robot que toma decisiones" },
+    { id: "gl-b1-25", secuencia: 3, secuenciaTitulo: "🤖 Secuencia 3 — Robótica", termino: "Algoritmo", definicion: "Conjunto de instrucciones paso a paso" },
+    { id: "gl-b1-26", secuencia: 3, secuenciaTitulo: "🤖 Secuencia 3 — Robótica", termino: "Autonomía", definicion: "Capacidad de actuar sin intervención humana" },
+    { id: "gl-b1-27", secuencia: 3, secuenciaTitulo: "🤖 Secuencia 3 — Robótica", termino: "Teleoperación", definicion: "Controlar un robot a distancia" },
+    { id: "gl-b1-28", secuencia: 3, secuenciaTitulo: "🤖 Secuencia 3 — Robótica", termino: "Retroalimentación", definicion: "El robot ajusta su comportamiento según resultados" },
+    { id: "gl-b1-29", secuencia: 3, secuenciaTitulo: "🤖 Secuencia 3 — Robótica", termino: "Cinemática", definicion: "Estudio del movimiento de las partes del robot" },
+    { id: "gl-b1-30", secuencia: 3, secuenciaTitulo: "🤖 Secuencia 3 — Robótica", termino: "Brazo robótico", definicion: "Estructura con articulaciones que imita un brazo humano" },
+    { id: "gl-b1-31", secuencia: 3, secuenciaTitulo: "🤖 Secuencia 3 — Robótica", termino: "Enjambre robótico", definicion: "Grupo de robots que colaboran como abejas o hormigas" },
+  ],
+  2: [
+    // ===== SECUENCIA 4 — CIENCIA DE DATOS =====
+    { id: "gl-b2-1", secuencia: 4, secuenciaTitulo: "📊 Secuencia 4 — Ciencia de Datos", termino: "Dato", definicion: "Unidad básica de información (número, texto, imagen)" },
+    { id: "gl-b2-2", secuencia: 4, secuenciaTitulo: "📊 Secuencia 4 — Ciencia de Datos", termino: "Base de datos", definicion: "Conjunto organizado de datos" },
+    { id: "gl-b2-3", secuencia: 4, secuenciaTitulo: "📊 Secuencia 4 — Ciencia de Datos", termino: "Big Data", definicion: "Datos masivos que requieren herramientas especiales" },
+    { id: "gl-b2-4", secuencia: 4, secuenciaTitulo: "📊 Secuencia 4 — Ciencia de Datos", termino: "Algoritmo", definicion: "Conjunto de instrucciones paso a paso para resolver un problema" },
+    { id: "gl-b2-5", secuencia: 4, secuenciaTitulo: "📊 Secuencia 4 — Ciencia de Datos", termino: "Ciencia de Datos", definicion: "Disciplina que extrae conocimiento de datos" },
+    { id: "gl-b2-6", secuencia: 4, secuenciaTitulo: "📊 Secuencia 4 — Ciencia de Datos", termino: "Visualización", definicion: "Representar datos de forma gráfica para entenderlos mejor" },
+    { id: "gl-b2-7", secuencia: 4, secuenciaTitulo: "📊 Secuencia 4 — Ciencia de Datos", termino: "Patrón", definicion: "Tendencia o regularidad que se repite en los datos" },
+    { id: "gl-b2-8", secuencia: 4, secuenciaTitulo: "📊 Secuencia 4 — Ciencia de Datos", termino: "Predicción", definicion: "Estimar lo que ocurrirá en el futuro basado en datos del pasado" },
+    { id: "gl-b2-9", secuencia: 4, secuenciaTitulo: "📊 Secuencia 4 — Ciencia de Datos", termino: "Sesgo algorítmico", definicion: "Cuando un algoritmo produce resultados injustos" },
+    { id: "gl-b2-10", secuencia: 4, secuenciaTitulo: "📊 Secuencia 4 — Ciencia de Datos", termino: "Filtro burbuja", definicion: "Algoritmo que solo muestra lo que ya te gusta" },
+    { id: "gl-b2-11", secuencia: 4, secuenciaTitulo: "📊 Secuencia 4 — Ciencia de Datos", termino: "Datos abiertos", definicion: "Información pública que cualquiera puede usar y analizar" },
+
+    // ===== SECUENCIA 5 — HOJAS DE CÁLCULO =====
+    { id: "gl-b2-12", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Hoja de cálculo", definicion: "Software de cuadrícula para organizar y analizar datos" },
+    { id: "gl-b2-13", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Celda", definicion: "Cuadrito individual donde se introduce un dato" },
+    { id: "gl-b2-14", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Fila", definicion: "Conjunto horizontal de celdas (numeradas)" },
+    { id: "gl-b2-15", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Columna", definicion: "Conjunto vertical de celdas (con letras)" },
+    { id: "gl-b2-16", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Rango", definicion: "Grupo de celdas seleccionadas (ej: A1:C5)" },
+    { id: "gl-b2-17", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Fórmula", definicion: "Operación que empieza con = y calcula automáticamente" },
+    { id: "gl-b2-18", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Función", definicion: "Comando predefinido (SUMA, PROMEDIO, SI)" },
+    { id: "gl-b2-19", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Promedio", definicion: "Suma de valores dividida entre cantidad de valores" },
+    { id: "gl-b2-20", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Porcentaje", definicion: "Parte de un total expresada en base 100" },
+    { id: "gl-b2-21", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Gráfica", definicion: "Representación visual de datos" },
+    { id: "gl-b2-22", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Infografía", definicion: "Combinación de datos, gráficas y diseño para comunicar un mensaje" },
+
+    // ===== SECUENCIA 6 — SEGURIDAD DIGITAL =====
+    { id: "gl-b2-23", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Ciberseguridad", definicion: "Protección de sistemas y datos en el entorno digital" },
+    { id: "gl-b2-24", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Hacker", definicion: "Persona que explora sistemas informáticos (puede ser legal o ilegal)" },
+    { id: "gl-b2-25", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Phishing", definicion: "Engaño por correo o mensaje para robar datos personales" },
+    { id: "gl-b2-26", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Ransomware", definicion: "Virus que secuestra tus archivos y exige rescate" },
+    { id: "gl-b2-27", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Malware", definicion: "Software malicioso: virus, troyanos, spyware" },
+    { id: "gl-b2-28", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Spyware", definicion: "Software que espía tu actividad sin permiso" },
+    { id: "gl-b2-29", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Cifrado", definicion: "Convertir información en código ilegible para protegerla" },
+    { id: "gl-b2-30", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Contraseña", definicion: "Clave secreta para acceder a una cuenta" },
+    { id: "gl-b2-31", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Verificación en dos pasos (2FA)", definicion: "Segunda capa de seguridad además de la contraseña" },
+    { id: "gl-b2-32", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Huella digital", definicion: "Rastro de datos que dejas al usar internet" },
+    { id: "gl-b2-33", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Backup / Copia de seguridad", definicion: "Reserva de archivos importantes en caso de pérdida" },
+    { id: "gl-b2-34", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Firewall", definicion: "Barrera que bloquea accesos no autorizados a tu red" },
+    { id: "gl-b2-35", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "VPN", definicion: "Red privada virtual que oculta tu ubicación real" },
+  ],
+  3: [
+    // ===== SECUENCIA 7 — SOLUCIONES DIGITALES =====
+    { id: "gl-b3-1", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Solución digital", definicion: "Aplicación o sistema tecnológico que resuelve un problema" },
+    { id: "gl-b3-2", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Pensamiento computacional", definicion: "Forma de resolver problemas usando descomposición, patrones, abstracción y algoritmos" },
+    { id: "gl-b3-3", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Algoritmo", definicion: "Conjunto de instrucciones paso a paso para resolver un problema" },
+    { id: "gl-b3-4", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Programación", definicion: "Escribir código que la computadora puede ejecutar" },
+    { id: "gl-b3-5", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Código", definicion: "Instrucciones escritas en un lenguaje que la computadora entiende" },
+    { id: "gl-b3-6", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Pseudocódigo", definicion: "Algoritmo escrito en lenguaje humano, antes de programar" },
+    { id: "gl-b3-7", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Diagrama de flujo", definicion: "Representación gráfica de un algoritmo con símbolos" },
+    { id: "gl-b3-8", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Variable", definicion: "Dato que puede cambiar durante la ejecución del programa" },
+    { id: "gl-b3-9", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Condicional", definicion: "Estructura que toma decisiones según una condición" },
+    { id: "gl-b3-10", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Bucle", definicion: "Estructura que repite instrucciones varias veces" },
+    { id: "gl-b3-11", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Función", definicion: "Bloque de código reutilizable que realiza una tarea específica" },
+    { id: "gl-b3-12", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Hackatón", definicion: "Competencia de programación intensiva para resolver problemas" },
+    { id: "gl-b3-13", secuencia: 7, secuenciaTitulo: "🧠 Secuencia 7 — Soluciones Digitales", termino: "Prototipo", definicion: "Versión inicial y funcional de una solución para probar ideas" },
+
+    // ===== SECUENCIA 8 — DISEÑO WEB =====
+    { id: "gl-b3-14", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "HTML", definicion: "Lenguaje de marcado que estructura el contenido de una web" },
+    { id: "gl-b3-15", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "CSS", definicion: "Lenguaje que define el diseño visual de una web" },
+    { id: "gl-b3-16", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "JavaScript", definicion: "Lenguaje que añade interactividad y dinamismo a una web" },
+    { id: "gl-b3-17", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "Navegador", definicion: "Programa que muestra páginas web (Chrome, Firefox, Safari)" },
+    { id: "gl-b3-18", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "Servidor", definicion: "Computadora que almacena páginas web y las envía a quien las solicita" },
+    { id: "gl-b3-19", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "URL", definicion: "Dirección única de una página web (ej: www.google.com)" },
+    { id: "gl-b3-20", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "Dominio", definicion: "Nombre que identifica un sitio web (ej: google.com)" },
+    { id: "gl-b3-21", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "Hosting", definicion: "Servicio que alquila espacio en un servidor para tu web" },
+    { id: "gl-b3-22", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "Responsive", definicion: "Diseño que se adapta a cualquier tamaño de pantalla" },
+    { id: "gl-b3-23", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "Wireframe", definicion: "Esquema básico de una página, sin colores ni detalles" },
+    { id: "gl-b3-24", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "Mockup", definicion: "Diseño detallado de una página, con colores y contenido real" },
+    { id: "gl-b3-25", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "UI (User Interface)", definicion: "Diseño visual de la interfaz: botones, colores, tipografía" },
+    { id: "gl-b3-26", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "UX (User Experience)", definicion: "Experiencia del usuario: ¿es fácil, rápido, satisfactorio?" },
+    { id: "gl-b3-27", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "Navegación", definicion: "Sistema que permite moverse entre páginas de un sitio" },
+    { id: "gl-b3-28", secuencia: 8, secuenciaTitulo: "🌐 Secuencia 8 — Diseño Web", termino: "Footer / Pie de página", definicion: "Sección inferior con información legal y de contacto" },
+
+    // ===== SECUENCIA 9 — PROTOTIPOS TECNOLÓGICOS E IOT =====
+    { id: "gl-b3-29", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "Prototipo", definicion: "Versión preliminar funcional de un producto para probar ideas" },
+    { id: "gl-b3-30", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "Prototipado rápido", definicion: "Crear versiones simples en poco tiempo para aprender rápido" },
+    { id: "gl-b3-31", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "Iteración", definicion: "Ciclo de mejorar, probar y mejorar de nuevo" },
+    { id: "gl-b3-32", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "IoT (Internet de las Cosas)", definicion: "Objetos físicos conectados a internet que recogen y actúan sobre datos" },
+    { id: "gl-b3-33", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "Sensor", definicion: "Dispositivo que detecta condiciones del entorno" },
+    { id: "gl-b3-34", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "Actuador", definicion: "Dispositivo que ejecuta acciones físicas" },
+    { id: "gl-b3-35", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "Arduino", definicion: "Placa microcontroladora programable para proyectos electrónicos" },
+    { id: "gl-b3-36", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "Microcontrolador", definicion: "Chip pequeño que controla dispositivos electrónicos" },
+    { id: "gl-b3-37", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "Design Thinking", definicion: "Metodología de innovación centrada en el usuario" },
+    { id: "gl-b3-38", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "Empatía", definicion: "Capacidad de entender los sentimientos y necesidades de otros" },
+    { id: "gl-b3-39", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "Pitch", definicion: "Presentación breve y persuasiva de una idea o proyecto" },
+    { id: "gl-b3-40", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "Feedback", definicion: "Retroalimentación constructiva para mejorar" },
+    { id: "gl-b3-41", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "Escalabilidad", definicion: "Capacidad de crecer sin perder calidad ni funcionalidad" },
+    { id: "gl-b3-42", secuencia: 9, secuenciaTitulo: "🔧 Secuencia 9 — Prototipos Tecnológicos e IoT", termino: "MVP (Producto Mínimo Viable)", definicion: "Versión más simple que resuelve el problema principal" },
+  ],
+};
+
 /* =========================================================
    2. "CONECTORES" DE DATOS (aquí se integrará Google Sheets)
    ========================================================= */
