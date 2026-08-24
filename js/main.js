@@ -3640,6 +3640,8 @@ async function obtenerDatos(tabla, opciones = {}) {
   if (opciones.in) for (const [columna, valores] of Object.entries(opciones.in)) consulta = consulta.in(columna, valores);
   if (opciones.noNulo) for (const columna of opciones.noNulo) consulta = consulta.not(columna, "is", null);
   if (opciones.esNulo) for (const columna of Object.keys(opciones.esNulo)) consulta = consulta.is(columna, null);
+  if (opciones.gte) for (const [columna, valor] of Object.entries(opciones.gte)) consulta = consulta.gte(columna, valor);
+  if (opciones.lt) for (const [columna, valor] of Object.entries(opciones.lt)) consulta = consulta.lt(columna, valor);
   if (opciones.order) consulta = consulta.order(opciones.order.columna, { ascending: opciones.order.ascending });
   if (typeof opciones.limit === "number") consulta = consulta.limit(opciones.limit);
 
@@ -3697,6 +3699,19 @@ function obtenerDatosDemo(tabla, opciones) {
   if (opciones.esNulo) {
     for (const columna of Object.keys(opciones.esNulo)) filas = filas.filter((fila) => fila[columna] == null);
   }
+  // new Date(...) en vez de comparación de strings: los timestamps reales
+  // (columna timestamptz) y los de datos-demo.js no comparten formato
+  // exacto de string, solo son fechas válidas equivalentes.
+  if (opciones.gte) {
+    for (const [columna, valor] of Object.entries(opciones.gte)) {
+      filas = filas.filter((fila) => new Date(fila[columna]) >= new Date(valor));
+    }
+  }
+  if (opciones.lt) {
+    for (const [columna, valor] of Object.entries(opciones.lt)) {
+      filas = filas.filter((fila) => new Date(fila[columna]) < new Date(valor));
+    }
+  }
   if (opciones.order) {
     const { columna, ascending } = opciones.order;
     filas = filas.slice().sort((a, b) => (a[columna] < b[columna] ? -1 : a[columna] > b[columna] ? 1 : 0) * (ascending ? 1 : -1));
@@ -3705,7 +3720,7 @@ function obtenerDatosDemo(tabla, opciones) {
 
   // Proyección de columnas: replica el recorte real de Supabase cuando
   // select pide menos que "*" (ver obtenerTendenciasSemanalesDashboard/
-  // obtenerActividadRecienteDashboard) — sin esto, código que dependiera
+  // obtenerEntregasFeedActividad) — sin esto, código que dependiera
   // de que una columna NO seleccionada venga undefined se comportaría
   // distinto en demo que en real.
   if (opciones.select && opciones.select !== "*") {
@@ -18927,73 +18942,220 @@ function formatearFechaHoraCorta(fechaHoraISO) {
   );
 }
 
-// Feed de actividad reciente: últimas entregas completadas del trimestre/
-// grupo filtrado. La tabla "progreso" no tiene columna created_at (solo
-// actualizado_en, que ya se usa en todo el resto del módulo) — se usa esa
-// como único timestamp en vez de inventar una columna que no existe.
-async function obtenerActividadRecienteDashboard(trimestre, resumenAlumnos, limite = 15) {
-  const idsAlumnos = resumenAlumnos.map((r) => r.alumno.auth_user_id);
+// Feed de actividad reciente: combina entregas (progreso) + avisos.
+// Modo "Recientes" (fechaFiltro null): últimos TAMANO_PAGINA_FEED_ACTIVIDAD
+// eventos combinados; entregas respetan el trimestre activo (avisos no
+// tienen columna trimestre, nunca se filtran por eso). Modo "Por día"
+// (fechaFiltro = "YYYY-MM-DD"): TODOS los eventos de ese día exacto, sin
+// filtro de trimestre para entregas tampoco (el día manda) — la
+// paginación de ese modo se recorta en el cliente, ver
+// cargarFeedActividadDashboard().
+const TAMANO_PAGINA_FEED_ACTIVIDAD = 20;
+
+// Límites de un día calendario en América/Ciudad_de_México, que ya no
+// observa horario de verano (reforma 2022): offset fijo -06:00 todo el
+// año, así que no hace falta resolver DST aquí. Se fija el offset en el
+// propio literal en vez de dejar que Postgres lo asuma en UTC (que
+// correría la frontera del día 6 horas).
+function limitesDiaCDMX(fechaISO) {
+  return {
+    inicio: fechaISO + "T00:00:00-06:00",
+    fin: sumarDiasISO(fechaISO, 1) + "T00:00:00-06:00",
+  };
+}
+
+async function obtenerEntregasFeedActividad(trimestreActivo, idsAlumnos, fechaFiltro) {
   if (idsAlumnos.length === 0) return [];
 
-  const { data, error } = await obtenerDatos("progreso", {
-    select: "alumno_id, tipo, item_id, origen, actualizado_en",
-    eq: { trimestre, completado: true },
+  const opciones = {
+    select: "alumno_id, tipo, item_id, trimestre, origen, actualizado_en",
+    eq: { completado: true },
     in: { alumno_id: idsAlumnos },
     noNulo: ["actualizado_en"],
     order: { columna: "actualizado_en", ascending: false },
-    limit: limite,
-  });
+  };
+
+  if (fechaFiltro) {
+    const { inicio, fin } = limitesDiaCDMX(fechaFiltro);
+    opciones.gte = { actualizado_en: inicio };
+    opciones.lt = { actualizado_en: fin };
+  } else {
+    opciones.eq.trimestre = trimestreActivo;
+    opciones.limit = TAMANO_PAGINA_FEED_ACTIVIDAD;
+  }
+
+  const { data, error } = await obtenerDatos("progreso", opciones);
   if (error || !data) return [];
 
-  const mapaAlumnos = new Map(resumenAlumnos.map((r) => [r.alumno.auth_user_id, r.alumno]));
-  const entregablesTodos = await obtenerEntregablesPorTipo("todos", trimestre);
-  const mapaEntregables = new Map(entregablesTodos.map((item) => [item.tipoEntregable + "-" + item.id, item]));
+  // "Por día" ignora el trimestre activo, así que las entregas de ese día
+  // pueden venir de cualquiera de los 3 -- se necesitan los entregables de
+  // los 3 para poder resolver el título de cada una (ver mapaEntregables).
+  const trimestresNecesarios = fechaFiltro ? ["1", "2", "3"] : [String(trimestreActivo)];
+  const entregablesPorTrimestre = await Promise.all(
+    trimestresNecesarios.map(async (t) => [t, await obtenerEntregablesPorTipo("todos", t)])
+  );
+  const mapaEntregables = new Map();
+  for (const [t, entregables] of entregablesPorTrimestre) {
+    for (const item of entregables) mapaEntregables.set(t + "-" + item.tipoEntregable + "-" + item.id, item);
+  }
 
   return data
     .map((fila) => {
-      const alumno = mapaAlumnos.get(fila.alumno_id);
-      const entregable = mapaEntregables.get(fila.tipo + "-" + fila.item_id);
-      if (!alumno || !entregable) return null;
-      return { alumno, entregable, origen: fila.origen, actualizadoEn: fila.actualizado_en };
+      const entregable = mapaEntregables.get(String(fila.trimestre) + "-" + fila.tipo + "-" + fila.item_id);
+      if (!entregable) return null;
+      return {
+        tipo: "entrega",
+        timestamp: fila.actualizado_en,
+        alumnoId: fila.alumno_id,
+        entregable,
+        origen: fila.origen,
+      };
     })
     .filter(Boolean);
 }
 
-function renderizarFeedActividadDashboard(actividad) {
+// grupo destino "todos" en avisos aplica a ambos grupos (ver <select
+// id="aviso-grupo"> en admin.html) -- por eso el filtro de Grupo del
+// Dashboard busca ese valor además del grupo activo, igual que ya hace
+// coincideConGrupoDelAlumno() para entregables.
+async function obtenerAvisosFeedActividad(grupo, fechaFiltro) {
+  const opciones = {
+    select: "id, titulo, descripcion, fecha, fecha_expiracion, grupo, prioridad, creado_en",
+    in: { grupo: [grupo, "todos"] },
+    noNulo: ["creado_en"],
+    order: { columna: "creado_en", ascending: false },
+  };
+
+  if (fechaFiltro) {
+    const { inicio, fin } = limitesDiaCDMX(fechaFiltro);
+    opciones.gte = { creado_en: inicio };
+    opciones.lt = { creado_en: fin };
+  } else {
+    opciones.limit = TAMANO_PAGINA_FEED_ACTIVIDAD;
+  }
+
+  const { data, error } = await obtenerDatos("avisos", opciones);
+  if (error || !data) return [];
+
+  return data.map((aviso) => ({ tipo: "aviso", timestamp: aviso.creado_en, ...aviso }));
+}
+
+async function obtenerActividadDashboard(trimestre, resumenAlumnos, grupo, fechaFiltro) {
+  const idsAlumnos = resumenAlumnos.map((r) => r.alumno.auth_user_id);
+  const mapaAlumnos = new Map(resumenAlumnos.map((r) => [r.alumno.auth_user_id, r.alumno]));
+
+  const [entregasCrudas, avisos] = await Promise.all([
+    obtenerEntregasFeedActividad(trimestre, idsAlumnos, fechaFiltro),
+    obtenerAvisosFeedActividad(grupo, fechaFiltro),
+  ]);
+
+  const entregas = entregasCrudas
+    .map((fila) => {
+      const alumno = mapaAlumnos.get(fila.alumnoId);
+      if (!alumno) return null;
+      return { ...fila, alumno };
+    })
+    .filter(Boolean);
+
+  const eventos = [...entregas, ...avisos].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  // En "Recientes" cada fuente ya trae como mucho TAMANO_PAGINA_FEED_ACTIVIDAD
+  // (hasta 40 combinados) -- se recorta aquí a los 20 más recientes reales.
+  // En "Por día" no hay límite: se trae el día completo para paginar en
+  // cargarFeedActividadDashboard().
+  return fechaFiltro ? eventos : eventos.slice(0, TAMANO_PAGINA_FEED_ACTIVIDAD);
+}
+
+// alumno.nombre/entregable.titulo (entregas) o titulo/prioridad (avisos) ya
+// vienen resueltos en cada evento -- ver obtenerActividadDashboard().
+function renderizarFeedActividadDashboard(eventos, { modoDia = false } = {}) {
   const contenedor = document.getElementById("dashboard-feed-actividad");
   if (!contenedor) return;
-  contenedor.innerHTML = "";
 
-  if (actividad.length === 0) {
-    const vacio = document.createElement("p");
-    vacio.className = "sin-resultados";
-    vacio.textContent = "Sin entregas registradas todavía para este trimestre y grupo.";
-    contenedor.appendChild(vacio);
+  if (eventos.length === 0) {
+    mostrarSinResultados(
+      contenedor,
+      modoDia ? "Sin actividad registrada este día." : "Sin actividad registrada todavía para este trimestre y grupo."
+    );
     return;
   }
 
+  contenedor.innerHTML = "";
   const lista = document.createElement("ul");
   lista.className = "dashboard-riesgo-lista";
 
-  actividad.forEach(({ alumno, entregable, origen, actualizadoEn }) => {
+  eventos.forEach((evento) => {
     const li = document.createElement("li");
     li.className = "dashboard-riesgo-lista__item";
 
     const info = document.createElement("span");
     info.className = "dashboard-riesgo-lista__info";
-    info.textContent = alumno.nombre + " · " + entregable.titulo;
-    li.appendChild(info);
 
     const meta = document.createElement("span");
     meta.className = "dashboard-riesgo-lista__meta";
-    const etiquetaOrigen = origen === "formulario" ? "📝 Formulario" : "🧑‍🏫 Registro manual";
-    meta.textContent = formatearFechaHoraCorta(actualizadoEn) + " · " + etiquetaOrigen;
-    li.appendChild(meta);
 
+    if (evento.tipo === "entrega") {
+      info.textContent = "📤 " + evento.alumno.nombre + " · " + evento.entregable.titulo;
+      const etiquetaOrigen = evento.origen === "formulario" ? "📝 Formulario" : "🧑‍🏫 Registro manual";
+      meta.textContent = formatearFechaHoraCorta(evento.timestamp) + " · " + etiquetaOrigen;
+    } else {
+      info.textContent = "📢 " + evento.titulo;
+      meta.textContent = formatearFechaHoraCorta(evento.timestamp);
+      if (evento.prioridad === "urgente") {
+        meta.appendChild(document.createTextNode(" "));
+        const badge = document.createElement("span");
+        badge.className = "badge-prioridad";
+        badge.dataset.prioridad = "urgente";
+        badge.textContent = "Urgente";
+        meta.appendChild(badge);
+      }
+    }
+
+    li.append(info, meta);
     lista.appendChild(li);
   });
 
   contenedor.appendChild(lista);
+}
+
+// Estado del modo "Por día": fecha null = modo "Recientes". resumenAlumnos
+// se cachea aquí (poblado por renderizarDashboard()) para que los botones
+// de paginación puedan volver a pedir el feed sin re-renderizar todo el
+// Dashboard (mismo criterio que filasAsistenciaDashboard más abajo).
+const estadoFeedActividad = { fecha: null, pagina: 1 };
+let resumenAlumnosParaFeedActividad = [];
+
+async function cargarFeedActividadDashboard(trimestre, resumenAlumnos, grupo) {
+  resumenAlumnosParaFeedActividad = resumenAlumnos;
+
+  const botonVolver = document.getElementById("dashboard-feed-actividad-volver");
+  if (botonVolver) botonVolver.hidden = !estadoFeedActividad.fecha;
+
+  const contenedorPaginacion = document.getElementById("dashboard-feed-actividad-paginacion");
+
+  const eventos = await obtenerActividadDashboard(trimestre, resumenAlumnos, grupo, estadoFeedActividad.fecha);
+
+  if (!estadoFeedActividad.fecha) {
+    if (contenedorPaginacion) contenedorPaginacion.hidden = true;
+    renderizarFeedActividadDashboard(eventos, { modoDia: false });
+    return;
+  }
+
+  const totalPaginas = Math.max(1, Math.ceil(eventos.length / TAMANO_PAGINA_FEED_ACTIVIDAD));
+  estadoFeedActividad.pagina = Math.min(estadoFeedActividad.pagina, totalPaginas);
+  const inicio = (estadoFeedActividad.pagina - 1) * TAMANO_PAGINA_FEED_ACTIVIDAD;
+  const eventosPagina = eventos.slice(inicio, inicio + TAMANO_PAGINA_FEED_ACTIVIDAD);
+
+  renderizarFeedActividadDashboard(eventosPagina, { modoDia: true });
+
+  if (contenedorPaginacion) {
+    contenedorPaginacion.hidden = eventos.length <= TAMANO_PAGINA_FEED_ACTIVIDAD;
+    const textoPagina = document.getElementById("dashboard-feed-actividad-pagina-texto");
+    if (textoPagina) textoPagina.textContent = "Página " + estadoFeedActividad.pagina + " de " + totalPaginas;
+    const botonAnterior = document.getElementById("dashboard-feed-actividad-anterior");
+    const botonSiguiente = document.getElementById("dashboard-feed-actividad-siguiente");
+    if (botonAnterior) botonAnterior.disabled = estadoFeedActividad.pagina <= 1;
+    if (botonSiguiente) botonSiguiente.disabled = estadoFeedActividad.pagina >= totalPaginas;
+  }
 }
 
 // Barra de progreso simple (misma .barra-progreso ya usada en Progreso):
@@ -19436,14 +19598,13 @@ async function renderizarDashboard() {
   // obtenerGruposSinRegistrarHoy().
   renderizarAvisoAsistenciaHoy(await obtenerGruposSinRegistrarHoy());
 
-  const [resumenPorGrupo, evolucionSecuencia, actividadReciente] = await Promise.all([
+  const [resumenPorGrupo, evolucionSecuencia] = await Promise.all([
     construirResumenPorGrupoDashboard(trimestre, resumenAlumnos, grupo),
     obtenerEvolucionPromedioPorSecuencia(trimestre, grupo),
-    obtenerActividadRecienteDashboard(trimestre, resumenAlumnos),
   ]);
   renderizarComparativaGruposDashboard(resumenPorGrupo);
   renderizarEvolucionSecuenciaDashboard(evolucionSecuencia);
-  renderizarFeedActividadDashboard(actividadReciente);
+  await cargarFeedActividadDashboard(trimestre, resumenAlumnos, grupo);
 }
 
 async function inicializarModuloDashboard() {
@@ -19475,8 +19636,46 @@ async function inicializarModuloDashboard() {
 
   selectGrupo.addEventListener("change", async () => {
     estadoDashboard.grupo = selectGrupo.value;
+    estadoFeedActividad.pagina = 1;
     await renderizarDashboard();
   });
+
+  const inputFechaFeed = document.getElementById("dashboard-feed-actividad-fecha");
+  const botonVolverFeed = document.getElementById("dashboard-feed-actividad-volver");
+  const botonFeedAnterior = document.getElementById("dashboard-feed-actividad-anterior");
+  const botonFeedSiguiente = document.getElementById("dashboard-feed-actividad-siguiente");
+
+  if (inputFechaFeed) {
+    inputFechaFeed.addEventListener("change", async () => {
+      estadoFeedActividad.fecha = inputFechaFeed.value || null;
+      estadoFeedActividad.pagina = 1;
+      await cargarFeedActividadDashboard(estadoDashboard.trimestre, resumenAlumnosParaFeedActividad, estadoDashboard.grupo);
+    });
+  }
+
+  if (botonVolverFeed) {
+    botonVolverFeed.addEventListener("click", async () => {
+      estadoFeedActividad.fecha = null;
+      estadoFeedActividad.pagina = 1;
+      if (inputFechaFeed) inputFechaFeed.value = "";
+      await cargarFeedActividadDashboard(estadoDashboard.trimestre, resumenAlumnosParaFeedActividad, estadoDashboard.grupo);
+    });
+  }
+
+  if (botonFeedAnterior) {
+    botonFeedAnterior.addEventListener("click", async () => {
+      if (estadoFeedActividad.pagina <= 1) return;
+      estadoFeedActividad.pagina -= 1;
+      await cargarFeedActividadDashboard(estadoDashboard.trimestre, resumenAlumnosParaFeedActividad, estadoDashboard.grupo);
+    });
+  }
+
+  if (botonFeedSiguiente) {
+    botonFeedSiguiente.addEventListener("click", async () => {
+      estadoFeedActividad.pagina += 1;
+      await cargarFeedActividadDashboard(estadoDashboard.trimestre, resumenAlumnosParaFeedActividad, estadoDashboard.grupo);
+    });
+  }
 }
 
 /* =========================================================

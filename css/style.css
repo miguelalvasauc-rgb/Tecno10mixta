@@ -9710,7 +9710,8 @@ a.boton-secundario {
   font-weight: 600;
 }
 
-.calificacion-filtro select {
+.calificacion-filtro select,
+.calificacion-filtro input[type="date"] {
   padding: 0.5rem 0.65rem;
   border-radius: 8px;
   border: 1px solid var(--color-borde);
@@ -12765,6 +12766,31 @@ button.badge-estado {
   width: 2px;
   margin-left: -1px;
   background-color: var(--color-borde);
+}
+
+/* Fila de controles del feed de Actividad reciente (selector "Ver por
+   día" + "Volver a recientes"): mismo wrap responsivo que el resto de
+   filtros del Dashboard, .calificacion-filtro ya trae su propio label +
+   tamaño de control. */
+.dashboard-feed-actividad__controles {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+/* Paginación del modo "Por día": mismos botones ◀/▶ que
+   #calendario-mes-anterior/#calendario-mes-siguiente (.calendario__flecha,
+   ver css arriba), solo se agrega el layout de fila + el texto central. */
+.dashboard-feed-actividad__paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto-suave);
 }
 
 .dashboard-cronograma__etiqueta {

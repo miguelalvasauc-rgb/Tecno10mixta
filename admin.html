@@ -807,7 +807,19 @@
 
         <h3>🕒 Actividad reciente</h3>
         <div class="dashboard-ficha__celda">
+          <div class="dashboard-feed-actividad__controles">
+            <div class="calificacion-filtro">
+              <label for="dashboard-feed-actividad-fecha">Ver por día</label>
+              <input type="date" id="dashboard-feed-actividad-fecha">
+            </div>
+            <button type="button" id="dashboard-feed-actividad-volver" class="boton-secundario" hidden>↺ Volver a recientes</button>
+          </div>
           <div id="dashboard-feed-actividad" aria-live="polite"></div>
+          <div id="dashboard-feed-actividad-paginacion" class="dashboard-feed-actividad__paginacion" hidden>
+            <button type="button" id="dashboard-feed-actividad-anterior" class="calendario__flecha" aria-label="Página anterior">◀</button>
+            <span id="dashboard-feed-actividad-pagina-texto"></span>
+            <button type="button" id="dashboard-feed-actividad-siguiente" class="calendario__flecha" aria-label="Página siguiente">▶</button>
+          </div>
         </div>
       </section>
 

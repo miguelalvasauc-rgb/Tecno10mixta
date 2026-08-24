@@ -378,6 +378,7 @@ const DEMO_AVISOS = [
     grupo: "todos",
     prioridad: "recordatorio",
     fecha_expiracion: "2026-08-31",
+    creado_en: "2026-08-28T14:00:00.000Z",
   },
   {
     id: "demo-aviso-02",
@@ -387,6 +388,7 @@ const DEMO_AVISOS = [
     grupo: "3C",
     prioridad: "importante",
     fecha_expiracion: "2026-09-17",
+    creado_en: "2026-09-10T14:00:00.000Z",
   },
   {
     id: "demo-aviso-03",
@@ -396,6 +398,7 @@ const DEMO_AVISOS = [
     grupo: "todos",
     prioridad: "urgente",
     fecha_expiracion: "2026-09-22",
+    creado_en: "2026-09-19T14:00:00.000Z",
   },
 ];
 
