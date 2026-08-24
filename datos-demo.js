@@ -19,6 +19,7 @@
        actualizado_en
      - avisos: id, titulo, descripcion, fecha, grupo, prioridad,
        fecha_expiracion
+     - eventos_calendario: id, titulo, fecha, grupo, tipo, creado_en
      - fechas_override: id, trimestre, tipo, item_id, grupo, fecha,
        nota, creado_por (agregada en la Fase 6 de "Modo Demo", ver
        DEMO_FECHAS_OVERRIDE más abajo)
@@ -399,6 +400,43 @@ const DEMO_AVISOS = [
 ];
 
 /* ---------------------------------------------------------
+   eventos_calendario — 4 ejemplos, uno por cada tipo real
+   (escuela, evaluacion, general) más un segundo "escuela" para variar
+   el grupo destino.
+   --------------------------------------------------------- */
+
+const DEMO_EVENTOS = [
+  {
+    id: "demo-evento-01",
+    titulo: "Junta de Consejo Técnico Escolar",
+    fecha: "2026-09-25",
+    grupo: "todos",
+    tipo: "escuela",
+  },
+  {
+    id: "demo-evento-02",
+    titulo: "Examen de diagnóstico Bloque 1",
+    fecha: "2026-09-04",
+    grupo: "todos",
+    tipo: "evaluacion",
+  },
+  {
+    id: "demo-evento-03",
+    titulo: "Entrega de uniforme deportivo",
+    fecha: "2026-09-11",
+    grupo: "3C",
+    tipo: "general",
+  },
+  {
+    id: "demo-evento-04",
+    titulo: "Ceremonia cívica mensual",
+    fecha: "2026-10-01",
+    grupo: "todos",
+    tipo: "escuela",
+  },
+];
+
+/* ---------------------------------------------------------
    fechas_override (Fase 6 de "Modo Demo") — 3 overrides de ejemplo
    sobre items reales de T1 (mismos ids que ya usa
    DEMO_ITEMS_POR_TRIMESTRE/DEMO_FECHAS_ENTREGA_POR_TRIMESTRE más
@@ -476,7 +514,7 @@ const DEMO_POPUP_BIENVENIDA = {
    clase REALES de cada grupo (DATOS_HORARIO en js/main.js: 3C = lunes y
    martes, 3E = martes y miércoles) entre el inicio de clases real
    (2026-08-31) y la Evaluación de Trimestre 1 (2026-11-13), ambos del
-   calendario oficial ya usado en DATOS_EVENTOS. Se excluye 2026-11-02
+   calendario oficial ya usado en CALENDARIO_ESCOLAR_2026_2027. Se excluye 2026-11-02
    (Día de Muertos, suspensión que cae lunes — afecta solo a 3C). Mismo
    esqueleto que progreso (config por alumno + generador + flatMap +
    .map final con id secuencial): nada de filas escritas a mano.

@@ -59,14 +59,6 @@ const DATOS_AVISOS = [
   },
 ];
 
-const DATOS_EVENTOS = [
-  { id: "e1", grupo: "todos", titulo: "Entrega reglamento de taller", fecha: "2026-07-04" },
-  { id: "e2", grupo: "3E", titulo: "Entrega diseño CAD", fecha: "2026-07-08" },
-  { id: "e3", grupo: "3C", titulo: "Entrega investigación de robótica", fecha: "2026-07-10" },
-  { id: "e4", grupo: "todos", titulo: "Revisión de avance de proyectos", fecha: "2026-07-24" },
-  { id: "e5", grupo: "todos", titulo: "Entrega final de proyectos", fecha: "2026-08-14" },
-];
-
 // Horario de clases de Educación Tecnológica por grupo.
 const DATOS_HORARIO = [
   { id: "h1", grupo: "3C", dia: "Lunes", horaInicio: "11:40", horaFin: "1:20 pm" },
@@ -78,7 +70,7 @@ const DATOS_HORARIO = [
 
 // Calendario oficial del ciclo escolar SEP 2026-2027 (agosto 2026 a julio
 // 2027): "tipo de día" del ciclo (vacaciones, CTE, suspensión, etc.), un
-// concepto DISTINTO de DATOS_EVENTOS/TAREAS/ACTIVIDADES/PROYECTOS (eso es
+// concepto DISTINTO de eventos_calendario/TAREAS/ACTIVIDADES/PROYECTOS (eso es
 // "hay algo entregable ese día"; esto es "qué tipo de día es"). No se
 // filtra por grupo: aplica igual a 3°C y 3°E.
 //
@@ -3281,7 +3273,17 @@ async function obtenerAvisos() {
 }
 
 async function obtenerEventos() {
-  return DATOS_EVENTOS;
+  const { data, error } = await obtenerDatos("eventos_calendario", { order: { columna: "fecha", ascending: true } });
+
+  if (error || !data) return [];
+
+  return data.map((evento) => ({
+    id: evento.id,
+    grupo: evento.grupo,
+    fecha: evento.fecha,
+    titulo: evento.titulo,
+    tipo: evento.tipo,
+  }));
 }
 
 async function obtenerHorario() {
@@ -3658,6 +3660,7 @@ const DEMO_TABLAS = {
   progreso: () => DEMO_PROGRESO,
   asistencia: () => DEMO_ASISTENCIA,
   avisos: () => DEMO_AVISOS,
+  eventos_calendario: () => DEMO_EVENTOS,
   fechas_override: () => DEMO_FECHAS_OVERRIDE,
   // Fase 12: a diferencia de las tablas de arriba, no viene de un DEMO_
   // array en datos-demo.js — la decisión de producto ya tomada es que
