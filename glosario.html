@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glosario · Educación Tecnológica 3°C y 3°E · Esc. Sec. No. 10 Mixta</title>
+  <meta name="description" content="Glosario de términos clave de Educación Tecnológica, organizado por Bloque y Secuencia — Esc. Sec. No. 10 Mixta 'Fernando Hernández Alcalá'.">
+  <script>
+    // Aplica el tema lo antes posible (antes de cargar css/style.css) para
+    // evitar el flash del tema por defecto al cargar la página. Autocontenido
+    // a propósito — no depende de main.js, que carga después. Un tema de
+    // evento cacheado (Navidad, Día de Muertos, etc.) gana sobre el tema
+    // personal; si no hay evento, usa el tema personal guardado, o si nunca
+    // se ha guardado nada, el de sistema (prefers-color-scheme). Las claves
+    // de localStorage deben coincidir con CLAVE_TEMA y
+    // CLAVE_CACHE_TEMA_EVENTO_ACTIVO en js/main.js.
+    (function () {
+      var temaEvento = localStorage.getItem("cache_tema_evento_activo");
+      var tema =
+        (temaEvento && temaEvento !== "ninguno" && temaEvento) ||
+        localStorage.getItem("temaSeleccionado") ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "oscuro" : "claro");
+      document.documentElement.setAttribute("data-theme", tema);
+    })();
+
+    // Aplica el tamaño de texto elegido (accesibilidad visual) antes de
+    // pintar, mismo criterio que el tema de arriba. Los multiplicadores
+    // deben coincidir con NIVELES_ESCALA_TEXTO en js/main.js.
+    (function () {
+      var multiplicadores = { normal: 1, grande: 1.15, "muy-grande": 1.3 };
+      var escala = multiplicadores[localStorage.getItem("escalaTextoSeleccionada")] || 1;
+      document.documentElement.style.setProperty("--escala-texto", escala);
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+</head>
+<body>
+  <a href="#main-content" class="enlace-saltar">Saltar al contenido principal</a>
+
+  <!-- ===================== RIEL DE NAVEGACIÓN (desktop ≥1024px) ===================== -->
+  <aside class="riel" aria-label="Navegación principal">
+    <a href="index.html" class="riel__logo" aria-label="Ir a la portada">
+      <img
+        src="assets/logo-10mixta.jpg"
+        alt="Logo institucional de la Escuela Secundaria No. 10 Mixta Fernando Hernández Alcalá"
+        class="riel__logo-img">
+    </a>
+    <h1 class="sr-only">Escuela Secundaria No. 10 Mixta &ldquo;Fernando Hernández Alcalá&rdquo; — Educación Tecnológica</h1>
+
+    <nav class="riel__nav" aria-label="Secciones">
+      <button type="button" id="riel-boton-inicio" class="riel__boton" aria-haspopup="true" aria-expanded="false" aria-controls="flyout-inicio" aria-label="Inicio">
+        <span aria-hidden="true">🏠</span>
+      </button>
+
+      <button type="button" id="riel-boton-trimestre" class="riel__boton" aria-haspopup="true" aria-expanded="false" aria-controls="flyout-trimestre" aria-label="Trimestre">
+        <span aria-hidden="true">📘</span>
+        <span id="riel-badge-trimestre" class="riel__badge trimestre-badge" aria-hidden="true">1</span>
+      </button>
+
+      <a href="glosario.html" class="riel__boton" aria-label="Glosario">
+        <span aria-hidden="true">📚</span>
+      </a>
+
+      <a href="faq.html" class="riel__boton" aria-label="FAQ">
+        <span aria-hidden="true">❓</span>
+      </a>
+
+      <a href="padres.html" class="riel__boton" aria-label="Para Padres">
+        <span aria-hidden="true">👨‍👩‍👧‍👦</span>
+      </a>
+
+      <button type="button" id="riel-boton-ajustes" class="riel__boton" aria-haspopup="true" aria-expanded="false" aria-controls="flyout-ajustes" aria-label="Ajustes">
+        <span aria-hidden="true">⚙️</span>
+      </button>
+    </nav>
+
+    <div class="riel__divisor"></div>
+
+    <button type="button" id="riel-boton-perfil" class="riel__boton riel__boton--perfil" aria-haspopup="true" aria-expanded="false" aria-controls="flyout-perfil" aria-label="Perfil">
+      <span aria-hidden="true">👤</span>
+    </button>
+  </aside>
+
+  <div id="flyout-inicio" class="riel-flyout" role="group" aria-label="Inicio" hidden>
+    <p class="riel-flyout__titulo">Inicio</p>
+    <div id="submenu-inicio" class="riel-flyout__lista nav-anclas">
+      <a href="index.html#avisos" class="riel-flyout__enlace">
+        <span aria-hidden="true">📢</span><span>Avisos</span>
+      </a>
+      <a href="index.html#calendario" class="riel-flyout__enlace">
+        <span aria-hidden="true">📅</span><span>Calendario</span>
+      </a>
+      <a href="index.html#perfil-docente" class="riel-flyout__enlace">
+        <span aria-hidden="true">👤</span><span>Conoce a tu profesor</span>
+      </a>
+      <a href="index.html#horario-clases" class="riel-flyout__enlace">
+        <span aria-hidden="true">🕐</span><span>Horario de clases</span>
+      </a>
+      <a href="index.html#criterios-evaluacion" class="riel-flyout__enlace">
+        <span aria-hidden="true">📊</span><span>Criterios de evaluación</span>
+      </a>
+      <a href="index.html#reglamento-taller" class="riel-flyout__enlace">
+        <span aria-hidden="true">📋</span><span>Reglamento</span>
+      </a>
+      <a href="index.html#lista-materiales" class="riel-flyout__enlace">
+        <span aria-hidden="true">🎒</span><span>Materiales</span>
+      </a>
+      <a href="index.html#contacto" class="riel-flyout__enlace">
+        <span aria-hidden="true">📧</span><span>Contacto</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Los enlaces a Temario/Rúbricas/Tareas/Actividades/Proyectos/Videos/
+       Entrega apuntan por defecto al Trimestre 1; JS los reescribe al
+       último trimestre visto (ver actualizarEnlacesTrimestreEnSidebar
+       en js/main.js), porque esas secciones no existen en esta página. -->
+  <div id="flyout-trimestre" class="riel-flyout" role="group" aria-label="Trimestre" hidden>
+    <div class="riel-flyout__titulo-fila">
+      <p class="riel-flyout__titulo" data-texto-trimestre>Trimestre 1</p>
+      <span class="riel-flyout__pill-activo pill-activo-trimestre" hidden>Activo</span>
+    </div>
+    <div class="riel-flyout__trimestre-tabs" role="tablist" aria-label="Selector de trimestre">
+      <a href="trimestre-1.html" class="riel-flyout__trimestre-tab riel-flyout__trimestre-tab--activo" role="tab" aria-selected="true" data-trimestre-tab="1">1°</a>
+      <a href="trimestre-2.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="2">2°</a>
+      <a href="trimestre-3.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="3">3°</a>
+    </div>
+    <div class="riel-flyout__modo-selector" role="group" aria-label="Elige Teoría o Práctica" data-modo-defecto="practica">
+      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="teoria" aria-pressed="false">
+        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">📖</span>
+        <span class="riel-flyout__modo-tarjeta__titulo">Teoría</span>
+        <span class="riel-flyout__modo-tarjeta__conteo">4 secciones</span>
+      </button>
+      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="practica" aria-pressed="false">
+        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">✍️</span>
+        <span class="riel-flyout__modo-tarjeta__titulo">Práctica</span>
+        <span class="riel-flyout__modo-tarjeta__conteo">6 secciones</span>
+      </button>
+    </div>
+    <div class="riel-flyout__lista nav-anclas" data-modo-lista="teoria" hidden>
+      <a href="trimestre-1.html#temario" data-enlace="temario" class="riel-flyout__enlace">
+        <span aria-hidden="true">📘</span><span>Temario</span>
+      </a>
+      <a href="trimestre-1.html#infografias" data-enlace="infografias" class="riel-flyout__enlace">
+        <span aria-hidden="true">🎨</span><span>Infografías</span>
+      </a>
+      <a href="trimestre-1.html#presentaciones" data-enlace="presentaciones" class="riel-flyout__enlace">
+        <span aria-hidden="true">📽️</span><span>Presentaciones</span>
+      </a>
+      <a href="trimestre-1.html#videos" data-enlace="videos" class="riel-flyout__enlace">
+        <span aria-hidden="true">🎬</span><span>Videos</span>
+      </a>
+    </div>
+    <div id="submenu-trimestre" class="riel-flyout__lista nav-anclas" data-modo-lista="practica">
+      <a href="trimestre-1-practica.html#proximas-fechas-trimestre" data-enlace="proximas-fechas-trimestre" class="riel-flyout__enlace">
+        <span aria-hidden="true">📅</span><span>Próximas fechas</span>
+      </a>
+      <a href="trimestre-1-practica.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
+        <span aria-hidden="true">📝</span><span>Tareas</span>
+      </a>
+      <a href="trimestre-1-practica.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
+        <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
+      </a>
+      <a href="trimestre-1-practica.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
+        <span aria-hidden="true">📋</span><span>Rúbricas</span>
+      </a>
+      <a href="trimestre-1-practica.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
+        <span aria-hidden="true">🎯</span><span>Actividades</span>
+      </a>
+      <a href="trimestre-1-practica.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
+        <span aria-hidden="true">🚀</span><span>Proyectos</span>
+      </a>
+    </div>
+  </div>
+
+  <div id="flyout-ajustes" class="riel-flyout" role="group" aria-label="Ajustes" hidden>
+    <p class="riel-flyout__titulo">Ajustes</p>
+    <div id="campo-grupo-selector" class="campo-grupo riel-flyout__campo campo-grupo-selector-slot">
+      <label for="selector-grupo">Grupo</label>
+      <select id="selector-grupo" class="selector-grupo-control" aria-label="Filtrar contenido por grupo">
+        <option value="todos">Todos los grupos</option>
+        <option value="3C">3°C</option>
+        <option value="3E">3°E</option>
+      </select>
+    </div>
+    <p id="texto-grupo-alumno" class="riel-flyout__texto-grupo texto-grupo-alumno-slot" hidden></p>
+    <!-- Botón de cambio de tema claro/oscuro. La preferencia se guarda en localStorage para que no se pierda al navegar entre páginas. -->
+    <button id="boton-tema" class="boton-tema riel-flyout__tema" type="button" aria-haspopup="dialog" aria-label="Elegir tema">
+      <span class="boton-tema__icono" aria-hidden="true">🌙</span>
+      <span class="boton-tema__texto">Elegir tema</span>
+    </button>
+  </div>
+
+  <div id="flyout-perfil" class="riel-flyout" role="group" aria-label="Perfil" hidden>
+    <p class="riel-flyout__titulo">Perfil</p>
+    <span class="etiqueta-nivel riel-flyout__nivel perfil-nivel-pill" hidden></span>
+    <a href="progreso.html" class="riel-flyout__enlace">
+      <span aria-hidden="true">📊</span><span>Mi progreso</span>
+    </a>
+    <a href="cuenta.html" class="riel-flyout__enlace">
+      <span aria-hidden="true">🧑‍🎓</span><span>Mi cuenta</span>
+    </a>
+    <a href="guia.html" class="riel-flyout__enlace">
+      <span aria-hidden="true">📖</span><span>Guía del alumno</span>
+    </a>
+  </div>
+
+  <!-- ===================== BARRA INFERIOR (móvil <1024px) ===================== -->
+  <nav class="barra-inferior" aria-label="Navegación móvil">
+    <button type="button" id="boton-inferior-inicio" class="barra-inferior__item" aria-haspopup="true" aria-expanded="false" aria-controls="sheet-inicio" aria-label="Inicio">
+      <span class="barra-inferior__icono" aria-hidden="true">🏠</span>
+      <span class="barra-inferior__texto">Inicio</span>
+    </button>
+
+    <a href="trimestre-1.html#tareas" data-enlace="tareas" class="barra-inferior__item">
+      <span class="barra-inferior__icono" aria-hidden="true">📝</span>
+      <span class="barra-inferior__texto">Tareas</span>
+    </a>
+
+    <a href="progreso.html" class="barra-inferior__item">
+      <span class="barra-inferior__icono" aria-hidden="true">📊</span>
+      <span class="barra-inferior__texto">Progreso</span>
+    </a>
+
+    <button type="button" id="boton-inferior-trimestre" class="barra-inferior__item" aria-haspopup="true" aria-expanded="false" aria-controls="sheet-trimestre" aria-label="Curso">
+      <span class="barra-inferior__icono-envoltura">
+        <span class="barra-inferior__icono" aria-hidden="true">📘</span>
+        <span class="riel__badge trimestre-badge" aria-hidden="true">1</span>
+      </span>
+      <span class="barra-inferior__texto">Curso</span>
+    </button>
+
+    <button type="button" id="boton-inferior-perfil" class="barra-inferior__item" aria-haspopup="true" aria-expanded="false" aria-controls="sheet-perfil" aria-label="Perfil">
+      <span class="barra-inferior__icono" aria-hidden="true">👤</span>
+      <span class="barra-inferior__texto">Perfil</span>
+    </button>
+  </nav>
+
+  <div id="sheet-backdrop" class="sheet-backdrop" hidden></div>
+
+  <div id="sheet-inicio" class="bottom-sheet" role="group" aria-label="Inicio" hidden>
+    <div class="bottom-sheet__manija" aria-hidden="true"></div>
+    <p class="riel-flyout__titulo">Inicio</p>
+    <div class="riel-flyout__lista nav-anclas">
+      <a href="index.html#avisos" class="riel-flyout__enlace">
+        <span aria-hidden="true">📢</span><span>Avisos</span>
+      </a>
+      <a href="index.html#calendario" class="riel-flyout__enlace">
+        <span aria-hidden="true">📅</span><span>Calendario</span>
+      </a>
+      <a href="index.html#perfil-docente" class="riel-flyout__enlace">
+        <span aria-hidden="true">👤</span><span>Conoce a tu profesor</span>
+      </a>
+      <a href="index.html#horario-clases" class="riel-flyout__enlace">
+        <span aria-hidden="true">🕐</span><span>Horario de clases</span>
+      </a>
+      <a href="index.html#criterios-evaluacion" class="riel-flyout__enlace">
+        <span aria-hidden="true">📊</span><span>Criterios de evaluación</span>
+      </a>
+      <a href="index.html#reglamento-taller" class="riel-flyout__enlace">
+        <span aria-hidden="true">📋</span><span>Reglamento</span>
+      </a>
+      <a href="index.html#lista-materiales" class="riel-flyout__enlace">
+        <span aria-hidden="true">🎒</span><span>Materiales</span>
+      </a>
+      <a href="index.html#contacto" class="riel-flyout__enlace">
+        <span aria-hidden="true">📧</span><span>Contacto</span>
+      </a>
+    </div>
+  </div>
+
+  <div id="sheet-trimestre" class="bottom-sheet" role="group" aria-label="Trimestre" hidden>
+    <div class="bottom-sheet__manija" aria-hidden="true"></div>
+    <div class="riel-flyout__titulo-fila">
+      <p class="riel-flyout__titulo" data-texto-trimestre>Trimestre 1</p>
+      <span class="riel-flyout__pill-activo pill-activo-trimestre" hidden>Activo</span>
+    </div>
+    <div class="riel-flyout__trimestre-tabs" role="tablist" aria-label="Selector de trimestre">
+      <a href="trimestre-1.html" class="riel-flyout__trimestre-tab riel-flyout__trimestre-tab--activo" role="tab" aria-selected="true" data-trimestre-tab="1">1°</a>
+      <a href="trimestre-2.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="2">2°</a>
+      <a href="trimestre-3.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="3">3°</a>
+    </div>
+    <div class="riel-flyout__modo-selector" role="group" aria-label="Elige Teoría o Práctica" data-modo-defecto="practica">
+      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="teoria" aria-pressed="false">
+        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">📖</span>
+        <span class="riel-flyout__modo-tarjeta__titulo">Teoría</span>
+        <span class="riel-flyout__modo-tarjeta__conteo">4 secciones</span>
+      </button>
+      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="practica" aria-pressed="false">
+        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">✍️</span>
+        <span class="riel-flyout__modo-tarjeta__titulo">Práctica</span>
+        <span class="riel-flyout__modo-tarjeta__conteo">6 secciones</span>
+      </button>
+    </div>
+    <div class="riel-flyout__lista nav-anclas" data-modo-lista="teoria" hidden>
+      <a href="trimestre-1.html#temario" data-enlace="temario" class="riel-flyout__enlace">
+        <span aria-hidden="true">📘</span><span>Temario</span>
+      </a>
+      <a href="trimestre-1.html#infografias" data-enlace="infografias" class="riel-flyout__enlace">
+        <span aria-hidden="true">🎨</span><span>Infografías</span>
+      </a>
+      <a href="trimestre-1.html#presentaciones" data-enlace="presentaciones" class="riel-flyout__enlace">
+        <span aria-hidden="true">📽️</span><span>Presentaciones</span>
+      </a>
+      <a href="trimestre-1.html#videos" data-enlace="videos" class="riel-flyout__enlace">
+        <span aria-hidden="true">🎬</span><span>Videos</span>
+      </a>
+    </div>
+    <div class="riel-flyout__lista nav-anclas" data-modo-lista="practica">
+      <a href="trimestre-1-practica.html#proximas-fechas-trimestre" data-enlace="proximas-fechas-trimestre" class="riel-flyout__enlace">
+        <span aria-hidden="true">📅</span><span>Próximas fechas</span>
+      </a>
+      <a href="trimestre-1-practica.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
+        <span aria-hidden="true">📝</span><span>Tareas</span>
+      </a>
+      <a href="trimestre-1-practica.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
+        <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
+      </a>
+      <a href="trimestre-1-practica.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
+        <span aria-hidden="true">📋</span><span>Rúbricas</span>
+      </a>
+      <a href="trimestre-1-practica.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
+        <span aria-hidden="true">🎯</span><span>Actividades</span>
+      </a>
+      <a href="trimestre-1-practica.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
+        <span aria-hidden="true">🚀</span><span>Proyectos</span>
+      </a>
+    </div>
+  </div>
+
+  <div id="sheet-perfil" class="bottom-sheet" role="group" aria-label="Perfil" hidden>
+    <div class="bottom-sheet__manija" aria-hidden="true"></div>
+    <p class="riel-flyout__titulo">Perfil</p>
+    <div class="sheet-perfil__cabecera">
+      <span id="sheet-perfil-avatar"><span aria-hidden="true">👤</span></span>
+      <span class="etiqueta-nivel riel-flyout__nivel perfil-nivel-pill" hidden></span>
+    </div>
+    <a href="progreso.html" class="riel-flyout__enlace">
+      <span aria-hidden="true">📊</span><span>Mi progreso</span>
+    </a>
+    <a href="cuenta.html" class="riel-flyout__enlace">
+      <span aria-hidden="true">🧑‍🎓</span><span>Mi cuenta</span>
+    </a>
+    <a href="guia.html" class="riel-flyout__enlace">
+      <span aria-hidden="true">📖</span><span>Guía del alumno</span>
+    </a>
+    <a href="glosario.html" class="riel-flyout__enlace">
+      <span aria-hidden="true">📚</span><span>Glosario</span>
+    </a>
+    <a href="faq.html" class="riel-flyout__enlace">
+      <span aria-hidden="true">❓</span><span>FAQ</span>
+    </a>
+    <a href="padres.html" class="riel-flyout__enlace">
+      <span aria-hidden="true">👨‍👩‍👧‍👦</span><span>Para Padres</span>
+    </a>
+    <p class="riel-flyout__titulo bottom-sheet__subtitulo">Ajustes</p>
+    <div class="campo-grupo riel-flyout__campo campo-grupo-selector-slot">
+      <label for="selector-grupo-movil">Grupo</label>
+      <select id="selector-grupo-movil" class="selector-grupo-control" aria-label="Filtrar contenido por grupo">
+        <option value="todos">Todos los grupos</option>
+        <option value="3C">3°C</option>
+        <option value="3E">3°E</option>
+      </select>
+    </div>
+    <p class="riel-flyout__texto-grupo texto-grupo-alumno-slot" hidden></p>
+    <button type="button" class="boton-tema riel-flyout__tema" aria-haspopup="dialog" aria-label="Elegir tema">
+      <span class="boton-tema__icono" aria-hidden="true">🌙</span>
+      <span class="boton-tema__texto">Elegir tema</span>
+    </button>
+  </div>
+
+<!-- ===================== MIGAS DE PAN ===================== -->
+  <nav aria-label="breadcrumb" class="migas-de-pan">
+    <ol>
+      <li><a href="index.html">Inicio</a></li>
+      <li class="migas-de-pan__separador" aria-hidden="true">/</li>
+      <li><span class="migas-de-pan__actual" aria-current="page">Glosario</span></li>
+    </ol>
+  </nav>
+
+  <main id="main-content">
+    <!-- ===================== INTRODUCCIÓN + BUSCADOR ===================== -->
+    <section id="glosario-intro" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>📖 Glosario</h2>
+        <p>Los 108 términos clave del curso, organizados por Bloque y Secuencia. Se van habilitando conforme tu profesor desbloquea cada Bloque.</p>
+      </div>
+      <div class="glosario-buscador">
+        <label for="glosario-buscador-input" class="sr-only">Buscar un término en el glosario</label>
+        <input type="search" id="glosario-buscador-input" class="glosario-buscador__input"
+               placeholder="🔍 Buscar un término…" autocomplete="off">
+      </div>
+    </section>
+
+    <!-- ===================== TABS DE BLOQUE + TARJETAS ===================== -->
+    <section id="glosario-contenido" class="seccion seccion--alterna">
+      <div id="glosario-tabs" class="tablist-secuencias" role="tablist" aria-label="Bloques del glosario"></div>
+      <div id="glosario-paneles"></div>
+    </section>
+  </main>
+
+  <!-- ===================== PIE DE PÁGINA ===================== -->
+  <footer class="pie">
+    <div class="pie__marca">
+      <p class="pie__marca-nombre">Escuela Secundaria No. 10 Mixta &ldquo;Fernando Hernández Alcalá&rdquo;</p>
+      <p class="pie__marca-detalle">Educación Tecnológica · Grupos 3°C y 3°E</p>
+    </div>
+
+    <div class="pie__aviso">
+      <p class="pie__aviso-texto">🛡️ Privacidad: tus datos se usan solo para tu evaluación en Educación Tecnológica. <a class="pie__aviso-enlace" href="faq.html#aviso-privacidad">Ver aviso de privacidad completo →</a></p>
+    </div>
+
+    <div class="pie__columnas">
+      <div class="pie__columna">
+        <h2 class="pie__columna-titulo">Navegación</h2>
+        <ul class="pie__enlaces">
+          <li><a href="index.html">Inicio</a></li>
+          <li><a href="trimestre-1.html">Trimestre 1°</a></li>
+          <li><a href="trimestre-2.html">Trimestre 2°</a></li>
+          <li><a href="trimestre-3.html">Trimestre 3°</a></li>
+          <li><span class="pie__enlace-actual" aria-current="page">Glosario</span></li>
+          <li><a href="progreso.html">Mi progreso</a></li>
+          <li><a href="guia.html">Guía rápida</a></li>
+        </ul>
+      </div>
+      <div class="pie__columna">
+        <h2 class="pie__columna-titulo">Ayuda y familia</h2>
+        <ul class="pie__enlaces">
+          <li><a href="faq.html">Preguntas frecuentes</a></li>
+          <li><a href="padres.html">Para padres de familia</a></li>
+        </ul>
+      </div>
+      <div class="pie__columna">
+        <h2 class="pie__columna-titulo">Contacto</h2>
+        <p class="pie__contacto-dato">Hiram Miguel Alvarado Saucedo</p>
+        <p class="pie__contacto-dato">hiram.alvarado@jaliscoedu.mx</p>
+        <p class="pie__contacto-dato">Por correo: Lunes a Viernes, 7:00 am – 8:00 pm</p>
+      </div>
+    </div>
+
+    <div class="pie__inferior">
+      <p class="pie__copyright">© 2026 Escuela Secundaria No. 10 Mixta · Grupos 3°C y 3°E</p>
+      <p class="pie__mapa"><a href="sitemap.html">Mapa del sitio</a></p>
+    </div>
+  </footer>
+
+  <!-- FAB de accesos rápidos: reemplaza los antiguos botones flotantes de
+       tema y volver arriba. El panel se rellena en runtime por
+       activarFabMenu() en js/main.js, con contenido distinto según la
+       página (ver esa función). -->
+  <button type="button" id="boton-volver-arriba" class="fab-volver-arriba" aria-label="Volver arriba" hidden>
+    <span aria-hidden="true">🔝</span>
+  </button>
+
+  <!-- Toast de confirmación visual genérico (no modal, no bloquea nada,
+       se autodesaparece solo) — ver mostrarToast() en js/main.js. -->
+  <!-- Selector de tema (10 opciones): grid armado por construirGridTemas()
+       en js/main.js al abrir, ver activarSelectorTema(). -->
+  <dialog id="modal-tema" aria-labelledby="modal-tema-titulo">
+    <button type="button" class="modal-tema__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-tema-titulo">Elige un tema</h3>
+    <div id="modal-tema-grid" class="modal-tema__grid"></div>
+  </dialog>
+
+  <!-- Fase 14: celebración de temas de recompensa recién desbloqueados —
+       contenido armado por JS (ver mostrarCelebracionTemasDesbloqueados()
+       en js/main.js), mismo tratamiento de caja que #modal-tema arriba
+       (CSS compartido, sin fijar "position" en el <dialog>). El botón
+       "Ver tema" reutiliza el propio #modal-tema/#modal-tema-grid de
+       arriba — nunca en admin.html: un docente no tiene grupo, así que
+       esto nunca se dispara ahí. -->
+  <dialog id="modal-celebracion-tema" aria-labelledby="modal-celebracion-tema-titulo">
+    <button type="button" class="modal-celebracion-tema__cerrar" aria-label="Cerrar">✕</button>
+    <div class="modal-celebracion-tema__icono" aria-hidden="true">🎉</div>
+    <h3 id="modal-celebracion-tema-titulo">¡Nuevo tema desbloqueado!</h3>
+    <p id="modal-celebracion-tema-lista" class="modal-celebracion-tema__lista"></p>
+    <div class="modal-celebracion-tema__acciones">
+      <button type="button" id="modal-celebracion-tema-ver" class="boton-primario">Ver tema</button>
+      <button type="button" id="modal-celebracion-tema-cerrar-secundario" class="boton-secundario">Cerrar</button>
+    </div>
+  </dialog>
+
+  <div id="contenedor-toast" class="contenedor-toast" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="js/main.js" defer></script>
+</body>
+</html>

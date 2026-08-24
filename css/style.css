@@ -3352,6 +3352,126 @@ summary {
   display: none;
 }
 
+/* =========================================================
+   GLOSARIO (glosario.html) — tabs de Bloque + tarjetas por Secuencia.
+   ========================================================= */
+
+/* Tab de Bloque bloqueado (disabled=true en JS, ver renderizarGlosario()):
+   mismo criterio visual que el resto de los "bloqueado" del sitio —
+   opacidad reducida, sin cambiar layout. El disabled nativo ya lo saca
+   del tabindex y evita el clic; esto es solo la capa visual. */
+.tablist-secuencias__tab--bloqueada {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.glosario-buscador {
+  margin-top: 1rem;
+}
+
+.glosario-buscador__input {
+  width: 100%;
+  max-width: 320px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-size: var(--tamano-fuente-secundario);
+}
+
+.glosario-panel__bloqueado {
+  color: var(--color-texto-suave);
+  font-style: italic;
+}
+
+.glosario-grupo {
+  margin-bottom: 1.75rem;
+}
+
+.glosario-grupo:last-child {
+  margin-bottom: 0;
+}
+
+.glosario-grupo__titulo {
+  font-size: var(--tamano-fuente-cuerpo);
+  font-weight: 700;
+  color: var(--color-primario);
+  border-left: 4px solid var(--color-acento);
+  padding-left: 0.7rem;
+  margin: 0 0 0.9rem;
+}
+
+:root[data-theme="oscuro"] .glosario-grupo__titulo {
+  color: var(--color-texto);
+}
+
+:root[data-theme="claro"] .glosario-grupo__titulo {
+  border-left-color: var(--color-primario);
+}
+
+.cuadricula-glosario {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+}
+
+@media (min-width: 640px) {
+  .cuadricula-glosario {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .cuadricula-glosario {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.tarjeta-glosario {
+  padding: 0.9rem 1rem;
+  gap: 0.5rem;
+}
+
+.tarjeta-glosario__resumen {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tarjeta-glosario__resumen::-webkit-details-marker {
+  display: none;
+}
+
+.tarjeta-glosario__termino {
+  font-weight: 700;
+  color: var(--color-texto);
+  flex: 1;
+}
+
+.tarjeta-glosario__chip {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.tarjeta-glosario__icono {
+  color: var(--color-turquesa);
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.tarjeta-glosario[open] .tarjeta-glosario__icono {
+  transform: rotate(180deg);
+}
+
+.tarjeta-glosario__definicion {
+  margin: 0;
+  color: var(--color-texto-suave);
+}
+
 /* ---------- Tarjetas de tarea expandibles (acordeón con <details>/<summary>,
    mismo patrón que .tarjeta-rubrica) ---------- */
 .tarjeta-tarea {

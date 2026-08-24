@@ -7312,6 +7312,232 @@ function activarBotonImprimirProgreso() {
   if (boton) boton.addEventListener("click", generarVistaImpresionProgreso);
 }
 
+/* =========================================================
+   GLOSARIO (glosario.html): 3 tabs de Bloque (role="tab" propio, no
+   .tablist-secuencias/aplicarModoVistaSecuencia — ese piloto es para
+   alternar acordeón/pestañas sobre contenido ya renderizado por otra
+   función; acá el candado por Bloque necesita su propia lógica de
+   selección) + grid de tarjetas <details> agrupadas por Secuencia,
+   filtrable con el buscador. Candado: mismo criterio ya usado en
+   progreso.html (calcularEstadoTrimestre() sobre trimestreDesbloqueado) —
+   un Bloque bloqueado no revela ningún término, ni siquiera colapsado.
+   ========================================================= */
+
+// Togglea panel visible + estado visual/aria de los tabs (los bloqueados
+// nunca cambian: quedan siempre con disabled=true, puestos así una sola
+// vez en renderizarGlosario()). Vuelve a aplicar el buscador sobre el
+// panel recién mostrado para que un término ya escrito no se "olvide" al
+// cambiar de Bloque.
+function seleccionarBloqueGlosario(bloque) {
+  document.querySelectorAll("#glosario-tabs .tablist-secuencias__tab").forEach((tab) => {
+    if (tab.disabled) return;
+    const activo = Number(tab.dataset.bloque) === bloque;
+    tab.setAttribute("aria-selected", String(activo));
+    tab.classList.toggle("tablist-secuencias__tab--activo", activo);
+    tab.tabIndex = activo ? 0 : -1;
+  });
+
+  document.querySelectorAll(".glosario-panel").forEach((panel) => {
+    panel.hidden = panel.id !== "glosario-panel-" + bloque;
+  });
+
+  filtrarGlosario();
+}
+
+// Navegación por flechas izq/der entre tabs de Bloque, saltándose los
+// bloqueados (mismo patrón ARIA APG que ya usa aplicarModoVistaSecuencia()
+// para .tablist-secuencias, adaptado a que aquí algunos tabs son
+// disabled=true en vez de solo visualmente atenuados).
+function activarTablistGlosario() {
+  const tablist = document.getElementById("glosario-tabs");
+  if (!tablist) return;
+
+  Array.from(tablist.children).forEach((tab) => {
+    if (tab.disabled) return;
+    tab.addEventListener("click", () => seleccionarBloqueGlosario(Number(tab.dataset.bloque)));
+  });
+
+  tablist.addEventListener("keydown", (evento) => {
+    if (evento.key !== "ArrowLeft" && evento.key !== "ArrowRight") return;
+    const tabs = Array.from(tablist.children).filter((tab) => !tab.disabled);
+    if (tabs.length === 0) return;
+    const indiceActual = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
+    if (indiceActual === -1) return;
+    const delta = evento.key === "ArrowRight" ? 1 : -1;
+    const siguiente = tabs[(indiceActual + delta + tabs.length) % tabs.length];
+    evento.preventDefault();
+    seleccionarBloqueGlosario(Number(siguiente.dataset.bloque));
+    siguiente.focus();
+  });
+}
+
+// Filtra las tarjetas YA renderizadas del panel de Bloque visible (mismo
+// patrón que filtrarFilasTablaAlumnos(): normalizarParaBusqueda() +
+// toggle de "hidden", sin volver a construir el DOM). Un grupo de
+// Secuencia se oculta completo si ninguna de sus tarjetas coincide, para
+// no dejar un título de grupo "huérfano" sin tarjetas debajo.
+function filtrarGlosario() {
+  const input = document.getElementById("glosario-buscador-input");
+  const panelActivo = document.querySelector(".glosario-panel:not([hidden])");
+  if (!input || !panelActivo) return;
+
+  const termino = normalizarParaBusqueda(input.value.trim());
+  let algunaVisibleEnPanel = false;
+
+  panelActivo.querySelectorAll(".glosario-grupo").forEach((grupo) => {
+    let algunaVisibleEnGrupo = false;
+    grupo.querySelectorAll(".tarjeta-glosario").forEach((tarjeta) => {
+      const coincide = termino === "" || tarjeta.dataset.busqueda.includes(termino);
+      tarjeta.hidden = !coincide;
+      if (coincide) algunaVisibleEnGrupo = true;
+    });
+    grupo.hidden = !algunaVisibleEnGrupo;
+    if (algunaVisibleEnGrupo) algunaVisibleEnPanel = true;
+  });
+
+  let mensajeSinResultados = panelActivo.querySelector(".glosario-panel__sin-resultados");
+  if (termino !== "" && !algunaVisibleEnPanel) {
+    if (!mensajeSinResultados) {
+      mensajeSinResultados = document.createElement("p");
+      mensajeSinResultados.className = "sin-resultados glosario-panel__sin-resultados";
+      mensajeSinResultados.textContent = "No se encontró ningún término con ese texto.";
+      panelActivo.appendChild(mensajeSinResultados);
+    }
+  } else if (mensajeSinResultados) {
+    mensajeSinResultados.remove();
+  }
+}
+
+// Engancha el buscador — no hace nada fuera de glosario.html.
+function activarBuscadorGlosario() {
+  const input = document.getElementById("glosario-buscador-input");
+  if (!input) return;
+  input.addEventListener("input", filtrarGlosario);
+}
+
+// Arma los 3 tabs de Bloque + sus paneles desde cero (DATOS_GLOSARIO es
+// 100% estático, no depende de grupo/perfil, así que a diferencia de
+// renderizarTareas() etc. esto no necesita volver a correr en
+// sincronizarPerfilActivo() ni al cambiar de grupo). trimestreDesbloqueado
+// ya está resuelto por el guard de la sección 10 antes de llamar a esta
+// función (ver el await de arriba, junto a renderizarTodo()).
+async function renderizarGlosario() {
+  const contenedorTabs = document.getElementById("glosario-tabs");
+  const contenedorPaneles = document.getElementById("glosario-paneles");
+  if (!contenedorTabs || !contenedorPaneles) return;
+
+  contenedorTabs.innerHTML = "";
+  contenedorPaneles.innerHTML = "";
+
+  const bloqueInicial = Math.min(Math.max(trimestreDesbloqueado, 1), 3);
+
+  [1, 2, 3].forEach((bloque) => {
+    const bloqueado = calcularEstadoTrimestre(bloque) === "proximamente";
+    const seleccionado = bloque === bloqueInicial;
+
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "tablist-secuencias__tab";
+    tab.id = "glosario-tab-" + bloque;
+    tab.setAttribute("role", "tab");
+    tab.setAttribute("aria-controls", "glosario-panel-" + bloque);
+    tab.dataset.bloque = String(bloque);
+
+    const tituloTab = document.createElement("span");
+    tituloTab.className = "tablist-secuencias__tab-titulo";
+    tituloTab.textContent = (bloqueado ? "🔒 " : "") + "Bloque " + bloque;
+
+    const conteoTab = document.createElement("span");
+    conteoTab.className = "tablist-secuencias__tab-conteo";
+    conteoTab.textContent = bloqueado ? "Bloqueado" : DATOS_GLOSARIO[bloque].length + " términos";
+
+    tab.append(tituloTab, conteoTab);
+
+    const panel = document.createElement("div");
+    panel.className = "glosario-panel";
+    panel.id = "glosario-panel-" + bloque;
+    panel.setAttribute("role", "tabpanel");
+    panel.setAttribute("aria-labelledby", tab.id);
+    panel.tabIndex = 0;
+    panel.hidden = !seleccionado;
+
+    if (bloqueado) {
+      tab.disabled = true;
+      tab.setAttribute("aria-selected", "false");
+      tab.tabIndex = -1;
+      tab.classList.add("tablist-secuencias__tab--bloqueada");
+
+      const mensaje = document.createElement("p");
+      mensaje.className = "glosario-panel__bloqueado";
+      mensaje.textContent = "🔒 Este bloque se desbloqueará cuando tu profesor lo habilite.";
+      panel.appendChild(mensaje);
+    } else {
+      tab.setAttribute("aria-selected", String(seleccionado));
+      tab.tabIndex = seleccionado ? 0 : -1;
+      tab.classList.toggle("tablist-secuencias__tab--activo", seleccionado);
+
+      const grupos = new Map();
+      DATOS_GLOSARIO[bloque].forEach((item) => {
+        if (!grupos.has(item.secuenciaTitulo)) grupos.set(item.secuenciaTitulo, []);
+        grupos.get(item.secuenciaTitulo).push(item);
+      });
+
+      grupos.forEach((itemsDelGrupo, tituloGrupo) => {
+        const grupo = document.createElement("div");
+        grupo.className = "glosario-grupo";
+
+        const titulo = document.createElement("h3");
+        titulo.className = "glosario-grupo__titulo";
+        titulo.textContent = tituloGrupo;
+        grupo.appendChild(titulo);
+
+        const grid = document.createElement("div");
+        grid.className = "cuadricula-glosario";
+
+        itemsDelGrupo.forEach((item) => {
+          const tarjeta = document.createElement("details");
+          tarjeta.className = "tarjeta-glosario tarjeta";
+          tarjeta.dataset.busqueda = normalizarParaBusqueda(item.termino + " " + item.definicion);
+
+          const resumen = document.createElement("summary");
+          resumen.className = "tarjeta-glosario__resumen";
+
+          const terminoEl = document.createElement("span");
+          terminoEl.className = "tarjeta-glosario__termino";
+          terminoEl.textContent = item.termino;
+
+          const chip = document.createElement("span");
+          chip.className = "etiqueta-nivel etiqueta-nivel--compacta tarjeta-glosario__chip";
+          chip.textContent = "Seq. " + item.secuencia;
+
+          const icono = document.createElement("span");
+          icono.className = "tarjeta-glosario__icono";
+          icono.setAttribute("aria-hidden", "true");
+          icono.textContent = "▾";
+
+          resumen.append(terminoEl, chip, icono);
+          tarjeta.appendChild(resumen);
+
+          const definicion = document.createElement("p");
+          definicion.className = "tarjeta-glosario__definicion";
+          definicion.textContent = item.definicion;
+          tarjeta.appendChild(definicion);
+
+          grid.appendChild(tarjeta);
+        });
+
+        grupo.appendChild(grid);
+        panel.appendChild(grupo);
+      });
+    }
+
+    contenedorTabs.appendChild(tab);
+    contenedorPaneles.appendChild(panel);
+  });
+
+  activarTablistGlosario();
+}
+
 // Filtro "Todos / Bloque 1/2/3" de la tabla de materiales de manualidades
 // (index.html, #lista-materiales). Mismo patrón visual y de comportamiento
 // que .calificacion-tabs-tipo en admin.html (ver activarTabsTipoCalificacion(),
@@ -20044,6 +20270,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   // casi de inmediato de todos modos.
   verificarCelebracionTemasDesbloqueados();
   await renderizarTodo();
+  // Solo existe en glosario.html (guard propio por contenedor, igual que
+  // el resto de renderizarX()); necesita trimestreDesbloqueado ya
+  // resuelto (línea de arriba) para el candado de Bloque.
+  await renderizarGlosario();
 
   // Deep-link desde progreso.html (#tarea-{id}/#actividad-{id}/
   // #proyecto-{id}): solo hace algo en trimestre-1.html y en modo
@@ -20067,6 +20297,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarPanelSesionCuenta();
   activarAccionesPerfilProgreso();
   activarBotonImprimirProgreso();
+  activarBuscadorGlosario();
   actualizarUISesion();
   activarSubmenusSidebar();
   activarFlyoutsRiel();
