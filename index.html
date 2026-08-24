@@ -678,6 +678,32 @@
         </div>
         <div class="calendario__eventos">
           <h3>Próximas fechas</h3>
+
+          <!-- Filtro por tipo de evento: mismo patrón que
+               .materiales-tabs-bloque (Lista de materiales) — pastillas con
+               estado activo/inactivo, oculta items de #lista-eventos con
+               "hidden" sin quitarlos del DOM — ver activarFiltroTipoEventos()
+               en js/main.js. Solo afecta a eventos_calendario, no a tareas/
+               actividades/proyectos. -->
+          <div id="calendario-tabs-tipo" class="calendario-tabs-tipo" role="tablist" aria-label="Filtrar por tipo de evento">
+            <button type="button" class="calendario-tabs-tipo__boton calendario-tabs-tipo__boton--activo"
+                    id="calendario-tab-tipo-todos" role="tab" aria-selected="true" data-tipo="todos">
+              Todos
+            </button>
+            <button type="button" class="calendario-tabs-tipo__boton"
+                    id="calendario-tab-tipo-escuela" role="tab" aria-selected="false" data-tipo="escuela">
+              🏫 Escuela
+            </button>
+            <button type="button" class="calendario-tabs-tipo__boton"
+                    id="calendario-tab-tipo-evaluacion" role="tab" aria-selected="false" data-tipo="evaluacion">
+              📝 Evaluación
+            </button>
+            <button type="button" class="calendario-tabs-tipo__boton"
+                    id="calendario-tab-tipo-general" role="tab" aria-selected="false" data-tipo="general">
+              📌 General
+            </button>
+          </div>
+
           <ul id="lista-eventos" class="lista-eventos" aria-live="polite"></ul>
         </div>
       </div>

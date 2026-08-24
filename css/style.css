@@ -5210,6 +5210,13 @@ summary {
   color: var(--color-texto-suave);
 }
 
+/* Badge de tipo (Cambio 3): separado del texto de grupo con el mismo
+   espaciado que ya usa .evento-item__info h4 respecto al párrafo. */
+.evento-item__info .badge-tipo-evento {
+  display: inline-block;
+  margin-top: 0.3rem;
+}
+
 /* ---------- Enlace de descarga (tareas/actividades) ---------- */
 .enlace-descarga {
   display: inline-flex;
@@ -7260,6 +7267,43 @@ summary {
 .materiales-tabs-bloque__contador {
   opacity: 0.75;
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Filtro de tipo en "Próximas fechas" (#calendario-tabs-tipo)
+   ----------
+   Mismo patrón visual y de comportamiento que .materiales-tabs-bloque de
+   arriba (pastillas activo/inactivo, oculta items con "hidden" sin
+   quitarlos del DOM), con su propia clase porque filtra #lista-eventos
+   en vez de la tabla de materiales — ver activarFiltroTipoEventos() en
+   js/main.js. */
+.calendario-tabs-tipo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.calendario-tabs-tipo__boton {
+  background-color: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .calendario-tabs-tipo__boton:hover {
+    border-color: var(--color-turquesa);
+  }
+}
+
+.calendario-tabs-tipo__boton--activo {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+  color: var(--color-primario-texto);
 }
 
 .tabla-scroll {

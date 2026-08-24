@@ -7364,6 +7364,9 @@ async function renderizarCalendario() {
     const fecha = new Date(evento.fecha + "T00:00:00");
     const item = document.createElement("li");
     item.className = "evento-item";
+    // Consumido por aplicarFiltroTipoEventos() (Cambio 3): oculta/muestra
+    // este <li> sin volver a pedir los eventos ni reconstruir la lista.
+    item.dataset.tipo = evento.tipo;
 
     const fechaBox = document.createElement("div");
     fechaBox.className = "evento-item__fecha";
@@ -7379,10 +7382,72 @@ async function renderizarCalendario() {
     titulo.textContent = evento.titulo;
     const grupoTexto = document.createElement("p");
     grupoTexto.textContent = "Grupo: " + textoGrupo(evento.grupo);
-    info.append(titulo, grupoTexto);
+    info.append(titulo, grupoTexto, crearBadgeTipoEvento(evento.tipo));
 
     item.append(fechaBox, info);
     lista.appendChild(item);
+  });
+
+  aplicarFiltroTipoEventos();
+}
+
+// Filtro por tipo (Cambio 3): oculta/muestra los <li class="evento-item">
+// YA renderizados sin volver a pedir los eventos — mismo criterio que
+// aplicarFiltro() de activarTabsMateriales(). Se vuelve a llamar al final
+// de cada renderizarCalendario() (cambio de mes/grupo) para que el filtro
+// activo sobreviva a la reconstrucción de la lista.
+let filtroTipoEventoActivo = "todos";
+
+function aplicarFiltroTipoEventos() {
+  const lista = document.getElementById("lista-eventos");
+  if (!lista) return;
+
+  const items = Array.from(lista.querySelectorAll(".evento-item"));
+  let mensajeVacio = lista.querySelector("[data-filtro-vacio]");
+
+  // Sin items reales que filtrar (grupo sin próximas fechas): ya lo cubre
+  // mostrarSinResultados() más arriba, no hay nada que hacer aquí.
+  if (items.length === 0) {
+    mensajeVacio?.remove();
+    return;
+  }
+
+  let visibles = 0;
+  items.forEach((item) => {
+    const visible = filtroTipoEventoActivo === "todos" || item.dataset.tipo === filtroTipoEventoActivo;
+    item.hidden = !visible;
+    if (visible) visibles++;
+  });
+
+  if (visibles === 0) {
+    if (!mensajeVacio) {
+      mensajeVacio = document.createElement("p");
+      mensajeVacio.className = "sin-resultados";
+      mensajeVacio.dataset.filtroVacio = "true";
+      mensajeVacio.textContent = "No hay próximas fechas de este tipo.";
+      lista.appendChild(mensajeVacio);
+    }
+  } else {
+    mensajeVacio?.remove();
+  }
+}
+
+function activarFiltroTipoEventos() {
+  const contenedorTabs = document.getElementById("calendario-tabs-tipo");
+  if (!contenedorTabs) return;
+
+  const tabs = Array.from(contenedorTabs.querySelectorAll(".calendario-tabs-tipo__boton"));
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((otro) => {
+        const activo = otro === tab;
+        otro.classList.toggle("calendario-tabs-tipo__boton--activo", activo);
+        otro.setAttribute("aria-selected", String(activo));
+      });
+      filtroTipoEventoActivo = tab.dataset.tipo;
+      aplicarFiltroTipoEventos();
+    });
   });
 }
 
@@ -19643,6 +19708,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarToastModoDemo();
   activarGuiaAlumno();
   activarTabsMateriales();
+  activarFiltroTipoEventos();
   await inicializarModuloCalificacion();
   await inicializarModuloAlumnos();
   await inicializarModuloAsistencia();
