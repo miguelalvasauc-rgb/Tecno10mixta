@@ -58,7 +58,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** Entregaste tu tarea desde la computadora del taller el lunes. El martes revisas tu progreso desde tu celular en casa — como iniciaste sesión con tu cuenta, tu progreso te sigue a cualquier dispositivo.
 
-`[Captura: assets/guia/paso1-cuenta.png]`
+`[Captura: assets/guia/paso1-cuenta.webp]`
 
 ---
 
@@ -74,7 +74,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** Llevas semanas sin entrar y ya no recuerdas tu contraseña. Usas "Recuperar contraseña" con tu correo de siempre en vez de crear una cuenta nueva (que perdería tu progreso).
 
-`[Captura: assets/guia/paso2-recuperar-contrasena.png]`
+`[Captura: assets/guia/paso2-recuperar-contrasena.webp]`
 
 ---
 
@@ -91,7 +91,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** Ves que tu compañero de 3°C tiene una fecha de entrega distinta a la tuya en 3°E para la misma actividad — cada grupo puede tener su propio calendario.
 
-`[Captura: assets/guia/paso3-navegacion.png]`
+`[Captura: assets/guia/paso3-navegacion.webp]`
 
 ---
 
@@ -106,7 +106,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** Estás en la computadora del taller y el texto se ve pequeño. Tocas A+ dos veces y todo el sitio se ve más grande de ahí en adelante.
 
-`[Captura: assets/guia/paso4-tamano-texto.png]`
+`[Captura: assets/guia/paso4-tamano-texto.webp]`
 
 ---
 
@@ -122,7 +122,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** No entendiste bien un tema en clase. Antes de preguntar, revisas su infografía y su video — muchas veces con eso se resuelve la duda.
 
-`[Captura: assets/guia/paso5-contenido-trimestre.png]`
+`[Captura: assets/guia/paso5-contenido-trimestre.webp]`
 
 ---
 
@@ -136,7 +136,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** Antes de entregar tu proyecto integrador, ves que "Excelente" pide una conclusión — la agregas antes de entregar, en vez de enterarte hasta que ya te calificaron.
 
-`[Captura: assets/guia/paso6-rubricas-bloqueo.png]`
+`[Captura: assets/guia/paso6-rubricas-bloqueo.webp]`
 
 ---
 
@@ -151,7 +151,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** Tu grupo resuelve el reto del Trimestre 1 en clase. Unos días después, ves un aviso de "¡Nuevo tema desbloqueado!" la próxima vez que entras al sitio.
 
-`[Captura: assets/guia/paso7-retos-grupo.png]`
+`[Captura: assets/guia/paso7-retos-grupo.webp]`
 
 ---
 
@@ -166,7 +166,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** Ves un tema con candado que dice "Se desbloquea en Trimestre 2" — no es un error, tu grupo aún no ha resuelto ese reto.
 
-`[Captura: assets/guia/paso8-temas-recompensa.png]`
+`[Captura: assets/guia/paso8-temas-recompensa.webp]`
 
 ---
 
@@ -183,7 +183,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** Entregaste hace 10 minutos pero tu progreso sigue en 🟡 Pendiente. No vuelvas a entregar por si acaso — a veces tarda un poco más.
 
-`[Captura: assets/guia/paso9-entrega.png]`
+`[Captura: assets/guia/paso9-entrega.webp]`
 
 ---
 
@@ -203,7 +203,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** Llevas 2 entregas seguidas a tiempo — te falta solo una más para desbloquear tu racha 🔥.
 
-`[Captura: assets/guia/paso10-progreso.png]`
+`[Captura: assets/guia/paso10-progreso.webp]`
 
 ---
 
@@ -217,7 +217,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** Llevas 2 clases seguidas de asistencia perfecta — te falta solo una más para desbloquear tu racha 🎯.
 
-`[Captura: assets/guia/paso11-asistencia.png]`
+`[Captura: assets/guia/paso11-asistencia.webp]`
 
 ---
 
@@ -231,7 +231,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** Ves en el calendario un día marcado como "CTE" — significa que ese día no hay clases, no que tengas una entrega pendiente.
 
-`[Captura: assets/guia/paso12-avisos.png]`
+`[Captura: assets/guia/paso12-avisos.webp]`
 
 ---
 
@@ -245,7 +245,7 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 **Ejemplo típico:** No estás seguro de si tu progreso ya se actualizó. Revisas la FAQ y encuentras la respuesta: puede tardar un par de minutos.
 
-`[Captura: assets/guia/paso13-faq.png]`
+`[Captura: assets/guia/paso13-faq.webp]`
 
 ---
 
@@ -265,21 +265,21 @@ Sin cambios respecto a la versión de 7 pasos: mismo ícono (📖), mismas 9 pá
 
 | Paso | Ruta del archivo | Estado |
 |---|---|---|
-| 1 — Tu cuenta | `assets/guia/paso1-cuenta.png` | subida |
-| 2 — Recuperar contraseña | `assets/guia/paso2-recuperar-contrasena.png` | pendiente |
-| 3 — Navegación | `assets/guia/paso3-navegacion.png` | pendiente |
-| 4 — Tamaño de texto | `assets/guia/paso4-tamano-texto.png` | pendiente |
-| 5 — Contenido del Trimestre | `assets/guia/paso5-contenido-trimestre.png` | pendiente |
-| 6 — Rúbricas y bloqueo | `assets/guia/paso6-rubricas-bloqueo.png` | pendiente |
-| 7 — Retos de grupo | `assets/guia/paso7-retos-grupo.png` | pendiente |
-| 8 — Temas de recompensa | `assets/guia/paso8-temas-recompensa.png` | pendiente |
-| 9 — Entrega de trabajos | `assets/guia/paso9-entrega.png` | pendiente |
-| 10 — Tu Progreso | `assets/guia/paso10-progreso.png` | pendiente |
-| 11 — Asistencia | `assets/guia/paso11-asistencia.png` | tomada, lista para subir |
-| 12 — Avisos y Calendario | `assets/guia/paso12-avisos.png` | pendiente |
-| 13 — Dudas (FAQ) | `assets/guia/paso13-faq.png` | pendiente |
+| 1 — Tu cuenta | `assets/guia/paso1-cuenta.webp` | subida |
+| 2 — Recuperar contraseña | `assets/guia/paso2-recuperar-contrasena.webp` | subida |
+| 3 — Navegación | `assets/guia/paso3-navegacion.webp` | subida |
+| 4 — Tamaño de texto | `assets/guia/paso4-tamano-texto.webp` | subida |
+| 5 — Contenido del Trimestre | `assets/guia/paso5-contenido-trimestre.webp` | subida |
+| 6 — Rúbricas y bloqueo | `assets/guia/paso6-rubricas-bloqueo.webp` | subida |
+| 7 — Retos de grupo | `assets/guia/paso7-retos-grupo.webp` | subida |
+| 8 — Temas de recompensa | `assets/guia/paso8-temas-recompensa.webp` | subida |
+| 9 — Entrega de trabajos | `assets/guia/paso9-entrega.webp` | subida |
+| 10 — Tu Progreso | `assets/guia/paso10-progreso.webp` | subida |
+| 11 — Asistencia | `assets/guia/paso11-asistencia.webp` | subida |
+| 12 — Avisos y Calendario | `assets/guia/paso12-avisos.webp` | subida |
+| 13 — Dudas (FAQ) | `assets/guia/paso13-faq.webp` | subida |
 
-Actualiza la columna "Estado" conforme subas cada captura. Una vez que todas digan "subida", el siguiente paso es convertirlas a `.webp` (misma resolución, menor peso — mismo tratamiento que `assets/infografias/*.webp`).
+Las 13 capturas ya están convertidas a `.webp` (mismo tratamiento que `assets/infografias/*.webp`): misma resolución, ~66% menos peso (912.7 KB → 309.3 KB en total). Los `.png` originales se eliminaron del repo.
 
 ---
 
