@@ -14182,6 +14182,275 @@ async function inicializarModuloAvisos() {
   await inicializarFormularioPopupBienvenida();
 }
 
+// Texto legible de "tipo" de evento del calendario — mismo criterio que
+// textoPrioridad()/textoGrupo(). Usado tanto por la tabla del panel
+// admin (Cambio 2) como por la lista pública "Próximas fechas" (Cambio 3).
+function textoTipoEvento(tipo) {
+  if (tipo === "escuela") return "🏫 Escuela";
+  if (tipo === "evaluacion") return "📝 Evaluación";
+  return "📌 General";
+}
+
+// Mismo criterio que crearBadgeGrupo(): un <span> con la clase de badge
+// y el dato en un atributo data-* para que el color lo resuelva CSS
+// (.badge-tipo-evento[data-tipo=...] en style.css).
+function crearBadgeTipoEvento(tipo) {
+  const span = document.createElement("span");
+  span.className = "badge-tipo-evento";
+  span.dataset.tipo = tipo;
+  span.textContent = textoTipoEvento(tipo);
+  return span;
+}
+
+/* ---------------------------------------------------------
+   Módulo "Calendario" (tab-calendario) — gestiona eventos_calendario.
+   Mismo patrón exacto que el módulo Avisos de arriba (tabla + "+ Nuevo
+   evento" + un solo dialog reutilizado para crear/editar), sin el
+   concepto de expiración/prioridad que sí tiene un aviso.
+   --------------------------------------------------------- */
+
+async function renderizarTablaEventos() {
+  const contenedor = document.getElementById("calendario-tabla-contenedor");
+  if (!contenedor) return;
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  const { data, error } = await obtenerDatos("eventos_calendario", { order: { columna: "fecha", ascending: false } });
+
+  if (error || !data || data.length === 0) {
+    mostrarSinResultados(contenedor, "No hay eventos registrados.");
+    return;
+  }
+
+  contenedor.innerHTML = "";
+  contenedor.appendChild(construirTablaEventos(data));
+}
+
+function construirTablaEventos(eventos) {
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-eventos";
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  ["Fecha", "Título", "Grupo", "Tipo", "Acciones"].forEach((texto) => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  eventos.forEach((evento) => tbody.appendChild(crearFilaEvento(evento)));
+  tabla.appendChild(tbody);
+
+  return tabla;
+}
+
+function crearFilaEvento(evento) {
+  const fila = document.createElement("tr");
+
+  const celdaFecha = document.createElement("td");
+  celdaFecha.textContent = formatearFecha(evento.fecha);
+  fila.appendChild(celdaFecha);
+
+  const celdaTitulo = document.createElement("td");
+  celdaTitulo.textContent = evento.titulo;
+  fila.appendChild(celdaTitulo);
+
+  const celdaGrupo = document.createElement("td");
+  celdaGrupo.appendChild(crearBadgeGrupo(evento.grupo));
+  fila.appendChild(celdaGrupo);
+
+  const celdaTipo = document.createElement("td");
+  celdaTipo.appendChild(crearBadgeTipoEvento(evento.tipo));
+  fila.appendChild(celdaTipo);
+
+  const celdaAcciones = document.createElement("td");
+  celdaAcciones.className = "calendario-tabla__acciones";
+
+  const botonEditar = document.createElement("button");
+  botonEditar.type = "button";
+  botonEditar.className = "boton-secundario";
+  botonEditar.textContent = "Editar";
+  botonEditar.addEventListener("click", () => abrirModalEvento(evento, fila));
+  celdaAcciones.appendChild(botonEditar);
+
+  const botonEliminar = document.createElement("button");
+  botonEliminar.type = "button";
+  botonEliminar.className = "calendario-tabla__boton-eliminar";
+  botonEliminar.textContent = "Eliminar";
+  botonEliminar.addEventListener("click", () => eliminarEvento(evento, fila));
+  celdaAcciones.appendChild(botonEliminar);
+
+  fila.appendChild(celdaAcciones);
+  return fila;
+}
+
+// Mismo criterio que avisoEditando: null en modo "Crear", { evento, fila }
+// en modo "Editar" para poder reemplazar la fila sin refrescar toda la
+// tabla — ver abrirModalEvento()/activarFormularioEvento().
+let eventoEditando = null;
+
+function abrirModalEvento(evento, fila) {
+  const modal = document.getElementById("modal-evento");
+  const formulario = document.getElementById("formulario-evento");
+  if (!modal || !formulario) return;
+
+  formulario.reset();
+  document.getElementById("evento-error").hidden = true;
+  limpiarCampoInvalido(document.getElementById("evento-titulo"));
+
+  if (evento) {
+    eventoEditando = { evento, fila };
+    document.getElementById("modal-evento-titulo").textContent = "Editar evento";
+    document.getElementById("evento-confirmar").textContent = "Guardar cambios";
+    document.getElementById("evento-titulo").value = evento.titulo;
+    document.getElementById("evento-fecha").value = evento.fecha;
+    document.getElementById("evento-grupo").value = evento.grupo;
+    document.getElementById("evento-tipo").value = evento.tipo;
+  } else {
+    eventoEditando = null;
+    document.getElementById("modal-evento-titulo").textContent = "Nuevo evento";
+    document.getElementById("evento-confirmar").textContent = "Crear evento";
+  }
+
+  modal.showModal();
+}
+
+function activarBotonNuevoEvento() {
+  const boton = document.getElementById("calendario-boton-nuevo");
+  if (!boton) return;
+  boton.addEventListener("click", () => abrirModalEvento(null, null));
+}
+
+// Validación mínima (título y fecha no vacíos; grupo y tipo siempre
+// tienen un valor por default en el <select>), mismo criterio que
+// activarFormularioAviso().
+function activarFormularioEvento() {
+  const modal = document.getElementById("modal-evento");
+  const formulario = document.getElementById("formulario-evento");
+  if (!modal || !formulario) return;
+
+  formulario.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    if (demoModeActivo()) {
+      await cerrarDialogoAnimado(modal);
+      abrirModalDemo();
+      return;
+    }
+
+    const campoTitulo = document.getElementById("evento-titulo");
+    const titulo = campoTitulo.value.trim();
+    const fecha = document.getElementById("evento-fecha").value;
+    const grupo = document.getElementById("evento-grupo").value;
+    const tipo = document.getElementById("evento-tipo").value;
+    const error = document.getElementById("evento-error");
+    const botonConfirmar = document.getElementById("evento-confirmar");
+
+    error.hidden = true;
+    limpiarCampoInvalido(campoTitulo);
+
+    if (!titulo) {
+      error.textContent = "El título no puede estar vacío.";
+      error.hidden = false;
+      return;
+    }
+    const resultadoTitulo = validarTextoSeguro(titulo, { maxLargo: 150 });
+    if (!resultadoTitulo.valido) {
+      marcarCampoInvalido(campoTitulo, resultadoTitulo.motivo);
+      return;
+    }
+    if (!fecha) {
+      error.textContent = "La fecha no puede estar vacía.";
+      error.hidden = false;
+      return;
+    }
+
+    const payload = { titulo, fecha, grupo, tipo };
+
+    botonConfirmar.disabled = true;
+    try {
+      if (eventoEditando) {
+        const { data, error: errorUpdate } = await clienteSupabase
+          .from("eventos_calendario")
+          .update(payload)
+          .eq("id", eventoEditando.evento.id)
+          .select()
+          .single();
+        if (errorUpdate) throw errorUpdate;
+
+        cerrarDialogoAnimado(modal);
+        formulario.reset();
+        eventoEditando.fila.replaceWith(crearFilaEvento(data));
+        eventoEditando = null;
+      } else {
+        const { error: errorInsert } = await clienteSupabase.from("eventos_calendario").insert(payload);
+        if (errorInsert) throw errorInsert;
+
+        cerrarDialogoAnimado(modal);
+        formulario.reset();
+        await renderizarTablaEventos();
+      }
+    } catch (err) {
+      error.textContent = "No se pudo guardar el evento: " + (err?.message || "intenta de nuevo.");
+      error.hidden = false;
+    } finally {
+      botonConfirmar.disabled = false;
+    }
+  });
+
+  document.getElementById("evento-cancelar").addEventListener("click", () => {
+    formulario.reset();
+    cerrarDialogoAnimado(modal);
+  });
+
+  const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) {
+    botonCerrar.addEventListener("click", () => {
+      formulario.reset();
+      cerrarDialogoAnimado(modal);
+    });
+  }
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) cerrarDialogoAnimado(modal);
+  });
+}
+
+// Elimina de forma permanente (eventos_calendario no tiene concepto de
+// expiración/soft-delete, a diferencia de un aviso).
+async function eliminarEvento(evento, fila) {
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
+  if (!window.confirm('¿Seguro que quieres eliminar el evento "' + evento.titulo + '"? Esta acción no se puede deshacer.')) return;
+
+  try {
+    const { error } = await clienteSupabase.from("eventos_calendario").delete().eq("id", evento.id);
+    if (error) throw error;
+  } catch (error) {
+    window.alert("No se pudo eliminar el evento: " + (error?.message || "intenta de nuevo."));
+    return;
+  }
+
+  fila.remove();
+}
+
+async function inicializarModuloCalendarioAdmin() {
+  const contenedor = document.getElementById("calendario-tabla-contenedor");
+  if (!contenedor) return; // no es admin.html
+
+  // Mismo guard que Avisos: eventos_calendario también se administra
+  // desde el panel docente protegido por RLS.
+  await promesaGuardPanelDocente;
+
+  await renderizarTablaEventos();
+  activarBotonNuevoEvento();
+  activarFormularioEvento();
+}
+
 // Lectura/escritura genéricas de una fila de config_sitio (columnas
 // clave/valor/actualizado_por), compartidas por los módulos Trimestre y
 // Apariencia del panel docente para no duplicar la conexión a Supabase
@@ -19380,6 +19649,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await inicializarModuloAvisos();
   await inicializarModuloTrimestre();
   await inicializarModuloFechas();
+  await inicializarModuloCalendarioAdmin();
   await inicializarModuloEvaluacion();
   await inicializarModuloDashboard();
   await inicializarModuloApariencia();

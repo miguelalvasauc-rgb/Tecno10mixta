@@ -196,6 +196,10 @@
           Fechas de entrega
         </button>
         <button type="button" class="admin-tabs__boton"
+                id="tab-calendario" role="tab" aria-selected="false" aria-controls="panel-calendario">
+          Calendario
+        </button>
+        <button type="button" class="admin-tabs__boton"
                 id="tab-evaluacion" role="tab" aria-selected="false" aria-controls="panel-evaluacion">
           Evaluación
         </button>
@@ -552,6 +556,21 @@
         </div>
 
         <div id="fechas-tabla-contenedor" aria-live="polite"></div>
+      </section>
+
+      <!-- Módulo "Calendario" (tab-calendario): gestiona eventos_calendario
+           (junta de CTE, exámenes, avisos escolares con fecha propia, etc.),
+           DISTINTO de "Fechas de entrega" (esa es la fecha límite de un
+           entregable ya existente: tarea/actividad/proyecto). Mismo patrón
+           exacto que el módulo Avisos (tabla + botón "+ Nuevo" + un solo
+           dialog para crear/editar) — ver renderizarTablaEventos()/
+           abrirModalEvento()/activarFormularioEvento() en js/main.js. -->
+      <section id="panel-calendario" class="admin-panel" role="tabpanel" aria-labelledby="tab-calendario" hidden>
+        <div class="calificacion-acciones">
+          <button type="button" id="calendario-boton-nuevo" class="boton-secundario">+ Nuevo evento</button>
+        </div>
+
+        <div id="calendario-tabla-contenedor" aria-live="polite"></div>
       </section>
 
       <section id="panel-evaluacion" class="admin-panel" role="tabpanel" aria-labelledby="tab-evaluacion" hidden>
@@ -1059,6 +1078,45 @@
     </form>
   </dialog>
 
+  <!-- Crear/editar evento del calendario — mismo patrón exacto que
+       #modal-aviso (un solo dialog reutilizado para ambos modos, con
+       formulario.dataset guardando el id del evento en edición) — ver
+       abrirModalEvento()/activarFormularioEvento() en js/main.js. -->
+  <dialog id="modal-evento" aria-labelledby="modal-evento-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-evento-titulo">Nuevo evento</h3>
+    <form id="formulario-evento" novalidate>
+      <label for="evento-titulo">Título</label>
+      <input type="text" id="evento-titulo" name="titulo" autocomplete="off" required
+             aria-describedby="evento-titulo-error">
+      <p id="evento-titulo-error" class="campo-formulario__error" role="alert" hidden></p>
+
+      <label for="evento-fecha">Fecha</label>
+      <input type="date" id="evento-fecha" name="fecha" required>
+
+      <label for="evento-grupo">Grupo destino</label>
+      <select id="evento-grupo" name="grupo" required>
+        <option value="todos">Todos</option>
+        <option value="3C">3°C</option>
+        <option value="3E">3°E</option>
+      </select>
+
+      <label for="evento-tipo">Tipo</label>
+      <select id="evento-tipo" name="tipo" required>
+        <option value="escuela">🏫 Escuela</option>
+        <option value="evaluacion">📝 Evaluación</option>
+        <option value="general">📌 General</option>
+      </select>
+
+      <p id="evento-error" class="cuenta-error" role="alert" hidden></p>
+
+      <div class="modal-editar-entrega__acciones">
+        <button type="submit" class="modal-editar-entrega__confirmar" id="evento-confirmar">Crear evento</button>
+        <button type="button" class="boton-secundario" id="evento-cancelar">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+
   <!-- Confirmación antes de cambiar config_sitio.trimestre_desbloqueado
        (afecta el acceso de TODOS los alumnos de inmediato) — ver
        activarFormularioTrimestre()/abrirModalConfirmarTrimestre() en
@@ -1178,7 +1236,7 @@
     <button type="button" class="modal-demo__cerrar" aria-label="Cerrar">✕</button>
     <h3 id="modal-demo-titulo">🎬 Esto es una demostración</h3>
     <div id="modal-demo-contenido">
-      <p>Estás viendo el sitio en modo demo. Ninguna acción se guarda de verdad mientras este modo esté activo: ni los formularios de entrega y contacto, ni los cambios que hagas en el panel docente (calificaciones, alumnos, avisos, fechas de entrega o apariencia).</p>
+      <p>Estás viendo el sitio en modo demo. Ninguna acción se guarda de verdad mientras este modo esté activo: ni los formularios de entrega y contacto, ni los cambios que hagas en el panel docente (calificaciones, alumnos, avisos, fechas de entrega, calendario o apariencia).</p>
     </div>
   </dialog>
 

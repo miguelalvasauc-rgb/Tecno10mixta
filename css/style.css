@@ -11017,6 +11017,96 @@ button.badge-estado {
   padding: 0;
 }
 
+/* ---------- Módulo "Calendario" (tab-calendario) ----------
+   Mismo patrón exacto que .tabla-avisos/.avisos-tabla__* (misma forma:
+   filas + acciones a la derecha), con su propia clase porque las
+   columnas son distintas (Fecha/Título/Grupo/Tipo en vez de
+   Fecha/Título/Grupo/Prioridad/Estado — eventos_calendario no tiene
+   concepto de expiración). */
+.tabla-eventos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--tamano-fuente-accion);
+}
+
+.tabla-eventos th,
+.tabla-eventos td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.tabla-eventos thead th {
+  color: var(--color-texto-suave);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--tamano-fuente-encabezado-tabla);
+  letter-spacing: 0.03em;
+}
+
+.tabla-eventos tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.calendario-tabla__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Mismo criterio que .avisos-tabla__boton-eliminar: texto simple en
+   rojo, no un botón lleno — eliminar es una acción destructiva poco
+   frecuente que no debe competir visualmente con "Editar". */
+.calendario-tabla__boton-eliminar {
+  background: none;
+  border: none;
+  color: var(--color-estado-vencido);
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+/* Badge de "tipo" de evento — 3 variantes por color reutilizando los
+   mismos tokens ya validados en los 20 temas, mismo criterio que
+   .badge-prioridad/.badge-grupo/.badge-formato (nunca rojo/naranja,
+   reservados para estados de error/pendiente):
+   - "escuela": fill navy, igual que .badge-grupo/.badge-estado default.
+   - "evaluacion": fill turquesa, con el mismo override a navy+texto
+     claro en tema claro que ya usa .badge-prioridad[data-prioridad=
+     "recordatorio"] (turquesa + texto blanco falla AA en claro).
+   - "general": outline neutro, igual que .badge-formato (nada de fill
+     para no competir con los otros dos). */
+.badge-tipo-evento {
+  display: inline-block;
+  font-size: var(--tamano-fuente-encabezado-tabla);
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+}
+
+.badge-tipo-evento[data-tipo="escuela"] {
+  background-color: var(--color-primario);
+  color: var(--color-primario-texto);
+}
+
+.badge-tipo-evento[data-tipo="evaluacion"] {
+  background-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+}
+
+:root[data-theme="claro"] .badge-tipo-evento[data-tipo="evaluacion"] {
+  background-color: var(--color-primario);
+  color: var(--color-primario-texto);
+}
+
+.badge-tipo-evento[data-tipo="general"] {
+  border: 1px solid var(--color-borde);
+  background-color: transparent;
+  color: var(--color-texto-suave);
+}
+
 /* ---------- Crear/editar aviso (#modal-aviso) ----------
    Mismo patrón visual que #modal-editar-entrega/#modal-nuevo-alumno, un
    poco más ancho porque combina más campos (incluye textarea + 2 fechas +
@@ -11070,6 +11160,57 @@ button.badge-estado {
   font-size: var(--tamano-fuente-accion);
   margin-bottom: 0.75rem;
   resize: vertical;
+}
+
+/* ---------- Crear/editar evento (#modal-evento) ----------
+   Mismo patrón visual exacto que #modal-aviso, mismas dimensiones (solo
+   tiene menos campos: sin descripción ni fecha de expiración) — ver
+   activarFormularioEvento()/abrirModalEvento() en js/main.js. */
+#modal-evento {
+  width: 92%;
+  max-width: 460px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-evento::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-evento-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: var(--tamano-fuente-titulo-modal);
+  color: var(--color-texto);
+}
+
+#formulario-evento {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+#formulario-evento label {
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 600;
+  color: var(--color-texto-suave);
+}
+
+#formulario-evento input,
+#formulario-evento select {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--font-cuerpo);
+  font-size: var(--tamano-fuente-accion);
+  margin-bottom: 0.75rem;
 }
 
 /* ---------- Tarjeta "Popup de bienvenida" (tab-avisos) ----------
