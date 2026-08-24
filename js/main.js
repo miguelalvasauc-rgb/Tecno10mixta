@@ -7096,6 +7096,12 @@ async function generarVistaImpresionProgreso() {
   ];
 
   porTrimestre.forEach(({ trimestre, tareas, actividades, proyectos, total, completadas }) => {
+    // Un trimestre aún no desbloqueado no debe aparecer ni siquiera como
+    // aviso de "bloqueado" — a diferencia de renderizarProgresoDetallado()
+    // (pantalla), el impreso es un resumen personal en papel: se omite por
+    // completo, como si todavía no existiera.
+    if (Number(trimestre) > trimestreDesbloqueado) return;
+
     const bloque = document.createElement("section");
     bloque.className = "impresion-progreso__trimestre";
 
