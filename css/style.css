@@ -883,7 +883,7 @@
 
   /* Colores por tipo de día del calendario escolar (widget de
      Calendario en la portada). Tokens dedicados (no alias de
-     --color-estado-*/--md-*, que son de uso exclusivo para progreso/
+     --color-estado-* / --md-*, que son de uso exclusivo para progreso/
      insignias) para poder separar los 6 matices lo suficiente entre sí.
      Cada valor se validó con contraste WCAG AA (≥3:1, no-texto) contra
      --color-superficie y --color-fondo en modo claro Y oscuro, ya que
@@ -899,6 +899,23 @@
   --dia-cte-ordinaria: #A66A00;
   --dia-suspension: #DA2E25;
   --dia-evaluacion: #B847A7;
+
+  /* Badge de tipo "General" en eventos_calendario (.badge-tipo-evento):
+     --color-texto-suave NO sirve aquí porque no es un gris neutro fijo,
+     cambia de tono por tema (rosado en rosa-pastel #8C5670, oliva en
+     bosque-calido #5C6B52, etc.), así que un badge "General" se veía con
+     el tinte decorativo del tema activo en vez de leerse como neutro.
+     Mismo valor que ya usa --color-estado-sin-cuenta (gris-azulado,
+     H=215°, a 47° o más de cualquiera de los 4 --color-estado
+     (progreso/pendiente/vencido/completado), Status-Color Exclusivity
+     Rule), pero como token propio: es un eje semántico distinto (tipo de
+     evento, no estado de cuenta), misma Regla de Exclusividad que ya
+     documentan --color-asistencia y --color-estado-codigo-sin-usar
+     arriba, no se repurposea un token de otro dominio aunque el valor
+     final coincida. Fijo (no varía por tema), con el mismo texto fijo
+     #12202E que ya usa --color-estado-sin-cuenta: 6.55:1 de contraste,
+     AA en ambos temas. */
+  --color-evento-general: #9AA4B2;
 
   /* Tipografía del rediseño: Quicksand/Inter auto-hospedadas (ver
      @font-face abajo), con el stack de sistema existente como fallback
@@ -11112,16 +11129,19 @@ button.badge-estado {
   padding: 0;
 }
 
-/* Badge de "tipo" de evento — 3 variantes por color reutilizando los
-   mismos tokens ya validados en los 20 temas, mismo criterio que
-   .badge-prioridad/.badge-grupo/.badge-formato (nunca rojo/naranja,
+/* Badge de "tipo" de evento — 3 variantes por color (nunca rojo/naranja,
    reservados para estados de error/pendiente):
-   - "escuela": fill navy, igual que .badge-grupo/.badge-estado default.
-   - "evaluacion": fill turquesa, con el mismo override a navy+texto
-     claro en tema claro que ya usa .badge-prioridad[data-prioridad=
-     "recordatorio"] (turquesa + texto blanco falla AA en claro).
-   - "general": outline neutro, igual que .badge-formato (nada de fill
-     para no competir con los otros dos). */
+   - "escuela": fill navy (--color-primario), igual que .badge-grupo/
+     .badge-estado default — ya validado en los 20 temas.
+   - "evaluacion": fill turquesa (--color-turquesa), con el mismo
+     override a navy+texto claro en tema claro que ya usa
+     .badge-prioridad[data-prioridad="recordatorio"] (turquesa + texto
+     blanco falla AA en claro).
+   - "general": fill FIJO (--color-evento-general, ver esa variable más
+     arriba) en vez de --color-texto-suave — ese token cambia de tinte
+     por tema (rosado/oliva/etc., no es un gris neutro de verdad), así
+     que "General" se veía con el color decorativo del tema en vez de
+     leerse como neutro. Único de los 3 que no depende del tema activo. */
 .badge-tipo-evento {
   display: inline-block;
   font-size: var(--tamano-fuente-encabezado-tabla);
@@ -11146,9 +11166,8 @@ button.badge-estado {
 }
 
 .badge-tipo-evento[data-tipo="general"] {
-  border: 1px solid var(--color-borde);
-  background-color: transparent;
-  color: var(--color-texto-suave);
+  background-color: var(--color-evento-general);
+  color: #12202E;
 }
 
 /* ---------- Crear/editar aviso (#modal-aviso) ----------
@@ -11822,7 +11841,7 @@ button.badge-estado {
 }
 
 /* ---------- Módulo "Evaluación" (tab-evaluacion) ----------
-   La tabla en sí reutiliza .tabla-calificacion/.tabla-calificacion__col-*/
+   La tabla en sí reutiliza .tabla-calificacion / .tabla-calificacion__col-* /
    .calificacion-tabla__alumno* tal cual (misma estructura visual que
    Calificación y progreso, ver construirTablaEvaluacion() en js/main.js)
    — aquí solo van las clases nuevas del contenido de cada celda, que en
