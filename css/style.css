@@ -4610,6 +4610,26 @@ summary {
   color: var(--color-texto-suave);
 }
 
+/* Tarjeta simple (sin <details>, sin contenido) para un trimestre aún no
+   desbloqueado — mismo criterio visual que .tema-tarjeta--bloqueada
+   (opacidad leve, sin grayscale ni overlay opaco). */
+.panel-progreso__trimestre--bloqueado {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.panel-progreso__trimestre--bloqueado .panel-progreso__trimestre-resumen {
+  cursor: not-allowed;
+}
+
+.panel-progreso__trimestre-candado {
+  margin-left: 0.3rem;
+}
+
+.panel-progreso__trimestre--bloqueado .panel-progreso__trimestre-resumen p {
+  color: var(--color-texto-suave);
+}
+
 .panel-progreso__lista {
   list-style: none;
   margin: 0.4rem 0 0;

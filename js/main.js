@@ -6601,8 +6601,13 @@ async function calcularProgresoDetalladoPorTrimestre(perfil) {
     })
   );
 
-  const totalGeneral = porTrimestre.reduce((suma, t) => suma + t.total, 0);
-  const completadasGeneral = porTrimestre.reduce((suma, t) => suma + t.completadas, 0);
+  // Solo cuentan para el total/completadas general los trimestres que el
+  // docente ya desbloqueó — porTrimestre sigue trayendo los 3 completos
+  // porque el resto de la función (semáforo, detalle itemizado) los
+  // necesita todos.
+  const desbloqueados = porTrimestre.filter((t) => Number(t.trimestre) <= trimestreDesbloqueado);
+  const totalGeneral = desbloqueados.reduce((suma, t) => suma + t.total, 0);
+  const completadasGeneral = desbloqueados.reduce((suma, t) => suma + t.completadas, 0);
 
   cacheProgresoDetallado = { porTrimestre, totalGeneral, completadasGeneral };
   return cacheProgresoDetallado;
@@ -6923,6 +6928,30 @@ async function renderizarProgresoDetallado() {
   const trimestreParaAbrir = TRIMESTRE_ACTUAL || ultimoTrimestreVisto;
 
   porTrimestre.forEach(({ trimestre, tareas, actividades, proyectos, total, completadas }) => {
+    if (Number(trimestre) > trimestreDesbloqueado) {
+      const panelBloqueado = document.createElement("div");
+      panelBloqueado.className = "panel-progreso__trimestre panel-progreso__trimestre--bloqueado tarjeta";
+
+      const resumenBloqueado = document.createElement("div");
+      resumenBloqueado.className = "panel-progreso__trimestre-resumen";
+
+      const tituloBloqueado = document.createElement("h3");
+      tituloBloqueado.textContent = "Trimestre " + trimestre + " ";
+      const candadoBloqueado = document.createElement("span");
+      candadoBloqueado.className = "panel-progreso__trimestre-candado";
+      candadoBloqueado.setAttribute("aria-hidden", "true");
+      candadoBloqueado.textContent = "🔒";
+      tituloBloqueado.appendChild(candadoBloqueado);
+
+      const mensajeBloqueado = document.createElement("p");
+      mensajeBloqueado.textContent = "Se desbloqueará cuando tu profesor lo habilite.";
+
+      resumenBloqueado.append(tituloBloqueado, mensajeBloqueado);
+      panelBloqueado.appendChild(resumenBloqueado);
+      detalle.appendChild(panelBloqueado);
+      return;
+    }
+
     const panel = document.createElement("details");
     panel.className = "panel-progreso__trimestre tarjeta";
     if (trimestre === trimestreParaAbrir) panel.open = true;
