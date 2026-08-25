@@ -11259,6 +11259,14 @@ function validarTextoSeguro(valor, { maxLargo } = {}) {
   return { valido: true, motivo: "" };
 }
 
+// true en cuanto el flujo nuevo de recuperación por código (más abajo,
+// dentro de activarFormulariosCuenta) toma el control tras el Paso 1 —
+// verifyOtp({type:"recovery"}) dispara el mismo evento PASSWORD_RECOVERY
+// que ya escuchaba onAuthStateChange() para el flujo viejo por enlace,
+// así que mostrarPanelRestablecer() (más abajo) revisa esta bandera
+// antes de pisar la UI del flujo nuevo con el panel viejo vacío.
+let recuperacionPorCodigoEnCurso = false;
+
 // Los formularios de "Crear cuenta" / "Iniciar sesión" solo existen en
 // cuenta.html (se buscan por id y, si no están, la función no hace nada
 // en el resto de páginas).
@@ -11421,6 +11429,27 @@ function activarFormulariosCuenta() {
   const exitoRecuperar = document.getElementById("recuperar-exito");
   const campoCorreoRecuperar = document.getElementById("recuperar-correo");
 
+  // Correo del Paso 1, guardado en memoria (nunca releído de un input)
+  // para que "Reenviar código" (más abajo) pueda volver a llamar
+  // resetPasswordForEmail() sin que el alumno tenga que volver a
+  // escribirlo.
+  let correoRecuperacion = "";
+  const bloqueCodigoRecuperacion = document.getElementById("recuperar-codigo-bloque");
+  const formCodigoRecuperacion = document.getElementById("formulario-codigo-recuperacion");
+  const campoCodigoRecuperacion = document.getElementById("recuperar-codigo");
+  const campoNuevaContrasenaRecuperacion = document.getElementById("recuperar-nueva-contrasena");
+  const campoNuevaContrasenaRecuperacionConfirmar = document.getElementById("recuperar-nueva-contrasena-confirmar");
+  const errorCodigoRecuperacion = document.getElementById("recuperar-codigo-form-error");
+  const reenviadoCodigoRecuperacion = document.getElementById("recuperar-codigo-reenviado");
+  const exitoCodigoRecuperacion = document.getElementById("recuperar-codigo-exito");
+  const botonReenviarCodigo = document.getElementById("recuperar-codigo-reenviar");
+  const botonGuardarCodigoRecuperacion = formCodigoRecuperacion?.querySelector("button[type=submit]");
+  activarValidadorContrasena(
+    campoNuevaContrasenaRecuperacion,
+    document.getElementById("recuperar-nueva-contrasena-medidor"),
+    botonGuardarCodigoRecuperacion
+  );
+
   formRecuperar?.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     errorRecuperar.hidden = true;
@@ -11445,14 +11474,102 @@ function activarFormulariosCuenta() {
       errorRecuperar.hidden = false;
       return;
     }
+    correoRecuperacion = correo;
+    recuperacionPorCodigoEnCurso = true;
     exitoRecuperar.hidden = false;
     formRecuperar.reset();
+    if (bloqueCodigoRecuperacion) bloqueCodigoRecuperacion.hidden = false;
   });
 
-  // Paso 2 de recuperación de contraseña: solo se ve tras
-  // mostrarPanelRestablecer() (ver el listener de PASSWORD_RECOVERY más
-  // abajo) — el formulario existe siempre en el HTML pero #panel-restablecer
-  // empieza "hidden", así que este listener no hace nada hasta entonces.
+  // Paso 2 (código de 8 dígitos): verifyOtp() con type "recovery" deja
+  // una sesión ya autenticada en el cliente si el código es válido —
+  // updateUser() opera directo sobre esa sesión, sin depender de ningún
+  // enlace ni del evento PASSWORD_RECOVERY (ver ese listener más abajo,
+  // se deja como está por compatibilidad pero ya no es el camino
+  // principal).
+  formCodigoRecuperacion?.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    errorCodigoRecuperacion.hidden = true;
+    reenviadoCodigoRecuperacion.hidden = true;
+    [campoCodigoRecuperacion, campoNuevaContrasenaRecuperacion, campoNuevaContrasenaRecuperacionConfirmar].forEach(
+      limpiarCampoInvalido
+    );
+
+    const codigo = campoCodigoRecuperacion.value.trim();
+    const contrasena = campoNuevaContrasenaRecuperacion.value;
+    const confirmar = campoNuevaContrasenaRecuperacionConfirmar.value;
+
+    let huboError = false;
+    if (!/^[0-9]{8}$/.test(codigo)) {
+      marcarCampoInvalido(campoCodigoRecuperacion, "Ingresa los 8 dígitos del código que te enviamos por correo.");
+      huboError = true;
+    }
+    if (!calcularReglasContrasena(contrasena).valida) {
+      marcarCampoInvalido(campoNuevaContrasenaRecuperacion, "La contraseña no cumple todas las reglas de seguridad de arriba.");
+      huboError = true;
+    }
+    if (contrasena !== confirmar) {
+      marcarCampoInvalido(campoNuevaContrasenaRecuperacionConfirmar, "Las contraseñas no coinciden.");
+      huboError = true;
+    }
+    if (huboError) return;
+
+    botonGuardarCodigoRecuperacion.disabled = true;
+    const { error: errorVerificar } = await clienteSupabase.auth.verifyOtp({
+      email: correoRecuperacion,
+      token: codigo,
+      type: "recovery",
+    });
+
+    if (errorVerificar) {
+      botonGuardarCodigoRecuperacion.disabled = false;
+      errorCodigoRecuperacion.textContent = "Código incorrecto o expirado.";
+      errorCodigoRecuperacion.hidden = false;
+      return;
+    }
+
+    const { error: errorActualizar } = await clienteSupabase.auth.updateUser({ password: contrasena });
+    botonGuardarCodigoRecuperacion.disabled = false;
+
+    if (errorActualizar) {
+      errorCodigoRecuperacion.textContent = "No se pudo actualizar la contraseña: " + errorActualizar.message;
+      errorCodigoRecuperacion.hidden = false;
+      return;
+    }
+
+    formCodigoRecuperacion.hidden = true;
+    exitoCodigoRecuperacion.hidden = false;
+  });
+
+  // Reenvía a correoRecuperacion (memoria, nunca un input) — el alumno
+  // no vuelve a escribir su correo. Mismo resetPasswordForEmail() del
+  // Paso 1, solo que disparado desde aquí.
+  botonReenviarCodigo?.addEventListener("click", async () => {
+    errorCodigoRecuperacion.hidden = true;
+    reenviadoCodigoRecuperacion.hidden = true;
+    botonReenviarCodigo.disabled = true;
+    const { error } = await clienteSupabase.auth.resetPasswordForEmail(correoRecuperacion, {
+      redirectTo: "https://tecno10mixta.netlify.app/cuenta.html",
+    });
+    botonReenviarCodigo.disabled = false;
+
+    if (error) {
+      errorCodigoRecuperacion.textContent = "No pudimos reenviar el código en este momento. Intenta de nuevo en unos minutos.";
+      errorCodigoRecuperacion.hidden = false;
+      return;
+    }
+    campoCodigoRecuperacion.value = "";
+    reenviadoCodigoRecuperacion.hidden = false;
+  });
+
+  // Paso 2 de recuperación de contraseña (flujo por enlace, Fase 4): ya
+  // no es el camino principal (ver el bloque de código de 8 dígitos
+  // arriba) — se deja intacto por compatibilidad, sin tocarlo, en caso de
+  // que algo dependa todavía del evento PASSWORD_RECOVERY. Solo se ve
+  // tras mostrarPanelRestablecer() (ver el listener de PASSWORD_RECOVERY
+  // más abajo) — el formulario existe siempre en el HTML pero
+  // #panel-restablecer empieza "hidden", así que este listener no hace
+  // nada hasta entonces.
   const formRestablecer = document.getElementById("formulario-restablecer");
   const errorRestablecer = document.getElementById("restablecer-error");
   const exitoRestablecer = document.getElementById("restablecer-exito");
@@ -11499,6 +11616,12 @@ function activarFormulariosCuenta() {
 // directo. Mismo patrón que activarPanelSesionCuenta(): oculta el resto
 // de paneles de #cuenta y muestra solo este.
 function mostrarPanelRestablecer() {
+  // El flujo nuevo por código ya está mostrando su propio éxito
+  // (#recuperar-codigo-exito) — este PASSWORD_RECOVERY es un efecto
+  // secundario de su propio verifyOtp(), no un enlace real, así que no
+  // hay nada que restablecer aquí.
+  if (recuperacionPorCodigoEnCurso) return;
+
   const panelRestablecer = document.getElementById("panel-restablecer");
   if (!panelRestablecer) return;
 

@@ -306,7 +306,7 @@
         <div id="panel-recuperar" class="cuenta-panel" role="tabpanel" aria-labelledby="tab-recuperar" hidden>
           <p class="cuenta-mensaje">
             Ingresa el correo con el que creaste tu cuenta. Si existe, te
-            enviaremos un enlace para elegir una nueva contraseña.
+            enviaremos un código de 8 dígitos para elegir una nueva contraseña.
           </p>
           <form id="formulario-recuperar" class="cuenta-formulario" novalidate>
             <div class="campo-formulario">
@@ -318,11 +318,61 @@
 
             <p id="recuperar-error" class="cuenta-error" role="alert" hidden></p>
             <p id="recuperar-exito" class="cuenta-mensaje" role="status" hidden>
-              📧 Si ese correo tiene una cuenta, te enviamos un enlace para elegir una nueva contraseña. Revisa tu bandeja de entrada, incluyendo la carpeta de spam o no deseados.
+              📧 Si ese correo tiene una cuenta, te enviamos un código de 8 dígitos para elegir una nueva contraseña. Revisa tu bandeja de entrada, incluyendo la carpeta de spam o no deseados.
             </p>
 
-            <button type="submit" class="boton-primario">Enviar enlace de recuperación</button>
+            <button type="submit" class="boton-primario">Enviar código de recuperación</button>
           </form>
+
+          <!-- Paso 2 (código de 8 dígitos): reemplaza al flujo por enlace de
+               #panel-restablecer más abajo — un escáner de seguridad de
+               correo institucional "gastaba" el token de un solo uso antes
+               de que el alumno hiciera clic (confirmado vía Auth Logs de
+               Supabase), así que este paso vive aquí mismo, sin navegar y
+               sin depender de que Supabase resuelva ningún token de enlace
+               al cargar la página. Oculto por defecto, revelado por
+               formRecuperar apenas resetPasswordForEmail() responde sin
+               error — ver activarFormulariosCuenta() en js/main.js. -->
+          <div id="recuperar-codigo-bloque" hidden>
+            <form id="formulario-codigo-recuperacion" class="cuenta-formulario" novalidate>
+              <div class="campo-formulario">
+                <label for="recuperar-codigo">Código de 8 dígitos</label>
+                <input type="text" id="recuperar-codigo" name="codigo" inputmode="numeric" pattern="[0-9]*"
+                       maxlength="8" autocomplete="one-time-code" required
+                       aria-describedby="recuperar-codigo-error">
+                <p id="recuperar-codigo-error" class="campo-formulario__error" role="alert" hidden></p>
+              </div>
+
+              <div class="campo-formulario">
+                <label for="recuperar-nueva-contrasena">Nueva contraseña</label>
+                <input type="password" id="recuperar-nueva-contrasena" name="contrasena" minlength="8"
+                       autocomplete="new-password" required aria-describedby="recuperar-nueva-contrasena-error">
+                <p id="recuperar-nueva-contrasena-error" class="campo-formulario__error" role="alert" hidden></p>
+                <div id="recuperar-nueva-contrasena-medidor" class="medidor-contrasena" aria-live="polite"></div>
+              </div>
+
+              <div class="campo-formulario">
+                <label for="recuperar-nueva-contrasena-confirmar">Confirmar nueva contraseña</label>
+                <input type="password" id="recuperar-nueva-contrasena-confirmar" name="contrasenaConfirmar"
+                       minlength="8" autocomplete="new-password" required
+                       aria-describedby="recuperar-nueva-contrasena-confirmar-error">
+                <p id="recuperar-nueva-contrasena-confirmar-error" class="campo-formulario__error" role="alert" hidden></p>
+              </div>
+
+              <p id="recuperar-codigo-form-error" class="cuenta-error" role="alert" hidden></p>
+              <p id="recuperar-codigo-reenviado" class="cuenta-mensaje" role="status" hidden>
+                📧 Te enviamos un nuevo código. Revisa tu correo.
+              </p>
+
+              <button type="submit" class="boton-primario">Guardar nueva contraseña</button>
+              <button type="button" id="recuperar-codigo-reenviar" class="boton-secundario">Reenviar código</button>
+            </form>
+
+            <div id="recuperar-codigo-exito" class="cuenta-mensaje" role="status" hidden>
+              <p>✅ Tu contraseña se actualizó correctamente.</p>
+              <a href="index.html" class="boton-secundario">Ir a Inicio</a>
+            </div>
+          </div>
         </div>
 
         <div id="panel-sesion-activa" class="cuenta-panel" hidden>
