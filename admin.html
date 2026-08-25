@@ -412,6 +412,25 @@
 
         <div id="avisos-tabla-contenedor" aria-live="polite"></div>
 
+        <!-- Consulta rápida — pregunta de opción múltiple, un solo voto
+             a ciegas por alumno (nunca ve el resultado agregado, ver
+             index.html). Solo una consulta activa a la vez: publicar
+             una nueva desactiva la anterior (con confirmación) — ver
+             renderizarPanelConsulta()/activarFormularioConsulta() en
+             js/main.js. Mismo patrón de tarjeta secundaria dentro de
+             panel-avisos que .avisos-popup-tarjeta (Popup de bienvenida,
+             más abajo). -->
+        <div class="avisos-popup-tarjeta">
+          <h3>🗳️ Consulta rápida</h3>
+          <p class="apariencia-opcion__descripcion">Publica una pregunta de opción múltiple; cada alumno vota una sola vez y sin ver el resultado.</p>
+
+          <div id="consulta-panel-contenedor" aria-live="polite"></div>
+
+          <div class="calificacion-acciones">
+            <button type="button" id="consulta-boton-nueva" class="boton-secundario">+ Nueva consulta</button>
+          </div>
+        </div>
+
         <!-- Popup de bienvenida configurable (config_sitio, clave
              "popup_bienvenida" — requiere el INSERT manual de esa fila en
              el SQL Editor de Supabase antes de que Guardar funcione en
@@ -1095,6 +1114,42 @@
       <div class="modal-editar-entrega__acciones">
         <button type="submit" class="modal-editar-entrega__confirmar" id="aviso-confirmar">Crear aviso</button>
         <button type="button" class="boton-secundario" id="aviso-cancelar">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Nueva consulta rápida — a diferencia de #modal-aviso, este dialog
+       es solo para crear (una consulta publicada no se edita, solo se
+       desactiva) — ver activarFormularioConsulta() en js/main.js. -->
+  <dialog id="modal-consulta" aria-labelledby="modal-consulta-titulo">
+    <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
+    <h3 id="modal-consulta-titulo">Nueva consulta</h3>
+    <form id="formulario-consulta" novalidate>
+      <label for="consulta-pregunta">Pregunta</label>
+      <input type="text" id="consulta-pregunta" name="pregunta" autocomplete="off" required
+             aria-describedby="consulta-pregunta-error">
+      <p id="consulta-pregunta-error" class="campo-formulario__error" role="alert" hidden></p>
+
+      <!-- consulta-opciones-lista arranca vacío: resetearOpcionesConsulta()
+           (js/main.js) lo puebla con 2 campos al inicializar el módulo y
+           cada vez que se abre el modal, hasta un máximo de 4. -->
+      <div class="consulta-opciones" id="consulta-opciones-lista"></div>
+      <p id="consulta-opciones-error" class="campo-formulario__error" role="alert" hidden></p>
+
+      <button type="button" class="boton-secundario" id="consulta-boton-agregar-opcion">+ Agregar opción</button>
+
+      <label for="consulta-grupo">Grupo destino</label>
+      <select id="consulta-grupo" name="grupo" required>
+        <option value="todos">Todos</option>
+        <option value="3C">3°C</option>
+        <option value="3E">3°E</option>
+      </select>
+
+      <p id="consulta-error" class="cuenta-error" role="alert" hidden></p>
+
+      <div class="modal-editar-entrega__acciones">
+        <button type="submit" class="modal-editar-entrega__confirmar" id="consulta-confirmar">Publicar consulta</button>
+        <button type="button" class="boton-secundario" id="consulta-cancelar">Cancelar</button>
       </div>
     </form>
   </dialog>

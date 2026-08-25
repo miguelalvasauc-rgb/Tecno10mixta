@@ -480,6 +480,17 @@
       <ul id="contenedor-avisos" class="lista-avisos" aria-live="polite"></ul>
     </section>
 
+    <!-- Consulta rápida activa (opcional, ver renderizarConsultaAlumno()
+         en js/main.js) — solo visible si hay una consulta activa para
+         el grupo del alumno con sesión iniciada. Voto a ciegas: nunca
+         muestra el resultado agregado, solo confirma que se registró. -->
+    <section id="consulta-alumno" class="seccion" hidden>
+      <div class="seccion__encabezado">
+        <h2>🗳️ Consulta rápida</h2>
+      </div>
+      <div id="consulta-alumno-contenedor" aria-live="polite"></div>
+    </section>
+
     <!-- ===================== ENCUADRE ANUAL ===================== -->
     <section id="encuadre-anual" class="seccion seccion--alterna">
       <div class="seccion__encabezado">

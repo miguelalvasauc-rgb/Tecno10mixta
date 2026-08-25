@@ -403,6 +403,73 @@ const DEMO_AVISOS = [
 ];
 
 /* ---------------------------------------------------------
+   consultas / consultas_respuestas — "Consulta rápida": 1 activa (grupo
+   "todos", con votos de ambos grupos) + 1 en histórico (grupo "3E",
+   completa). alumno_id usa los mismos "demo-uid-NN" que auth_user_id en
+   DEMO_ALUMNOS de arriba, para que el conteo "X de Y alumnos del grupo
+   ya respondieron" (obtenerConteoAlumnosGrupo() en js/main.js, que sí
+   filtra por grupo real vía DEMO_ALUMNOS) sea consistente con quién
+   "votó" aquí.
+   --------------------------------------------------------- */
+
+const DEMO_CONSULTAS = [
+  {
+    id: "demo-consulta-01",
+    pregunta: "¿Qué día prefieren para la exposición final?",
+    opciones: ["Lunes", "Miércoles", "Viernes"],
+    grupo: "todos",
+    activa: true,
+    creado_en: "2026-08-24T09:00:00.000Z",
+  },
+  {
+    id: "demo-consulta-02",
+    pregunta: "¿Formato del proyecto final: impreso o digital?",
+    opciones: ["Impreso", "Digital"],
+    grupo: "3E",
+    activa: false,
+    creado_en: "2026-08-10T09:00:00.000Z",
+  },
+];
+
+const DEMO_CONSULTAS_RESPUESTAS = [
+  // demo-consulta-01 (activa, "todos") — 15 de 25 alumnos respondieron.
+  // Lunes (0): 5
+  { id: "demo-consresp-01", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-01", opcion_indice: 0, creado_en: "2026-08-24T10:00:00.000Z" },
+  { id: "demo-consresp-02", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-02", opcion_indice: 0, creado_en: "2026-08-24T10:02:00.000Z" },
+  { id: "demo-consresp-03", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-03", opcion_indice: 0, creado_en: "2026-08-24T10:04:00.000Z" },
+  { id: "demo-consresp-04", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-06", opcion_indice: 0, creado_en: "2026-08-24T10:06:00.000Z" },
+  { id: "demo-consresp-05", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-07", opcion_indice: 0, creado_en: "2026-08-24T10:08:00.000Z" },
+  // Miércoles (1): 6
+  { id: "demo-consresp-06", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-04", opcion_indice: 1, creado_en: "2026-08-24T10:10:00.000Z" },
+  { id: "demo-consresp-07", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-05", opcion_indice: 1, creado_en: "2026-08-24T10:12:00.000Z" },
+  { id: "demo-consresp-08", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-10", opcion_indice: 1, creado_en: "2026-08-24T10:14:00.000Z" },
+  { id: "demo-consresp-09", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-11", opcion_indice: 1, creado_en: "2026-08-24T10:16:00.000Z" },
+  { id: "demo-consresp-10", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-18", opcion_indice: 1, creado_en: "2026-08-24T10:18:00.000Z" },
+  { id: "demo-consresp-11", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-19", opcion_indice: 1, creado_en: "2026-08-24T10:20:00.000Z" },
+  // Viernes (2): 4
+  { id: "demo-consresp-12", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-12", opcion_indice: 2, creado_en: "2026-08-24T10:22:00.000Z" },
+  { id: "demo-consresp-13", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-13", opcion_indice: 2, creado_en: "2026-08-24T10:24:00.000Z" },
+  { id: "demo-consresp-14", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-08", opcion_indice: 2, creado_en: "2026-08-24T10:26:00.000Z" },
+  { id: "demo-consresp-15", consulta_id: "demo-consulta-01", alumno_id: "demo-uid-20", opcion_indice: 2, creado_en: "2026-08-24T10:28:00.000Z" },
+
+  // demo-consulta-02 (histórico, "3E") — 12 de 12 alumnos respondieron.
+  // Impreso (0): 4
+  { id: "demo-consresp-16", consulta_id: "demo-consulta-02", alumno_id: "demo-uid-06", opcion_indice: 0, creado_en: "2026-08-10T09:30:00.000Z" },
+  { id: "demo-consresp-17", consulta_id: "demo-consulta-02", alumno_id: "demo-uid-07", opcion_indice: 0, creado_en: "2026-08-10T09:32:00.000Z" },
+  { id: "demo-consresp-18", consulta_id: "demo-consulta-02", alumno_id: "demo-uid-08", opcion_indice: 0, creado_en: "2026-08-10T09:34:00.000Z" },
+  { id: "demo-consresp-19", consulta_id: "demo-consulta-02", alumno_id: "demo-uid-09", opcion_indice: 0, creado_en: "2026-08-10T09:36:00.000Z" },
+  // Digital (1): 8
+  { id: "demo-consresp-20", consulta_id: "demo-consulta-02", alumno_id: "demo-uid-18", opcion_indice: 1, creado_en: "2026-08-10T09:38:00.000Z" },
+  { id: "demo-consresp-21", consulta_id: "demo-consulta-02", alumno_id: "demo-uid-19", opcion_indice: 1, creado_en: "2026-08-10T09:40:00.000Z" },
+  { id: "demo-consresp-22", consulta_id: "demo-consulta-02", alumno_id: "demo-uid-20", opcion_indice: 1, creado_en: "2026-08-10T09:42:00.000Z" },
+  { id: "demo-consresp-23", consulta_id: "demo-consulta-02", alumno_id: "demo-uid-21", opcion_indice: 1, creado_en: "2026-08-10T09:44:00.000Z" },
+  { id: "demo-consresp-24", consulta_id: "demo-consulta-02", alumno_id: "demo-uid-22", opcion_indice: 1, creado_en: "2026-08-10T09:46:00.000Z" },
+  { id: "demo-consresp-25", consulta_id: "demo-consulta-02", alumno_id: "demo-uid-23", opcion_indice: 1, creado_en: "2026-08-10T09:48:00.000Z" },
+  { id: "demo-consresp-26", consulta_id: "demo-consulta-02", alumno_id: "demo-uid-24", opcion_indice: 1, creado_en: "2026-08-10T09:50:00.000Z" },
+  { id: "demo-consresp-27", consulta_id: "demo-consulta-02", alumno_id: "demo-uid-25", opcion_indice: 1, creado_en: "2026-08-10T09:52:00.000Z" },
+];
+
+/* ---------------------------------------------------------
    eventos_calendario — 4 ejemplos, uno por cada tipo real
    (escuela, evaluacion, general) más un segundo "escuela" para variar
    el grupo destino.

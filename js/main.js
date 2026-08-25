@@ -3803,6 +3803,8 @@ const DEMO_TABLAS = {
   progreso: () => DEMO_PROGRESO,
   asistencia: () => DEMO_ASISTENCIA,
   avisos: () => DEMO_AVISOS,
+  consultas: () => DEMO_CONSULTAS,
+  consultas_respuestas: () => DEMO_CONSULTAS_RESPUESTAS,
   eventos_calendario: () => DEMO_EVENTOS,
   fechas_override: () => DEMO_FECHAS_OVERRIDE,
   // Fase 12: a diferencia de las tablas de arriba, no viene de un DEMO_
@@ -4602,6 +4604,146 @@ async function renderizarAvisos() {
     li.append(fechaBox, cuerpo);
     contenedor.appendChild(li);
   });
+}
+
+/* ---------------------------------------------------------
+   "Consulta rápida" — vista alumno (index.html). Solo se muestra si hay
+   una consulta activa dirigida al grupo del alumno con sesión iniciada;
+   si ya tiene una fila propia en consultas_respuestas, se le muestra
+   solo la confirmación — NUNCA el resultado agregado (voto a ciegas, ver
+   admin.html/js para la vista docente con resultados). Contraparte del
+   módulo Avisos: mismo criterio de "no es admin.html, no hacer nada" vía
+   el guard de contenedor.
+   --------------------------------------------------------- */
+
+function crearConfirmacionVotoConsulta() {
+  const p = document.createElement("p");
+  p.className = "consulta-alumno-tarjeta__confirmacion";
+  p.textContent = "✅ Ya respondiste, gracias.";
+  return p;
+}
+
+function crearFormularioVotoConsulta(consulta, alumnoId) {
+  const form = document.createElement("form");
+  form.className = "consulta-alumno-tarjeta__form";
+
+  const pregunta = document.createElement("p");
+  pregunta.className = "consulta-alumno-tarjeta__pregunta";
+  pregunta.textContent = consulta.pregunta;
+  form.appendChild(pregunta);
+
+  const fieldset = document.createElement("fieldset");
+  const legend = document.createElement("legend");
+  legend.className = "sr-only";
+  legend.textContent = consulta.pregunta;
+  fieldset.appendChild(legend);
+
+  consulta.opciones.forEach((opcion, indice) => {
+    const opcionId = "consulta-alumno-opcion-" + indice;
+    const etiqueta = document.createElement("label");
+    etiqueta.className = "consulta-alumno-tarjeta__opcion";
+    etiqueta.setAttribute("for", opcionId);
+
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "consulta-alumno-opcion";
+    input.id = opcionId;
+    input.value = String(indice);
+    input.required = true;
+
+    etiqueta.append(input, document.createTextNode(opcion));
+    fieldset.appendChild(etiqueta);
+  });
+
+  form.appendChild(fieldset);
+
+  const error = document.createElement("p");
+  error.className = "cuenta-error";
+  error.setAttribute("role", "alert");
+  error.hidden = true;
+  form.appendChild(error);
+
+  const boton = document.createElement("button");
+  boton.type = "submit";
+  boton.className = "modal-editar-entrega__confirmar";
+  boton.textContent = "Votar";
+  form.appendChild(boton);
+
+  form.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    if (demoModeActivo()) {
+      abrirModalDemo();
+      return;
+    }
+
+    const seleccionado = form.querySelector('input[name="consulta-alumno-opcion"]:checked');
+    if (!seleccionado) {
+      error.textContent = "Selecciona una opción.";
+      error.hidden = false;
+      return;
+    }
+
+    error.hidden = true;
+    boton.disabled = true;
+    try {
+      const { error: errorInsert } = await clienteSupabase.from("consultas_respuestas").insert({
+        consulta_id: consulta.id,
+        alumno_id: alumnoId,
+        opcion_indice: Number(seleccionado.value),
+      });
+      if (errorInsert) throw errorInsert;
+
+      form.replaceWith(crearConfirmacionVotoConsulta());
+    } catch (err) {
+      error.textContent = "No se pudo registrar tu voto: " + (err?.message || "intenta de nuevo.");
+      error.hidden = false;
+      boton.disabled = false;
+    }
+  });
+
+  return form;
+}
+
+async function renderizarConsultaAlumno() {
+  const seccion = document.getElementById("consulta-alumno");
+  const contenedor = document.getElementById("consulta-alumno-contenedor");
+  if (!seccion || !contenedor) return; // no es index.html
+
+  const {
+    data: { session },
+  } = await clienteSupabase.auth.getSession();
+  if (!session) {
+    seccion.hidden = true;
+    return;
+  }
+
+  const { data: consultas, error } = await obtenerDatos("consultas", {
+    eq: { activa: true },
+    order: { columna: "creado_en", ascending: false },
+    limit: 1,
+  });
+  if (error || !consultas || consultas.length === 0) {
+    seccion.hidden = true;
+    return;
+  }
+
+  const consulta = consultas[0];
+  if (!elementoCoincideConGrupo(consulta)) {
+    seccion.hidden = true;
+    return;
+  }
+
+  const { data: yaVoto } = await obtenerDatos("consultas_respuestas", {
+    eq: { consulta_id: consulta.id, alumno_id: session.user.id },
+  });
+
+  contenedor.innerHTML = "";
+  contenedor.appendChild(
+    yaVoto && yaVoto.length > 0
+      ? crearConfirmacionVotoConsulta()
+      : crearFormularioVotoConsulta(consulta, session.user.id)
+  );
+  seccion.hidden = false;
 }
 
 async function renderizarTemario() {
@@ -10502,6 +10644,7 @@ function activarResaltadoDeNavegacion() {
 async function renderizarTodo() {
   await Promise.all([
     renderizarAvisos(),
+    renderizarConsultaAlumno(),
     renderizarHorario(),
     renderizarCalendario(),
     renderizarTemario(),
@@ -14662,6 +14805,411 @@ async function inicializarModuloAvisos() {
   activarBotonNuevoAviso();
   activarFormularioAviso();
   await inicializarFormularioPopupBienvenida();
+}
+
+/* ---------------------------------------------------------
+   "Consulta rápida" (tarjeta dentro de tab-avisos) — pregunta de opción
+   múltiple (2 a 4 opciones) que el docente publica y los alumnos votan a
+   ciegas. Mismo patrón CRUD que el módulo Avisos de arriba, con dos
+   diferencias: el modal solo sirve para CREAR (una consulta publicada no
+   se edita, solo se desactiva) y publicar una nueva con otra ya activa
+   pide confirmación antes de desactivar la anterior — nunca dos
+   consultas activas a la vez. Los resultados reutilizan
+   construirFiguraBarrasVerticales() (Dashboard, sección 12).
+   --------------------------------------------------------- */
+
+let consultaOpcionesContador = 2;
+
+// Cada campo trae su propio par label+error (mismo contrato de
+// marcarCampoInvalido/limpiarCampoInvalido: buscan "#" + input.id +
+// "-error"), así que la opción con problema queda señalada sin importar
+// cuántas haya delante. Solo la 3ª opción en adelante trae "Quitar": la 1
+// y 2 son obligatorias (mínimo 2, ver DECISIONES DE DISEÑO).
+function crearCampoOpcionConsulta(indice, valor = "") {
+  const campo = document.createElement("div");
+  campo.className = "consulta-opcion-campo";
+
+  const idInput = "consulta-opcion-" + indice;
+  const idError = idInput + "-error";
+
+  const label = document.createElement("label");
+  label.setAttribute("for", idInput);
+  label.textContent = "Opción " + indice;
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.id = idInput;
+  input.className = "consulta-opcion-input";
+  input.autocomplete = "off";
+  input.required = true;
+  input.maxLength = 120;
+  input.value = valor;
+  input.setAttribute("aria-describedby", idError);
+
+  campo.append(label, input);
+
+  if (indice > 2) {
+    const botonQuitar = document.createElement("button");
+    botonQuitar.type = "button";
+    botonQuitar.className = "consulta-opcion-quitar";
+    botonQuitar.textContent = "Quitar";
+    botonQuitar.setAttribute("aria-label", "Quitar opción " + indice);
+    botonQuitar.addEventListener("click", () => {
+      campo.remove();
+      consultaOpcionesContador--;
+      actualizarBotonAgregarOpcionConsulta();
+    });
+    campo.appendChild(botonQuitar);
+  }
+
+  const error = document.createElement("p");
+  error.id = idError;
+  error.className = "campo-formulario__error";
+  error.setAttribute("role", "alert");
+  error.hidden = true;
+  campo.appendChild(error);
+
+  return campo;
+}
+
+function actualizarBotonAgregarOpcionConsulta() {
+  const boton = document.getElementById("consulta-boton-agregar-opcion");
+  if (!boton) return;
+  boton.hidden = consultaOpcionesContador >= 4;
+}
+
+// Se llama al inicializar el módulo y cada vez que se abre el modal
+// (siempre "Crear", nunca "Editar" — ver el comentario del módulo).
+function resetearOpcionesConsulta() {
+  const lista = document.getElementById("consulta-opciones-lista");
+  if (!lista) return;
+  lista.innerHTML = "";
+  lista.append(crearCampoOpcionConsulta(1), crearCampoOpcionConsulta(2));
+  consultaOpcionesContador = 2;
+  actualizarBotonAgregarOpcionConsulta();
+}
+
+function activarFormularioOpcionesConsulta() {
+  const boton = document.getElementById("consulta-boton-agregar-opcion");
+  if (!boton) return;
+  boton.addEventListener("click", () => {
+    if (consultaOpcionesContador >= 4) return;
+    consultaOpcionesContador++;
+    document.getElementById("consulta-opciones-lista").appendChild(crearCampoOpcionConsulta(consultaOpcionesContador));
+    actualizarBotonAgregarOpcionConsulta();
+  });
+}
+
+// Valida cada opción no vacía con validarTextoSeguro() (mismo criterio de
+// borde de entrada que título/descripción de Avisos) y descarta las
+// vacías (permite dejar la 3ª/4ª a medias sin bloquear el envío por eso
+// — el mínimo de 2 se valida aparte, después de esta función).
+function leerYValidarOpcionesConsulta() {
+  const campos = Array.from(document.querySelectorAll(".consulta-opcion-input"));
+  campos.forEach((input) => limpiarCampoInvalido(input));
+
+  const opciones = [];
+  let valido = true;
+  campos.forEach((input) => {
+    const valor = input.value.trim();
+    if (!valor) return;
+    const resultado = validarTextoSeguro(valor, { maxLargo: 120 });
+    if (!resultado.valido) {
+      marcarCampoInvalido(input, resultado.motivo);
+      valido = false;
+      return;
+    }
+    opciones.push(valor);
+  });
+
+  return { opciones, valido };
+}
+
+async function obtenerConsultaActiva() {
+  const { data, error } = await obtenerDatos("consultas", {
+    eq: { activa: true },
+    order: { columna: "creado_en", ascending: false },
+    limit: 1,
+  });
+  if (error || !data || data.length === 0) return null;
+  return data[0];
+}
+
+// Denominador de "X de Y alumnos del grupo ya respondieron": solo cuenta
+// alumnos con cuenta activa (mismo criterio que darDeBajaAlumno/
+// reactivarAlumno) del grupo destino de la consulta.
+async function obtenerConteoAlumnosGrupo(grupo) {
+  const opciones = { eq: { activo: true }, count: "exact", head: true };
+  if (grupo !== "todos") opciones.eq.grupo = grupo;
+  const { count, error } = await obtenerDatos("alumnos_registro", opciones);
+  return error ? 0 : count || 0;
+}
+
+// Arma la gráfica de resultados (reutiliza construirFiguraBarrasVerticales
+// tal cual, sección 12) + el resumen "X de Y alumnos del grupo ya
+// respondieron". Compartida entre la consulta activa y cada fila del
+// histórico.
+async function construirBloqueResultadosConsulta(consulta) {
+  const { data: respuestas, error } = await obtenerDatos("consultas_respuestas", {
+    eq: { consulta_id: consulta.id },
+  });
+  const filas = error || !respuestas ? [] : respuestas;
+  const conteos = consulta.opciones.map((_, indice) => filas.filter((r) => Number(r.opcion_indice) === indice).length);
+  const totalGrupo = await obtenerConteoAlumnosGrupo(consulta.grupo);
+
+  const contenedor = document.createElement("div");
+  contenedor.className = "consulta-resultado";
+  contenedor.appendChild(
+    construirFiguraBarrasVerticales({
+      tituloAccesible: consulta.pregunta,
+      etiquetas: consulta.opciones,
+      valores: conteos,
+      colorBarra: "var(--color-turquesa)",
+      escalaMax: Math.max(1, ...conteos),
+    })
+  );
+
+  const resumen = document.createElement("p");
+  resumen.className = "consulta-resultado__resumen";
+  resumen.textContent = filas.length + " de " + totalGrupo + " alumnos del grupo ya respondieron.";
+  contenedor.appendChild(resumen);
+
+  return contenedor;
+}
+
+async function desactivarConsulta(consulta) {
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
+  if (
+    !window.confirm(
+      'Esto desactivará la consulta "' + consulta.pregunta + '". Los alumnos dejarán de verla; sus resultados quedan en el histórico. ¿Continuar?'
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const { error } = await clienteSupabase.from("consultas").update({ activa: false }).eq("id", consulta.id);
+    if (error) throw error;
+  } catch (error) {
+    window.alert("No se pudo desactivar la consulta: " + (error?.message || "intenta de nuevo."));
+    return;
+  }
+
+  await renderizarPanelConsulta();
+}
+
+// El resultado de cada consulta histórica solo se calcula al abrirse
+// (evita 1 query de respuestas + 1 de conteo de grupo por fila del
+// histórico en cada render del panel, la mayoría nunca se abren).
+function crearFilaHistoricoConsulta(consulta) {
+  const details = document.createElement("details");
+  details.className = "consulta-historico-item";
+
+  const resumen = document.createElement("summary");
+  resumen.textContent =
+    consulta.pregunta + " — " + textoGrupo(consulta.grupo) + " · " + formatearFecha(consulta.creado_en.slice(0, 10));
+  details.appendChild(resumen);
+
+  const cargando = document.createElement("p");
+  cargando.textContent = "Cargando resultados…";
+  details.appendChild(cargando);
+
+  details.addEventListener("toggle", async function alAbrir() {
+    if (!details.open) return;
+    details.removeEventListener("toggle", alAbrir);
+    const bloque = await construirBloqueResultadosConsulta(consulta);
+    cargando.replaceWith(bloque);
+  });
+
+  return details;
+}
+
+async function renderizarPanelConsulta() {
+  const contenedor = document.getElementById("consulta-panel-contenedor");
+  if (!contenedor) return;
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  const { data, error } = await obtenerDatos("consultas", { order: { columna: "creado_en", ascending: false } });
+  if (error) {
+    mostrarSinResultados(contenedor, "No se pudieron cargar las consultas.");
+    return;
+  }
+
+  const consultas = data || [];
+  const activa = consultas.find((c) => c.activa);
+  const historico = consultas.filter((c) => !c.activa);
+
+  contenedor.innerHTML = "";
+
+  if (activa) {
+    const bloqueActiva = document.createElement("div");
+    bloqueActiva.className = "consulta-activa";
+
+    const encabezado = document.createElement("div");
+    encabezado.className = "consulta-activa__encabezado";
+    const titulo = document.createElement("p");
+    titulo.className = "consulta-activa__pregunta";
+    titulo.textContent = activa.pregunta;
+    encabezado.append(titulo, crearBadgeGrupo(activa.grupo));
+    bloqueActiva.appendChild(encabezado);
+
+    bloqueActiva.appendChild(await construirBloqueResultadosConsulta(activa));
+
+    const botonDesactivar = document.createElement("button");
+    botonDesactivar.type = "button";
+    botonDesactivar.className = "boton-secundario";
+    botonDesactivar.textContent = "Desactivar";
+    botonDesactivar.addEventListener("click", () => desactivarConsulta(activa));
+    bloqueActiva.appendChild(botonDesactivar);
+
+    contenedor.appendChild(bloqueActiva);
+  } else {
+    const sinActiva = document.createElement("p");
+    sinActiva.className = "apariencia-opcion__descripcion";
+    sinActiva.textContent = "No hay ninguna consulta activa en este momento.";
+    contenedor.appendChild(sinActiva);
+  }
+
+  if (historico.length > 0) {
+    const tituloHistorico = document.createElement("h4");
+    tituloHistorico.className = "consulta-historico__titulo";
+    tituloHistorico.textContent = "Histórico";
+    contenedor.appendChild(tituloHistorico);
+
+    historico.forEach((consulta) => contenedor.appendChild(crearFilaHistoricoConsulta(consulta)));
+  }
+}
+
+function abrirModalConsulta() {
+  const modal = document.getElementById("modal-consulta");
+  const formulario = document.getElementById("formulario-consulta");
+  if (!modal || !formulario) return;
+
+  formulario.reset();
+  document.getElementById("consulta-error").hidden = true;
+  document.getElementById("consulta-opciones-error").hidden = true;
+  limpiarCampoInvalido(document.getElementById("consulta-pregunta"));
+  resetearOpcionesConsulta();
+
+  modal.showModal();
+}
+
+function activarBotonNuevaConsulta() {
+  const boton = document.getElementById("consulta-boton-nueva");
+  if (!boton) return;
+  boton.addEventListener("click", () => abrirModalConsulta());
+}
+
+function activarFormularioConsulta() {
+  const modal = document.getElementById("modal-consulta");
+  const formulario = document.getElementById("formulario-consulta");
+  if (!modal || !formulario) return;
+
+  formulario.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    if (demoModeActivo()) {
+      await cerrarDialogoAnimado(modal);
+      abrirModalDemo();
+      return;
+    }
+
+    const campoPregunta = document.getElementById("consulta-pregunta");
+    const pregunta = campoPregunta.value.trim();
+    const grupo = document.getElementById("consulta-grupo").value;
+    const error = document.getElementById("consulta-error");
+    const errorOpciones = document.getElementById("consulta-opciones-error");
+    const botonConfirmar = document.getElementById("consulta-confirmar");
+
+    error.hidden = true;
+    errorOpciones.hidden = true;
+    limpiarCampoInvalido(campoPregunta);
+
+    if (!pregunta) {
+      error.textContent = "La pregunta no puede estar vacía.";
+      error.hidden = false;
+      return;
+    }
+    const resultadoPregunta = validarTextoSeguro(pregunta, { maxLargo: 200 });
+    if (!resultadoPregunta.valido) {
+      marcarCampoInvalido(campoPregunta, resultadoPregunta.motivo);
+      return;
+    }
+
+    const { opciones, valido: opcionesValidas } = leerYValidarOpcionesConsulta();
+    if (!opcionesValidas) return;
+    if (opciones.length < 2) {
+      errorOpciones.textContent = "Se necesitan al menos 2 opciones.";
+      errorOpciones.hidden = false;
+      return;
+    }
+
+    botonConfirmar.disabled = true;
+    try {
+      // Nunca dos consultas activas a la vez: si ya hay una, se pide
+      // confirmación y se desactiva antes de publicar la nueva (ver
+      // DECISIONES DE DISEÑO).
+      const activaExistente = await obtenerConsultaActiva();
+      if (activaExistente) {
+        const confirmado = window.confirm(
+          'Esto desactivará la consulta actual: "' + activaExistente.pregunta + '". ¿Continuar?'
+        );
+        if (!confirmado) {
+          botonConfirmar.disabled = false;
+          return;
+        }
+        const { error: errorDesactivar } = await clienteSupabase
+          .from("consultas")
+          .update({ activa: false })
+          .eq("id", activaExistente.id);
+        if (errorDesactivar) throw errorDesactivar;
+      }
+
+      const { error: errorInsert } = await clienteSupabase.from("consultas").insert({ pregunta, opciones, grupo });
+      if (errorInsert) throw errorInsert;
+
+      cerrarDialogoAnimado(modal);
+      formulario.reset();
+      await renderizarPanelConsulta();
+    } catch (err) {
+      error.textContent = "No se pudo publicar la consulta: " + (err?.message || "intenta de nuevo.");
+      error.hidden = false;
+    } finally {
+      botonConfirmar.disabled = false;
+    }
+  });
+
+  document.getElementById("consulta-cancelar").addEventListener("click", () => {
+    formulario.reset();
+    cerrarDialogoAnimado(modal);
+  });
+
+  const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
+  if (botonCerrar) {
+    botonCerrar.addEventListener("click", () => {
+      formulario.reset();
+      cerrarDialogoAnimado(modal);
+    });
+  }
+
+  modal.addEventListener("click", (evento) => {
+    if (evento.target === modal) cerrarDialogoAnimado(modal);
+  });
+}
+
+async function inicializarModuloConsultas() {
+  const contenedor = document.getElementById("consulta-panel-contenedor");
+  if (!contenedor) return; // no es admin.html
+
+  await promesaGuardPanelDocente;
+
+  await renderizarPanelConsulta();
+  activarBotonNuevaConsulta();
+  activarFormularioOpcionesConsulta();
+  activarFormularioConsulta();
 }
 
 // Texto legible de "tipo" de evento del calendario — mismo criterio que
@@ -20319,6 +20867,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await inicializarModuloAlumnos();
   await inicializarModuloAsistencia();
   await inicializarModuloAvisos();
+  await inicializarModuloConsultas();
   await inicializarModuloTrimestre();
   await inicializarModuloFechas();
   await inicializarModuloCalendarioAdmin();

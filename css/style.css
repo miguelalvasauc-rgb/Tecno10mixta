@@ -11555,6 +11555,211 @@ button.badge-estado {
   }
 }
 
+/* ---------- "Consulta rápida" (tarjeta en tab-avisos) ----------
+   Panel docente: la tarjeta contenedora reutiliza .avisos-popup-tarjeta
+   tal cual (mismo borde/radio/superficie que "Popup de bienvenida", ver
+   admin.html). Lo que sigue es específico de sus piezas internas: el
+   modal de creación (mismo patrón que #modal-aviso/#formulario-aviso),
+   las opciones dinámicas, el bloque de resultados (reutiliza
+   .dashboard-grafica del Dashboard) y el histórico. */
+#modal-consulta {
+  width: 92%;
+  max-width: 460px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-consulta::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-consulta-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: var(--tamano-fuente-titulo-modal);
+  color: var(--color-texto);
+}
+
+#formulario-consulta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+#formulario-consulta label {
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 600;
+  color: var(--color-texto-suave);
+}
+
+#formulario-consulta input,
+#formulario-consulta select {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--font-cuerpo);
+  font-size: var(--tamano-fuente-accion);
+  margin-bottom: 0.75rem;
+}
+
+/* Cada .consulta-opcion-campo es label + input (+ "Quitar" desde la 3ª
+   opción en adelante) — ver crearCampoOpcionConsulta() en js/main.js.
+   "+ Agregar opción" (#consulta-boton-agregar-opcion) vive fuera de la
+   lista y se oculta al llegar a 4 opciones. */
+.consulta-opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.consulta-opcion-campo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.consulta-opcion-campo label {
+  flex: 0 0 auto;
+  min-width: 5.5rem;
+  margin-bottom: 0;
+}
+
+.consulta-opcion-campo input {
+  flex: 1 1 auto;
+  margin-bottom: 0;
+}
+
+.consulta-opcion-quitar {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  color: var(--color-estado-vencido);
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+#consulta-boton-agregar-opcion {
+  align-self: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+/* Consulta activa: pregunta + badge de grupo, la gráfica de resultados
+   (.dashboard-grafica, reutilizada tal cual) y "Desactivar" al final. */
+.consulta-activa {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background-color: var(--color-fondo);
+}
+
+.consulta-activa__encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.consulta-activa__pregunta {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.consulta-resultado__resumen {
+  margin: 0;
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto-suave);
+}
+
+/* Histórico: <details>/<summary> nativos (sin JS de acordeón propio) —
+   el resultado de cada consulta pasada solo se calcula al abrirse, ver
+   crearFilaHistoricoConsulta() en js/main.js. */
+.consulta-historico__titulo {
+  margin: 0 0 0.5rem;
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.consulta-historico-item {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.6rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background-color: var(--color-fondo);
+}
+
+.consulta-historico-item summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.consulta-historico-item[open] summary {
+  margin-bottom: 0.75rem;
+}
+
+/* ---------- "Consulta rápida" — tarjeta del alumno (index.html) ----------
+   Mismo par borde/radio/superficie que .avisos-popup-tarjeta (panel
+   docente), escalado a una tarjeta pública: ver renderizarConsultaAlumno()
+   en js/main.js. La confirmación de voto y el formulario comparten el
+   mismo contenedor #consulta-alumno-contenedor, nunca ambos a la vez. */
+.consulta-alumno-tarjeta__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie);
+}
+
+.consulta-alumno-tarjeta__pregunta {
+  margin: 0;
+  font-weight: 700;
+  font-size: var(--tamano-fuente-accion);
+  color: var(--color-texto);
+}
+
+.consulta-alumno-tarjeta__opcion {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.consulta-alumno-tarjeta__opcion:has(input:checked) {
+  border-color: var(--color-turquesa);
+}
+
+.consulta-alumno-tarjeta__confirmacion {
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie);
+  color: var(--color-texto-suave);
+  font-weight: 600;
+}
+
 /* ---------- Módulo "Trimestre" (tab-trimestre) ----------
    3 opciones fijas (no una tabla ni una lista de tamaño variable como
    Avisos/Alumnos), así que van hardcodeadas en admin.html en vez de
