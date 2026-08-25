@@ -396,6 +396,48 @@
             </button>
           </div>
 
+          <!-- Cambiar contraseña con sesión ya iniciada — distinto del
+               flujo de recuperación por código de #panel-recuperar.
+               "Require current password when updating" ya está activo
+               en Supabase: updateUser() valida la contraseña actual del
+               lado del servidor pasándole currentPassword, sin ningún
+               signInWithPassword() de por medio — ver
+               activarFormularioCambiarContrasena() en js/main.js. -->
+          <div class="cuenta-personalizacion">
+            <h3>🔒 Cambiar contraseña</h3>
+            <form id="formulario-cambiar-contrasena" class="cuenta-formulario" novalidate>
+              <div class="campo-formulario">
+                <label for="cambiar-contrasena-actual">Contraseña actual</label>
+                <input type="password" id="cambiar-contrasena-actual" name="contrasenaActual"
+                       autocomplete="current-password" required
+                       aria-describedby="cambiar-contrasena-actual-error">
+                <p id="cambiar-contrasena-actual-error" class="campo-formulario__error" role="alert" hidden></p>
+              </div>
+
+              <div class="campo-formulario">
+                <label for="cambiar-contrasena-nueva">Nueva contraseña</label>
+                <input type="password" id="cambiar-contrasena-nueva" name="contrasenaNueva" minlength="8"
+                       autocomplete="new-password" required aria-describedby="cambiar-contrasena-nueva-error">
+                <p id="cambiar-contrasena-nueva-error" class="campo-formulario__error" role="alert" hidden></p>
+                <div id="cambiar-contrasena-nueva-medidor" class="medidor-contrasena" aria-live="polite"></div>
+              </div>
+
+              <div class="campo-formulario">
+                <label for="cambiar-contrasena-confirmar">Confirmar nueva contraseña</label>
+                <input type="password" id="cambiar-contrasena-confirmar" name="contrasenaConfirmar" minlength="8"
+                       autocomplete="new-password" required aria-describedby="cambiar-contrasena-confirmar-error">
+                <p id="cambiar-contrasena-confirmar-error" class="campo-formulario__error" role="alert" hidden></p>
+              </div>
+
+              <p id="cambiar-contrasena-error" class="cuenta-error" role="alert" hidden></p>
+              <p id="cambiar-contrasena-exito" class="cuenta-mensaje" role="status" hidden>
+                ✅ Tu contraseña se actualizó correctamente.
+              </p>
+
+              <button type="submit" class="boton-primario">Cambiar contraseña</button>
+            </form>
+          </div>
+
           <!-- Reutiliza construirGridTemas() (js/main.js) — mismo grid de
                10 tarjetas que abre #modal-tema desde el riel/barra
                inferior, aquí insertado directo en la página (sin dialog

@@ -11701,6 +11701,113 @@ async function activarPanelSesionCuenta() {
       // Se queda oculto.
     }
   }
+
+  activarFormularioCambiarContrasena();
+}
+
+// Cambiar contraseña con sesión ya iniciada (dentro de
+// #panel-sesion-activa) — distinto del flujo de recuperación por código
+// de #panel-recuperar. La garantía de seguridad real es
+// signInWithPassword() ANTES de updateUser(): si falla, nunca se llega
+// a updateUser(), así que la contraseña nunca cambia sin la actual
+// correcta — el frontend no depende de que Supabase valide nada del
+// otro lado.
+//
+// Sobre el toggle "Require current password when updating" (verificado
+// en vivo, 2026-08-25): SÍ lo aplica el servidor, pero solo si el campo
+// llega como current_password (snake_case) — el parámetro currentPassword
+// (camelCase) que documenta el JS Reference de Supabase para updateUser()
+// no llega al servidor en la versión de supabase-js resuelta por este
+// proyecto (@2 vía jsDelivr): el campo se pierde en el cliente y el
+// servidor lo trata como ausente. Confirmado probando las 4 combinaciones
+// (SDK/REST crudo × con/sin currentPassword) antes de encontrar que
+// current_password sí funciona en ambos. Se le sigue pasando
+// current_password a updateUser() como defensa adicional (ya funciona,
+// no hace daño tenerlo), pero NUNCA es la única barrera: si Supabase
+// vuelve a dejar de aplicarlo, signInWithPassword() sigue bloqueando el
+// cambio igual. signInWithPassword() con el mismo correo de la sesión
+// activa no cierra sesión ni navega — solo refresca el token del mismo
+// usuario. No cierra sesión ni recarga la página tras un cambio exitoso.
+function activarFormularioCambiarContrasena() {
+  const form = document.getElementById("formulario-cambiar-contrasena");
+  if (!form) return;
+
+  const campoActual = document.getElementById("cambiar-contrasena-actual");
+  const campoNueva = document.getElementById("cambiar-contrasena-nueva");
+  const campoConfirmar = document.getElementById("cambiar-contrasena-confirmar");
+  const error = document.getElementById("cambiar-contrasena-error");
+  const exito = document.getElementById("cambiar-contrasena-exito");
+  const boton = form.querySelector("button[type=submit]");
+  activarValidadorContrasena(campoNueva, document.getElementById("cambiar-contrasena-nueva-medidor"), boton);
+
+  form.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    error.hidden = true;
+    exito.hidden = true;
+    [campoActual, campoNueva, campoConfirmar].forEach(limpiarCampoInvalido);
+
+    const contrasenaActual = campoActual.value;
+    const contrasenaNueva = campoNueva.value;
+    const confirmar = campoConfirmar.value;
+
+    let huboError = false;
+    if (!contrasenaActual) {
+      marcarCampoInvalido(campoActual, "Ingresa tu contraseña actual.");
+      huboError = true;
+    }
+    if (!calcularReglasContrasena(contrasenaNueva).valida) {
+      marcarCampoInvalido(campoNueva, "La contraseña no cumple todas las reglas de seguridad de arriba.");
+      huboError = true;
+    }
+    if (contrasenaNueva !== confirmar) {
+      marcarCampoInvalido(campoConfirmar, "Las contraseñas no coinciden.");
+      huboError = true;
+    }
+    if (huboError) return;
+
+    boton.disabled = true;
+
+    const {
+      data: { session },
+    } = await clienteSupabase.auth.getSession();
+    const correo = session?.user?.email;
+    if (!correo) {
+      boton.disabled = false;
+      error.textContent = "No se pudo verificar tu sesión. Vuelve a iniciar sesión e intenta de nuevo.";
+      error.hidden = false;
+      return;
+    }
+
+    // Red de seguridad real (ver comentario de la función): cualquier
+    // fallo aquí —contraseña incorrecta o cualquier otra causa— se trata
+    // como "contraseña actual incorrecta", mismo criterio de no revelar
+    // detalle de más que ya usa el login normal de este archivo.
+    const { error: errorVerificar } = await clienteSupabase.auth.signInWithPassword({
+      email: correo,
+      password: contrasenaActual,
+    });
+
+    if (errorVerificar) {
+      boton.disabled = false;
+      marcarCampoInvalido(campoActual, "La contraseña actual no es correcta.");
+      return;
+    }
+
+    const { error: errorActualizar } = await clienteSupabase.auth.updateUser({
+      password: contrasenaNueva,
+      current_password: contrasenaActual,
+    });
+    boton.disabled = false;
+
+    if (errorActualizar) {
+      error.textContent = "No se pudo actualizar la contraseña: " + errorActualizar.message;
+      error.hidden = false;
+      return;
+    }
+
+    form.reset();
+    exito.hidden = false;
+  });
 }
 
 // Botón "Identificarme" del panel de Progreso (index.html y
