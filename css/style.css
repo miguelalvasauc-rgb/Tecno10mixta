@@ -1531,6 +1531,10 @@ a {
   border-bottom: 1px solid var(--color-borde);
   padding: 0.55rem 1.5rem;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
 }
 
 .banner-trimestre p {
@@ -1541,6 +1545,37 @@ a {
 
 .banner-trimestre strong {
   color: var(--color-turquesa);
+}
+
+/* Ícono distintivo por trimestre: PNG como mask-image para que el color
+   siga viniendo de --color-primario (tema activo) y no de píxeles fijos
+   del PNG — se adapta a los 13 temas sin tocar validate_palette.js. */
+.banner-trimestre__icono {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background-color: var(--color-primario);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+.banner-trimestre__icono--t1 {
+  -webkit-mask-image: url("../assets/iconos/trimestre-1.png");
+  mask-image: url("../assets/iconos/trimestre-1.png");
+}
+
+.banner-trimestre__icono--t2 {
+  -webkit-mask-image: url("../assets/iconos/trimestre-2.png");
+  mask-image: url("../assets/iconos/trimestre-2.png");
+}
+
+.banner-trimestre__icono--t3 {
+  -webkit-mask-image: url("../assets/iconos/trimestre-3.png");
+  mask-image: url("../assets/iconos/trimestre-3.png");
 }
 
 /* ---------- Navegación ---------- */
