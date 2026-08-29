@@ -21462,6 +21462,182 @@ function activarGuiaAlumno() {
 }
 
 /* =========================================================
+   14. CHATBOT DE REGLAS (trimestre-1-practica.html, Secuencia 1)
+   ========================================================= */
+
+// Intenciones reconocidas por palabra clave — SIN IA real ni API externa,
+// a propósito: el punto pedagógico es que el alumno note la diferencia
+// entre "reconocer palabras" y "entender de verdad" (mismo objetivo que
+// la Tarea 1.2 y el Proyecto "Mi Chatbot en Papel" de esta misma
+// Secuencia 1, ver DATOS_TAREAS/DATOS_PROYECTOS[1]). Recorrida en ORDEN
+// por obtenerRespuestaChatbot(): la primera intención cuya palabra clave
+// aparezca en el mensaje gana, no la de "mejor" coincidencia.
+const DATOS_CHATBOT = [
+  {
+    id: "saludo",
+    palabrasClave: ["hola", "buenas", "que tal", "qué tal"],
+    emoji: "👋",
+    respuestas: ["¡Hola! ¿En qué te ayudo hoy?", "¡Buenas! ¿Qué quieres platicar?"],
+  },
+  {
+    id: "clima",
+    palabrasClave: ["clima", "lluvia", "calor", "frio", "frío"],
+    emoji: "☀️",
+    respuestas: ["No tengo acceso a internet real, pero seguro hace un día interesante."],
+  },
+  {
+    id: "animo",
+    palabrasClave: ["triste", "feliz", "cansado", "cansada"],
+    emoji: "🤗",
+    respuestas: ["Entiendo que te sientes así. ¿Quieres platicar más?"],
+  },
+  {
+    id: "sobre_si",
+    palabrasClave: ["quien eres", "quién eres", "eres una ia", "eres ia"],
+    emoji: "🧩",
+    respuestas: ["Soy un programa que reconoce palabras clave, no pienso de verdad."],
+  },
+  {
+    id: "despedida",
+    palabrasClave: ["adios", "adiós", "bye", "nos vemos"],
+    emoji: "😊",
+    respuestas: ["¡Hasta luego!"],
+  },
+];
+
+const RESPUESTA_FALLBACK_CHATBOT = {
+  emoji: "🤔",
+  respuestas: ["No te entendí bien. ¿Puedes decirlo de otra forma?"],
+};
+
+// Nivel visual de "no nos estamos entendiendo" del avatar: sube con cada
+// fallback consecutivo o no (el contador nunca baja, ver
+// obtenerRespuestaChatbot) — 0-1 -> 🙂, 2-3 -> 😐, 4-5 -> 🤨, 6+ -> 😵‍💫.
+function emojiFallbackPorContador(contadorFallback) {
+  if (contadorFallback >= 6) return "😵‍💫";
+  if (contadorFallback >= 4) return "🤨";
+  if (contadorFallback >= 2) return "😐";
+  return "🙂";
+}
+
+// .normalize("NFD") separa cada letra acentuada en base + diacrítico
+// combinante (rango ̀-ͯ) — quitar ese rango deja el texto sin
+// acentos sin tocar el resto de unicode (emoji, ñ -que no es un
+// diacrítico combinante-, etc.). Se aplica tanto al mensaje del alumno
+// como a cada palabra clave, para que "Qué tal" (con mayúscula/acento)
+// siga emparejando con la clave "que tal".
+function normalizarTextoChatbot(texto) {
+  return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .trim();
+}
+
+// estadoChatbot.contadorFallback vive en un objeto propio del widget (no
+// en una variable suelta de módulo) para que activarChatbotReglas() lo
+// controle de principio a fin sin pisar estado de otra página — mismo
+// criterio que ya usa contextoCalificar/contextoEdicionEntrega en vez de
+// variables globales sueltas.
+function obtenerRespuestaChatbot(mensajeAlumno, estadoChatbot) {
+  const normalizado = normalizarTextoChatbot(mensajeAlumno);
+
+  const intencion = DATOS_CHATBOT.find((candidata) =>
+    candidata.palabrasClave.some((palabra) => normalizado.includes(normalizarTextoChatbot(palabra)))
+  );
+
+  if (intencion) {
+    const texto = intencion.respuestas[Math.floor(Math.random() * intencion.respuestas.length)];
+    return { texto, emoji: intencion.emoji };
+  }
+
+  estadoChatbot.contadorFallback++;
+  const texto =
+    RESPUESTA_FALLBACK_CHATBOT.respuestas[Math.floor(Math.random() * RESPUESTA_FALLBACK_CHATBOT.respuestas.length)];
+  return { texto, emoji: emojiFallbackPorContador(estadoChatbot.contadorFallback) };
+}
+
+function crearBurbujaChatbot(texto, quien) {
+  const burbuja = document.createElement("div");
+  burbuja.className = "chatbot-burbuja chatbot-burbuja--" + quien; // "alumno" | "bot"
+  burbuja.textContent = texto;
+  return burbuja;
+}
+
+// "Escribiendo…" (3 puntos) — burbuja placeholder del bot que
+// activarChatbotReglas() reemplaza por la respuesta real ~500ms después,
+// simulando que "está pensando" aunque la lógica sea instantánea.
+// aria-hidden porque vive dentro de #chatbot-mensajes (aria-live="polite"):
+// sin esto, un lector de pantalla anunciaría también este placeholder
+// vacío como si fuera un mensaje real.
+function crearBurbujaEscribiendoChatbot() {
+  const burbuja = document.createElement("div");
+  burbuja.className = "chatbot-burbuja chatbot-burbuja--bot chatbot-burbuja--escribiendo";
+  burbuja.setAttribute("aria-hidden", "true");
+  burbuja.innerHTML = "<span></span><span></span><span></span>";
+  return burbuja;
+}
+
+// Único punto de entrada del widget — #chatbot-formulario solo existe en
+// trimestre-1-practica.html, así que en el resto de páginas esta función
+// no hace nada (mismo patrón que activarGuiaAlumno/#guia-wizard).
+function activarChatbotReglas() {
+  const formulario = document.getElementById("chatbot-formulario");
+  const contenedorMensajes = document.getElementById("chatbot-mensajes");
+  const input = document.getElementById("chatbot-input");
+  const avatarEmoji = document.getElementById("chatbot-avatar-emoji");
+  const botonReflexionar = document.getElementById("chatbot-boton-reflexionar");
+  const bloqueReflexion = document.getElementById("chatbot-reflexion");
+  if (!formulario || !contenedorMensajes || !input || !avatarEmoji) return;
+
+  const estadoChatbot = { contadorFallback: 0 };
+  const UMBRAL_REFLEXION_AUTOMATICA = 5;
+  let mensajesAlumno = 0;
+  let reflexionYaMostrada = false;
+
+  function desplazarAlUltimoMensaje() {
+    contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
+  }
+
+  function mostrarBloqueReflexion() {
+    if (!bloqueReflexion || reflexionYaMostrada) return;
+    reflexionYaMostrada = true;
+    bloqueReflexion.hidden = false;
+    bloqueReflexion.scrollIntoView({ block: "nearest" });
+  }
+
+  if (botonReflexionar) botonReflexionar.addEventListener("click", mostrarBloqueReflexion);
+
+  // Enter dentro de #chatbot-input ya envía el formulario nativamente
+  // (input type="text" dentro de un <form> con botón submit) — no hace
+  // falta un listener de teclado aparte.
+  formulario.addEventListener("submit", (evento) => {
+    evento.preventDefault();
+    const mensaje = input.value.trim();
+    if (!mensaje) return;
+
+    contenedorMensajes.appendChild(crearBurbujaChatbot(mensaje, "alumno"));
+    input.value = "";
+    desplazarAlUltimoMensaje();
+    mensajesAlumno++;
+
+    const burbujaEscribiendo = crearBurbujaEscribiendoChatbot();
+    contenedorMensajes.appendChild(burbujaEscribiendo);
+    desplazarAlUltimoMensaje();
+
+    setTimeout(() => {
+      burbujaEscribiendo.remove();
+      const { texto, emoji } = obtenerRespuestaChatbot(mensaje, estadoChatbot);
+      avatarEmoji.textContent = emoji;
+      contenedorMensajes.appendChild(crearBurbujaChatbot(texto, "bot"));
+      desplazarAlUltimoMensaje();
+
+      if (mensajesAlumno >= UMBRAL_REFLEXION_AUTOMATICA) mostrarBloqueReflexion();
+    }, 500);
+  });
+}
+
+/* =========================================================
    10. INICIALIZACIÓN
    ========================================================= */
 
@@ -21568,6 +21744,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarSwitchFormatoCalificacion();
   activarToastModoDemo();
   activarGuiaAlumno();
+  activarChatbotReglas();
   activarTabsMateriales();
   activarFiltroTipoEventos();
   await inicializarModuloCalificacion();

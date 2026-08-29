@@ -494,6 +494,49 @@
       <div id="contenedor-proyectos" class="cuadricula" aria-live="polite"></div>
     </section>
 
+    <!-- ===================== CHATBOT DE REGLAS (práctica, Secuencia 1) =====================
+         Widget 100% local: sin Supabase, sin progreso.html, sin calificación
+         — es práctica libre de reflexión, no una entrega. Simula un chatbot
+         por reglas (reconoce palabras clave, no "entiende") para que el
+         alumno note en carne propia la diferencia, mismo objetivo
+         pedagógico que la Tarea 1.2 y el Proyecto "Mi Chatbot en Papel" de
+         esta misma Secuencia 1 (ver DATOS_TAREAS/DATOS_PROYECTOS[1] en
+         js/main.js). Poblado por activarChatbotReglas() en js/main.js. -->
+    <section id="chatbot-reglas" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>🤖 Practica: chatea con un bot de reglas</h2>
+        <p>Simulación de la Secuencia 1 (Inteligencia Artificial): platica con un chatbot que solo reconoce palabras clave, sin entender de verdad lo que le dices — igual que el chatbot que vas a diseñar tú en papel.</p>
+      </div>
+
+      <div class="chatbot-widget">
+        <div class="chatbot-widget__avatar" aria-hidden="true">
+          <span id="chatbot-avatar-emoji">👋</span>
+        </div>
+
+        <div id="chatbot-mensajes" class="chatbot-widget__mensajes" aria-live="polite"></div>
+
+        <form id="chatbot-formulario" class="chatbot-widget__formulario" novalidate>
+          <label for="chatbot-input" class="sr-only">Escribe tu mensaje al chatbot</label>
+          <input type="text" id="chatbot-input" class="chatbot-widget__input" placeholder="Escribe algo…" autocomplete="off">
+          <button type="submit" class="chatbot-widget__enviar" aria-label="Enviar mensaje">📤</button>
+        </form>
+
+        <button type="button" id="chatbot-boton-reflexionar" class="boton-secundario chatbot-widget__boton-reflexionar">💡 Reflexionar</button>
+
+        <!-- Se muestra sola tras 5 mensajes del alumno, o antes si usa el
+             botón de arriba (ver activarChatbotReglas) — nunca se oculta de
+             nuevo una vez mostrada. -->
+        <div id="chatbot-reflexion" class="chatbot-widget__reflexion" hidden>
+          <p class="chatbot-widget__reflexion-emoji" aria-hidden="true">🎓</p>
+          <p class="chatbot-widget__reflexion-pregunta">¿Crees que el chatbot es inteligente, o solo sigue reglas? Explica con un ejemplo de esta conversación.</p>
+          <div class="campo-formulario">
+            <label for="chatbot-reflexion-texto">Tu respuesta (opcional — no se guarda, es solo para pensar)</label>
+            <textarea id="chatbot-reflexion-texto" rows="4" placeholder="Escribe tu reflexión aquí…"></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ===================== APLICA TUS CONOCIMIENTOS ===================== -->
     <!-- Fase 15: contenido armado por JS (ver renderizarSeccionAplicaConocimientos()
          en js/main.js) — 3 bloques: explicación fija (siempre visible, este
