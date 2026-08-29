@@ -17905,6 +17905,26 @@ async function renderizarTablaEvaluacion() {
 // que contextoEdicionEntrega en Calificación y progreso.
 let contextoCalificar = null;
 
+// Traducción código→emoji+etiqueta legible de emocion_animo/emocion_motivo
+// (columnas de "progreso" alimentadas por los 3 Google Forms de entrega vía
+// Apps Script) — inversas a los códigos que ya usa ese Apps Script.
+const ETIQUETAS_ANIMO = {
+  muy_frustrado: "😩 Muy frustrado",
+  un_poco_frustrado: "😕 Un poco frustrado",
+  neutral: "😐 Neutral",
+  a_gusto: "🙂 A gusto",
+  muy_satisfecho: "😄 Muy satisfecho",
+};
+
+const ETIQUETAS_MOTIVO = {
+  dificultad_tema: "Dificultad del tema",
+  tiempo: "Tiempo que tuve",
+  trabajo_equipo: "Trabajo en equipo",
+  herramientas_tecnologia: "Herramientas o tecnología",
+  motivacion_personal: "Motivación personal",
+  otro: "Otro",
+};
+
 // filaProgreso siempre existe al llegar aquí: esta función solo se
 // invoca desde celdas en estado "sin-calificar"/"calificada", ambas
 // con completado=true, o sea que ya hay una fila real en progreso que
@@ -17923,6 +17943,31 @@ function abrirModalCalificar({ alumno, item, filaProgreso, alGuardar }) {
     enlaceArchivo.hidden = false;
   } else {
     enlaceArchivo.hidden = true;
+  }
+
+  // Entregas marcadas a mano por el docente (y las filas ficticias de Modo
+  // Demo, ver demoGenerarProgresoAlumno) nunca traen este dato — el bloque
+  // se queda hidden, sin texto de relleno tipo "sin datos".
+  const bloqueEmocion = document.getElementById("modal-calificar-emocion");
+  if (bloqueEmocion) {
+    if (filaProgreso.emocion_animo) {
+      // ETIQUETAS_ANIMO guarda "emoji + etiqueta" en un solo string (ej.
+      // "😐 Neutral"); se separa el emoji para anteponerlo a "Se sintió:"
+      // tal como se ve en el resto del sitio (ícono primero).
+      const animo = ETIQUETAS_ANIMO[filaProgreso.emocion_animo];
+      const separador = animo.indexOf(" ");
+      const emoji = animo.slice(0, separador);
+      const etiquetaAnimo = animo.slice(separador + 1);
+
+      let texto = emoji + " Se sintió: " + etiquetaAnimo;
+      if (filaProgreso.emocion_motivo) {
+        texto += " — Motivo: " + ETIQUETAS_MOTIVO[filaProgreso.emocion_motivo];
+      }
+      bloqueEmocion.textContent = texto;
+      bloqueEmocion.hidden = false;
+    } else {
+      bloqueEmocion.hidden = true;
+    }
   }
 
   const campoValor = document.getElementById("calificar-valor");

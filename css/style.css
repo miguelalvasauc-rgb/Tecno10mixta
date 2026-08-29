@@ -12463,6 +12463,27 @@ button.badge-estado {
   margin-bottom: 0.75rem;
 }
 
+/* Respuesta emocional del alumno (Google Form de entrega, columnas
+   emocion_animo/emocion_motivo de "progreso") — solo lectura, oculta
+   por completo cuando la fila no trae el dato (entregas marcadas a
+   mano por el docente). Mismo lenguaje visual de píldora que
+   .badge-estado (fondo sólido + radio grande), pero con un tono
+   neutro fijo en vez de sumar un color por emoción: no es un estado
+   del progreso, así que no debe competir visualmente con esos badges. */
+.badge-emocion {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 0 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  background-color: var(--color-superficie-alterna);
+  color: var(--color-texto);
+  font-size: var(--tamano-fuente-secundario);
+  line-height: 1.4;
+}
+
 #formulario-calificar {
   display: flex;
   flex-direction: column;
