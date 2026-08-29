@@ -13005,6 +13005,17 @@ button.badge-estado {
   fill: var(--color-borde);
 }
 
+/* Separador visible entre segmentos de construirFiguraBarraApilada() —
+   mismo token que ya usa .dashboard-grafica__track (el color que ya
+   asoma por el GAP de 2px entre segmentos), pero como stroke EXPLÍCITO
+   en vez de depender solo de ese hueco: necesario para que 2 segmentos
+   del mismo color (ver "¿Qué influyó más?" de Bienestar socioemocional)
+   nunca se lean como un solo bloque continuo. */
+.dashboard-grafica__segmento {
+  stroke: var(--color-borde);
+  stroke-width: 1.5;
+}
+
 .dashboard-grafica__texto {
   font-size: var(--tamano-fuente-secundario);
   fill: var(--color-texto);
@@ -13027,6 +13038,21 @@ button.badge-estado {
 
 .dashboard-grafica__texto-segmento--claro {
   fill: var(--color-claro-sobre-navy);
+}
+
+/* Ink POR TEMA (a diferencia de oscuro/claro arriba, que son fijos):
+   "💬 Bienestar socioemocional" > "¿Qué influyó más?" pinta segmentos con
+   --color-turquesa/--color-primario/--color-primario-suave (varían por
+   tema), así que necesitan el ink YA validado de cada uno en
+   PARES_CONTRASTE (scripts/validate_palette.js) en vez de los 2 tokens
+   fijos de arriba, que solo sirven contra --color-estado-* (tampoco
+   varían por tema). Ver COLORES_MOTIVO/INK_MOTIVO en js/main.js. */
+.dashboard-grafica__texto-segmento--turquesa {
+  fill: var(--color-acento-texto);
+}
+
+.dashboard-grafica__texto-segmento--primario {
+  fill: var(--color-primario-texto);
 }
 
 /* Etiquetas del eje X de construirFiguraBarrasVerticales() (evolución por
@@ -13110,6 +13136,55 @@ button.badge-estado {
   font-size: var(--tamano-fuente-secundario);
   color: var(--color-texto-suave);
   white-space: nowrap;
+}
+
+/* "💬 Bienestar socioemocional" > "¿Cómo se sintieron?" — 5 barras
+   horizontales independientes (NO apiladas, ver renderizarAnimoBienestarDashboard
+   en js/main.js), etiqueta visible arriba de cada una en vez de al lado
+   (mismo patrón que .dashboard-grafica__titulo para el subtítulo de cada
+   figura de Puntualidad por tipo). */
+.dashboard-bienestar-barras {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.dashboard-bienestar-barra__etiqueta {
+  display: block;
+  font-size: var(--tamano-fuente-secundario);
+  margin-bottom: 0.2rem;
+}
+
+.dashboard-bienestar-barra__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* "¿Qué influyó más?" — leyenda propia con nombre + % (la leyenda que ya
+   trae construirFiguraBarraApilada, arriba del SVG, solo pone swatch +
+   nombre, sin porcentaje) — mismo criterio tipográfico que
+   .dashboard-grafica__leyenda. */
+.dashboard-bienestar-motivo-leyenda {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto-suave);
+}
+
+/* Nota de cobertura ("X de Y entregas..."), debajo de ambas columnas —
+   mismo estilo que .sin-resultados (secundario, itálica) pero sin esa
+   clase: no es un estado vacío, es una nota de tamaño de muestra que se
+   muestra siempre, incluso con datos. */
+.dashboard-bienestar-cobertura {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-fuente-secundario);
+  font-style: italic;
+  margin: 1rem 0 0;
 }
 
 /* Punto + línea de estado — riel cronológico compartido por cualquier

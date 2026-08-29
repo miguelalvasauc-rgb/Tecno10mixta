@@ -18997,6 +18997,19 @@ async function inicializarModuloEvaluacion() {
 // en una sola barra sin poder distinguirlos. 3°C es el default al cargar.
 const estadoDashboard = { trimestre: null, grupo: "3C" };
 
+// Filtro propio de "💬 Bienestar socioemocional" (independiente de
+// Trimestre/Grupo de arriba): tipo+itemId de la entrega elegida en el
+// <select>, o ambos null para el agregado "Todas las entregas". Se
+// resetea a null en cada renderizarBienestarDashboard() si la entrega ya
+// no existe en el trimestre/grupo recién filtrado (ver esa función).
+let estadoBienestarDashboard = { tipo: null, itemId: null };
+
+// Filas de progreso (trimestre+grupo activos, TODOS los tipos, sin
+// filtrar por entrega) que ya trajo renderizarBienestarDashboard() —
+// activarFiltroBienestarDashboard() las reusa tal cual al cambiar de
+// entrega en el <select>, sin volver a consultar Supabase.
+let filasBienestarDashboardCache = [];
+
 const UMBRAL_RIESGO_ZONA_ROJA = 50;
 
 // riesgo_score = (100 - % avance) * 0.6 + (% entregas tarde o faltantes) * 0.4.
@@ -19489,7 +19502,7 @@ function construirTarjetaAvanceCiclo(avancePromedio, porTipoPromedio, tendencia)
   return tarjeta;
 }
 
-function renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias, riesgoExtraordinario) {
+function renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias, riesgoExtraordinario, climaPositivoPct) {
   const contenedor = document.getElementById("dashboard-kpis");
   if (!contenedor) return;
   contenedor.innerHTML = "";
@@ -19565,6 +19578,19 @@ function renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias, riesgoE
       // ciclo" que trackear por semana, a diferencia del avance/promedio
       // de un solo trimestre).
       tendenciaDisponible: false,
+    }),
+    // Agregada por Trimestre+Grupo SIEMPRE, sin importar el filtro de
+    // entrega específica de "💬 Bienestar socioemocional" más abajo (esa
+    // sección tiene su propio alcance independiente, ver
+    // renderizarBienestarDashboard) — mismo criterio que "Alumnos en
+    // riesgo"/"Riesgo de extraordinario": sin tendencia semanal todavía.
+    construirTarjetaKPISimple({
+      icono: "😊",
+      titulo: "Clima positivo",
+      valor: climaPositivoPct == null ? "—" : climaPositivoPct + "%",
+      tendencia: null,
+      unidad: null,
+      tendenciaDisponible: false,
     })
   );
 }
@@ -19635,6 +19661,16 @@ function construirFiguraBarraApilada({ tituloAccesible, categorias, valores, col
     segmento.setAttribute("width", String(anchoSegmento));
     segmento.setAttribute("height", String(ALTO_BARRA));
     segmento.setAttribute("fill", colores[categoria]);
+    // Separador visible entre CUALQUIER par de segmentos, no solo entre
+    // colores distintos (Bienestar > "¿Qué influyó más?" repite tono en 2
+    // de sus 6 categorías, ver COLORES_MOTIVO en js/main.js — sin esto, 2
+    // segmentos del mismo color adyacentes se leerían como uno solo). El
+    // GAP de 2px entre segmentos ya deja pasar --color-borde por debajo,
+    // pero es casi imperceptible a esa escala; el stroke lo hace explícito
+    // también en el borde INTERNO de cada segmento (semáforo/tasa de
+    // entrega lo heredan gratis, sin cambiar su apariencia real: sus
+    // categorías ya eran de colores distintos entre sí).
+    segmento.setAttribute("class", "dashboard-grafica__segmento");
     const tituloSegmento = document.createElementNS(svgNS, "title");
     tituloSegmento.textContent = categoria + ": " + valor + "%";
     segmento.appendChild(tituloSegmento);
@@ -19751,6 +19787,120 @@ const COLORES_ENTREGA = {
   "Tarde o faltante": "var(--color-estado-vencido)",
 };
 const INK_ENTREGA = { "A tiempo": "oscuro", "Tarde o faltante": "claro" };
+
+/* ---------------------------------------------------------
+   "💬 Bienestar socioemocional" (Dashboard) — distribución agregada de
+   progreso.emocion_animo/emocion_motivo, con desglose opcional por
+   entrega. Reusa ETIQUETAS_ANIMO/ETIQUETAS_MOTIVO (sección "Calificar
+   entrega") como única fuente de emoji+etiqueta — no se duplican acá.
+
+   Paleta de "¿Qué influyó más?" (6 categorías de emocion_motivo): NO usa
+   colores nuevos. Se probaron tonos derivados (color-mix turquesa/
+   primario/primario-suave en varias proporciones) contra los 10 temas y
+   TODOS fallan AA en algún tema (peor caso 1.35:1–3.74:1, muy bajo el
+   mínimo 4.5:1) — este sistema de temas es demasiado variado (de
+   "cyberpunk-gold" a "rosa-pastel") para un tono inventado sin ajuste
+   manual por tema, igual que ya le pasó a --color-error-formulario/
+   --pie-aviso-fondo (ver esos comentarios). En vez de eso, reutiliza los
+   3 fondos YA validados en PARES_CONTRASTE de scripts/validate_palette.js
+   (turquesa+acento-texto, primario+primario-texto, primario-suave+
+   primario-texto), dos categorías por fondo, agrupadas por cercanía de
+   sentido (dificultad académica/técnica, factores personales, resto).
+   La distinción entre las 2 categorías que comparten fondo no depende
+   SOLO del color (WCAG 1.4.1): cada segmento trae su propio <title> con
+   nombre+% (construirFiguraBarraApilada) y la leyenda de abajo repite
+   nombre+% en texto plano. */
+const ORDEN_MOTIVO_BASE = [
+  "dificultad_tema",
+  "tiempo",
+  "trabajo_equipo",
+  "herramientas_tecnologia",
+  "motivacion_personal",
+  "otro",
+];
+const COLORES_MOTIVO = {
+  dificultad_tema: "var(--color-turquesa)",
+  herramientas_tecnologia: "var(--color-turquesa)",
+  tiempo: "var(--color-primario)",
+  motivacion_personal: "var(--color-primario)",
+  trabajo_equipo: "var(--color-primario-suave)",
+  otro: "var(--color-primario-suave)",
+};
+// "turquesa"/"primario" (no "oscuro"/"claro"): construirFiguraBarraApilada
+// arma la clase como "dashboard-grafica__texto-segmento--" + este valor,
+// así que estos 2 sufijos nuevos apuntan a --color-acento-texto/
+// --color-primario-texto (ver css/style.css) — los inks POR TEMA ya
+// validados contra turquesa/primario, a diferencia de los fijos
+// "oscuro"/"claro" (#04211D/--color-claro-sobre-navy) que solo sirven
+// contra los tokens --color-estado-* (tampoco varían por tema).
+const INK_MOTIVO = {
+  dificultad_tema: "turquesa",
+  herramientas_tecnologia: "turquesa",
+  tiempo: "primario",
+  motivacion_personal: "primario",
+  trabajo_equipo: "primario",
+  otro: "primario",
+};
+
+// Mismo agrupamiento por tono que COLORES_MOTIVO, pero como clave de
+// grupo simple — usado SOLO por separarSegmentosMotivoPorGrupo() para
+// decidir qué 2 categorías nunca pueden quedar adyacentes en la barra.
+const GRUPO_COLOR_MOTIVO = {
+  dificultad_tema: "turquesa",
+  herramientas_tecnologia: "turquesa",
+  tiempo: "primario",
+  motivacion_personal: "primario",
+  trabajo_equipo: "primario-suave",
+  otro: "primario-suave",
+};
+
+// Reordena categoriasOrdenadas (ya viene desc por %, ver
+// renderizarMotivoBienestarDashboard) para el ORDEN VISUAL de la barra
+// apilada — la leyenda de abajo sigue usando categoriasOrdenadas tal
+// cual, sin pasar por acá. Garantiza POR CONSTRUCCIÓN (no reparando swaps
+// sobre el orden por frecuencia, que puede fallar si las 2 mitades del
+// último grupo terminan pegadas al final) que las 2 categorías de un
+// mismo GRUPO_COLOR_MOTIVO nunca quedan adyacentes:
+//   1. Agrupa las 6 categorías en sus 3 grupos de color (2 c/u).
+//   2. Ordena esos 3 grupos por el % de su miembro más alto (desc).
+//   3. "Ronda 1": el miembro más alto de cada grupo, en ese orden de
+//      grupos. "Ronda 2": el miembro más bajo de cada grupo, MISMO orden.
+//      Ronda 1 concatenada con Ronda 2.
+// Cualquier par adyacente dentro de una ronda es de grupos distintos (son
+// 3 grupos distintos en el mismo orden). El único punto de unión entre
+// rondas (último de Ronda 1, primero de Ronda 2) también es de grupos
+// distintos: son el último y el primer grupo del mismo orden de 3 grupos,
+// y con 3 grupos siempre son grupos diferentes. Válido para cualquier
+// combinación de porcentajes, no solo para el caso ya probado a mano.
+function separarSegmentosMotivoPorGrupo(categoriasOrdenadas) {
+  const porGrupo = new Map();
+  categoriasOrdenadas.forEach((item) => {
+    const grupo = GRUPO_COLOR_MOTIVO[item.clave];
+    if (!porGrupo.has(grupo)) porGrupo.set(grupo, []);
+    porGrupo.get(grupo).push(item); // hereda el orden desc por % de categoriasOrdenadas
+  });
+
+  const gruposOrdenados = [...porGrupo.values()].sort((a, b) => b[0].pct - a[0].pct);
+
+  const rondaUno = gruposOrdenados.map((miembros) => miembros[0]);
+  const rondaDos = gruposOrdenados.filter((miembros) => miembros.length > 1).map((miembros) => miembros[1]);
+
+  return [...rondaUno, ...rondaDos];
+}
+
+// Orden fijo pedido (peor -> mejor], NO por frecuencia: a diferencia de
+// motivo (que sí se ordena por %), el ánimo tiene una escala inherente
+// que debe leerse siempre en el mismo sentido.
+const NIVELES_ANIMO_ORDEN = ["muy_frustrado", "un_poco_frustrado", "neutral", "a_gusto", "muy_satisfecho"];
+// Misma pregunta, mismo color (turquesa): la variable es SOLO opacidad,
+// de "casi imperceptible" a "sólido", siguiendo el orden de arriba.
+const OPACIDAD_POR_NIVEL_ANIMO = {
+  muy_frustrado: 0.25,
+  un_poco_frustrado: 0.45,
+  neutral: 0.65,
+  a_gusto: 0.85,
+  muy_satisfecho: 1,
+};
 
 function renderizarTasaEntregaDashboard(resumenAlumnos) {
   const contenedor = document.getElementById("dashboard-entrega");
@@ -19955,6 +20105,284 @@ function renderizarPuntualidadPorTipoDashboard(resumenAlumnos) {
         inkPorCategoria: INK_ENTREGA,
       })
     );
+  });
+}
+
+// Filas de progreso del trimestre+grupo activos (TODOS los tipos, sin
+// filtrar por entrega todavía) — misma fuente que alimenta tanto la KPI
+// "😊 Clima positivo" (siempre agregada) como la sección "💬 Bienestar
+// socioemocional" (agregada o filtrada por entrega, ver
+// calcularFilasScopeBienestar). idsAlumnos se reusa tal cual desde
+// renderizarDashboard (ya construido para resumenAlumnos) para no
+// repetir la consulta a alumnos_registro que ya hizo
+// construirResumenAlumnosDashboard.
+async function obtenerFilasBienestarDashboard(trimestre, idsAlumnos) {
+  if (idsAlumnos.length === 0) return [];
+  const mapa = await obtenerMapaProgresoCalificacion(trimestre, ["tarea", "actividad", "proyecto"], idsAlumnos);
+  return [...mapa.values()];
+}
+
+// % de entregas CON dato de emocion_animo cuyo valor es "a_gusto" o
+// "muy_satisfecho", sobre el total CON dato (nulls fuera del
+// denominador) — null (no 0) si nadie del grupo tiene el dato todavía,
+// mismo criterio que promedioGeneral en renderizarKPIsDashboard.
+function calcularClimaPositivoPct(filasBienestar) {
+  const conDato = filasBienestar.filter((fila) => fila.emocion_animo);
+  if (conDato.length === 0) return null;
+  const positivas = conDato.filter(
+    (fila) => fila.emocion_animo === "a_gusto" || fila.emocion_animo === "muy_satisfecho"
+  ).length;
+  return Math.round((positivas / conDato.length) * 100);
+}
+
+// Alcance activo de la sección: agregado (todo filasBienestarDashboardCache)
+// o filtrado a UNA entrega (tipo+item_id) según estadoBienestarDashboard.
+function calcularFilasScopeBienestar() {
+  const { tipo, itemId } = estadoBienestarDashboard;
+  if (!tipo || !itemId) return filasBienestarDashboardCache;
+  return filasBienestarDashboardCache.filter((fila) => fila.tipo === tipo && String(fila.item_id) === String(itemId));
+}
+
+// Columna izquierda: 5 barras horizontales independientes (NO apiladas —
+// a diferencia de construirFiguraBarraApilada, cada nivel mide su propio
+// % del total con dato, así que las 5 no tienen por qué sumar 100). Un
+// solo <svg> por barra, mismo patrón de accesibilidad que el resto del
+// Dashboard (role="img" + aria-label con el valor exacto) + etiqueta
+// visible idéntica (emoji + texto + %) como texto normal al lado.
+function renderizarAnimoBienestarDashboard(contenedor, filasScope) {
+  contenedor.innerHTML = "";
+
+  const conDato = filasScope.filter((fila) => fila.emocion_animo);
+  if (conDato.length === 0) {
+    mostrarSinResultados(contenedor, "Sin registros de ánimo para este filtro.", "💬");
+    return;
+  }
+
+  const conteos = {};
+  NIVELES_ANIMO_ORDEN.forEach((nivel) => (conteos[nivel] = 0));
+  conDato.forEach((fila) => {
+    if (conteos[fila.emocion_animo] !== undefined) conteos[fila.emocion_animo]++;
+  });
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const ANCHO = 260;
+  const ALTO_BARRA = 16;
+
+  const lista = document.createElement("div");
+  lista.className = "dashboard-bienestar-barras";
+
+  NIVELES_ANIMO_ORDEN.forEach((nivel) => {
+    const pct = Math.round((conteos[nivel] / conDato.length) * 100);
+    const textoVisible = ETIQUETAS_ANIMO[nivel] + " — " + pct + "%";
+
+    const fila = document.createElement("div");
+    fila.className = "dashboard-bienestar-barra";
+
+    const etiqueta = document.createElement("span");
+    etiqueta.className = "dashboard-bienestar-barra__etiqueta";
+    etiqueta.textContent = textoVisible;
+    fila.appendChild(etiqueta);
+
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", "0 0 " + ANCHO + " " + (ALTO_BARRA + 4));
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", textoVisible);
+    svg.classList.add("dashboard-bienestar-barra__svg");
+
+    const track = document.createElementNS(svgNS, "rect");
+    track.setAttribute("x", "0");
+    track.setAttribute("y", "2");
+    track.setAttribute("width", String(ANCHO));
+    track.setAttribute("height", String(ALTO_BARRA));
+    track.setAttribute("rx", "4");
+    track.setAttribute("class", "dashboard-grafica__track");
+    svg.appendChild(track);
+
+    const relleno = document.createElementNS(svgNS, "rect");
+    relleno.setAttribute("x", "0");
+    relleno.setAttribute("y", "2");
+    relleno.setAttribute("width", String(Math.max(0, (pct / 100) * ANCHO)));
+    relleno.setAttribute("height", String(ALTO_BARRA));
+    relleno.setAttribute("rx", "4");
+    relleno.setAttribute("fill", "var(--color-turquesa)");
+    relleno.setAttribute("fill-opacity", String(OPACIDAD_POR_NIVEL_ANIMO[nivel]));
+    svg.appendChild(relleno);
+
+    fila.appendChild(svg);
+    lista.appendChild(fila);
+  });
+
+  contenedor.appendChild(lista);
+}
+
+// Columna derecha: reusa construirFiguraBarraApilada tal cual (mismo
+// patrón que semáforo/tasa de entrega — role="img", <title> por
+// segmento, fallback "Ver como tabla"), categorías ordenadas de mayor a
+// menor % (a diferencia de ánimo, acá SÍ importa el orden por frecuencia,
+// no hay escala inherente que respetar). Agrega su propia leyenda de
+// nombre+% debajo del <figure> — la leyenda que ya trae
+// construirFiguraBarraApilada solo pone nombre+swatch, sin porcentaje.
+function renderizarMotivoBienestarDashboard(contenedor, filasScope) {
+  contenedor.innerHTML = "";
+
+  const conDato = filasScope.filter((fila) => fila.emocion_motivo);
+  if (conDato.length === 0) {
+    mostrarSinResultados(contenedor, "Sin registros de motivo para este filtro.", "💬");
+    return;
+  }
+
+  const conteos = {};
+  ORDEN_MOTIVO_BASE.forEach((clave) => (conteos[clave] = 0));
+  conDato.forEach((fila) => {
+    if (conteos[fila.emocion_motivo] !== undefined) conteos[fila.emocion_motivo]++;
+  });
+
+  const categoriasOrdenadas = ORDEN_MOTIVO_BASE.map((clave) => ({
+    clave,
+    pct: Math.round((conteos[clave] / conDato.length) * 100),
+  })).sort((a, b) => b.pct - a.pct);
+
+  const valores = {};
+  const colores = {};
+  const inks = {};
+  categoriasOrdenadas.forEach(({ clave, pct }) => {
+    const etiqueta = ETIQUETAS_MOTIVO[clave];
+    valores[etiqueta] = pct;
+    colores[etiqueta] = COLORES_MOTIVO[clave];
+    inks[etiqueta] = INK_MOTIVO[clave];
+  });
+
+  // Orden VISUAL de la barra: separa los pares del mismo tono (ver
+  // separarSegmentosMotivoPorGrupo), distinto del orden de la leyenda de
+  // abajo, que sí sigue categoriasOrdenadas tal cual (estrictamente por %).
+  const categoriasParaBarra = separarSegmentosMotivoPorGrupo(categoriasOrdenadas).map(
+    ({ clave }) => ETIQUETAS_MOTIVO[clave]
+  );
+
+  contenedor.appendChild(
+    construirFiguraBarraApilada({
+      tituloAccesible: "Distribución de motivos que influyeron en la entrega",
+      categorias: categoriasParaBarra,
+      valores,
+      colores,
+      inkPorCategoria: inks,
+    })
+  );
+
+  const leyenda = document.createElement("ul");
+  leyenda.className = "dashboard-bienestar-motivo-leyenda";
+  categoriasOrdenadas.forEach(({ clave, pct }) => {
+    const li = document.createElement("li");
+    li.textContent = ETIQUETAS_MOTIVO[clave] + " — " + pct + "%";
+    leyenda.appendChild(li);
+  });
+  contenedor.appendChild(leyenda);
+}
+
+// "X de Y entregas registran esta respuesta (Z%)" — Y es el total de
+// filas de progreso del alcance activo (agregado o entrega específica),
+// X las que sí traen emocion_animo. Se muestra siempre, incluso en 0/0,
+// para que el docente vea el tamaño real de la muestra sin adivinar por
+// qué las columnas de arriba están vacías.
+function actualizarCoberturaBienestarDashboard(filasScope) {
+  const elemento = document.getElementById("dashboard-bienestar-cobertura");
+  if (!elemento) return;
+
+  const total = filasScope.length;
+  const conDato = filasScope.filter((fila) => fila.emocion_animo).length;
+  const pct = total === 0 ? 0 : Math.round((conDato / total) * 100);
+  elemento.textContent =
+    total === 0
+      ? "Sin entregas registradas en este alcance."
+      : conDato + " de " + total + " entregas registran esta respuesta (" + pct + "%)";
+}
+
+function renderizarColumnasBienestarDashboard() {
+  const filasScope = calcularFilasScopeBienestar();
+  const contenedorAnimo = document.getElementById("dashboard-bienestar-animo");
+  const contenedorMotivo = document.getElementById("dashboard-bienestar-motivo");
+  if (contenedorAnimo) renderizarAnimoBienestarDashboard(contenedorAnimo, filasScope);
+  if (contenedorMotivo) renderizarMotivoBienestarDashboard(contenedorMotivo, filasScope);
+  actualizarCoberturaBienestarDashboard(filasScope);
+}
+
+// value de cada <option> es "tipo|item_id" (separador que no aparece ni
+// en tipo -enum fijo- ni en los ids del catálogo curricular, ej. "t5").
+function poblarSelectBienestarDashboard(entregables) {
+  const select = document.getElementById("dashboard-bienestar-filtro-entrega");
+  if (!select) return;
+  select.innerHTML = "";
+
+  const optAgregado = document.createElement("option");
+  optAgregado.value = "";
+  optAgregado.textContent = "Todas las entregas";
+  select.appendChild(optAgregado);
+
+  const porTipo = { tarea: [], actividad: [], proyecto: [] };
+  entregables.forEach((item) => porTipo[item.tipoEntregable]?.push(item));
+
+  Object.entries(ETIQUETAS_TIPO_ENTREGABLE_DASHBOARD).forEach(([tipo, etiquetaTipo]) => {
+    const items = porTipo[tipo];
+    if (!items || items.length === 0) return;
+
+    const optgroup = document.createElement("optgroup");
+    optgroup.label = etiquetaTipo;
+    items.forEach((item) => {
+      const option = document.createElement("option");
+      option.value = tipo + "|" + item.id;
+      option.textContent = item.titulo;
+      optgroup.appendChild(option);
+    });
+    select.appendChild(optgroup);
+  });
+}
+
+// Llamada en CADA renderizarDashboard() (trimestre/grupo activos): trae
+// el catálogo del trimestre filtrado por grupo (mismo criterio que
+// construirResumenAlumnosDashboard/obtenerEvolucionPromedioPorSecuencia:
+// item.grupo === "todos" || item.grupo === grupo), repuebla el <select> y
+// —si la entrega antes seleccionada ya no existe en este trimestre/
+// grupo— vuelve a "Todas las entregas" antes de pintar las columnas.
+async function renderizarBienestarDashboard(trimestre, grupo, filasBienestar) {
+  const select = document.getElementById("dashboard-bienestar-filtro-entrega");
+  if (!select) return; // no es admin.html
+
+  filasBienestarDashboardCache = filasBienestar;
+
+  const entregablesTodos = await obtenerEntregablesPorTipo("todos", trimestre);
+  const entregables = entregablesTodos.filter((item) => item.grupo === "todos" || item.grupo === grupo);
+
+  poblarSelectBienestarDashboard(entregables);
+
+  const sigueExistiendo =
+    estadoBienestarDashboard.tipo &&
+    entregables.some(
+      (item) =>
+        item.tipoEntregable === estadoBienestarDashboard.tipo && String(item.id) === String(estadoBienestarDashboard.itemId)
+    );
+  if (!sigueExistiendo) estadoBienestarDashboard = { tipo: null, itemId: null };
+
+  select.value = estadoBienestarDashboard.tipo ? estadoBienestarDashboard.tipo + "|" + estadoBienestarDashboard.itemId : "";
+
+  renderizarColumnasBienestarDashboard();
+}
+
+// Listener del <select>, activado UNA sola vez desde inicializarModuloDashboard
+// (mismo criterio que activarFiltrosAsistenciaDashboard) — a diferencia de
+// renderizarBienestarDashboard() de arriba, esto NO vuelve a consultar
+// Supabase: solo reparte filasBienestarDashboardCache ya traída.
+function activarFiltroBienestarDashboard() {
+  const select = document.getElementById("dashboard-bienestar-filtro-entrega");
+  if (!select) return;
+
+  select.addEventListener("change", () => {
+    if (!select.value) {
+      estadoBienestarDashboard = { tipo: null, itemId: null };
+    } else {
+      const [tipo, itemId] = select.value.split("|");
+      estadoBienestarDashboard = { tipo, itemId };
+    }
+    renderizarColumnasBienestarDashboard();
   });
 }
 
@@ -20809,12 +21237,15 @@ async function renderizarDashboard() {
     grupo,
     resumenAlumnos.map((r) => r.alumno)
   );
+  const filasBienestar = await obtenerFilasBienestarDashboard(trimestre, idsAlumnos);
+  const climaPositivoPct = calcularClimaPositivoPct(filasBienestar);
 
-  renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias, riesgoExtraordinario);
+  renderizarKPIsDashboard(resumenAlumnos, pendientes, tendencias, riesgoExtraordinario, climaPositivoPct);
   renderizarSemaforoDashboard(resumenAlumnos);
   renderizarTasaEntregaDashboard(resumenAlumnos);
   renderizarTop5RiesgoDashboard(resumenAlumnos);
   renderizarPuntualidadPorTipoDashboard(resumenAlumnos);
+  await renderizarBienestarDashboard(trimestre, grupo, filasBienestar);
 
   filasAsistenciaDashboard = await construirFilasAsistenciaDashboard(resumenAlumnos, trimestre);
   renderizarTablaAsistenciaDashboard();
@@ -20852,6 +21283,7 @@ async function inicializarModuloDashboard() {
   renderizarCronogramaDashboard();
   activarFiltrosAsistenciaDashboard();
   activarImpresionAsistenciaDashboard();
+  activarFiltroBienestarDashboard();
   await renderizarDashboard();
 
   selectTrimestre.addEventListener("change", async () => {

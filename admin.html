@@ -766,6 +766,37 @@
           </div>
         </div>
 
+        <!-- Bienestar socioemocional (progreso.emocion_animo/emocion_motivo,
+             llenadas desde los 3 Google Forms de entrega vía Apps Script) —
+             filtro propio de entrega específica, independiente de
+             Trimestre/Grupo de arriba (esos SÍ recalculan este bloque, ver
+             renderizarBienestarDashboard() en js/main.js; el filtro de
+             entrega en cambio solo reparte las mismas filas ya traídas, sin
+             volver a consultar Supabase). Value de cada <option> es
+             "tipo|item_id" (ver poblarSelectBienestarDashboard); se resetea
+             solo a "Todas las entregas" si la entrega ya no existe en el
+             trimestre/grupo activo. -->
+        <h3>💬 Bienestar socioemocional</h3>
+        <div class="calificacion-filtros">
+          <div class="calificacion-filtro">
+            <label for="dashboard-bienestar-filtro-entrega">Ver</label>
+            <select id="dashboard-bienestar-filtro-entrega">
+              <option value="">Todas las entregas</option>
+            </select>
+          </div>
+        </div>
+        <div class="dashboard-ficha">
+          <div class="dashboard-ficha__celda">
+            <h4 class="dashboard-ficha__titulo-celda">😊 ¿Cómo se sintieron?</h4>
+            <div id="dashboard-bienestar-animo" aria-live="polite"></div>
+          </div>
+          <div class="dashboard-ficha__celda">
+            <h4 class="dashboard-ficha__titulo-celda">🧩 ¿Qué influyó más?</h4>
+            <div id="dashboard-bienestar-motivo" aria-live="polite"></div>
+          </div>
+        </div>
+        <p id="dashboard-bienestar-cobertura" class="dashboard-bienestar-cobertura"></p>
+
         <!-- Módulo Asistencia del Dashboard: KPI de % del grupo + tendencia
              semanal (barras simples con divs, ver construirTendenciaBarrasAsistencia()
              en js/main.js -- deliberadamente distinto del sparkline SVG de
