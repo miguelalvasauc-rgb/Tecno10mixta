@@ -494,6 +494,54 @@
       <div id="contenedor-proyectos" class="cuadricula" aria-live="polite"></div>
     </section>
 
+    <!-- ===================== FILTRO BURBUJA (práctica, Secuencia 4) =====================
+         Widget 100% local: sin Supabase, sin progreso.html, sin
+         calificación — es práctica libre de reflexión, no una entrega.
+         Simulación digital del Juego de Roles "El Algoritmo en Acción"
+         (js/main.js, a-s4-2): el alumno elige un perfil y ve qué posts le
+         "recomienda" el algoritmo y cuáles nunca le llegan, para
+         experimentar el filtro burbuja (ver DATOS_GLOSARIO, Secuencia 4).
+         Poblado por activarFiltroBurbuja() en js/main.js. Los resultados
+         por perfil viven SOLO en memoria de la página (ni Supabase ni
+         localStorage) — se pierden al recargar, a propósito. -->
+    <section id="filtro-burbuja" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>🫧 Practica: así ve cada quién su feed</h2>
+        <p>Simulación de la Secuencia 4 (Ciencia de Datos): elige un perfil de usuario y descubre qué le muestra el algoritmo — y qué NO le muestra — mismo concepto que el Juego de Roles "El Algoritmo en Acción".</p>
+      </div>
+
+      <div class="filtro-burbuja-widget">
+        <div id="filtro-burbuja-perfiles" class="filtro-burbuja-widget__perfiles" role="group" aria-label="Elige un perfil de usuario"></div>
+
+        <button type="button" id="filtro-burbuja-confirmar" class="boton-primario filtro-burbuja-widget__confirmar" disabled>▶️ Ver mi feed</button>
+
+        <div id="filtro-burbuja-chips" class="filtro-burbuja-widget__chips" hidden></div>
+
+        <!-- aria-live="off" a propósito (no "polite"): 15 posts se
+             revelan uno por uno cada ~175ms, y anunciarlos todos sería
+             ruido inmanejable para un lector de pantalla. El resumen
+             final de abajo SÍ es aria-live="polite" — es el momento que
+             de verdad importa anunciar. -->
+        <div id="filtro-burbuja-feed" class="filtro-burbuja-widget__feed" aria-live="off"></div>
+
+        <div id="filtro-burbuja-resumen" class="filtro-burbuja-widget__resumen" aria-live="polite" hidden></div>
+
+        <button type="button" id="filtro-burbuja-reiniciar" class="boton-secundario filtro-burbuja-widget__reiniciar" hidden>🔄 Probar con otro perfil</button>
+
+        <!-- Se muestra sola la primera vez que se completan los 15 posts
+             (no hace falta esperar a que pruebe varios perfiles, ver
+             activarFiltroBurbuja) — nunca se oculta de nuevo. -->
+        <div id="filtro-burbuja-reflexion" class="filtro-burbuja-widget__reflexion" hidden>
+          <p class="filtro-burbuja-widget__reflexion-emoji" aria-hidden="true">💡</p>
+          <p class="filtro-burbuja-widget__reflexion-pregunta">¿Qué posts NO vio tu usuario? ¿Qué información le faltó? ¿Eso es bueno o malo?</p>
+          <div class="campo-formulario">
+            <label for="filtro-burbuja-reflexion-texto">Tu respuesta (opcional — no se guarda, es solo para pensar)</label>
+            <textarea id="filtro-burbuja-reflexion-texto" rows="4" placeholder="Escribe tu reflexión aquí…"></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ===================== APLICA TUS CONOCIMIENTOS ===================== -->
     <!-- Fase 15: contenido armado por JS (ver renderizarSeccionAplicaConocimientos()
          en js/main.js) — 3 bloques: explicación fija (siempre visible, este

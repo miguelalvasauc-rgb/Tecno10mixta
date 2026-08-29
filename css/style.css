@@ -6360,6 +6360,207 @@ summary {
   line-height: 1.5;
 }
 
+/* ---------- Filtro burbuja (trimestre-2-practica.html, Secuencia 4) ----------
+   Widget de práctica libre, sin Supabase — ver activarFiltroBurbuja() en
+   js/main.js. Mismo ancho angosto/centrado que .chatbot-widget. */
+.filtro-burbuja-widget {
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.filtro-burbuja-widget__perfiles {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+@media (max-width: 420px) {
+  .filtro-burbuja-widget__perfiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mismo patrón visual que .riel-flyout__modo-tarjeta (selector Teoría/
+   Práctica y modo de Trimestre, ver css/style.css ~L8951): superficie-baja
+   + borde en reposo, turquesa sólido + acento-texto al seleccionar —
+   mismo par ya validado AA en los 10 temas, no un borde+primario-suave
+   nuevo sin precedente. */
+.filtro-burbuja-tarjeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-cuerpo);
+  background-color: var(--color-superficie-baja);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: 0.75rem 0.5rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .filtro-burbuja-tarjeta:hover {
+    border-color: var(--color-turquesa);
+  }
+}
+
+.filtro-burbuja-tarjeta:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.filtro-burbuja-tarjeta__emoji {
+  font-size: 1.6rem;
+}
+
+.filtro-burbuja-tarjeta__nombre {
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 700;
+  color: var(--color-texto);
+  text-align: center;
+}
+
+.filtro-burbuja-tarjeta--activa {
+  background-color: var(--color-turquesa);
+  border-color: var(--color-turquesa);
+}
+
+.filtro-burbuja-tarjeta--activa .filtro-burbuja-tarjeta__nombre {
+  color: var(--color-acento-texto);
+}
+
+.filtro-burbuja-widget__chips {
+  width: 100%;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+}
+
+.filtro-burbuja-chip {
+  flex-shrink: 0;
+  background-color: var(--color-superficie-alterna);
+  color: var(--color-texto);
+  border-radius: var(--radio-full);
+  padding: 0.3rem 0.75rem;
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.filtro-burbuja-widget__feed {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.post-filtro {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie);
+}
+
+.post-filtro__emoji {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.post-filtro__texto {
+  flex: 1;
+  color: var(--color-texto);
+}
+
+.post-filtro__estado {
+  flex-shrink: 0;
+}
+
+.post-filtro--no-visto {
+  opacity: 0.4;
+}
+
+.post-filtro--no-visto .post-filtro__texto {
+  text-decoration: line-through;
+}
+
+/* Entrada SOLO para posts vistos (mismo mecanismo @starting-style que ya
+   usan .chatbot-burbuja/los <dialog> del sitio) — los no-vistos aparecen
+   directo, sin transición, a propósito: remarca que "ni siquiera
+   llegaron", no solo que se ven distinto. */
+@media (prefers-reduced-motion: no-preference) {
+  .post-filtro--visto {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 200ms ease-out, transform 200ms ease-out;
+  }
+
+  @starting-style {
+    .post-filtro--visto {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}
+
+.filtro-burbuja-widget__resumen {
+  width: 100%;
+  text-align: center;
+}
+
+.filtro-burbuja-widget__resumen-numero {
+  margin: 0 0 0.5rem;
+  font-size: var(--tamano-fuente-titulo-modal);
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.filtro-burbuja-widget__barra {
+  width: 100%;
+  height: 10px;
+  border-radius: var(--radio-full);
+  background-color: var(--color-borde);
+  overflow: hidden;
+}
+
+.filtro-burbuja-widget__barra-relleno {
+  height: 100%;
+  background-color: var(--color-turquesa);
+  border-radius: var(--radio-full);
+}
+
+.filtro-burbuja-widget__reflexion {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--color-borde);
+  border-left: 4px solid var(--color-turquesa);
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie);
+}
+
+.filtro-burbuja-widget__reflexion-emoji {
+  margin: 0 0 0.4rem;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.filtro-burbuja-widget__reflexion-pregunta {
+  margin: 0 0 0.9rem;
+  color: var(--color-texto);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
 /* ---------- Formulario de contacto ---------- */
 
 /* Campo trampa anti-spam (Netlify Forms honeypot). Oculto con posición

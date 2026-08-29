@@ -21638,6 +21638,224 @@ function activarChatbotReglas() {
 }
 
 /* =========================================================
+   15. FILTRO BURBUJA (trimestre-2-practica.html, Secuencia 4)
+   ========================================================= */
+
+// 4 perfiles de usuario — mismo concepto que el Juego de Roles "El
+// Algoritmo en Acción" (ver a-s4-2 en DATOS_ACTIVIDADES[2]), digital en
+// vez de en papel. .interes es el único tipo de post que ese perfil "sí
+// le interesa" — el resto de la lógica vive en postEsVisiblePorPerfil().
+const DATOS_PERFILES_FILTRO_BURBUJA = [
+  { id: "A", nombre: "Videojuegos", emoji: "🎮", interes: "videojuegos" },
+  { id: "B", nombre: "Cocina", emoji: "🍳", interes: "cocina" },
+  { id: "C", nombre: "Fútbol", emoji: "⚽", interes: "futbol" },
+  { id: "D", nombre: "Música", emoji: "🎵", interes: "musica" },
+];
+
+// 15 posts fijos, siempre en el mismo orden — tipo "generico" lo ve
+// cualquier perfil, "ruido" no lo ve ninguno, el resto solo coincide con
+// el perfil cuyo .interes sea igual.
+const DATOS_POSTS_FILTRO_BURBUJA = [
+  { id: 1, texto: "Receta de tacos", emoji: "🌮", tipo: "cocina" },
+  { id: 2, texto: "Noticia de violencia", emoji: "📰", tipo: "ruido" },
+  { id: 3, texto: "Meme de Minecraft", emoji: "🎮", tipo: "videojuegos" },
+  { id: 4, texto: "Tutorial de maquillaje", emoji: "💄", tipo: "ruido" },
+  { id: 5, texto: "Partido de Chivas", emoji: "⚽", tipo: "futbol" },
+  { id: 6, texto: "Canción de Bad Bunny", emoji: "🎵", tipo: "musica" },
+  { id: 7, texto: "Noticia de elecciones USA", emoji: "🗳️", tipo: "ruido" },
+  { id: 8, texto: "Video de gatitos", emoji: "🐱", tipo: "generico" },
+  { id: 9, texto: "Propaganda de cerveza", emoji: "🍺", tipo: "ruido" },
+  { id: 10, texto: "Tip de estudio", emoji: "📚", tipo: "generico" },
+  { id: 11, texto: "Tráiler de videojuego nuevo", emoji: "🕹️", tipo: "videojuegos" },
+  { id: 12, texto: "Video de receta de pizza", emoji: "🍕", tipo: "cocina" },
+  { id: 13, texto: "Resumen de goles de la jornada", emoji: "🥅", tipo: "futbol" },
+  { id: 14, texto: "Playlist de un artista nuevo", emoji: "🎧", tipo: "musica" },
+  { id: 15, texto: "Meme sobre la escuela", emoji: "😂", tipo: "generico" },
+];
+
+// Dentro del rango 150-200ms pedido para el delay entre posts.
+const DELAY_REVELADO_POST_FILTRO_BURBUJA_MS = 175;
+
+function postEsVisiblePorPerfil(post, perfil) {
+  return post.tipo === perfil.interes || post.tipo === "generico";
+}
+
+function esperarFiltroBurbuja(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function crearTarjetaPerfilFiltroBurbuja(perfil, seleccionado, alSeleccionar) {
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "filtro-burbuja-tarjeta" + (seleccionado ? " filtro-burbuja-tarjeta--activa" : "");
+  boton.setAttribute("aria-pressed", String(seleccionado));
+
+  const emoji = document.createElement("span");
+  emoji.className = "filtro-burbuja-tarjeta__emoji";
+  emoji.setAttribute("aria-hidden", "true");
+  emoji.textContent = perfil.emoji;
+
+  const nombre = document.createElement("span");
+  nombre.className = "filtro-burbuja-tarjeta__nombre";
+  nombre.textContent = perfil.nombre;
+
+  boton.append(emoji, nombre);
+  boton.addEventListener("click", () => alSeleccionar(perfil));
+  return boton;
+}
+
+// El ✅/🚫 va aria-hidden (es decorativo) + un span .sr-only con el
+// estado en texto — el punto pedagógico es justo que el alumno sepa que
+// el post existió pero no le llegó, así que la tarjeta completa (incluido
+// "no visto") se queda legible para lectores de pantalla, nunca oculta.
+function crearTarjetaPostFiltroBurbuja(post, visible) {
+  const tarjeta = document.createElement("div");
+  tarjeta.className = "post-filtro " + (visible ? "post-filtro--visto" : "post-filtro--no-visto");
+
+  const emoji = document.createElement("span");
+  emoji.className = "post-filtro__emoji";
+  emoji.setAttribute("aria-hidden", "true");
+  emoji.textContent = post.emoji;
+
+  const texto = document.createElement("span");
+  texto.className = "post-filtro__texto";
+  texto.textContent = post.texto;
+
+  const estado = document.createElement("span");
+  estado.className = "post-filtro__estado";
+  const estadoIcono = document.createElement("span");
+  estadoIcono.setAttribute("aria-hidden", "true");
+  estadoIcono.textContent = visible ? "✅" : "🚫";
+  const estadoTexto = document.createElement("span");
+  estadoTexto.className = "sr-only";
+  estadoTexto.textContent = visible ? "Visto" : "No visto";
+  estado.append(estadoIcono, estadoTexto);
+
+  tarjeta.append(emoji, texto, estado);
+  return tarjeta;
+}
+
+// Revela los 15 posts en orden, uno cada DELAY_REVELADO_POST_FILTRO_BURBUJA_MS
+// (async/await sobre setTimeout, no encadenado a mano — no bloquea el
+// hilo principal). Devuelve cuántos resultaron visibles para ese perfil.
+async function revelarFeedFiltroBurbuja(perfil, contenedorFeed) {
+  contenedorFeed.innerHTML = "";
+  let vistos = 0;
+  for (const post of DATOS_POSTS_FILTRO_BURBUJA) {
+    const visible = postEsVisiblePorPerfil(post, perfil);
+    if (visible) vistos++;
+    contenedorFeed.appendChild(crearTarjetaPostFiltroBurbuja(post, visible));
+    await esperarFiltroBurbuja(DELAY_REVELADO_POST_FILTRO_BURBUJA_MS);
+  }
+  return vistos;
+}
+
+// Único punto de entrada del widget — #filtro-burbuja-perfiles solo
+// existe en trimestre-2-practica.html, así que en el resto de páginas
+// esta función no hace nada (mismo patrón que activarChatbotReglas/
+// #chatbot-formulario).
+function activarFiltroBurbuja() {
+  const contenedorPerfiles = document.getElementById("filtro-burbuja-perfiles");
+  const botonConfirmar = document.getElementById("filtro-burbuja-confirmar");
+  const contenedorChips = document.getElementById("filtro-burbuja-chips");
+  const contenedorFeed = document.getElementById("filtro-burbuja-feed");
+  const contenedorResumen = document.getElementById("filtro-burbuja-resumen");
+  const botonReiniciar = document.getElementById("filtro-burbuja-reiniciar");
+  const bloqueReflexion = document.getElementById("filtro-burbuja-reflexion");
+  if (!contenedorPerfiles || !botonConfirmar || !contenedorFeed) return;
+
+  // Resultados por perfil (solo memoria de esta carga de página, nunca
+  // Supabase ni localStorage — a propósito, ver comentario en
+  // trimestre-2-practica.html) para los chips comparativos.
+  const resultadosPorPerfil = new Map();
+  let perfilSeleccionado = null;
+  let revelando = false;
+  let reflexionYaMostrada = false;
+
+  function renderizarTarjetasPerfil() {
+    contenedorPerfiles.innerHTML = "";
+    DATOS_PERFILES_FILTRO_BURBUJA.forEach((perfil) => {
+      contenedorPerfiles.appendChild(
+        crearTarjetaPerfilFiltroBurbuja(perfil, perfil.id === perfilSeleccionado?.id, (elegido) => {
+          if (revelando) return;
+          perfilSeleccionado = elegido;
+          botonConfirmar.disabled = false;
+          renderizarTarjetasPerfil();
+        })
+      );
+    });
+  }
+
+  function renderizarChips() {
+    if (resultadosPorPerfil.size === 0) {
+      contenedorChips.hidden = true;
+      return;
+    }
+    contenedorChips.innerHTML = "";
+    contenedorChips.hidden = false;
+    resultadosPorPerfil.forEach((vistos, perfilId) => {
+      const perfil = DATOS_PERFILES_FILTRO_BURBUJA.find((candidato) => candidato.id === perfilId);
+      const chip = document.createElement("span");
+      chip.className = "filtro-burbuja-chip";
+      chip.textContent = perfil.emoji + " " + vistos + "/" + DATOS_POSTS_FILTRO_BURBUJA.length;
+      contenedorChips.appendChild(chip);
+    });
+  }
+
+  function mostrarBloqueReflexion() {
+    if (!bloqueReflexion || reflexionYaMostrada) return;
+    reflexionYaMostrada = true;
+    bloqueReflexion.hidden = false;
+  }
+
+  renderizarTarjetasPerfil();
+
+  botonConfirmar.addEventListener("click", async () => {
+    if (!perfilSeleccionado || revelando) return;
+    revelando = true;
+    botonConfirmar.disabled = true;
+    contenedorResumen.hidden = true;
+    botonReiniciar.hidden = true;
+    contenedorPerfiles.querySelectorAll("button").forEach((boton) => (boton.disabled = true));
+
+    const vistos = await revelarFeedFiltroBurbuja(perfilSeleccionado, contenedorFeed);
+
+    resultadosPorPerfil.set(perfilSeleccionado.id, vistos);
+    renderizarChips();
+
+    const total = DATOS_POSTS_FILTRO_BURBUJA.length;
+    contenedorResumen.innerHTML = "";
+    const numero = document.createElement("p");
+    numero.className = "filtro-burbuja-widget__resumen-numero";
+    numero.textContent = "🫧 Viste " + vistos + " de " + total + " posts";
+    const barra = document.createElement("div");
+    barra.className = "filtro-burbuja-widget__barra";
+    const relleno = document.createElement("div");
+    relleno.className = "filtro-burbuja-widget__barra-relleno";
+    relleno.style.width = Math.round((vistos / total) * 100) + "%";
+    barra.appendChild(relleno);
+    contenedorResumen.append(numero, barra);
+    contenedorResumen.hidden = false;
+    botonReiniciar.hidden = false;
+
+    contenedorPerfiles.querySelectorAll("button").forEach((boton) => (boton.disabled = false));
+    revelando = false;
+
+    mostrarBloqueReflexion();
+  });
+
+  botonReiniciar.addEventListener("click", () => {
+    if (revelando) return;
+    contenedorFeed.innerHTML = "";
+    contenedorResumen.hidden = true;
+    botonReiniciar.hidden = true;
+    perfilSeleccionado = null;
+    botonConfirmar.disabled = true;
+    renderizarTarjetasPerfil();
+  });
+}
+
+/* =========================================================
    10. INICIALIZACIÓN
    ========================================================= */
 
@@ -21745,6 +21963,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarToastModoDemo();
   activarGuiaAlumno();
   activarChatbotReglas();
+  activarFiltroBurbuja();
   activarTabsMateriales();
   activarFiltroTipoEventos();
   await inicializarModuloCalificacion();
