@@ -181,10 +181,31 @@ function demoSumarDias(fechaISO, dias) {
 // alumno que se atrasa es más probable que se haya atrasado en lo
 // último que entregó, no en algo de hace semanas que ya tenía resuelto.
 //
+// Claves EXACTAS de progreso.emocion_animo/emocion_motivo — copiadas tal
+// cual de ETIQUETAS_ANIMO/ETIQUETAS_MOTIVO en js/main.js (sección
+// "Calificar entrega"). No se importan desde ahí: este archivo debe
+// seguir siendo autocontenido (ver el encabezado), así que si esas 2
+// listas cambian en main.js hay que reflejarlo acá también.
+const DEMO_NIVELES_ANIMO = ["muy_frustrado", "un_poco_frustrado", "neutral", "a_gusto", "muy_satisfecho"];
+const DEMO_MOTIVOS = ["dificultad_tema", "tiempo", "trabajo_equipo", "herramientas_tecnologia", "motivacion_personal", "otro"];
+
 // sinCalificar fuerza calificacion:null en todas las filas del alumno
 // (entregó, pero el docente aún no calificó nada) — para probar que la
 // tabla de promedios muestre "—" en vez de "0.0" cuando no hay ninguna
 // calificacion numérica que promediar.
+//
+// emocion_animo/emocion_motivo (Fase "💬 Bienestar socioemocional" del
+// Dashboard): sorteo INDEPENDIENTE de porcentajeAvance/calificacionMin/
+// Max/numeroEntregasTardias de este alumno a propósito — a diferencia de
+// calificación/puntualidad (que sí correlacionan con el semáforo verde/
+// ámbar/rojo), la respuesta emocional del Google Form no tiene por qué
+// guardar relación con el avance real. ~15% de las filas (el sorteo de
+// abajo, disperso fila por fila — nunca por alumno/trimestre completo)
+// quedan con AMBOS campos en null, simulando una entrega sin esa
+// respuesta capturada; DEMO_ITEM_SIN_EMOCION (ver junto a
+// DEMO_CONFIG_AVANCE_ALUMNOS) fuerza null siempre en un item puntual,
+// sin importar el sorteo, para poder probar el estado vacío del
+// dropdown de entrega específica de esa sección.
 function demoGenerarProgresoAlumno({ authUserId, trimestre, porcentajeAvance, calificacionMin, calificacionMax, numeroEntregasTardias = 0, sinCalificar = false }) {
   const itemsDelTrimestre = DEMO_ITEMS_POR_TRIMESTRE[trimestre];
   const fechasDelTrimestre = DEMO_FECHAS_ENTREGA_POR_TRIMESTRE[trimestre];
@@ -210,6 +231,14 @@ function demoGenerarProgresoAlumno({ authUserId, trimestre, porcentajeAvance, ca
       ? null
       : Number((calificacionMin + Math.random() * (calificacionMax - calificacionMin)).toFixed(1));
 
+    const esItemSinEmocion =
+      trimestre === DEMO_ITEM_SIN_EMOCION.trimestre &&
+      tipo === DEMO_ITEM_SIN_EMOCION.tipo &&
+      id === DEMO_ITEM_SIN_EMOCION.id;
+    const sinDatoEmocion = esItemSinEmocion || Math.random() < 0.15;
+    const emocionAnimo = sinDatoEmocion ? null : DEMO_NIVELES_ANIMO[Math.floor(Math.random() * DEMO_NIVELES_ANIMO.length)];
+    const emocionMotivo = sinDatoEmocion ? null : DEMO_MOTIVOS[Math.floor(Math.random() * DEMO_MOTIVOS.length)];
+
     return {
       alumno_id: authUserId,
       tipo,
@@ -218,6 +247,8 @@ function demoGenerarProgresoAlumno({ authUserId, trimestre, porcentajeAvance, ca
       completado: true,
       calificacion,
       a_tiempo: !tardia,
+      emocion_animo: emocionAnimo,
+      emocion_motivo: emocionMotivo,
       // "formulario", no "alumno": es el valor real que usa el resto del
       // código para distinguir una entrega normal de una marcada a mano
       // por el docente (ver "origen === 'formulario'" en
@@ -247,6 +278,20 @@ function demoGenerarProgresoAlumno({ authUserId, trimestre, porcentajeAvance, ca
 // entregas tardías con avance alto/medio — candidatos a "Racha de
 // puntualidad". numeroEntregasTardias varía entre 0, 1, 2 y 3 en vez
 // de ser binario sí/no.
+//
+// DEMO_ITEM_SIN_EMOCION (💬 Bienestar socioemocional, Dashboard): item
+// con 0% de cobertura de emoción a propósito — Trimestre 1, Tarea
+// "t5" ("Detective de IA en mi casa"), ver demoGenerarProgresoAlumno()
+// más arriba. Es el PRIMER item de la lista de T1 (tarea antes que
+// actividad/proyecto en todosLosItems), así que TODOS los 25 alumnos lo
+// entregan sin importar su avance — el k mínimo del dataset es 1 (ver
+// demoOffsetAvancePorTrimestre: demo-uid-16 tiene el porcentajeAvance
+// más bajo, 2/21, y con el offset cíclico -1 en algún trimestre baja a
+// k=1, nunca a 0). Para probar el estado vacío: Dashboard > filtro
+// Trimestre "1" > "💬 Bienestar socioemocional" > dropdown "Ver" >
+// "Detective de IA en mi casa" (bajo el optgroup "Tareas").
+const DEMO_ITEM_SIN_EMOCION = { trimestre: 1, tipo: "tarea", id: "t5" };
+
 const DEMO_CONFIG_AVANCE_ALUMNOS = [
   // --- 3C (13) ---
   { authUserId: "demo-uid-01", porcentajeAvance: 20 / 21, calificacionMin: 8.5, calificacionMax: 10.0, numeroEntregasTardias: 0 }, // Valeria — verde 95.2%
