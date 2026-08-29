@@ -21856,6 +21856,213 @@ function activarFiltroBurbuja() {
 }
 
 /* =========================================================
+   16. EDITOR HTML/CSS EN VIVO (trimestre-3-practica.html, Secuencia 8)
+   ========================================================= */
+
+// 6 ejercicios de "encuentra y corrige el error" — deliberadamente
+// DISTINTOS del reto grupal de Secuencia 8 en DATOS_RETOS (3°C: `</p>`
+// faltante; 3°E: `;` faltante en "color: blue"). ej2 usa "background:
+// yellow" (no "color: blue") justo para no adelantarle a 3°E el
+// diagnóstico exacto de su reto — ver Paso 0 de esta sesión.
+const DATOS_EDITOR_HTML_CSS = [
+  {
+    id: "ej1",
+    titulo: "Comilla sin cerrar en un atributo",
+    codigoInicial: `<a href="https://miweb.com>Mi enlace</a>`,
+    pista: "Cuenta las comillas dobles: ¿hay dos aperturas y solo una de cierre?",
+    patronCorrecto: /href="https:\/\/miweb\.com"/,
+  },
+  {
+    id: "ej2",
+    titulo: "Falta un punto y coma en CSS",
+    codigoInicial: `<style>\np {\n  background: yellow\n  font-size: 20px;\n}\n</style>\n<p>Este párrafo debería tener fondo amarillo</p>`,
+    pista: "Cada declaración CSS (propiedad: valor) necesita terminar en algo antes de la siguiente.",
+    patronCorrecto: /background:\s*yellow;/,
+  },
+  {
+    id: "ej3",
+    titulo: "Etiqueta <strong> sin cerrar",
+    codigoInicial: `<p><strong>Este texto debe ir en negritas</p><p>Este texto NO debería estar en negritas</p>`,
+    pista: "Toda etiqueta que abres (<strong>) necesita su etiqueta de cierre (</strong>) antes de que termine el párrafo.",
+    patronCorrecto: /<strong>.*?<\/strong>/s,
+  },
+  {
+    id: "ej4",
+    titulo: "Propiedad CSS mal escrita",
+    codigoInicial: `<style>\np {\n  colr: red;\n}\n</style>\n<p>Este texto debería ser rojo</p>`,
+    pista: "Revisa el nombre de la propiedad letra por letra. ¿Está completo?",
+    patronCorrecto: /\bcolor\s*:\s*red/,
+  },
+  {
+    id: "ej5",
+    titulo: "<div> sin cerrar",
+    codigoInicial: `<div class="tarjeta">\n<h3>Aviso importante</h3>\n<p>Revisa tus tareas.</p>\n<footer>Pie de página</footer>`,
+    pista: "El <div> que abriste al principio necesita cerrarse antes de que empiece algo que no debería estar dentro de él.",
+    patronCorrecto: /<\/div>\s*<footer>/,
+  },
+  {
+    id: "ej6",
+    titulo: "Selector CSS sin el punto de clase",
+    codigoInicial: `<style>\nboton {\n  background: teal;\n  color: white;\n}\n</style>\n<button class="boton">Enviar</button>`,
+    pista: "Para seleccionar una clase en CSS, el selector necesita un símbolo especial antes del nombre.",
+    patronCorrecto: /\.boton\s*\{/,
+  },
+];
+
+// Único punto de entrada del widget — #editor-circulos solo existe en
+// trimestre-3-practica.html, así que en el resto de páginas esta función
+// no hace nada (mismo patrón que activarChatbotReglas/activarFiltroBurbuja).
+function activarEditorHtmlCss() {
+  const contenedorCirculos = document.getElementById("editor-circulos");
+  const textarea = document.getElementById("editor-textarea");
+  const iframe = document.getElementById("editor-iframe");
+  const tituloEjercicio = document.getElementById("editor-titulo-ejercicio");
+  const botonPista = document.getElementById("editor-boton-pista");
+  const textoPista = document.getElementById("editor-pista");
+  const mensajeExito = document.getElementById("editor-mensaje-exito");
+  const estadoResuelto = document.getElementById("editor-estado-resuelto");
+  const botonSiguiente = document.getElementById("editor-boton-siguiente");
+  const bloqueReflexion = document.getElementById("editor-reflexion");
+  if (!contenedorCirculos || !textarea || !iframe || !botonSiguiente) return;
+
+  // codigoPorEjercicio: recuerda lo que el alumno ya escribió en cada
+  // ejercicio (corregido o no) al navegar hacia atrás — nunca resetea al
+  // codigoInicial una vez que lo tocó. resueltos/maxIndiceDesbloqueado
+  // son el "progreso bloqueado" confirmado con Hiram: no se puede
+  // avanzar a un ejercicio que nunca se alcanzó, pero sí retroceder a
+  // cualquiera ya resuelto.
+  const codigoPorEjercicio = new Map();
+  const resueltos = new Set();
+  let indiceActual = 0;
+  let maxIndiceDesbloqueado = 0;
+  let temporizadorDebounce = null;
+  let temporizadorMensajeExito = null;
+
+  function codigoDeEjercicio(indice) {
+    const ejercicio = DATOS_EDITOR_HTML_CSS[indice];
+    if (!codigoPorEjercicio.has(ejercicio.id)) codigoPorEjercicio.set(ejercicio.id, ejercicio.codigoInicial);
+    return codigoPorEjercicio.get(ejercicio.id);
+  }
+
+  // Círculos NO alcanzados: aria-disabled (no el atributo disabled real)
+  // para que sigan siendo focuseables/hereden :focus-visible como el
+  // resto del sitio — el guard real vive en el propio listener de click.
+  function renderizarCirculos() {
+    contenedorCirculos.innerHTML = "";
+    DATOS_EDITOR_HTML_CSS.forEach((ejercicio, indice) => {
+      const boton = document.createElement("button");
+      boton.type = "button";
+      const alcanzado = indice <= maxIndiceDesbloqueado;
+      const resuelto = resueltos.has(ejercicio.id);
+      boton.className =
+        "editor-circulo" +
+        (indice === indiceActual ? " editor-circulo--activo" : "") +
+        (resuelto ? " editor-circulo--resuelto" : "");
+      boton.setAttribute("aria-disabled", String(!alcanzado));
+      boton.setAttribute(
+        "aria-label",
+        "Ejercicio " + (indice + 1) + (resuelto ? " (resuelto)" : alcanzado ? "" : " (no disponible todavía)")
+      );
+      boton.textContent = resuelto ? "✅" : String(indice + 1);
+      boton.addEventListener("click", () => {
+        if (!alcanzado) return;
+        irAEjercicio(indice);
+      });
+      contenedorCirculos.appendChild(boton);
+    });
+  }
+
+  function irAEjercicio(indice) {
+    indiceActual = indice;
+    const ejercicio = DATOS_EDITOR_HTML_CSS[indice];
+    const resuelto = resueltos.has(ejercicio.id);
+
+    tituloEjercicio.textContent = "Ejercicio " + (indice + 1) + " de " + DATOS_EDITOR_HTML_CSS.length + ": " + ejercicio.titulo;
+    textoPista.textContent = ejercicio.pista;
+    textoPista.hidden = true;
+    botonPista.setAttribute("aria-expanded", "false");
+
+    // El toast que se desvanece (mensajeExito) solo se muestra en el
+    // momento de resolver (ver marcarResuelto) — al volver a un
+    // ejercicio ya resuelto, el estado persistente es el span sr-only +
+    // el borde turquesa, no el toast.
+    mensajeExito.hidden = true;
+    estadoResuelto.hidden = !resuelto;
+    iframe.classList.toggle("editor-widget__iframe--resuelto", resuelto);
+
+    const codigo = codigoDeEjercicio(indice);
+    textarea.value = codigo;
+    iframe.srcdoc = codigo;
+
+    const esUltimo = indice === DATOS_EDITOR_HTML_CSS.length - 1;
+    botonSiguiente.textContent = esUltimo ? "🏁 Ver cierre" : "➡️ Siguiente ejercicio";
+    botonSiguiente.disabled = !resuelto;
+
+    renderizarCirculos();
+  }
+
+  function marcarResuelto(indice) {
+    const ejercicio = DATOS_EDITOR_HTML_CSS[indice];
+    if (resueltos.has(ejercicio.id)) return;
+    resueltos.add(ejercicio.id);
+    maxIndiceDesbloqueado = Math.min(
+      DATOS_EDITOR_HTML_CSS.length - 1,
+      Math.max(maxIndiceDesbloqueado, indice + 1)
+    );
+
+    iframe.classList.add("editor-widget__iframe--resuelto");
+    estadoResuelto.hidden = false;
+
+    mensajeExito.textContent = "✅ ¡Corregido! 🎉";
+    mensajeExito.hidden = false;
+    clearTimeout(temporizadorMensajeExito);
+    temporizadorMensajeExito = setTimeout(() => {
+      mensajeExito.hidden = true;
+    }, 2000);
+
+    botonSiguiente.textContent = indice === DATOS_EDITOR_HTML_CSS.length - 1 ? "🏁 Ver cierre" : "➡️ Siguiente ejercicio";
+    botonSiguiente.disabled = false;
+
+    renderizarCirculos();
+  }
+
+  textarea.addEventListener("input", () => {
+    const valorActual = textarea.value;
+    codigoPorEjercicio.set(DATOS_EDITOR_HTML_CSS[indiceActual].id, valorActual);
+
+    clearTimeout(temporizadorDebounce);
+    temporizadorDebounce = setTimeout(() => {
+      // La vista previa se actualiza SIEMPRE, esté o no corregido —
+      // el punto pedagógico es ver en vivo cómo el navegador interpreta
+      // (o no perdona) el código tal como está.
+      iframe.srcdoc = valorActual;
+      const ejercicio = DATOS_EDITOR_HTML_CSS[indiceActual];
+      if (ejercicio.patronCorrecto.test(valorActual)) marcarResuelto(indiceActual);
+    }, 300);
+  });
+
+  botonPista.addEventListener("click", () => {
+    const seVaAMostrar = textoPista.hidden;
+    textoPista.hidden = !seVaAMostrar;
+    botonPista.setAttribute("aria-expanded", String(seVaAMostrar));
+  });
+
+  botonSiguiente.addEventListener("click", () => {
+    if (botonSiguiente.disabled) return;
+    if (indiceActual === DATOS_EDITOR_HTML_CSS.length - 1) {
+      if (bloqueReflexion) {
+        bloqueReflexion.hidden = false;
+        bloqueReflexion.scrollIntoView({ block: "nearest" });
+      }
+      return;
+    }
+    irAEjercicio(indiceActual + 1);
+  });
+
+  irAEjercicio(0);
+}
+
+/* =========================================================
    10. INICIALIZACIÓN
    ========================================================= */
 
@@ -21964,6 +22171,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   activarGuiaAlumno();
   activarChatbotReglas();
   activarFiltroBurbuja();
+  activarEditorHtmlCss();
   activarTabsMateriales();
   activarFiltroTipoEventos();
   await inicializarModuloCalificacion();

@@ -494,6 +494,65 @@
       <div id="contenedor-proyectos" class="cuadricula" aria-live="polite"></div>
     </section>
 
+    <!-- ===================== EDITOR HTML/CSS (práctica, Secuencia 8) =====================
+         Widget 100% local: sin Supabase, sin progreso.html, sin
+         calificación — es práctica libre de reflexión, no una entrega.
+         6 ejercicios de "encuentra y corrige el error", DISTINTOS del
+         reto grupal de Secuencia 8 (ver DATOS_RETOS en js/main.js: 3°C
+         </p> faltante, 3°E ; faltante) a propósito, para no adelantar la
+         respuesta del reto. Poblado por activarEditorHtmlCss() en
+         js/main.js. Progreso bloqueado: no se puede avanzar a un
+         ejercicio no alcanzado, sí retroceder a uno ya resuelto. -->
+    <section id="editor-html-css" class="seccion">
+      <div class="seccion__encabezado">
+        <h2>🛠️ Practica: encuentra y corrige el error</h2>
+        <p>Simulación de la Secuencia 8 (Diseño Web): 6 fragmentos de HTML/CSS con un error cada uno. Corrígelo en el editor y mira la vista previa actualizarse en vivo.</p>
+      </div>
+
+      <div class="editor-widget">
+        <div id="editor-circulos" class="editor-widget__circulos" role="group" aria-label="Progreso de ejercicios"></div>
+
+        <div class="editor-widget__enunciado">
+          <h3 id="editor-titulo-ejercicio" class="editor-widget__titulo-ejercicio"></h3>
+          <button type="button" id="editor-boton-pista" class="boton-secundario editor-widget__boton-pista" aria-expanded="false" aria-controls="editor-pista">💡 Pista</button>
+        </div>
+        <p id="editor-pista" class="editor-widget__pista" hidden></p>
+
+        <div class="editor-widget__paneles">
+          <div class="editor-widget__panel">
+            <label for="editor-textarea" class="sr-only">Código a corregir</label>
+            <textarea id="editor-textarea" class="editor-widget__textarea" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+          </div>
+          <div class="editor-widget__panel">
+            <div class="editor-widget__barra-navegador" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <!-- sandbox="" (sin allow-scripts/allow-same-origin): los 6
+                 ejercicios son de HTML/CSS, nunca necesitan ejecutar
+                 script, y así un <script> pegado por curiosidad en el
+                 textarea no corre ni toca la página que lo embebe. -->
+            <iframe id="editor-iframe" class="editor-widget__iframe" title="Vista previa en vivo" sandbox=""></iframe>
+            <span id="editor-estado-resuelto" class="sr-only" hidden>Ejercicio resuelto</span>
+          </div>
+        </div>
+
+        <p id="editor-mensaje-exito" class="editor-widget__mensaje-exito" role="status" hidden></p>
+
+        <button type="button" id="editor-boton-siguiente" class="boton-primario editor-widget__boton-siguiente" disabled>➡️ Siguiente ejercicio</button>
+
+        <!-- Se muestra sola al resolver el ejercicio 6 (ver
+             activarEditorHtmlCss) — nunca se oculta de nuevo. -->
+        <div id="editor-reflexion" class="editor-widget__reflexion" hidden>
+          <p class="editor-widget__reflexion-emoji" aria-hidden="true">💡</p>
+          <p class="editor-widget__reflexion-pregunta">¿Qué tan fácil es que un solo carácter (una comilla, un punto y coma) rompa toda una página? ¿Por qué crees que los navegadores "perdonan" algunos errores y otros no?</p>
+          <div class="campo-formulario">
+            <label for="editor-reflexion-texto">Tu respuesta (opcional — no se guarda, es solo para pensar)</label>
+            <textarea id="editor-reflexion-texto" rows="4" placeholder="Escribe tu reflexión aquí…"></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ===================== APLICA TUS CONOCIMIENTOS ===================== -->
     <!-- Fase 15: contenido armado por JS (ver renderizarSeccionAplicaConocimientos()
          en js/main.js) — 3 bloques: explicación fija (siempre visible, este

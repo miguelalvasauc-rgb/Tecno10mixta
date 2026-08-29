@@ -6561,6 +6561,220 @@ summary {
   line-height: 1.5;
 }
 
+/* ---------- Editor HTML/CSS (trimestre-3-practica.html, Secuencia 8) ----------
+   Widget de práctica libre, sin Supabase — ver activarEditorHtmlCss() en
+   js/main.js. Más ancho que .chatbot-widget/.filtro-burbuja-widget: acá
+   sí necesita espacio para 2 columnas (código + vista previa) en
+   escritorio. */
+.editor-widget {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.editor-widget__circulos {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.editor-circulo {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: var(--radio-full);
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  font-weight: 700;
+  font-size: var(--tamano-fuente-secundario);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+/* No es el atributo disabled real (ver comentario en
+   activarEditorHtmlCss): sigue siendo focuseable, solo se ve/anuncia
+   como no disponible todavía. */
+.editor-circulo[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.editor-circulo--activo {
+  border-color: var(--color-turquesa);
+  border-width: 2px;
+}
+
+.editor-circulo--resuelto {
+  background-color: var(--color-turquesa);
+  border-color: var(--color-turquesa);
+  color: var(--color-acento-texto);
+}
+
+.editor-widget__enunciado {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.editor-widget__titulo-ejercicio {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto);
+}
+
+.editor-widget__pista {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie-alterna);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-fuente-secundario);
+}
+
+.editor-widget__paneles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .editor-widget__paneles {
+    grid-template-columns: 1fr;
+  }
+}
+
+.editor-widget__panel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --color-fondo (no --color-superficie-baja): ver el razonamiento largo
+   de Paso 0 — superficie-baja es idéntico a superficie en 9 de los 10
+   temas, así que no diferenciaba nada. --color-fondo sí es un tono
+   distinto de --color-superficie en los 10, y es el mismo mecanismo que
+   ya usa .reto-parte__codigo (Aplica tus conocimientos) para su panel de
+   código: "hundido" respecto a la tarjeta que lo contiene. Mínimo 16px
+   de font-size a propósito (no var(--tamano-fuente-accion)): evita el
+   zoom automático de Safari en iOS al enfocar el textarea. */
+.editor-widget__textarea {
+  height: 220px;
+  resize: vertical;
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: 0.75rem;
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.editor-widget__barra-navegador {
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.4rem 0.6rem;
+  background-color: var(--color-superficie-alterna);
+  border: 1px solid var(--color-borde);
+  border-bottom: none;
+  border-radius: var(--radio-md) var(--radio-md) 0 0;
+}
+
+/* Se oculta en pantallas muy angostas: ahí los 2 paneles ya se apilan
+   (código arriba, vista previa abajo) y cada rem de alto vertical que se
+   ahorre importa más que la decoración de "ventana de navegador". */
+@media (max-width: 480px) {
+  .editor-widget__barra-navegador {
+    display: none;
+  }
+}
+
+.editor-widget__barra-navegador span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-borde);
+}
+
+/* Blanco fijo (no un token --color-*): simula el fondo real que da
+   cualquier navegador a una página HTML sin estilos propios — es el
+   color del "papel" que el ejercicio está pintando, no una superficie
+   del sitio, así que no debe cambiar con el tema activo. */
+.editor-widget__iframe {
+  height: 220px;
+  width: 100%;
+  border: 1px solid var(--color-borde);
+  border-radius: 0 0 var(--radio-md) var(--radio-md);
+  background-color: #FFFFFF;
+  transition: border-color 0.2s ease;
+}
+
+@media (max-width: 480px) {
+  .editor-widget__iframe {
+    border-radius: var(--radio-md);
+  }
+}
+
+.editor-widget__iframe--resuelto {
+  border-color: var(--color-turquesa);
+  border-width: 2px;
+}
+
+.editor-widget__mensaje-exito {
+  margin: 0;
+  text-align: center;
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .editor-widget__mensaje-exito {
+    opacity: 1;
+    transition: opacity 200ms ease-out;
+  }
+
+  @starting-style {
+    .editor-widget__mensaje-exito {
+      opacity: 0;
+    }
+  }
+}
+
+.editor-widget__boton-siguiente {
+  align-self: center;
+}
+
+.editor-widget__reflexion {
+  margin-top: 0.25rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--color-borde);
+  border-left: 4px solid var(--color-turquesa);
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie);
+}
+
+.editor-widget__reflexion-emoji {
+  margin: 0 0 0.4rem;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.editor-widget__reflexion-pregunta {
+  margin: 0 0 0.9rem;
+  color: var(--color-texto);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
 /* ---------- Formulario de contacto ---------- */
 
 /* Campo trampa anti-spam (Netlify Forms honeypot). Oculto con posición
