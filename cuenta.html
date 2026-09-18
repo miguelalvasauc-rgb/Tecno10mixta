@@ -236,7 +236,8 @@
             <div class="campo-formulario">
               <label for="codigo-invitacion">Código de invitación</label>
               <input type="text" id="codigo-invitacion" name="codigo" placeholder="XXXX-XXXX-XXXX"
-                     autocomplete="off" required aria-describedby="codigo-invitacion-error">
+                     autocomplete="off" required aria-describedby="codigo-invitacion-nota codigo-invitacion-error">
+              <p id="codigo-invitacion-nota" class="campo-formulario__nota" hidden>Detectado desde tu ficha impresa.</p>
               <p id="codigo-invitacion-error" class="campo-formulario__error" role="alert" hidden></p>
             </div>
 

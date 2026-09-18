@@ -6863,6 +6863,19 @@ summary {
   margin: 0;
 }
 
+/* Nota de ayuda contextual bajo un campo (ej. código de invitación
+   prellenado desde el QR de la ficha). Mismo tamaño que
+   .campo-formulario__error, con el color de texto secundario del tema. */
+.campo-formulario__nota {
+  color: var(--color-texto-secundario, inherit);
+  font-size: var(--tamano-fuente-secundario);
+  margin: 0;
+}
+
+.campo-formulario input[readonly] {
+  cursor: default;
+}
+
 .boton-enviar {
   align-self: flex-start;
   background-color: var(--color-turquesa);

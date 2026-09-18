@@ -11309,6 +11309,21 @@ function activarFormulariosCuenta() {
   const botonCrearCuenta = formCrear?.querySelector("button[type=submit]");
   activarValidadorContrasena(campoContrasenaCrear, document.getElementById("crear-contrasena-medidor"), botonCrearCuenta);
 
+  // Prellenado desde el QR de la ficha impresa (?codigo=XXXX-XXXX-XXXX).
+  // Solo comodidad de UI: la validación real sigue siendo la del submit
+  // y la de Supabase. readonly (no disabled) para que el valor se envíe.
+  // Si el parámetro falta o no tiene la forma esperada, no se toca nada.
+  if (campoCodigo) {
+    const codigoUrl = (new URLSearchParams(window.location.search).get("codigo") || "").trim().toUpperCase();
+    if (/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(codigoUrl)) {
+      campoCodigo.value = codigoUrl;
+      campoCodigo.readOnly = true;
+      const notaCodigo = document.getElementById("codigo-invitacion-nota");
+      if (notaCodigo) notaCodigo.hidden = false;
+      mostrarTab("tab-crear");
+    }
+  }
+
   formCrear?.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     errorCrear.hidden = true;
