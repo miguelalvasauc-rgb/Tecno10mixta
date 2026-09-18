@@ -32,4 +32,4 @@
     # visual en cada carga). Si tocas ese bloque, regenera el hash con:
     #   openssl dgst -sha256 -binary script.txt | openssl base64
     # y actualiza AMBAS constantes aquí antes de hacer deploy.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-SI9KHb54E97sbVgZPVAgeMglnj5zGn3xa9sLcCb/GQI=' 'sha256-Ij2ZZcp4FbzbYvElzeKvSCHcgYUYxdHCB9DToHHkoPk='; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://dugfyqtzcnuwjfvijsqs.supabase.co; frame-src https://gamma.app https://www.youtube.com; form-action 'self'; base-uri 'self'; object-src 'none'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-SI9KHb54E97sbVgZPVAgeMglnj5zGn3xa9sLcCb/GQI=' 'sha256-Ij2ZZcp4FbzbYvElzeKvSCHcgYUYxdHCB9DToHHkoPk='; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://dugfyqtzcnuwjfvijsqs.supabase.co; frame-src https://gamma.app https://www.youtube.com; form-action 'self'; base-uri 'self'; object-src 'none'"

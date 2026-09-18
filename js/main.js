@@ -2606,9 +2606,9 @@ const DATOS_RETOS = {
 
 // "secuencia" usa el mismo texto que "unidad" en DATOS_TEMARIO, para que
 // renderizarInfografias() agrupe visualmente con el mismo rótulo que ya
-// ve el alumno en Temario. Imágenes reales aún no existen (ver
-// renderizarInfografias: fallback "🎨 Infografía en preparación" mientras
-// no se suban a assets/infografias/).
+// ve el alumno en Temario. Las 22 imágenes (.webp) ya viven en
+// assets/infografias/; renderizarInfografias() solo cae al fallback
+// "🎨 Infografía en preparación" si una imagen concreta falla al cargar.
 const DATOS_INFOGRAFIAS = {
   1: [
     {
