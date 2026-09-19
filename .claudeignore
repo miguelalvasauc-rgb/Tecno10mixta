@@ -15,6 +15,7 @@ Bloque*_Detalle_Tareas_Actividades_Proyectos.md
 # Imágenes — Claude no necesita leer binarios de imagen para código
 assets/temario/*.png
 assets/temario/*.jpg
+assets/temario/*.webp
 *.jpg
 *.jpeg
 *.png
