@@ -10133,16 +10133,25 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
      margin-left -- si lo recibe dejaría de llegar al borde de la
      ventana, partiendo la franja en dos huecos sin fondo a los lados.
      Solo sus hijos directos (.seccion--alterna > *, el contenido real
-     adentro) se centran. */
+     adentro) se centran.
+
+     max(0px, ...): por debajo de ~1315px el calc sale negativo y la
+     sección se metía bajo el riel (recortada a la izquierda). 0px es el
+     borde del content-box de <body>, que ya empieza después del riel
+     (padding-left de arriba); arriba de ese ancho el valor no cambia.
+     En los hijos de .seccion--alterna el 50% se mide sobre el content-box
+     de su sección (que trae 1.5rem de padding), así que el efecto llega
+     hasta ~1363px: ahí su contenido queda alineado con el de las
+     secciones normales (antes invadía ese padding). */
   body:has(.riel) .seccion:not(.seccion--alterna),
   body:has(.riel) .seccion--alterna > * {
-    margin-left: calc(50% - 590px - 30px);
+    margin-left: max(0px, calc(50% - 590px - 30px));
     margin-right: auto;
   }
 
   body:has(.barra-lateral) .seccion:not(.seccion--alterna),
   body:has(.barra-lateral) .seccion--alterna > * {
-    margin-left: calc(50% - 590px - 128px);
+    margin-left: max(0px, calc(50% - 590px - 128px));
     margin-right: auto;
   }
 
