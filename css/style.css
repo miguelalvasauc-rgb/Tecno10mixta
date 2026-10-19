@@ -2320,6 +2320,52 @@ summary {
   color: var(--color-texto-suave);
 }
 
+/* Respeta los saltos de línea que se escriben en el panel de Avisos
+   (la descripción llega por textContent; el .trim() al guardar evita
+   renglones vacíos al inicio/final). */
+.lista-avisos .aviso-tarjeta__cuerpo p {
+  white-space: pre-line;
+}
+
+/* Escritorio: cada aviso es una fila ancha y baja en vez de una tarjeta
+   angosta del bento — [fecha] [título + etiquetas] [descripción], mismo
+   orden que el DOM. El <li> sigue en flex (fecha | cuerpo) y solo
+   __cuerpo pasa a grid, así que .borde-animado-urgente (::before/::after
+   absolutos sobre el <li>) no cambia. minmax(0, 1fr) en vez de 1fr para
+   que un texto largo nunca fuerce scroll horizontal. */
+@media (min-width: 1024px) {
+  .lista-avisos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Con una sola columna, span 2 crearía una columna implícita. */
+  .lista-avisos .aviso-tarjeta[data-prioridad="importante"] {
+    grid-column: auto;
+  }
+
+  .lista-avisos .aviso-tarjeta__cuerpo {
+    display: grid;
+    grid-template-columns: minmax(13rem, 20rem) minmax(0, 1fr);
+    column-gap: 1.5rem;
+    align-items: start;
+  }
+
+  .lista-avisos .aviso-tarjeta__cabecera {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .lista-avisos .aviso-tarjeta__cabecera h3 {
+    overflow-wrap: anywhere;
+  }
+
+  .lista-avisos .aviso-tarjeta__cuerpo p {
+    margin-top: 0;
+    max-width: 75ch;
+  }
+}
+
 .badge-prioridad {
   display: inline-block;
   font-size: var(--tamano-fuente-encabezado-tabla);
