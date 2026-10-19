@@ -422,7 +422,7 @@ const DEMO_AVISOS = [
     fecha: "2026-08-28",
     grupo: "todos",
     prioridad: "recordatorio",
-    fecha_expiracion: "2026-08-31",
+    fecha_expiracion: null,
     creado_en: "2026-08-28T14:00:00.000Z",
   },
   {
@@ -432,7 +432,7 @@ const DEMO_AVISOS = [
     fecha: "2026-09-10",
     grupo: "3C",
     prioridad: "importante",
-    fecha_expiracion: "2026-09-17",
+    fecha_expiracion: null,
     creado_en: "2026-09-10T14:00:00.000Z",
   },
   {
@@ -442,7 +442,7 @@ const DEMO_AVISOS = [
     fecha: "2026-09-19",
     grupo: "todos",
     prioridad: "urgente",
-    fecha_expiracion: "2026-09-22",
+    fecha_expiracion: null,
     creado_en: "2026-09-19T14:00:00.000Z",
   },
 ];
