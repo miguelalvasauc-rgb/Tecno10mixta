@@ -4338,6 +4338,46 @@ summary {
   gap: 0.6rem;
 }
 
+/* ---------- Recuperación 3°C (trimestre-1-practica.html) ----------
+   Reutiliza el desplegable de .tarjeta-rubrica. Sin la franja de 4
+   niveles de ::after: aquí no hay niveles, y su segmento rojo se leería
+   como "vencido" (rojo reservado para vencido/error). */
+.recuperacion-3c__trabajo::after {
+  content: none;
+}
+
+.recuperacion-3c__reglas {
+  margin-top: 1rem;
+}
+
+/* Una columna (no .cuadricula): en grid de 3, abrir un trabajo estira
+   las otras 2 tarjetas cerradas al mismo alto y las listas quedan muy
+   angostas. */
+.recuperacion-3c__trabajos {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.recuperacion-3c__bloque h4 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.recuperacion-3c__lista {
+  margin: 0;
+  padding-left: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Objetivo táctil de 44px (.enlace-instrucciones mide ~33px de alto). */
+.recuperacion-3c__pdf {
+  min-height: 44px;
+}
+
 .nivel-item {
   border-left: 4px solid var(--color-borde);
   border-radius: 8px;

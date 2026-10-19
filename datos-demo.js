@@ -600,6 +600,39 @@ const DEMO_FECHAS_OVERRIDE = [
     nota: "Ajuste puntual para 3°E",
     creado_por: null,
   },
+  // Recuperación 3°C (DATOS_RECUPERACION_3C en js/main.js): sin fecha en
+  // el código, así que sin estas filas la demo mostraría "fecha por
+  // confirmar". Mismas fechas que se configuran en producción.
+  {
+    id: "demo-override-04",
+    trimestre: 1,
+    tipo: "tarea",
+    item_id: "rec3c-1",
+    grupo: "3C",
+    fecha: "2026-10-26",
+    nota: "Recuperación 3°C · Trabajo 1",
+    creado_por: null,
+  },
+  {
+    id: "demo-override-05",
+    trimestre: 1,
+    tipo: "tarea",
+    item_id: "rec3c-2",
+    grupo: "3C",
+    fecha: "2026-11-02",
+    nota: "Recuperación 3°C · Trabajo 2",
+    creado_por: null,
+  },
+  {
+    id: "demo-override-06",
+    trimestre: 1,
+    tipo: "tarea",
+    item_id: "rec3c-3",
+    grupo: "3C",
+    fecha: "2026-11-06",
+    nota: "Recuperación 3°C · Trabajo 3",
+    creado_por: null,
+  },
 ];
 
 /* ---------------------------------------------------------

@@ -164,6 +164,9 @@
       <a href="#tareas" data-enlace="tareas" class="riel-flyout__enlace">
         <span aria-hidden="true">📝</span><span>Tareas</span>
       </a>
+      <a href="#recuperacion-3c" data-enlace="recuperacion-3c" class="riel-flyout__enlace" hidden>
+        <span aria-hidden="true">🔁</span><span>Recuperación 3°C</span>
+      </a>
       <a href="#entrega" data-enlace="entrega" class="riel-flyout__enlace">
         <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
       </a>
@@ -319,6 +322,9 @@
       <a href="#tareas" data-enlace="tareas" class="riel-flyout__enlace">
         <span aria-hidden="true">📝</span><span>Tareas</span>
       </a>
+      <a href="#recuperacion-3c" data-enlace="recuperacion-3c" class="riel-flyout__enlace" hidden>
+        <span aria-hidden="true">🔁</span><span>Recuperación 3°C</span>
+      </a>
       <a href="#entrega" data-enlace="entrega" class="riel-flyout__enlace">
         <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
       </a>
@@ -430,6 +436,28 @@
            guardadas en localStorage en este navegador (ver checklist-tarea). -->
       <div id="resumen-progreso-tareas" class="resumen-progreso" aria-live="polite"></div>
       <div id="contenedor-tareas" class="cuadricula" aria-live="polite"></div>
+    </section>
+
+    <!-- ===================== RECUPERACIÓN 3°C ===================== -->
+    <!-- Solo visible con grupo 3°C y hasta DATOS_RECUPERACION_3C.vigenteHasta
+         (ver renderizarRecuperacion3C() en js/main.js). Empieza oculta para
+         que nunca parpadee en otros grupos. Las fechas vienen de
+         fechas_override (panel docente → Fechas de entrega). -->
+    <section id="recuperacion-3c" class="seccion" hidden>
+      <div class="seccion__encabezado">
+        <h2>🔁 Recuperación 3°C</h2>
+        <p>Tres trabajos a mano para recuperar tu evaluación del Trimestre 1.</p>
+      </div>
+      <div class="tarjeta recuperacion-3c__reglas">
+        <h3>Reglas</h3>
+        <ul class="recuperacion-3c__lista">
+          <li>A mano y con tu letra, con tu nombre y grupo en cada hoja.</li>
+          <li>No se aceptan trabajos impresos, hechos en computadora o con IA.</li>
+          <li>Se entregan en físico, en clase (no en el formulario de Entrega de trabajos).</li>
+          <li>Se aprueba con 60 de 100 puntos.</li>
+        </ul>
+      </div>
+      <div id="contenedor-recuperacion-3c" class="recuperacion-3c__trabajos" aria-live="polite"></div>
     </section>
 
     <!-- ===================== ENTREGA DE TRABAJOS ===================== -->

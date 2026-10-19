@@ -1499,6 +1499,81 @@ const DATOS_TAREAS = {
   ],
 };
 
+// Recuperación 3°C (trimestre-1-practica.html#recuperacion-3c): 3 trabajos
+// a mano, uno por secuencia del T1. NO van en DATOS_TAREAS a propósito —
+// no cuentan para progreso ni calificación. "fechaEntrega" se queda en ""
+// (sin fecha en el código): la fecha real vive en fechas_override
+// (tipo "tarea", grupo "3C", ids rec3c-N) y se edita desde el panel
+// docente, donde aparecen como su propia secuencia (ver
+// obtenerEntregablesFechas). "vigenteHasta": último día (inclusive, fecha
+// local del navegador) en que la sección se muestra.
+const DATOS_RECUPERACION_3C = {
+  vigenteHasta: "2026-11-08",
+  trabajos: [
+    {
+      id: "rec3c-1",
+      secuencia: "🔁 Recuperación 3°C",
+      grupo: "3C",
+      titulo: "🧠 Trabajo 1 · Secuencia 1: Inteligencia Artificial",
+      fechaEntrega: "",
+      apartados: [
+        "Portada",
+        "Resumen (8 a 10 renglones: IA, Machine Learning y asistentes virtuales)",
+        "Mapa conceptual (mínimo 6 conceptos)",
+        "Diagrama de flujo de un chatbot (mínimo 5 preguntas)",
+        "Caso real: prueba un asistente virtual (5 preguntas)",
+        "Reflexión (4 renglones)",
+      ],
+      pdfUrl: "assets/recuperacion/recuperacion-3c-secuencia-1-ia.pdf",
+    },
+    {
+      id: "rec3c-2",
+      secuencia: "🔁 Recuperación 3°C",
+      grupo: "3C",
+      titulo: "🥽 Trabajo 2 · Secuencia 2: Realidad Virtual",
+      fechaEntrega: "",
+      apartados: [
+        "Portada",
+        "Resumen (8 a 10 renglones: realidad virtual, inmersión y metaverso)",
+        "Cuadro comparativo RA vs. RV (5 aspectos)",
+        "Boceto de un mundo virtual educativo (3 vistas, 8 elementos etiquetados)",
+        "Caso real: una aplicación de RA o RV",
+        "Reflexión (4 renglones)",
+      ],
+      pdfUrl: "assets/recuperacion/recuperacion-3c-secuencia-2-realidad-virtual.pdf",
+    },
+    {
+      id: "rec3c-3",
+      secuencia: "🔁 Recuperación 3°C",
+      grupo: "3C",
+      titulo: "🤖 Trabajo 3 · Secuencia 3: Robótica",
+      fechaEntrega: "",
+      apartados: [
+        "Portada",
+        "Resumen (10 a 12 renglones: robótica, IA y automatización)",
+        "Mi robot ideal (partes etiquetadas)",
+        "Diagrama de flujo de un robot (mínimo 2 decisiones)",
+        "Caso real: una máquina automática de tu entorno",
+        "Reflexión (4 renglones)",
+      ],
+      pdfUrl: "assets/recuperacion/recuperacion-3c-secuencia-3-robotica.pdf",
+    },
+  ],
+  // Iguales para los 3 trabajos.
+  puntosExtra: [
+    { texto: "Vocabulario", puntos: 3 },
+    { texto: "Notas de un video del sitio", puntos: 4 },
+    { texto: "Cuestionario", puntos: 3 },
+  ],
+  criterios: [
+    { texto: "Resumen", puntos: 20 },
+    { texto: "Esquema (mapa, cuadro o robot ideal)", puntos: 20 },
+    { texto: "Actividad práctica", puntos: 25 },
+    { texto: "Caso real", puntos: 20 },
+    { texto: "Reflexión y presentación", puntos: 15 },
+  ],
+};
+
 // "archivoUrl" sigue siendo el campo OPCIONAL para Actividades: muestra
 // un único botón "📎 Descargar material" (mismo estilo secundario que
 // "materialApoyoUrl" en Tareas). Las actividades no distinguen entre
@@ -3519,6 +3594,13 @@ async function obtenerActividades(trimestre) {
 
 async function obtenerProyectos(trimestre) {
   return aplicarOverridesFechas(DATOS_PROYECTOS[trimestre] || [], "proyecto", trimestre);
+}
+
+// Fuera de obtenerTareas() a propósito (ver DATOS_RECUPERACION_3C): mismo
+// mecanismo de fechas_override (tipo "tarea", trimestre 1), sin entrar
+// en progreso ni calificación.
+async function obtenerTrabajosRecuperacion3C() {
+  return aplicarOverridesFechas(DATOS_RECUPERACION_3C.trabajos, "tarea", 1);
 }
 
 async function obtenerVideos(trimestre) {
@@ -5705,6 +5787,155 @@ async function renderizarTareas() {
 
   actualizarResumenProgreso("resumen-progreso-tareas", datos, "tarea", "tareas");
   if (TRIMESTRE_ACTUAL === "1") aplicarModoVistaSecuencia("contenedor-tareas");
+}
+
+/* ---------------------------------------------------------
+   Recuperación 3°C (solo trimestre-1-practica.html) — sección
+   informativa, ver DATOS_RECUPERACION_3C. Se reevalúa en cada
+   renderizarTodo() (cambio de grupo incluido).
+   --------------------------------------------------------- */
+
+// Solo con grupo 3°C (grupoActual ya trae el grupo del perfil si hay
+// sesión, ver sincronizarPerfilActivo) — con "todos" queda oculta. La
+// vigencia se compara contra la fecha LOCAL (formatearClaveFecha), no
+// contra toISOString() (UTC), para no ocultarla antes de tiempo.
+function recuperacion3CVisible() {
+  return grupoActual === "3C" && formatearClaveFecha(new Date()) <= DATOS_RECUPERACION_3C.vigenteHasta;
+}
+
+// Abierto / Vence hoy / Cerrado (Cerrado = itemEstaVencido, mismo corte
+// de las 23:59 que el resto del sitio). Siempre texto + ícono; sin
+// fecha registrada todavía devuelve null (no hay estado que mostrar).
+function estadoTrabajoRecuperacion(item) {
+  const iso = fechaLimiteISO("tarea", item, "3C");
+  if (!iso) return null;
+  if (itemEstaVencido("tarea", item, "3C")) return { estado: "atrasada", texto: "🔒 Cerrado" };
+  if (iso === formatearClaveFecha(new Date())) return { estado: "pendiente", texto: "⏰ Vence hoy" };
+  return { estado: null, texto: "📂 Abierto" };
+}
+
+function crearBloqueRecuperacion(titulo) {
+  const bloque = document.createElement("div");
+  bloque.className = "recuperacion-3c__bloque";
+  const encabezado = document.createElement("h4");
+  encabezado.textContent = titulo;
+  bloque.appendChild(encabezado);
+  return bloque;
+}
+
+function crearListaRecuperacion(elementos, ordenada) {
+  const lista = document.createElement(ordenada ? "ol" : "ul");
+  lista.className = "recuperacion-3c__lista";
+  elementos.forEach((texto) => {
+    const li = document.createElement("li");
+    li.textContent = texto;
+    lista.appendChild(li);
+  });
+  return lista;
+}
+
+function crearTarjetaRecuperacion(item) {
+  const tarjeta = document.createElement("details");
+  tarjeta.className = "tarjeta tarjeta-rubrica recuperacion-3c__trabajo";
+  tarjeta.id = "recuperacion-" + item.id;
+
+  const resumen = document.createElement("summary");
+  resumen.className = "tarjeta-rubrica__resumen";
+
+  const cabecera = document.createElement("div");
+  cabecera.className = "tarjeta__cabecera";
+  const titulo = document.createElement("h3");
+  titulo.textContent = item.titulo;
+  cabecera.appendChild(titulo);
+
+  const iso = fechaLimiteISO("tarea", item, "3C");
+  const fecha = document.createElement("p");
+  fecha.className = "tarjeta__fecha";
+  fecha.textContent = "Entrega: " + (iso ? formatearFecha(iso) : "fecha por confirmar");
+
+  const icono = document.createElement("span");
+  icono.className = "tarjeta-rubrica__icono";
+  icono.setAttribute("aria-hidden", "true");
+  icono.textContent = "▾";
+
+  resumen.append(cabecera, fecha);
+
+  const estado = estadoTrabajoRecuperacion(item);
+  if (estado) {
+    const meta = document.createElement("div");
+    meta.className = "tarjeta__meta";
+    const badge = document.createElement("span");
+    badge.className = "badge-estado";
+    if (estado.estado) badge.dataset.estado = estado.estado;
+    badge.textContent = estado.texto;
+    meta.appendChild(badge);
+    resumen.appendChild(meta);
+  }
+  resumen.appendChild(icono);
+
+  const contenido = document.createElement("div");
+  contenido.className = "tarjeta-rubrica__niveles";
+
+  const repaso = crearBloqueRecuperacion("Repasa en el sitio");
+  const parrafoRepaso = document.createElement("p");
+  const enlaceRepaso = document.createElement("a");
+  enlaceRepaso.href = "trimestre-1.html#temario";
+  enlaceRepaso.className = "panel-progreso__enlace";
+  enlaceRepaso.textContent = "Revisa la secuencia en Temario, Infografías, Presentaciones y Videos →";
+  parrafoRepaso.appendChild(enlaceRepaso);
+  repaso.appendChild(parrafoRepaso);
+
+  const entregas = crearBloqueRecuperacion("Qué entregas");
+  entregas.appendChild(crearListaRecuperacion(item.apartados, true));
+
+  const extra = crearBloqueRecuperacion("Puntos extra (opcionales, hasta +10)");
+  extra.appendChild(
+    crearListaRecuperacion(DATOS_RECUPERACION_3C.puntosExtra.map((p) => p.texto + " +" + p.puntos), false)
+  );
+
+  const evaluacion = crearBloqueRecuperacion("Cómo se evalúa (100 puntos)");
+  evaluacion.appendChild(
+    crearListaRecuperacion(DATOS_RECUPERACION_3C.criterios.map((c) => c.texto + ": " + c.puntos + " pts"), false)
+  );
+
+  const pdf = crearEnlaceInstrucciones(item.pdfUrl);
+  pdf.classList.add("recuperacion-3c__pdf");
+  pdf.textContent = "📄 Descargar hoja de instrucciones (PDF)";
+
+  contenido.append(repaso, entregas, extra, evaluacion, pdf);
+
+  // Mismo wrapper de animación (panel + panel-interior) que las rúbricas.
+  const panel = document.createElement("div");
+  panel.className = "tarjeta-rubrica__panel";
+  const panelInterior = document.createElement("div");
+  panelInterior.className = "tarjeta-rubrica__panel-interior";
+  panelInterior.appendChild(contenido);
+  panel.appendChild(panelInterior);
+
+  tarjeta.append(resumen, panel);
+  return tarjeta;
+}
+
+// Oculta/muestra la sección y sus 2 enlaces del submenú (flyout + sheet)
+// con la misma condición. Una sección oculta nunca intersecta, así que
+// activarResaltadoDeNavegacion() y las migas de pan la ignoran solas.
+async function renderizarRecuperacion3C() {
+  const seccion = document.getElementById("recuperacion-3c");
+  if (!seccion) return;
+
+  const visible = recuperacion3CVisible();
+  seccion.hidden = !visible;
+  document.querySelectorAll('.nav-anclas a[href="#recuperacion-3c"]').forEach((enlace) => {
+    enlace.hidden = !visible;
+  });
+  if (!visible) return;
+
+  const contenedor = document.getElementById("contenedor-recuperacion-3c");
+  if (!contenedor) return;
+
+  const trabajos = await obtenerTrabajosRecuperacion3C();
+  contenedor.innerHTML = "";
+  trabajos.forEach((item) => contenedor.appendChild(crearTarjetaRecuperacion(item)));
 }
 
 async function renderizarActividades() {
@@ -10651,6 +10882,7 @@ async function renderizarTodo() {
     renderizarInfografias(),
     renderizarRubricas(),
     renderizarTareas(),
+    renderizarRecuperacion3C(),
     renderizarActividades(),
     renderizarProyectos(),
     renderizarProximasFechasTrimestre(),
@@ -16869,6 +17101,11 @@ function claveSecuenciaFechas(item) {
 }
 
 async function obtenerEntregablesFechas(tipo, trimestre) {
+  // Recuperación 3°C se edita aquí como su propia secuencia de tareas
+  // del T1, sin estar en DATOS_TAREAS (ver DATOS_RECUPERACION_3C).
+  if (tipo === "tarea" && String(trimestre) === "1") {
+    return [...(await obtenerTareas(trimestre)), ...(await obtenerTrabajosRecuperacion3C())];
+  }
   if (tipo === "tarea") return obtenerTareas(trimestre);
   if (tipo === "actividad") return obtenerActividades(trimestre);
   return obtenerProyectos(trimestre);
