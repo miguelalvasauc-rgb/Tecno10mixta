@@ -3471,7 +3471,9 @@ const DATOS_GLOSARIO = {
 // verificados — el resultado final es idéntico, solo cambia dónde se
 // aplica el filtro.
 async function obtenerAvisos() {
-  const fechaHoyISO = new Date().toISOString().slice(0, 10);
+  // Fecha LOCAL (no toISOString(), que es UTC): con UTC, después de las
+  // 18:00 en México un aviso que expira hoy se ocultaba ~6 h antes.
+  const fechaHoyISO = formatearClaveFecha(new Date());
   const { data, error } = await obtenerDatos("avisos", { order: { columna: "fecha", ascending: true } });
 
   if (error || !data) return DATOS_AVISOS;
@@ -14996,7 +14998,8 @@ let avisoEditando = null;
 // ISO de solo fecha ("YYYY-MM-DD") que ya usa obtenerAvisos(), así que
 // la comparación de strings es válida sin parsear a Date.
 function estadoVigenciaAviso(aviso) {
-  const fechaHoyISO = new Date().toISOString().slice(0, 10);
+  // Fecha LOCAL, mismo criterio que obtenerAvisos().
+  const fechaHoyISO = formatearClaveFecha(new Date());
   if (aviso.fecha_expiracion && aviso.fecha_expiracion < fechaHoyISO) {
     return { estado: "expirado", texto: "Expirado" };
   }
