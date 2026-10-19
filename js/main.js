@@ -13356,7 +13356,9 @@ function abrirModalEditarEntrega({ alumno, item, trimestre, filaProgreso, alGuar
   const botonDeshacer = document.getElementById("editar-entrega-deshacer");
   const error = document.getElementById("editar-entrega-error");
 
-  campoFecha.value = filaProgreso?.fecha_entrega_manual || new Date().toISOString().slice(0, 10);
+  // Fecha LOCAL: toISOString() es UTC y después de las 18:00 en México
+  // proponía la fecha de mañana.
+  campoFecha.value = filaProgreso?.fecha_entrega_manual || formatearClaveFecha(new Date());
   campoNota.value = filaProgreso?.nota || "";
   botonConfirmar.textContent = modoEditar ? "Guardar cambios" : "Confirmar";
   botonDeshacer.hidden = !modoEditar;
