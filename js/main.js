@@ -4092,6 +4092,9 @@ function textoGrupo(grupo) {
 }
 
 function formatearFecha(fechaISO) {
+  // Ítems sin fecha en el código (ver DATOS_RECUPERACION_3C) mientras no
+  // tengan fila en fechas_override: antes salía "Invalid Date".
+  if (!fechaISO) return "Sin fecha";
   const fecha = new Date(fechaISO + "T00:00:00");
   return fecha.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" });
 }
@@ -17566,6 +17569,9 @@ function construirFilasRecorrido(items, campoFecha, dias) {
     const grupos = typeof valor === "string" ? [item.grupo] : ["3C", "3E"];
     grupos.forEach((grupo) => {
       const fechaActual = typeof valor === "string" ? valor : valor[grupo];
+      // Sin fecha (ver DATOS_RECUPERACION_3C) no hay nada que recorrer, y
+      // sumarDiasISO("") lanzaría RangeError en toISOString().
+      if (!fechaActual) return;
       filas.push({ item, grupo, fechaActual, fechaNueva: sumarDiasISO(fechaActual, dias) });
     });
   });
