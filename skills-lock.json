@@ -25,6 +25,12 @@
       "skillPath": "skills/emil-design-eng/SKILL.md",
       "computedHash": "87067d79205fdedc6d682891027dd9c7335486c4b4dc2e785638941a9d2e6061"
     },
+    "explain-interface": {
+      "source": "jakubkrehel/skills",
+      "sourceType": "github",
+      "skillPath": "skills/explain-interface/SKILL.md",
+      "computedHash": "a8915ded0557d1c7d78d8371724d0ac83a67e9ae48246499143eb5b69dc71491"
+    },
     "find-animation-opportunities": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
