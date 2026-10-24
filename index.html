@@ -413,7 +413,7 @@
          no una .bento-celda. Ningún id/clase/función JS cambió, solo el
          contenedor — renderizarProgreso() sigue buscando estos mismos
          ids por getElementById(). -->
-    <section id="progreso" class="seccion">
+    <section id="progreso" class="seccion" data-indice="Progreso">
       <div class="seccion__encabezado">
         <h2>Tu progreso</h2>
         <p>Identifícate para llevar tu propio conteo de tareas y actividades completadas.</p>
@@ -439,7 +439,7 @@
     </section>
 
     <!-- ===================== TRIMESTRES ===================== -->
-    <section id="trimestres" class="seccion seccion--alterna">
+    <section id="trimestres" class="seccion seccion--alterna" data-indice="Trimestres">
       <div class="seccion__encabezado">
         <h2>Elige tu trimestre</h2>
         <p>Cada trimestre tiene sus propias rúbricas, tareas, actividades, proyectos y videos.</p>
@@ -471,7 +471,7 @@
     </section>
 
     <!-- ===================== AVISOS ===================== -->
-    <section id="avisos" class="seccion">
+    <section id="avisos" class="seccion" data-indice="Avisos">
       <div class="seccion__encabezado">
         <h2>Avisos y anuncios</h2>
         <p>Mantente al tanto de la información más reciente del grupo.</p>
@@ -483,7 +483,7 @@
          en js/main.js) — solo visible si hay una consulta activa para
          el grupo del alumno con sesión iniciada. Voto a ciegas: nunca
          muestra el resultado agregado, solo confirma que se registró. -->
-    <section id="consulta-alumno" class="seccion" hidden>
+    <section id="consulta-alumno" class="seccion" data-indice="Consulta" hidden>
       <div class="seccion__encabezado">
         <h2>🗳️ Consulta rápida</h2>
       </div>
@@ -491,7 +491,7 @@
     </section>
 
     <!-- ===================== ENCUADRE ANUAL ===================== -->
-    <section id="encuadre-anual" class="seccion seccion--alterna">
+    <section id="encuadre-anual" class="seccion seccion--alterna" data-indice="Encuadre">
       <div class="seccion__encabezado">
         <h2>📋 Encuadre Anual 2026-2027</h2>
         <p>Cómo trabajaremos este ciclo escolar: para alumnos y padres de familia.</p>
@@ -667,7 +667,7 @@
     </div>
 
     <!-- ===================== CALENDARIO ===================== -->
-    <section id="calendario" class="seccion seccion--alterna">
+    <section id="calendario" class="seccion seccion--alterna" data-indice="Calendario">
       <div class="seccion__encabezado">
         <h2>Calendario</h2>
         <p>Fechas importantes del bimestre.</p>
@@ -824,7 +824,7 @@
     </section>
 
     <!-- ===================== CONTACTO ===================== -->
-    <section id="contacto" class="seccion">
+    <section id="contacto" class="seccion" data-indice="Contacto">
       <div class="seccion__encabezado">
         <h2>Contacto</h2>
         <p>¿Tienes dudas o comentarios? Escríbenos y te responderemos pronto.</p>
@@ -1043,5 +1043,6 @@
        criterio que ya usa admin.html. -->
   <script src="datos-demo.js" defer></script>
   <script src="js/main.js" defer></script>
+  <script src="js/indice-scroll.js" defer></script>
 </body>
 </html>

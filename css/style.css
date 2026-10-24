@@ -15249,3 +15249,216 @@ button.badge-estado {
     animation-delay: var(--icono-delay, 0s);
   }
 }
+
+/* ---------- Índice de secciones con efecto de scroll (js/indice-scroll.js) ----------
+   index.html y trimestre-1/2/3.html. El JS solo crea .indice-scroll y pone
+   body.indice-scroll-activo con ≥1440px, (pointer: fine) y sin
+   prefers-reduced-motion; fuera de eso nada de este bloque aplica.
+
+   z-index 80: encima del contenido, debajo del botón "Volver arriba" (90),
+   los toasts (95), las franjas fijas superiores (999), el riel izquierdo
+   (1000) y el skip link (1100). */
+body.indice-scroll-activo {
+  padding-right: 56px; /* = ANCHO_RIEL en js/indice-scroll.js */
+}
+
+/* El botón quedaría debajo del riel derecho; la pila de entradas en
+   espera se coloca encima de él (ver medirPieEspera()). */
+body.indice-scroll-activo .fab-volver-arriba {
+  right: calc(56px + 1.25rem);
+}
+
+.indice-scroll {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+}
+
+/* El riel es solo un contenedor: fondo, regla y contador van en capas
+   separadas para que la máscara afecte únicamente al fondo esmerilado. */
+.indice-scroll__riel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 56px;
+}
+
+/* Arriba se desvanece (ahí ya está el velo); abajo queda sólido para que
+   el contador se lea sobre cualquier contenido. */
+.indice-scroll__riel-fondo {
+  position: absolute;
+  inset: 0;
+  border-left: 1px solid var(--color-borde);
+  background-color: color-mix(in srgb, var(--color-fondo) 72%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 20%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 20%);
+}
+
+/* Marcas cada 60px y una larga cada 5 (300px), pegadas al borde
+   izquierdo: las letras suben por el centro (x = riel − 28px) y nunca
+   llegan a los 16px de la izquierda. Un mosaico de 300px (múltiplo de
+   ambos periodos) repetido en vertical, desplazado 1:1 con el scroll
+   por --regla-offset (ver dibujar()). */
+.indice-scroll__regla {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 1px; /* después del border-left del fondo */
+  width: 16px;
+  background-image:
+    repeating-linear-gradient(to bottom, var(--color-texto-suave) 0 1px, transparent 1px 60px),
+    repeating-linear-gradient(to bottom, var(--color-texto-suave) 0 1px, transparent 1px 300px);
+  background-size: 8px 300px, 16px 300px;
+  background-repeat: repeat-y;
+  background-position: 0 var(--regla-offset, 0px);
+}
+
+/* Avance de la página en %, tipo odómetro: una columna 0-9 por dígito que
+   se desliza con translateY. Al fondo del riel, debajo de la fila más
+   baja de la pila de espera (las letras en viaje nunca bajan de ahí). */
+.indice-scroll__contador {
+  position: absolute;
+  right: 0;
+  bottom: 20px;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  color: var(--color-texto-suave);
+  font-family: var(--font-cuerpo);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.indice-scroll__digito {
+  height: 1em;
+  overflow: hidden;
+}
+
+.indice-scroll__digito--oculto {
+  display: none;
+}
+
+.indice-scroll__digito-columna {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(calc(var(--digito, 0) * -1em));
+  transition: transform 280ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+/* Separa la pila superior del índice del contenido que pasa por debajo.
+   Ancho y alto los fija medir(); la opacidad sigue a la llegada de la
+   primera entrada (sin entradas arriba no hay nada que separar). */
+.indice-scroll__velo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  opacity: 0;
+  background-color: color-mix(in srgb, var(--color-fondo) 82%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  -webkit-mask-image: radial-gradient(120% 100% at 100% 0%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(120% 100% at 100% 0%, #000 62%, transparent 100%);
+}
+
+/* Velo inferior, detrás de la pila de espera: termina en el borde del riel
+   (no tapa regla ni contador) y queda debajo del botón "Volver arriba"
+   (z-index 90). Su opacidad sigue a la llegada de la última entrada. */
+.indice-scroll__velo--abajo {
+  top: auto;
+  right: 56px; /* = ANCHO_RIEL */
+  bottom: 0;
+  -webkit-mask-image: radial-gradient(120% 100% at 100% 100%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(120% 100% at 100% 100%, #000 62%, transparent 100%);
+}
+
+/* Sin backdrop-filter el fondo semitransparente dejaría leer el texto de
+   abajo mezclado con el del índice: se usa un fondo sólido del tema. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .indice-scroll__riel-fondo {
+    background-color: var(--color-superficie-alterna);
+  }
+
+  .indice-scroll__velo {
+    background-color: var(--color-fondo);
+  }
+}
+
+.indice-scroll__letras {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.indice-scroll__palabra {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--color-texto-suave);
+  font-family: var(--font-encabezados, var(--fuente-titulos));
+  font-size: 28px; /* = TAMANO_GRANDE; 14px es scale(0.5) */
+  font-weight: 700;
+  line-height: 1;
+  /* Halo del color de fondo: las letras se leen aunque pasen sobre
+     texto o imágenes de la sección. */
+  text-shadow: 0 0 4px var(--color-fondo), 0 0 10px var(--color-fondo);
+}
+
+.indice-scroll__palabra--actual {
+  color: var(--color-texto);
+}
+
+/* Hover/foco: mismo color que la entrada actual + subrayado, para no
+   depender de --color-turquesa (en temas claros no llega a 4.5:1). */
+.indice-scroll__palabra--resaltada {
+  color: var(--color-texto);
+}
+
+/* El subrayado va en cada letra: text-decoration no se propaga a los
+   descendientes con position: absolute. */
+.indice-scroll__palabra--resaltada .indice-scroll__letra {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.indice-scroll__letra {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: pre;
+  will-change: transform, opacity;
+}
+
+.indice-scroll__nav {
+  position: absolute;
+  inset: 0;
+}
+
+/* Caja transparente encima de las letras de su palabra (tamaño y posición
+   por JS, mínimo 24px de alto). El texto del enlace es su nombre
+   accesible; se oculta visualmente porque lo que se ve son las letras. */
+.indice-scroll__enlace {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 4px;
+  color: transparent;
+  font-size: 0;
+  pointer-events: auto;
+}
+
+/* En la pila de espera no recibe clics de mouse para no tapar botones y
+   tarjetas de la esquina inferior derecha; sigue en el orden de Tab y
+   Enter navega. Vuelve a ser clicable en cuanto empieza a moverse. */
+.indice-scroll__enlace--espera {
+  pointer-events: none;
+}
+
+.indice-scroll__enlace:focus-visible {
+  outline: 2px solid var(--color-texto);
+  outline-offset: 2px;
+}

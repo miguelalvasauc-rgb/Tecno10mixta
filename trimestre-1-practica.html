@@ -417,7 +417,7 @@
 
   <main id="main-content">
     <!-- ===================== PRÓXIMAS FECHAS ===================== -->
-    <section id="proximas-fechas-trimestre" class="seccion">
+    <section id="proximas-fechas-trimestre" class="seccion" data-indice="Fechas">
       <div class="seccion__encabezado">
         <h2>📅 Próximas fechas</h2>
         <p>Todas tus tareas, actividades y proyectos de este trimestre, ordenados por fecha de entrega.</p>
@@ -426,7 +426,7 @@
     </section>
 
     <!-- ===================== TAREAS ===================== -->
-    <section id="tareas" class="seccion seccion--alterna">
+    <section id="tareas" class="seccion seccion--alterna" data-indice="Tareas">
       <div class="seccion__encabezado">
         <h2>Tareas</h2>
         <p>Trabajos individuales o en equipo con fecha de entrega.</p>
@@ -443,7 +443,7 @@
          (ver renderizarRecuperacion3C() en js/main.js). Empieza oculta para
          que nunca parpadee en otros grupos. Las fechas vienen de
          fechas_override (panel docente → Fechas de entrega). -->
-    <section id="recuperacion-3c" class="seccion" hidden>
+    <section id="recuperacion-3c" class="seccion" data-indice="Recuperación" hidden>
       <div class="seccion__encabezado">
         <h2>🔁 Recuperación 3°C</h2>
         <p>Tres trabajos a mano para recuperar tu evaluación del Trimestre 1.</p>
@@ -461,7 +461,7 @@
     </section>
 
     <!-- ===================== ENTREGA DE TRABAJOS ===================== -->
-    <section id="entrega" class="seccion">
+    <section id="entrega" class="seccion" data-indice="Entrega">
       <div class="seccion__encabezado">
         <h2>Entrega de trabajos</h2>
         <p>Sube tu trabajo del Trimestre 1 usando el siguiente formulario.</p>
@@ -487,7 +487,7 @@
     </section>
 
     <!-- ===================== RÚBRICAS ===================== -->
-    <section id="rubricas" class="seccion seccion--alterna">
+    <section id="rubricas" class="seccion seccion--alterna" data-indice="Rúbricas">
       <div class="seccion__encabezado">
         <h2>Rúbricas de evaluación</h2>
         <p>📋 Guías de evaluación: cada rúbrica desglosa los criterios específicos que se calificarán, con 4 niveles de desempeño (Excelente, Bueno, Regular, Deficiente) y su valor en puntos. Revísala antes de entregar tu trabajo para saber exactamente qué se espera y asegurar la máxima puntuación.</p>
@@ -497,7 +497,7 @@
     </section>
 
     <!-- ===================== ACTIVIDADES ===================== -->
-    <section id="actividades" class="seccion">
+    <section id="actividades" class="seccion" data-indice="Actividades">
       <div class="seccion__encabezado">
         <h2>Actividades de clase</h2>
         <p>Ejercicios y dinámicas que se realizan durante la sesión.</p>
@@ -509,7 +509,7 @@
     </section>
 
     <!-- ===================== PROYECTOS ===================== -->
-    <section id="proyectos" class="seccion seccion--alterna">
+    <section id="proyectos" class="seccion seccion--alterna" data-indice="Proyectos">
       <div class="seccion__encabezado">
         <h2>Proyectos</h2>
         <p>Proyectos en curso durante el trimestre.</p>
@@ -529,7 +529,7 @@
          pedagógico que la Tarea 1.2 y el Proyecto "Mi Chatbot en Papel" de
          esta misma Secuencia 1 (ver DATOS_TAREAS/DATOS_PROYECTOS[1] en
          js/main.js). Poblado por activarChatbotReglas() en js/main.js. -->
-    <section id="chatbot-reglas" class="seccion">
+    <section id="chatbot-reglas" class="seccion" data-indice="Chatbot">
       <div class="seccion__encabezado">
         <h2>🤖 Practica: chatea con un bot de reglas</h2>
         <p>Simulación de la Secuencia 1 (Inteligencia Artificial): platica con un chatbot que solo reconoce palabras clave, sin entender de verdad lo que le dices — igual que el chatbot que vas a diseñar tú en papel.</p>
@@ -571,7 +571,7 @@
          visible, vía obtenerEstadoDesbloqueoTemas()/TRIMESTRE_POR_TEMA_RECOMPENSA,
          Fase 12) y el reto en sí (gated por sesión+grupo, mismo componente
          que #progreso-sin-perfil de progreso.html). -->
-    <section id="aplica-tus-conocimientos" class="seccion seccion--alterna">
+    <section id="aplica-tus-conocimientos" class="seccion seccion--alterna" data-indice="Reto">
       <div class="seccion__encabezado">
         <h2>🏆 Aplica tus conocimientos</h2>
         <p>Este trimestre hay un reto de 3 partes, una por cada secuencia que ya vieron en clase. Si todo el grupo lo resuelve correctamente, tu profesor desbloquea 3 temas visuales nuevos para todo el grupo. El reto se resuelve en persona con tu profesor — aquí solo se muestra el planteamiento, nunca la respuesta.</p>
@@ -701,5 +701,6 @@
        cargar. Mismo criterio que ya usan admin.html/index.html. -->
   <script src="datos-demo.js" defer></script>
   <script src="js/main.js" defer></script>
+  <script src="js/indice-scroll.js" defer></script>
 </body>
 </html>

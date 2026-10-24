@@ -41,7 +41,7 @@ const PARES_CONTRASTE = [
     fg: "--color-texto",
     bg: "--color-fondo",
     tamano: "normal",
-    nota: "Texto de cuerpo sobre fondo de página (body)",
+    nota: "Texto de cuerpo sobre fondo de página (body); también la entrada actual de .indice-scroll",
   },
   {
     fg: "--color-texto",
@@ -53,7 +53,7 @@ const PARES_CONTRASTE = [
     fg: "--color-texto-suave",
     bg: "--color-fondo",
     tamano: "normal",
-    nota: "Texto secundario sobre fondo de página",
+    nota: "Texto secundario sobre fondo de página; también las entradas en espera/pasadas de .indice-scroll",
   },
   {
     fg: "--color-texto-suave",
