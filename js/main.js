@@ -1574,6 +1574,29 @@ const DATOS_RECUPERACION_3C = {
   ],
 };
 
+// Proyectos 3°E (trimestre-1-practica.html#proyectos-3e): los 3
+// proyectos del T1 en versión reducida, individuales y entregados en
+// físico. Mismo criterio que DATOS_RECUPERACION_3C: "entrega" NO va en
+// DATOS_TAREAS ni en DATOS_PROYECTOS (no cuenta para progreso ni
+// calificación). A diferencia de 3°C, "fechaEntrega" sí trae la fecha en
+// el código; fechas_override (tipo "tarea", grupo "3E", id proy3e-1) la
+// puede cambiar desde el panel docente, donde aparece como su propia
+// secuencia (ver obtenerEntregablesFechas). "vigenteHasta": último día
+// (inclusive, fecha local del navegador) en que la sección se muestra.
+const DATOS_PROYECTOS_3E = {
+  vigenteHasta: "2026-11-09",
+  gammaEmbedUrl: "https://gamma.app/embed/wpynf9m04224fgu",
+  gammaTitulo: "Proyectos del primer trimestre",
+  pdfUrl: "assets/recuperacion/Proyectos_Trimestre_1_3E.pdf",
+  entrega: {
+    id: "proy3e-1",
+    secuencia: "🚀 Proyectos 3°E",
+    grupo: "3E",
+    titulo: "🚀 Proyectos 3°E (Chatbot en Papel, Metaverso Educativo y Robot Ideal)",
+    fechaEntrega: "2026-11-06",
+  },
+};
+
 // "archivoUrl" sigue siendo el campo OPCIONAL para Actividades: muestra
 // un único botón "📎 Descargar material" (mismo estilo secundario que
 // "materialApoyoUrl" en Tareas). Las actividades no distinguen entre
@@ -3603,6 +3626,11 @@ async function obtenerProyectos(trimestre) {
 // en progreso ni calificación.
 async function obtenerTrabajosRecuperacion3C() {
   return aplicarOverridesFechas(DATOS_RECUPERACION_3C.trabajos, "tarea", 1);
+}
+
+// Mismo criterio que obtenerTrabajosRecuperacion3C() (ver DATOS_PROYECTOS_3E).
+async function obtenerEntregaProyectos3E() {
+  return aplicarOverridesFechas([DATOS_PROYECTOS_3E.entrega], "tarea", 1);
 }
 
 async function obtenerVideos(trimestre) {
@@ -5941,6 +5969,84 @@ async function renderizarRecuperacion3C() {
   const trabajos = await obtenerTrabajosRecuperacion3C();
   contenedor.innerHTML = "";
   trabajos.forEach((item) => contenedor.appendChild(crearTarjetaRecuperacion(item)));
+}
+
+/* ---------------------------------------------------------
+   Proyectos 3°E (solo trimestre-1-practica.html) — sección
+   informativa, ver DATOS_PROYECTOS_3E. Mismo patrón y guardia que
+   Recuperación 3°C: se reevalúa en cada renderizarTodo().
+   --------------------------------------------------------- */
+
+// Solo con grupo 3°E (con "todos" o "3C" queda oculta). Fecha LOCAL,
+// mismo motivo que recuperacion3CVisible().
+function proyectos3EVisible() {
+  return grupoActual === "3E" && formatearClaveFecha(new Date()) <= DATOS_PROYECTOS_3E.vigenteHasta;
+}
+
+// Iframe sin style inline (la CSP tiene style-src 'self'): el tamaño lo
+// da .proyectos-3e__marco. Mismos atributos que las Presentaciones.
+function crearPresentacionProyectos3E() {
+  const marco = document.createElement("div");
+  marco.className = "proyectos-3e__marco";
+  const iframe = document.createElement("iframe");
+  iframe.src = DATOS_PROYECTOS_3E.gammaEmbedUrl;
+  iframe.title = DATOS_PROYECTOS_3E.gammaTitulo;
+  iframe.loading = "lazy";
+  iframe.allowFullscreen = true;
+  iframe.setAttribute("allow", "fullscreen");
+  marco.appendChild(iframe);
+
+  const enlaces = document.createElement("div");
+  enlaces.className = "proyectos-3e__enlaces";
+
+  const pdf = crearEnlaceInstrucciones(DATOS_PROYECTOS_3E.pdfUrl);
+  pdf.classList.add("recuperacion-3c__pdf");
+  pdf.textContent = "📄 Descargar instrucciones (PDF)";
+
+  // Respaldo por si la pantalla completa de Gamma no funciona dentro del
+  // iframe (ver tarjeta-presentacion__abrir en renderizarPresentaciones).
+  const abrir = document.createElement("a");
+  abrir.className = "panel-progreso__enlace";
+  abrir.href = DATOS_PROYECTOS_3E.gammaEmbedUrl;
+  abrir.target = "_blank";
+  abrir.rel = "noopener";
+  abrir.textContent = "Abrir presentación completa ↗";
+
+  enlaces.append(pdf, abrir);
+  return [marco, enlaces];
+}
+
+async function renderizarProyectos3E() {
+  const seccion = document.getElementById("proyectos-3e");
+  if (!seccion) return;
+
+  const visible = proyectos3EVisible();
+  seccion.hidden = !visible;
+  document.querySelectorAll('.nav-anclas a[href="#proyectos-3e"]').forEach((enlace) => {
+    enlace.hidden = !visible;
+  });
+  if (!visible) return;
+
+  // El iframe se arma una sola vez: renderizarTodo() corre varias veces
+  // y volver a crearlo recargaría la presentación.
+  const contenedor = document.getElementById("contenedor-proyectos-3e");
+  if (contenedor && contenedor.childElementCount === 0) {
+    contenedor.append(...crearPresentacionProyectos3E());
+  }
+
+  const fecha = document.getElementById("fecha-proyectos-3e");
+  if (!fecha) return;
+  const [entrega] = await obtenerEntregaProyectos3E();
+  const iso = fechaLimiteISO("tarea", entrega, "3E");
+  if (!iso) return;
+  const texto = new Date(iso + "T00:00:00").toLocaleDateString("es-MX", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  fecha.textContent =
+    "Fecha final de entrega: " + texto + ". Puedes entregar antes, siempre los 3 proyectos juntos.";
 }
 
 async function renderizarActividades() {
@@ -10888,6 +10994,7 @@ async function renderizarTodo() {
     renderizarRubricas(),
     renderizarTareas(),
     renderizarRecuperacion3C(),
+    renderizarProyectos3E(),
     renderizarActividades(),
     renderizarProyectos(),
     renderizarProximasFechasTrimestre(),
@@ -17109,10 +17216,15 @@ function claveSecuenciaFechas(item) {
 }
 
 async function obtenerEntregablesFechas(tipo, trimestre) {
-  // Recuperación 3°C se edita aquí como su propia secuencia de tareas
-  // del T1, sin estar en DATOS_TAREAS (ver DATOS_RECUPERACION_3C).
+  // Recuperación 3°C y Proyectos 3°E se editan aquí como su propia
+  // secuencia de tareas del T1, sin estar en DATOS_TAREAS (ver
+  // DATOS_RECUPERACION_3C y DATOS_PROYECTOS_3E).
   if (tipo === "tarea" && String(trimestre) === "1") {
-    return [...(await obtenerTareas(trimestre)), ...(await obtenerTrabajosRecuperacion3C())];
+    return [
+      ...(await obtenerTareas(trimestre)),
+      ...(await obtenerTrabajosRecuperacion3C()),
+      ...(await obtenerEntregaProyectos3E()),
+    ];
   }
   if (tipo === "tarea") return obtenerTareas(trimestre);
   if (tipo === "actividad") return obtenerActividades(trimestre);

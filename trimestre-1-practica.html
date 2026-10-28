@@ -167,6 +167,9 @@
       <a href="#recuperacion-3c" data-enlace="recuperacion-3c" class="riel-flyout__enlace" hidden>
         <span aria-hidden="true">🔁</span><span>Recuperación 3°C</span>
       </a>
+      <a href="#proyectos-3e" data-enlace="proyectos-3e" class="riel-flyout__enlace" hidden>
+        <span aria-hidden="true">🚀</span><span>Proyectos 3°E</span>
+      </a>
       <a href="#entrega" data-enlace="entrega" class="riel-flyout__enlace">
         <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
       </a>
@@ -325,6 +328,9 @@
       <a href="#recuperacion-3c" data-enlace="recuperacion-3c" class="riel-flyout__enlace" hidden>
         <span aria-hidden="true">🔁</span><span>Recuperación 3°C</span>
       </a>
+      <a href="#proyectos-3e" data-enlace="proyectos-3e" class="riel-flyout__enlace" hidden>
+        <span aria-hidden="true">🚀</span><span>Proyectos 3°E</span>
+      </a>
       <a href="#entrega" data-enlace="entrega" class="riel-flyout__enlace">
         <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
       </a>
@@ -458,6 +464,33 @@
         </ul>
       </div>
       <div id="contenedor-recuperacion-3c" class="recuperacion-3c__trabajos" aria-live="polite"></div>
+    </section>
+
+    <!-- ===================== PROYECTOS 3°E ===================== -->
+    <!-- Solo visible con grupo 3°E y hasta DATOS_PROYECTOS_3E.vigenteHasta
+         (ver renderizarProyectos3E() en js/main.js). Empieza oculta, igual
+         que Recuperación 3°C. La fecha sale de DATOS_PROYECTOS_3E y se puede
+         cambiar en fechas_override (panel docente → Fechas de entrega). El
+         iframe de Gamma lo arma el JS, sin style inline (CSP style-src). -->
+    <section id="proyectos-3e" class="seccion" data-indice="Proyectos 3°E" hidden>
+      <div class="seccion__encabezado">
+        <h2>🚀 Proyectos 3°E</h2>
+        <p>Los 3 proyectos del Trimestre 1 (Chatbot en Papel, Metaverso Educativo y Robot Ideal) en versión reducida, como trabajo individual.</p>
+      </div>
+      <div class="tarjeta proyectos-3e__aviso" role="note">
+        <p><strong>Esta versión reducida es la que debes entregar.</strong> Si algo de la sección Proyectos dice otra cosa, sigue lo de aquí.</p>
+      </div>
+      <div class="tarjeta recuperacion-3c__reglas">
+        <h3>Reglas</h3>
+        <ul class="recuperacion-3c__lista">
+          <li>Trabajo individual, a mano, en hojas blancas.</li>
+          <li>Nombre, grupo y número de lista en cada hoja.</li>
+          <li>Los 3 proyectos juntos en una carpeta tamaño carta.</li>
+          <li>Se entregan en físico, en clase (no en el formulario de Entrega de trabajos).</li>
+        </ul>
+        <p id="fecha-proyectos-3e" class="proyectos-3e__fecha">Fecha final de entrega: viernes, 6 de noviembre de 2026. Puedes entregar antes, siempre los 3 proyectos juntos.</p>
+      </div>
+      <div id="contenedor-proyectos-3e" class="proyectos-3e__presentacion"></div>
     </section>
 
     <!-- ===================== ENTREGA DE TRABAJOS ===================== -->
