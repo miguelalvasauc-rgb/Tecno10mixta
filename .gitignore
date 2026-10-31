@@ -1,9 +1,21 @@
 Prompt_ClaudeCode_Bloque3.md
 .codegraph/
 
-# graphify: cache de AST regenerable (gratis, sin LLM) y snapshots
-# históricos diarios redundantes con graphify-out/graph.json actual.
-# graphify-out/cache/semantic/ NO se ignora a propósito: regenerarlo
-# cuesta llamadas reales a LLM.
-graphify-out/cache/ast/
-graphify-out/20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
+# Datos de alumnos: el repo es público y Netlify publica la raíz.
+# Reglas ancladas a la raíz para no bloquear datasets de actividades en assets/.
+/*.csv
+/*.sql
+/*.xlsx
+**/listado_oficial*
+**/reconciliacion_*
+
+# graphify: índice local, regenerable con `graphify update .`
+graphify-out/
+
+# Material del T2: no publicar antes de desbloquear el trimestre
+assets/Trabajos/
+
+# Notas y fuentes de trabajo
+/Proyectos del Trimestre*.md
+/mejoras-diseno-animaciones.md
+/retos_temas_recompensa.md
