@@ -15588,7 +15588,10 @@ body.indice-scroll-activo .fab-volver-arriba {
 
 :root.con-barra-grupo {
   --alto-barra-grupo: calc(44px + 0.5rem + 1px);
-  scroll-padding-top: var(--alto-barra-grupo);
+  /* --alto-pila-fija es lo medido por activarPilaFija() en js/main.js, porque
+     la barra puede crecer (aviso en 2 líneas con texto grande); el valor de
+     respaldo cubre hasta que corre el JS. */
+  scroll-padding-top: var(--alto-pila-fija, var(--alto-barra-grupo));
 }
 
 :root[data-theme="independencia"] {
@@ -15740,11 +15743,11 @@ body.modo-demo-toast-visible {
    cuelgan las migas. */
 @media (min-width: 1024px) {
   :root.con-barra-grupo {
-    scroll-padding-top: calc(3px + var(--alto-barra-grupo));
+    scroll-padding-top: var(--alto-pila-fija, calc(3px + var(--alto-barra-grupo)));
   }
 
   :root.con-barra-grupo:has(.migas-de-pan) {
-    scroll-padding-top: calc(3px + var(--alto-barra-grupo) + var(--alto-migas-de-pan-1linea));
+    scroll-padding-top: var(--alto-pila-fija, calc(3px + var(--alto-barra-grupo) + var(--alto-migas-de-pan-1linea)));
   }
 
   .barra-grupo {

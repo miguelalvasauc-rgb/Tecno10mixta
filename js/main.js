@@ -11309,6 +11309,35 @@ function crearBarraGrupo() {
   actualizarBarraGrupo();
 }
 
+// Dónde termina lo que queda fijo arriba, para que scroll-padding-top no
+// dependa de un alto supuesto (ver --alto-pila-fija en css/style.css). Las
+// migas solo cuentan donde son sticky: en móvil se van con el scroll.
+function medirPilaFija() {
+  const pila = [document.getElementById("barra-grupo"), document.querySelector(".migas-de-pan")].reduce(
+    (fondo, elemento) => {
+      if (!elemento) return fondo;
+      const estilo = getComputedStyle(elemento);
+      const alto = elemento.getBoundingClientRect().height;
+      if (estilo.position !== "sticky" || alto === 0) return fondo;
+      return Math.max(fondo, (parseFloat(estilo.top) || 0) + alto);
+    },
+    0
+  );
+
+  if (pila > 0) document.documentElement.style.setProperty("--alto-pila-fija", pila + "px");
+  else document.documentElement.style.removeProperty("--alto-pila-fija");
+}
+
+function activarPilaFija() {
+  const barra = document.getElementById("barra-grupo");
+  if (!barra) return;
+
+  const observador = new ResizeObserver(medirPilaFija);
+  observador.observe(barra);
+  const migas = document.querySelector(".migas-de-pan");
+  if (migas) observador.observe(migas);
+}
+
 function textosBarraGrupo() {
   if (modoGrupo === "cargando") return { largo: "Cargando tu grupo…", corto: "Cargando…" };
   if (modoGrupo === "alumno") {
@@ -22791,6 +22820,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Antes de cualquier await: la barra ocupa su lugar en estado neutro
   // desde el inicio, sin esperar a que se resuelva la sesión.
   crearBarraGrupo();
+  activarPilaFija();
   const marcarRenderInicialListo = sostenerAnclaEnCarga();
 
   // Un evento forzado (Navidad, ver Fase 4) gana siempre sobre el tema
@@ -22804,6 +22834,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   // evento, ver activarEfectosIndependencia más abajo) — mismo criterio
   // que la paleta base del tema, que tampoco depende de ese flag.
   if (eventoActivo === "independencia") crearFranjaTricolorIndependencia();
+  // La franja baja la barra sin cambiarle el alto: el ResizeObserver no lo ve.
+  medirPilaFija();
 
   // Mientras la promesa no resuelve (o si falla/devuelve false), el
   // <body> se queda sin la clase y css/style.css no muestra ningún
