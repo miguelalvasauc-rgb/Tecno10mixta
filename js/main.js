@@ -5714,6 +5714,107 @@ function activarPestanaDesdeHash() {
   objetivo.scrollIntoView({ block: "start" });
 }
 
+// Enlace directo a un #ancla: el navegador salta en cuanto puede, pero
+// casi todo lo que hay arriba del destino se dibuja después con datos de
+// Supabase, así que el salto queda corto por cientos o miles de píxeles.
+// Mientras la página termina de cargar, esto recoloca el destino cada vez
+// que cambia el alto del body. Solo en navegación nueva: al recargar o al
+// volver con "atrás", la posición la restaura el navegador. El usuario
+// manda: cualquier intento suyo de moverse lo detiene al instante, y el
+// foco no se toca. Devuelve la función que avisa que el primer
+// renderizarTodo() ya terminó.
+const TOPE_ANCLA_EN_CARGA_MS = 5000;
+const QUIETUD_ANCLA_EN_CARGA_MS = 400;
+
+function sostenerAnclaEnCarga() {
+  const hash = window.location.hash;
+  const navegacion = performance.getEntriesByType("navigation")[0];
+  if (hash.length < 2 || navegacion?.type !== "navigate") return () => {};
+
+  const parada = new AbortController();
+  let cargaLista = false;
+  let cuadroPendiente = false;
+  let temporizadorQuietud;
+
+  function colocar() {
+    if (parada.signal.aborted) return;
+    const objetivo = document.getElementById(hash.slice(1));
+    if (!objetivo) return;
+
+    // Las tarjetas se crean después del parseo, así que el navegador no
+    // alcanza a abrir el <details> que las contiene.
+    for (
+      let cerrado = objetivo.closest("details:not([open])");
+      cerrado;
+      cerrado = objetivo.closest("details:not([open])")
+    ) {
+      cerrado.open = true;
+    }
+
+    // "instant" y no "auto": "auto" hereda el scroll-behavior del CSS.
+    if (objetivo.getClientRects().length > 0) {
+      objetivo.scrollIntoView({ behavior: "instant", block: "start" });
+    }
+  }
+
+  // Dos cuadros: al llegar termina la animación de entrada de la tarjeta
+  // destino, y sin ella su posición real es otra.
+  function programarColocacion() {
+    if (cuadroPendiente) return;
+    cuadroPendiente = true;
+    window.requestAnimationFrame(() => {
+      cuadroPendiente = false;
+      colocar();
+      window.requestAnimationFrame(colocar);
+    });
+  }
+
+  function terminar() {
+    parada.abort();
+    observador.disconnect();
+    clearTimeout(temporizadorTope);
+    clearTimeout(temporizadorQuietud);
+  }
+
+  function esperarQuietud() {
+    if (!cargaLista || parada.signal.aborted) return;
+    clearTimeout(temporizadorQuietud);
+    temporizadorQuietud = setTimeout(() => {
+      colocar();
+      terminar();
+    }, QUIETUD_ANCLA_EN_CARGA_MS);
+  }
+
+  const observador = new ResizeObserver(() => {
+    programarColocacion();
+    esperarQuietud();
+  });
+  observador.observe(document.body);
+
+  const temporizadorTope = setTimeout(terminar, TOPE_ANCLA_EN_CARGA_MS);
+
+  ["wheel", "touchstart", "keydown", "mousedown"].forEach((evento) => {
+    window.addEventListener(evento, terminar, { capture: true, passive: true, signal: parada.signal });
+  });
+
+  let marcarRenderListo;
+  const renderListo = new Promise((resolver) => {
+    marcarRenderListo = resolver;
+  });
+  const paginaCargada = new Promise((resolver) => {
+    if (document.readyState === "complete") resolver();
+    else window.addEventListener("load", resolver, { once: true, signal: parada.signal });
+  });
+
+  Promise.all([renderListo, paginaCargada, document.fonts.ready]).then(() => {
+    cargaLista = true;
+    esperarQuietud();
+  });
+
+  programarColocacion();
+  return marcarRenderListo;
+}
+
 async function renderizarTareas() {
   const contenedor = document.getElementById("contenedor-tareas");
   if (!contenedor) return;
@@ -22690,6 +22791,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Antes de cualquier await: la barra ocupa su lugar en estado neutro
   // desde el inicio, sin esperar a que se resuelva la sesión.
   crearBarraGrupo();
+  const marcarRenderInicialListo = sostenerAnclaEnCarga();
 
   // Un evento forzado (Navidad, ver Fase 4) gana siempre sobre el tema
   // personal — ni siquiera se lee localStorage/Supabase de temaActual en
@@ -22763,6 +22865,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // vuelta en cada re-render sería sorprender al alumno si ya había
   // cambiado de pestaña él mismo.
   if (TRIMESTRE_ACTUAL === "1") activarPestanaDesdeHash();
+  marcarRenderInicialListo();
 
   activarSelectorTema();
   activarModalCelebracionTema();
