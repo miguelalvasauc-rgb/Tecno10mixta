@@ -15576,6 +15576,7 @@ body.indice-scroll-activo .fab-volver-arriba {
    --alto-barra-grupo es fijo, igual que --alto-migas-de-pan-1linea: 44px de
    botón + 0.25rem arriba y abajo + 1px de borde. */
 :root {
+  scroll-padding-top: var(--alto-pila-fija, 0px);
   --alto-barra-grupo: 0px;
   --desplazo-barra-grupo: 0px;
   /* Capas alrededor de la barra, de abajo hacia arriba: efectos de tema

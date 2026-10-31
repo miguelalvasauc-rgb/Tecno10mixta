@@ -11329,13 +11329,13 @@ function medirPilaFija() {
 }
 
 function activarPilaFija() {
-  const barra = document.getElementById("barra-grupo");
-  if (!barra) return;
-
+  // Páginas como faq.html no tienen barra de grupo, pero sus migas sí son
+  // sticky en escritorio y también tapan el destino de un salto.
+  const fijos = [document.getElementById("barra-grupo"), document.querySelector(".migas-de-pan")];
   const observador = new ResizeObserver(medirPilaFija);
-  observador.observe(barra);
-  const migas = document.querySelector(".migas-de-pan");
-  if (migas) observador.observe(migas);
+  fijos.forEach((elemento) => {
+    if (elemento) observador.observe(elemento);
+  });
 }
 
 function textosBarraGrupo() {
