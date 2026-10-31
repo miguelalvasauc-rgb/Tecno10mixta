@@ -10879,7 +10879,13 @@ function actualizarMigaDeSeccion(enlaceActivo) {
 
   texto.textContent = enlaceActivo.textContent;
   texto.setAttribute("aria-current", "page");
-  if (migaTrimestre) migaTrimestre.removeAttribute("aria-current");
+  // En móvil la miga se recorta a una línea (ver .migas-de-pan en style.css);
+  // el title conserva el nombre completo de lo que quede con puntos suspensivos.
+  texto.title = enlaceActivo.textContent.trim();
+  if (migaTrimestre) {
+    migaTrimestre.removeAttribute("aria-current");
+    migaTrimestre.title = migaTrimestre.textContent.trim();
+  }
 
   separador.hidden = false;
   item.hidden = false;

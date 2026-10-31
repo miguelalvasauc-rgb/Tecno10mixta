@@ -1525,6 +1525,33 @@ a {
   color: var(--color-texto-suave);
 }
 
+/* Una sola línea siempre: si el nombre de la sección abriera una segunda,
+   todo lo de abajo se recorrería en pleno salto a un #ancla. Se recorta
+   primero el trimestre (el banner de abajo lo repite); el nombre completo
+   sigue en el title, ver actualizarMigaDeSeccion() en js/main.js. */
+@media (max-width: 1023.98px) {
+  .migas-de-pan ol {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  .migas-de-pan li {
+    flex-shrink: 0;
+  }
+
+  .migas-de-pan li:has(.migas-de-pan__actual) {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .migas-de-pan li:has(#miga-trimestre) {
+    flex-shrink: 10000; /* basta una fracción de píxel para activar los puntos suspensivos */
+    min-width: 5.5em;
+  }
+}
+
 /* Aviso fijo que recuerda en qué trimestre está el usuario */
 .banner-trimestre {
   background-color: var(--color-superficie-alterna);
