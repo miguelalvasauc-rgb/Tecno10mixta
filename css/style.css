@@ -1131,7 +1131,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   /* Ver --escala-texto en :root de arriba. 100% (no 16px fijos) para
      seguir respetando el tamaño de fuente del navegador/SO del usuario
      además de este control. */
@@ -1140,6 +1139,7 @@ html {
 
 @media (prefers-reduced-motion: no-preference) {
   html {
+    scroll-behavior: smooth;
     transition: font-size 0.2s ease;
   }
 }
