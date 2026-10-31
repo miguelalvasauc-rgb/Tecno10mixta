@@ -14,11 +14,12 @@
      3. Abatimiento: la columna gira de -90° a 0° como un bloque, con
         pivote en la letra del frente, mientras crece a 28px y se desliza
         a su x final. La palabra queda en orden y nunca sube de su fila.
-     4. Actual: llega cuando el borde de su sección está en BORDE_LLEGADA.
+     4. Actual: llega cuando el borde de su sección está AIRE_LLEGADA px
+        debajo de lo que queda fijo arriba (barra de grupo y migas).
      5. Pasada: durante el abatimiento de la siguiente se encoge a 14px y
         se queda como una fila chica arriba.
    Un solo progreso por entrada (0 cuando la sección asoma por abajo, 1
-   con su borde en BORDE_LLEGADA) reparte todo el camino: es función
+   con su borde en ese punto de llegada) reparte todo el camino: es función
    directa de scrollY, así que el scroll hacia arriba lo deshace igual.
 
    Solo se activa con ≥1440px, puntero fino y sin prefers-reduced-motion
@@ -46,7 +47,7 @@
   const RADIO_GIRO = 38; // cuarto de círculo de ~60px de recorrido
   const LARGO_GIRO = (Math.PI / 2) * RADIO_GIRO;
   const LARGO_ABATIMIENTO = 100; // cuánto camino "cuesta" el abatimiento final
-  const BORDE_LLEGADA = 24; // la sección queda "actual" con su borde a 24px del tope
+  const AIRE_LLEGADA = 24; // la sección queda "actual" con su borde a 24px de lo fijo arriba
   const SEPARACION_FINAL_PAGINA = 120; // ver comprimirFinalDePagina()
   const ALTO_MIN_ENLACE = 24; // WCAG 2.5.8: zona de clic mínima de 24px
 
@@ -166,8 +167,20 @@
 
   // Borde inferior real de lo que esté fijo arriba (franja Modo Demo,
   // barra de progreso de lectura): la fila superior empieza debajo.
-  function medirTope() {
-    let tope = 0;
+  // Top sticky + alto y no su caja: a scroll 0 la barra y las migas aún no
+  // están pegadas, y la pila no debe depender de dónde se haya medido.
+  function fondoSticky(elemento) {
+    if (!elemento || elemento.hidden) return 0;
+    const alto = elemento.getBoundingClientRect().height;
+    return alto > 0 ? (parseFloat(getComputedStyle(elemento).top) || 0) + alto : 0;
+  }
+
+  // Dónde termina lo que queda fijo arriba de la ventana.
+  function medirPilaFija() {
+    let pila = Math.max(
+      fondoSticky(document.getElementById("barra-grupo")),
+      fondoSticky(document.querySelector(".migas-de-pan"))
+    );
     const fijosArriba = [
       document.body.classList.contains("modo-demo-toast-visible") ? document.getElementById("toast-modo-demo") : null,
       document.querySelector(".barra-progreso-lectura"),
@@ -175,9 +188,9 @@
     fijosArriba.forEach((elemento) => {
       if (!elemento || elemento.hidden) return;
       const caja = elemento.getBoundingClientRect();
-      if (caja.height > 0) tope = Math.max(tope, caja.bottom);
+      if (caja.height > 0) pila = Math.max(pila, caja.bottom);
     });
-    return tope + AIRE_TOPE;
+    return pila;
   }
 
   // Con el estilo calculado y no con su caja: abajo de los 400px de scroll
@@ -197,7 +210,9 @@
     // barra de scroll, igual que la capa (inset: 0).
     const ancho = document.documentElement.clientWidth;
     const alto = window.innerHeight;
-    const tope = medirTope();
+    const pilaFija = medirPilaFija();
+    const tope = pilaFija + AIRE_TOPE;
+    const bordeLlegada = pilaFija + AIRE_LLEGADA;
     const pieEspera = medirPieEspera(alto);
     const total = entradas.length;
 
@@ -213,19 +228,20 @@
       entrada.centroFrente = entrada.letras[entrada.letras.length - 1]?.centro ?? 0;
     });
     const scrollMaximo = document.documentElement.scrollHeight - alto;
-    comprimirFinalDePagina(scrollMaximo);
+    comprimirFinalDePagina(scrollMaximo, bordeLlegada);
     // La primera sección de los trimestres empieza ~110px abajo del tope:
     // en scroll 0 quedaría a medio abatir, con las letras en diagonal. Si
     // al cargar ya estaría dentro del abatimiento, cuenta como llegada
     // (las migas de pan también la marcan como actual desde el inicio).
     entradas.forEach((entrada) => {
-      const bordeSinAbatir = alto - (alto - BORDE_LLEGADA) * (entrada.inicioAbatimiento / entrada.largoCamino);
-      if (entrada.inicio < bordeSinAbatir) entrada.inicio = Math.min(entrada.inicio, BORDE_LLEGADA);
+      const bordeSinAbatir = alto - (alto - bordeLlegada) * (entrada.inicioAbatimiento / entrada.largoCamino);
+      if (entrada.inicio < bordeSinAbatir) entrada.inicio = Math.min(entrada.inicio, bordeLlegada);
     });
 
     medidas = {
       alto,
       tope,
+      bordeLlegada,
       scrollMaximo,
       xDerecha: ancho - ANCHO_RIEL - SEPARACION_BORDE,
       xRiel: ancho - ANCHO_RIEL / 2,
@@ -246,10 +262,10 @@
   // la última quede como actual — mismo criterio que el resaltado del menú
   // en activarResaltadoDeNavegacion() de js/main.js, que también marca la
   // última sección visible.
-  function comprimirFinalDePagina(scrollMaximo) {
+  function comprimirFinalDePagina(scrollMaximo, bordeLlegada) {
     for (let k = entradas.length - 1; k >= 0; k--) {
       const entrada = entradas[k];
-      const limite = scrollMaximo + BORDE_LLEGADA - (entradas.length - 1 - k) * SEPARACION_FINAL_PAGINA;
+      const limite = scrollMaximo + bordeLlegada - (entradas.length - 1 - k) * SEPARACION_FINAL_PAGINA;
       entrada.inicio = Math.min(entrada.inicioReal, limite);
       const siguiente = entradas[k + 1];
       if (siguiente) entrada.inicio = Math.min(entrada.inicio, siguiente.inicio - SEPARACION_FINAL_PAGINA);
@@ -284,15 +300,15 @@
     framePendiente = false;
     if (!raiz || !medidas) return;
     const scroll = window.scrollY;
-    const { alto, tope, xDerecha, xRiel } = medidas;
+    const { alto, tope, bordeLlegada, xDerecha, xRiel } = medidas;
 
     // Primera pasada: progreso de cada entrada (0 cuando su sección asoma
-    // por abajo, 1 con su borde en BORDE_LLEGADA) y cuánto lleva de
+    // por abajo, 1 con su borde en bordeLlegada) y cuánto lleva de
     // abatimiento. Hace falta antes de dibujar porque el abatimiento de la
     // siguiente encoge a la actual.
     entradas.forEach((entrada) => {
       const bordeSeccion = entrada.inicio - scroll;
-      entrada.progreso = limitar01((alto - bordeSeccion) / (alto - BORDE_LLEGADA));
+      entrada.progreso = limitar01((alto - bordeSeccion) / (alto - bordeLlegada));
       entrada.recorrido = entrada.progreso * entrada.largoCamino;
       entrada.abatimiento = limitar01((entrada.recorrido - entrada.inicioAbatimiento) / LARGO_ABATIMIENTO);
     });
@@ -441,6 +457,16 @@
     programarDibujo();
   }
 
+  // Lo fijo arriba puede cambiar de alto sin que cambie el body (el aviso
+  // de la barra de grupo pasa a 2 líneas). La barra la crea main.js en
+  // DOMContentLoaded, después de que este archivo ya montó el índice.
+  function observarPilaFija() {
+    if (!observadorTamano) return;
+    [document.getElementById("barra-grupo"), document.querySelector(".migas-de-pan")].forEach((elemento) => {
+      if (elemento) observadorTamano.observe(elemento);
+    });
+  }
+
   function remedirLetras() {
     if (!raiz) return;
     medirLetras();
@@ -523,6 +549,8 @@
     // terminan de cargar.
     observadorTamano = new ResizeObserver(remedir);
     observadorTamano.observe(document.body);
+    observarPilaFija();
+    document.addEventListener("DOMContentLoaded", observarPilaFija, { once: true });
 
     observadorHidden = new MutationObserver(alCambiarHidden);
     observadorHidden.observe(main, { attributes: true, attributeFilter: ["hidden"], subtree: true });

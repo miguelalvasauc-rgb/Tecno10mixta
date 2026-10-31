@@ -3657,11 +3657,38 @@ const CLAVE_TEMA = "temaSeleccionado";
 // la lee y aplica --escala-texto antes de cargar css/style.css (evita
 // parpadeo); ver activarControlEscalaTexto() más abajo.
 const CLAVE_ESCALA_TEXTO = "escalaTextoSeleccionada";
+// Marca que CLAVE_GRUPO se escribió desde el perfil de un alumno (no por
+// elección de un visitante): si la sesión expira sin disparar SIGNED_OUT,
+// la siguiente carga sin sesión la detecta y limpia el grupo heredado
+// (ver sincronizarPerfilActivo) — computadoras compartidas del plantel.
+const CLAVE_GRUPO_DESDE_PERFIL = "grupoDesdePerfil";
 
-// Grupo seleccionado actualmente ('todos', '3C' o '3E'). Se recupera
-// de localStorage para que la elección sobreviva a la navegación
-// entre páginas; si no hay nada guardado, se usa "todos".
-let grupoActual = localStorage.getItem(CLAVE_GRUPO) || "todos";
+// Valor de grupoActual cuando no hay un grupo que aplicar: visitante que
+// aún no elige, o alumno cuyo grupo no se pudo identificar. Solo se ven
+// los ítems con grupo "todos" (ver elementoCoincideConGrupo). Nunca se
+// guarda en localStorage.
+const GRUPO_SIN_ELEGIR = "ninguno";
+
+function esGrupoValido(grupo) {
+  return grupo === "3C" || grupo === "3E";
+}
+
+// Un "todos" guardado (default anterior, o de un docente) cuenta como
+// "sin elegir": ese valor solo es válido con sesión docente.
+function grupoGuardadoVisitante() {
+  const grupoGuardado = localStorage.getItem(CLAVE_GRUPO);
+  return esGrupoValido(grupoGuardado) ? grupoGuardado : GRUPO_SIN_ELEGIR;
+}
+
+// Grupo seleccionado actualmente ('todos', '3C', '3E' o GRUPO_SIN_ELEGIR).
+// Se recupera de localStorage para que la elección sobreviva a la
+// navegación entre páginas. "todos" solo aplica a docentes.
+let grupoActual = grupoGuardadoVisitante();
+
+// Quién controla el grupo: "cargando" (sesión sin resolver), "visitante",
+// "docente" (eligen a mano), "alumno" (fijo por perfil) o "sin-identificar"
+// (sesión sin grupo válido). Lo resuelve sincronizarPerfilActivo().
+let modoGrupo = "cargando";
 
 // Tema visual actual (uno de los 10 slugs de TEMAS_DISPONIBLES, sección
 // 7). También se recupera de localStorage por la misma razón que el
@@ -4119,6 +4146,14 @@ function elementoCoincideConGrupo(item) {
 function textoGrupo(grupo) {
   if (grupo === "todos") return "Todos";
   return grupo === "3C" ? "3°C" : "3°E";
+}
+
+// Texto para las secciones que quedan vacías porque no hay grupo que
+// aplicar; con grupo resuelto devuelve el mensaje normal de la sección.
+function mensajeSeccionVacia(mensaje) {
+  if (grupoActual !== GRUPO_SIN_ELEGIR) return mensaje;
+  if (modoGrupo === "sin-identificar") return "No pudimos identificar tu grupo, avisa a tu maestro.";
+  return "Elige tu grupo para ver esta información.";
 }
 
 function formatearFecha(fechaISO) {
@@ -4616,7 +4651,7 @@ async function renderizarHorario() {
   const datos = (await obtenerHorario()).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay horario registrado para este grupo.", "🕐");
+    mostrarSinResultados(contenedor, mensajeSeccionVacia("No hay horario registrado para este grupo."), "🕐");
     return;
   }
 
@@ -4665,7 +4700,7 @@ async function renderizarAvisos() {
     .sort((a, b) => a.fecha.localeCompare(b.fecha)); // orden cronológico ascendente
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay avisos por el momento.", "📢");
+    mostrarSinResultados(contenedor, mensajeSeccionVacia("No hay avisos por el momento."), "📢");
     return;
   }
 
@@ -5232,7 +5267,7 @@ async function renderizarRubricas() {
   const datos = (await obtenerRubricas(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay rúbricas registradas para este grupo.", "📋");
+    mostrarSinResultados(contenedor, mensajeSeccionVacia("No hay rúbricas registradas para este grupo."), "📋");
     return;
   }
 
@@ -5695,7 +5730,7 @@ async function renderizarTareas() {
   const datos = (await obtenerTareas(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay tareas registradas para este grupo.", "📝");
+    mostrarSinResultados(contenedor, mensajeSeccionVacia("No hay tareas registradas para este grupo."), "📝");
     actualizarResumenProgreso("resumen-progreso-tareas", datos, "tarea", "tareas");
     return;
   }
@@ -6066,7 +6101,7 @@ async function renderizarActividades() {
   const datos = (await obtenerActividades(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay actividades registradas para este grupo.", "🎯");
+    mostrarSinResultados(contenedor, mensajeSeccionVacia("No hay actividades registradas para este grupo."), "🎯");
     actualizarResumenProgreso("resumen-progreso-actividades", datos, "actividad", "actividades");
     return;
   }
@@ -6205,7 +6240,7 @@ async function renderizarProyectos() {
   const datos = (await obtenerProyectos(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay proyectos registrados para este grupo.", "🚀");
+    mostrarSinResultados(contenedor, mensajeSeccionVacia("No hay proyectos registrados para este grupo."), "🚀");
     actualizarResumenProgreso("resumen-progreso-proyectos", datos, "proyecto", "proyectos");
     return;
   }
@@ -6433,7 +6468,7 @@ async function renderizarProximasFechasTrimestre() {
   const datos = await obtenerProximasFechasTrimestre(TRIMESTRE_ACTUAL);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "Aún no hay fechas de entrega registradas para este trimestre.", "📅");
+    mostrarSinResultados(contenedor, mensajeSeccionVacia("Aún no hay fechas de entrega registradas para este trimestre."), "📅");
     return;
   }
 
@@ -6476,7 +6511,7 @@ async function renderizarVideos() {
   const datos = (await obtenerVideos(TRIMESTRE_ACTUAL)).filter(elementoCoincideConGrupo);
 
   if (datos.length === 0) {
-    mostrarSinResultados(contenedor, "No hay videos registrados para este grupo.", "🎬");
+    mostrarSinResultados(contenedor, mensajeSeccionVacia("No hay videos registrados para este grupo."), "🎬");
     return;
   }
 
@@ -8257,7 +8292,7 @@ async function renderizarCalendario() {
     .sort((a, b) => a.fecha.localeCompare(b.fecha));
 
   if (proximos.length === 0) {
-    mostrarSinResultados(lista, "No hay próximas fechas para este grupo.", "📅");
+    mostrarSinResultados(lista, mensajeSeccionVacia("No hay próximas fechas para este grupo."), "📅");
     return;
   }
 
@@ -10933,13 +10968,11 @@ function activarResaltadoDeNavegacion() {
     actualizarMigaDeSeccion(enlaceActivo);
   }
 
-  // A diferencia del header superior que existía antes, la barra lateral
-  // y la barra inferior no ocupan espacio vertical en la parte de arriba
-  // del viewport (una es una columna fija a la izquierda, la otra vive
-  // abajo del todo), así que ya no hace falta descontar la altura de
-  // ningún elemento "sticky" superior: el margen es solo un pequeño
-  // colchón fijo.
-  const altoFijo = 0;
+  // La barra lateral y la barra inferior no ocupan espacio vertical en la
+  // parte de arriba del viewport, pero la barra de grupo y las migas de pan
+  // sí: scroll-padding-top (ver .con-barra-grupo en css/style.css) ya trae
+  // ese alto calculado, y es 0 en las páginas sin barra.
+  const altoFijo = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
 
   // IntersectionObserver solo manda, en cada llamada, las secciones cuyo
   // estado CAMBIÓ (entró o salió), no todas las que siguen visibles. Por
@@ -10961,7 +10994,7 @@ function activarResaltadoDeNavegacion() {
       // superior del viewport y está más cerca de él (la que se está
       // leyendo ahora mismo). Si ninguna lo ha cruzado todavía (por
       // ejemplo, al inicio de la página), se toma la más próxima a entrar.
-      const yaCruzadas = visibles.filter((entrada) => entrada.boundingClientRect.top <= 0);
+      const yaCruzadas = visibles.filter((entrada) => entrada.boundingClientRect.top <= altoFijo);
       const elegida =
         yaCruzadas.length > 0
           ? yaCruzadas.reduce((a, b) =>
@@ -11019,16 +11052,27 @@ async function renderizarTodo() {
 // flyout Ajustes del riel, otro en el sheet Perfil de la barra inferior —
 // no pueden compartir id), sincronizados por esta misma función en vez de
 // duplicarla. Mismo patrón que ya usa aplicarTema() con .boton-tema.
+//
+// La primera <option> ("Todos los grupos" en el HTML) solo es real para
+// docentes; para el resto se convierte en el marcador "Elige tu grupo",
+// oculto y no elegible, para que el <select> no quede en blanco.
 function sincronizarSelectorGrupo(valor) {
-  document.querySelectorAll(".selector-grupo-control").forEach((select) => { select.value = valor; });
+  const esDocente = modoGrupo === "docente";
+  document.querySelectorAll(".selector-grupo-control").forEach((select) => {
+    const primeraOpcion = select.options[0];
+    primeraOpcion.value = esDocente ? "todos" : GRUPO_SIN_ELEGIR;
+    primeraOpcion.textContent = esDocente ? "Todos los grupos" : "Elige tu grupo";
+    primeraOpcion.disabled = !esDocente;
+    primeraOpcion.hidden = !esDocente;
+    select.value = valor;
+  });
 }
 
 // Ajustes → Grupo: un alumno con sesión iniciada ve el grupo al que
 // pertenece como texto fijo (no lo puede cambiar); el <select> manual
-// solo aplica a visitantes sin sesión y a docentes (perfil.grupo es
-// null). Se llama junto con sincronizarPerfilActivo(), que es quien deja
-// perfilActivoCache/grupoActual ya resueltos antes de esto. Actualiza a
-// la vez el flyout de escritorio y el sheet Perfil de móvil (selectores
+// solo aplica a visitantes sin sesión y a docentes. Se llama desde
+// aplicarEstadoGrupo(), con modoGrupo/grupoActual ya resueltos. Actualiza
+// a la vez el flyout de escritorio y el sheet Perfil de móvil (selectores
 // .campo-grupo-selector-slot/.texto-grupo-alumno-slot, uno de cada por
 // contenedor) — mismo dato, dos contenedores según breakpoint.
 function actualizarFlyoutAjustesGrupo() {
@@ -11036,29 +11080,210 @@ function actualizarFlyoutAjustesGrupo() {
   const textosFijos = document.querySelectorAll(".texto-grupo-alumno-slot");
   if (camposSelector.length === 0 && textosFijos.length === 0) return;
 
-  const perfil = obtenerPerfilActivo();
-  const esAlumnoConGrupo = Boolean(perfil?.grupo);
+  const grupoEsFijo = modoGrupo === "alumno" || modoGrupo === "sin-identificar";
 
-  camposSelector.forEach((campo) => { campo.hidden = esAlumnoConGrupo; });
+  camposSelector.forEach((campo) => { campo.hidden = grupoEsFijo; });
   textosFijos.forEach((texto) => {
-    texto.hidden = !esAlumnoConGrupo;
-    if (esAlumnoConGrupo) texto.textContent = "Viendo contenido de " + textoGrupo(perfil.grupo);
+    texto.hidden = !grupoEsFijo;
+    if (modoGrupo === "alumno") texto.textContent = "Viendo contenido de " + textoGrupo(grupoActual);
+    if (modoGrupo === "sin-identificar") texto.textContent = "No pudimos identificar tu grupo, avisa a tu maestro";
   });
 }
 
-async function alCambiarGrupo(evento) {
+// Único punto donde cambian modoGrupo/grupoActual tras resolver la sesión:
+// así el <select>, Ajustes y la barra de grupo nunca quedan desfasados.
+function aplicarEstadoGrupo(modo, grupo) {
+  modoGrupo = modo;
+  grupoActual = grupo;
+  sincronizarSelectorGrupo(grupo);
+  actualizarFlyoutAjustesGrupo();
+  actualizarBarraGrupo();
+}
+
+function limpiarGrupoGuardado() {
+  localStorage.removeItem(CLAVE_GRUPO);
+  localStorage.removeItem(CLAVE_GRUPO_DESDE_PERFIL);
+}
+
+/* ---------- Barra de grupo ----------
+   Componente único: se crea desde aquí (no vive en el HTML) y solo en las
+   páginas que filtran por grupo, más progreso.html, que no filtra con
+   grupoActual y por eso la muestra solo a alumnos, en solo lectura. Va
+   antes de .migas-de-pan/<main>, así el skip link sigue siendo el primer
+   enfocable y "saltar al contenido" la pasa de largo. */
+function paginaFiltraPorGrupo() {
+  return Boolean(document.body.dataset.trimestre) || document.body.dataset.pagina === "index";
+}
+
+function crearBotonOpcionGrupo(valor) {
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "barra-grupo__opcion";
+  boton.setAttribute("role", "radio");
+  boton.setAttribute("aria-checked", "false");
+  boton.dataset.valorGrupo = valor;
+
+  // Visible solo en la opción activa (ver CSS): el estado no depende del
+  // color. aria-hidden porque aria-checked ya lo comunica.
+  const palomita = document.createElement("span");
+  palomita.className = "barra-grupo__palomita";
+  palomita.setAttribute("aria-hidden", "true");
+  palomita.textContent = "✓";
+
+  boton.append(palomita, textoGrupo(valor));
+  boton.addEventListener("click", () => cambiarGrupo(valor));
+  return boton;
+}
+
+// Patrón radiogroup de WAI-ARIA: un solo tab stop (ver tabindex en
+// actualizarBarraGrupo) y las flechas mueven el foco y seleccionan a la vez.
+function alTeclearOpcionesGrupo(evento) {
+  const avance = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[evento.key];
+  if (!avance) return;
+  evento.preventDefault();
+
+  const opciones = Array.from(evento.currentTarget.querySelectorAll(".barra-grupo__opcion:not([hidden])"));
+  const indice = opciones.indexOf(document.activeElement);
+  const siguiente = opciones[(indice + avance + opciones.length) % opciones.length];
+  siguiente.focus();
+  cambiarGrupo(siguiente.dataset.valorGrupo);
+}
+
+function crearBarraGrupo() {
+  const esPaginaProgreso = Boolean(document.getElementById("progreso-resumen-general")) && !paginaFiltraPorGrupo();
+  if (!paginaFiltraPorGrupo() && !esPaginaProgreso) return;
+
+  const barra = document.createElement("div");
+  barra.id = "barra-grupo";
+  barra.className = "barra-grupo";
+  barra.setAttribute("role", "region");
+  barra.setAttribute("aria-label", "Grupo activo");
+
+  const estado = document.createElement("p");
+  estado.className = "barra-grupo__estado";
+
+  const icono = document.createElement("span");
+  icono.id = "barra-grupo-icono";
+  icono.setAttribute("aria-hidden", "true");
+  icono.textContent = "🔒";
+  icono.hidden = true;
+
+  // Dos versiones del mismo texto: el CSS muestra una según el ancho.
+  const textoLargo = document.createElement("span");
+  textoLargo.id = "barra-grupo-texto";
+  textoLargo.className = "barra-grupo__texto-largo";
+  const textoCorto = document.createElement("span");
+  textoCorto.id = "barra-grupo-texto-corto";
+  textoCorto.className = "barra-grupo__texto-corto";
+
+  const notaAccesible = document.createElement("span");
+  notaAccesible.id = "barra-grupo-nota";
+  notaAccesible.className = "sr-only";
+
+  estado.append(icono, textoLargo, textoCorto, notaAccesible);
+
+  const opciones = document.createElement("div");
+  opciones.id = "barra-grupo-opciones";
+  opciones.className = "barra-grupo__opciones";
+  opciones.setAttribute("role", "radiogroup");
+  opciones.setAttribute("aria-label", "Grupo");
+  opciones.append(crearBotonOpcionGrupo("3C"), crearBotonOpcionGrupo("3E"), crearBotonOpcionGrupo("todos"));
+  opciones.addEventListener("keydown", alTeclearOpcionesGrupo);
+
+  const anuncio = document.createElement("p");
+  anuncio.id = "barra-grupo-anuncio";
+  anuncio.className = "sr-only";
+  anuncio.setAttribute("aria-live", "polite");
+
+  barra.append(estado, opciones, anuncio);
+
+  const ancla = document.querySelector(".migas-de-pan") || document.getElementById("main-content");
+  ancla.parentNode.insertBefore(barra, ancla);
+  actualizarBarraGrupo();
+}
+
+function textosBarraGrupo() {
+  if (modoGrupo === "cargando") return { largo: "Cargando tu grupo…", corto: "Cargando…" };
+  if (modoGrupo === "alumno") {
+    const texto = "Tu grupo: " + textoGrupo(grupoActual);
+    return { largo: texto, corto: texto };
+  }
+  if (modoGrupo === "sin-identificar") {
+    const texto = "No pudimos identificar tu grupo, avisa a tu maestro";
+    return { largo: texto, corto: texto };
+  }
+  if (grupoActual === GRUPO_SIN_ELEGIR) {
+    return { largo: "Elige tu grupo para ver tu información", corto: "Elige tu grupo" };
+  }
+  const nombre = grupoActual === "todos" ? "Todos los grupos" : textoGrupo(grupoActual);
+  return { largo: "Estás viendo: " + nombre, corto: "Grupo: " + textoGrupo(grupoActual) };
+}
+
+function actualizarBarraGrupo() {
+  const barra = document.getElementById("barra-grupo");
+  if (!barra) return;
+
+  const grupoEsFijo = modoGrupo === "alumno" || modoGrupo === "sin-identificar";
+  const puedeElegir = modoGrupo === "visitante" || modoGrupo === "docente";
+  const visible = paginaFiltraPorGrupo() || grupoEsFijo;
+
+  barra.hidden = !visible;
+  document.documentElement.classList.toggle("con-barra-grupo", visible);
+  barra.classList.toggle(
+    "barra-grupo--destacada",
+    modoGrupo === "sin-identificar" || (modoGrupo === "visitante" && grupoActual === GRUPO_SIN_ELEGIR)
+  );
+
+  const { largo, corto } = textosBarraGrupo();
+  document.getElementById("barra-grupo-texto").textContent = largo;
+  document.getElementById("barra-grupo-texto-corto").textContent = corto;
+  document.getElementById("barra-grupo-icono").hidden = modoGrupo !== "alumno";
+  document.getElementById("barra-grupo-nota").textContent =
+    modoGrupo === "alumno" ? "Tu grupo está asignado según tu registro" : "";
+
+  const contenedorOpciones = document.getElementById("barra-grupo-opciones");
+  contenedorOpciones.hidden = !puedeElegir;
+
+  const opciones = Array.from(contenedorOpciones.querySelectorAll(".barra-grupo__opcion"));
+  opciones.forEach((opcion) => {
+    const seleccionada = opcion.dataset.valorGrupo === grupoActual;
+    opcion.hidden = opcion.dataset.valorGrupo === "todos" && modoGrupo !== "docente";
+    opcion.setAttribute("aria-checked", String(seleccionada));
+    opcion.tabIndex = seleccionada ? 0 : -1;
+  });
+  // Sin grupo elegido ninguna queda marcada: el teclado entra por la primera.
+  if (grupoActual === GRUPO_SIN_ELEGIR) opciones[0].tabIndex = 0;
+}
+
+async function cambiarGrupo(valor) {
+  const valorPermitido = esGrupoValido(valor) || (valor === "todos" && modoGrupo === "docente");
+  const puedeElegir = modoGrupo === "visitante" || modoGrupo === "docente";
+  if (!valorPermitido || !puedeElegir || valor === grupoActual) return;
+
   // Se guarda en localStorage para que el grupo elegido no se pierda
   // al navegar entre la portada y las páginas de trimestre.
-  grupoActual = evento.target.value;
+  grupoActual = valor;
   localStorage.setItem(CLAVE_GRUPO, grupoActual);
   sincronizarSelectorGrupo(grupoActual);
-  mostrarToast("Mostrando contenido de " + textoGrupo(grupoActual));
+  actualizarBarraGrupo();
+
+  const mensaje = "Mostrando contenido de " + (valor === "todos" ? "todos los grupos" : textoGrupo(valor));
+  const anuncio = document.getElementById("barra-grupo-anuncio");
+  // Donde hay barra, ella misma confirma el cambio; el toast es para las
+  // páginas donde solo existe el <select> de Ajustes.
+  if (anuncio) anuncio.textContent = mensaje;
+  else mostrarToast(mensaje);
+
   await renderizarTodo();
   // Re-wirea los badges compactos de #proximas-fechas-trimestre, que se
   // reconstruyen desde cero en cada renderizarTodo() — ver comentario en
   // activarTooltipsInfo() (arriba). Los ⓘ estáticos ya wireados no se
   // tocan de nuevo (dataset.tooltipActivado).
   activarTooltipsInfo();
+}
+
+function alCambiarGrupo(evento) {
+  return cambiarGrupo(evento.target.value);
 }
 
 /* =========================================================
@@ -11261,9 +11486,10 @@ async function sincronizarPerfilActivo() {
   if (!session) {
     perfilActivoCache = null;
     progresoCache = [];
-    grupoActual = localStorage.getItem(CLAVE_GRUPO) || "todos";
-    sincronizarSelectorGrupo(grupoActual);
-    actualizarFlyoutAjustesGrupo();
+    // Sesión que expiró sin SIGNED_OUT: el grupo guardado era del alumno
+    // anterior, no una elección de quien está usando ahora el navegador.
+    if (localStorage.getItem(CLAVE_GRUPO_DESDE_PERFIL)) limpiarGrupoGuardado();
+    aplicarEstadoGrupo("visitante", grupoGuardadoVisitante());
     return;
   }
 
@@ -11275,7 +11501,7 @@ async function sincronizarPerfilActivo() {
   const [{ data: perfil }, { data: progreso }] = await Promise.all([
     clienteSupabase
       .from("perfiles")
-      .select("nombre, grupo, tema_preferido")
+      .select("nombre, grupo, rol, tema_preferido")
       .eq("id", session.user.id)
       .single(),
     clienteSupabase
@@ -11288,12 +11514,22 @@ async function sincronizarPerfilActivo() {
   await sincronizarTemaConCuenta(perfil?.tema_preferido);
 
   // El grupo del alumno con sesión iniciada gana sobre el <select>/
-  // localStorage (ver actualizarFlyoutAjustesGrupo): un alumno siempre ve
-  // el contenido de su propio grupo. Docentes y visitantes sin sesión
-  // (perfil.grupo null) siguen controlando el grupo a mano.
-  grupoActual = perfilActivoCache?.grupo || localStorage.getItem(CLAVE_GRUPO) || "todos";
-  sincronizarSelectorGrupo(grupoActual);
-  actualizarFlyoutAjustesGrupo();
+  // localStorage: un alumno siempre ve el contenido de su propio grupo.
+  // El docente sigue eligiendo a mano y con "todos" como valor inicial.
+  // perfil.rol solo decide qué control se muestra; los accesos reales
+  // siguen en RLS y en el RPC es_docente(). Con sesión pero sin grupo
+  // válido (nulo, inesperado o fallo al leer el perfil) no se adivina
+  // nada, ni se trata como visitante.
+  if (perfil?.rol === "docente") {
+    const grupoGuardado = localStorage.getItem(CLAVE_GRUPO);
+    aplicarEstadoGrupo("docente", esGrupoValido(grupoGuardado) ? grupoGuardado : "todos");
+  } else if (esGrupoValido(perfil?.grupo)) {
+    localStorage.setItem(CLAVE_GRUPO, perfil.grupo);
+    localStorage.setItem(CLAVE_GRUPO_DESDE_PERFIL, "true");
+    aplicarEstadoGrupo("alumno", perfil.grupo);
+  } else {
+    aplicarEstadoGrupo("sin-identificar", GRUPO_SIN_ELEGIR);
+  }
 
   progresoCache = progreso || [];
 }
@@ -12190,6 +12426,9 @@ function activarAccionesPerfilProgreso() {
 // separado en DOMContentLoaded para no depender del orden de disparo del
 // evento "INITIAL_SESSION" de Supabase.
 clienteSupabase.auth.onAuthStateChange(async (evento) => {
+  // Antes de sincronizar: en computadoras compartidas el siguiente alumno
+  // no debe heredar el grupo de quien acaba de cerrar sesión.
+  if (evento === "SIGNED_OUT") limpiarGrupoGuardado();
   await sincronizarPerfilActivo();
   await actualizarUISesion();
   await renderizarTodo();
@@ -22442,6 +22681,10 @@ function activarEditorHtmlCss() {
    ========================================================= */
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // Antes de cualquier await: la barra ocupa su lugar en estado neutro
+  // desde el inicio, sin esperar a que se resuelva la sesión.
+  crearBarraGrupo();
+
   // Un evento forzado (Navidad, ver Fase 4) gana siempre sobre el tema
   // personal — ni siquiera se lee localStorage/Supabase de temaActual en
   // ese caso, aplicarTema() recibe directo el slug del evento.

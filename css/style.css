@@ -3792,11 +3792,10 @@ summary {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  /* Respiro al saltar con ancla (#tarea-t5, por ejemplo): hoy no hay
-     ningún header ni selector de trimestre sticky sobre el contenido
-     (.encabezado/.nav-principal son CSS sin uso de antes de la barra
-     lateral), así que solo hace falta un margen pequeño para que la
-     tarjeta no quede pegada al borde superior de la ventana. */
+  /* Respiro al saltar con ancla (#tarea-t5, por ejemplo): el alto de lo
+     que queda fijo arriba lo descuenta scroll-padding-top (ver
+     .con-barra-grupo); esto es solo para que la tarjeta no quede pegada
+     a esa pila. */
   scroll-margin-top: 1rem;
   transition: transform 0.2s ease, border-color 0.2s ease;
   /* Contiene el glow del spotlight (::before, más abajo) dentro de las
@@ -10255,7 +10254,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   .migas-de-pan {
     position: sticky;
     top: 3px; /* alto real de .barra-progreso-lectura */
-    z-index: 60; /* por debajo de barra-progreso-lectura (999); por encima del contenido normal; no choca con barra-inferior/sheet-backdrop (80/94, ocultos en escritorio) */
+    z-index: var(--capa-barra); /* misma capa que .barra-grupo, ver --capa-barra; por debajo de barra-progreso-lectura (999) */
   }
 
   .banner-trimestre {
@@ -14458,7 +14457,7 @@ button.badge-estado {
 .capa-nieve-navidad {
   position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: var(--capa-efectos);
   pointer-events: none;
   overflow: hidden;
 }
@@ -14728,7 +14727,7 @@ button.badge-estado {
 .capa-petalos-diamuertos {
   position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: var(--capa-efectos);
   pointer-events: none;
   overflow: hidden;
 }
@@ -14878,7 +14877,7 @@ button.badge-estado {
 .capa-confeti-regresoaclases {
   position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: var(--capa-efectos);
   pointer-events: none;
   overflow: hidden;
 }
@@ -15169,7 +15168,7 @@ button.badge-estado {
 .capa-confeti-independencia {
   position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: var(--capa-efectos);
   pointer-events: none;
   overflow: hidden;
 }
@@ -15325,8 +15324,9 @@ button.badge-estado {
    body.indice-scroll-activo con ≥1440px, (pointer: fine) y sin
    prefers-reduced-motion; fuera de eso nada de este bloque aplica.
 
-   z-index 80: encima del contenido, debajo del botón "Volver arriba" (90),
-   los toasts (95), las franjas fijas superiores (999), el riel izquierdo
+   z-index: encima del contenido y de los efectos de tema, debajo de la barra
+   de grupo y las migas (ver --capa-titulo-sticky), del botón "Volver arriba"
+   (90), los toasts (95), las franjas fijas superiores (999), el riel izquierdo
    (1000) y el skip link (1100). */
 body.indice-scroll-activo {
   padding-right: 56px; /* = ANCHO_RIEL en js/indice-scroll.js */
@@ -15341,7 +15341,7 @@ body.indice-scroll-activo .fab-volver-arriba {
 .indice-scroll {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: var(--capa-titulo-sticky);
   pointer-events: none;
 }
 
@@ -15531,4 +15531,213 @@ body.indice-scroll-activo .fab-volver-arriba {
 .indice-scroll__enlace:focus-visible {
   outline: 2px solid var(--color-texto);
   outline-offset: 2px;
+}
+
+/* ---------- Barra de grupo (js/main.js, crearBarraGrupo) ----------
+   Va al final del archivo a propósito: sus reglas sobre .migas-de-pan y
+   #main-content empatan en especificidad con las de Modo Demo e
+   Independencia de más arriba y tienen que ganarles por orden.
+
+   Es el primer elemento de la pila sticky, así que el corrimiento del toast
+   de Modo Demo y de la franja de Independencia ahora lo absorbe ella (top +
+   margin-top); las compensaciones de migas y #main-content se anulan abajo
+   para no sumarlo dos veces.
+
+   --alto-barra-grupo es fijo, igual que --alto-migas-de-pan-1linea: 44px de
+   botón + 0.25rem arriba y abajo + 1px de borde. */
+:root {
+  --alto-barra-grupo: 0px;
+  --desplazo-barra-grupo: 0px;
+  /* Capas alrededor de la barra, de abajo hacia arriba: efectos de tema
+     (nieve, pétalos, confeti), índice lateral y barra + migas. Todo lo demás
+     (toasts 95, riel 1000, flyouts 1010...) conserva su propio z-index. */
+  --capa-efectos: 50;
+  --capa-titulo-sticky: 70;
+  --capa-barra: 75;
+}
+
+:root.con-barra-grupo {
+  --alto-barra-grupo: calc(44px + 0.5rem + 1px);
+  scroll-padding-top: var(--alto-barra-grupo);
+}
+
+:root[data-theme="independencia"] {
+  --desplazo-barra-grupo: var(--alto-franja-independencia, 8px);
+}
+
+body.modo-demo-toast-visible {
+  --desplazo-barra-grupo: var(--alto-toast-modo-demo);
+}
+
+:root.con-barra-grupo #main-content,
+:root.con-barra-grupo body.modo-demo-toast-visible #main-content {
+  padding-top: 0;
+}
+
+:root.con-barra-grupo .migas-de-pan,
+:root.con-barra-grupo body.modo-demo-toast-visible .migas-de-pan {
+  padding-top: 0.5rem;
+}
+
+.barra-grupo {
+  position: sticky;
+  top: var(--desplazo-barra-grupo);
+  margin-top: var(--desplazo-barra-grupo);
+  z-index: var(--capa-barra); /* debajo de barra-inferior y sheets (80+) */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: var(--alto-barra-grupo);
+  padding: 0.25rem 1.5rem;
+  background-color: var(--color-superficie);
+  border-bottom: 1px solid var(--color-borde);
+  color: var(--color-texto);
+}
+
+.barra-grupo[hidden] {
+  display: none;
+}
+
+.barra-grupo__estado {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: var(--tamano-fuente-accion);
+  font-weight: 700;
+}
+
+.barra-grupo__texto-corto {
+  display: none;
+}
+
+.barra-grupo__opciones {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.25rem;
+}
+
+.barra-grupo__opciones[hidden] {
+  display: none;
+}
+
+.barra-grupo__opcion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: var(--tamano-fuente-accion);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.barra-grupo__opcion:hover {
+  background-color: var(--color-superficie-alterna);
+}
+
+/* Toda la barra usa solo variables neutras: el primario y el acento de
+   varios temas son naranjas o rojizos, tonos reservados para vencido/error.
+   El estado activo tampoco depende del color: lleva palomita, negritas y
+   borde grueso. */
+.barra-grupo__opcion[aria-checked="true"],
+.barra-grupo__opcion[aria-checked="true"]:hover {
+  border: 3px solid var(--color-texto);
+  background-color: var(--color-fondo);
+  font-weight: 800;
+}
+
+.barra-grupo__palomita {
+  display: none;
+}
+
+.barra-grupo__opcion[aria-checked="true"] .barra-grupo__palomita {
+  display: inline;
+}
+
+/* Mismo motivo para el anillo de foco, que por defecto sale del tema. */
+:root .barra-grupo .barra-grupo__opcion:focus-visible {
+  outline-color: var(--color-texto);
+  outline-offset: 2px;
+}
+
+/* Sin grupo que aplicar: la barra pide atención con superficie elevada y
+   borde grueso. El padding descuenta los 2px extra del borde para que el
+   alto no cambie respecto a --alto-barra-grupo. */
+.barra-grupo--destacada {
+  padding-bottom: calc(0.25rem - 2px);
+  border-bottom: 3px solid var(--color-texto);
+  background-color: var(--color-superficie-alterna);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .barra-grupo__opcion {
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+}
+
+@media (max-width: 599.98px) {
+  .barra-grupo {
+    gap: 0.5rem;
+    padding-inline: 1rem;
+  }
+
+  .barra-grupo__texto-largo {
+    display: none;
+  }
+
+  .barra-grupo__texto-corto {
+    display: inline;
+  }
+
+  /* El aviso de "sin identificar" ocupa 2 líneas aquí: con line-height 1.5
+     medía 54.59px. Con 1.4 caben en los 44px útiles y la barra conserva
+     --alto-barra-grupo, que también usa scroll-padding-top. */
+  .barra-grupo--destacada .barra-grupo__estado {
+    line-height: 1.4;
+  }
+}
+
+/* Escritorio: arriba de la barra está .barra-progreso-lectura (3px) y debajo
+   cuelgan las migas. */
+@media (min-width: 1024px) {
+  :root.con-barra-grupo {
+    scroll-padding-top: calc(3px + var(--alto-barra-grupo));
+  }
+
+  :root.con-barra-grupo:has(.migas-de-pan) {
+    scroll-padding-top: calc(3px + var(--alto-barra-grupo) + var(--alto-migas-de-pan-1linea));
+  }
+
+  .barra-grupo {
+    top: calc(3px + var(--desplazo-barra-grupo));
+  }
+
+  :root.con-barra-grupo .migas-de-pan,
+  :root.con-barra-grupo body.modo-demo-toast-visible .migas-de-pan {
+    top: calc(3px + var(--desplazo-barra-grupo) + var(--alto-barra-grupo));
+  }
+
+  /* Medido en navegador a 1366×768 y 1280×720: barra 53px + migas 36.2px +
+     banner 58.6px = 147.8px fijos, demasiado en laptops. El banner se queda
+     en el flujo normal y solo barra y migas siguen fijas (92.2px con los 3px
+     de arriba, lo mismo que scroll-padding-top). */
+  :root.con-barra-grupo .banner-trimestre {
+    position: static;
+    margin-top: 3px; /* las migas ya van 3px abajo de su lugar normal */
+  }
+}
+
+@media print {
+  .barra-grupo {
+    display: none;
+  }
 }
