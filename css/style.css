@@ -13346,9 +13346,12 @@ button.badge-estado {
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
 
+    /* Solo opacidad a propósito: con transform, los saltos a #ancla calculan
+       la posición con la sección todavía desplazada y al llegar se pasan
+       por esos píxeles. Las tarjetas de adentro conservan su subida. */
     @keyframes aparecerSeccion {
-      from { opacity: 0; transform: translateY(32px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
     .seccion {
       animation: aparecerSeccion ease-out backwards;
