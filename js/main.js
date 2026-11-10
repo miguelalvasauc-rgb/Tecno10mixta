@@ -13681,6 +13681,9 @@ async function abrirModalHistorialAlumno(alumno) {
   titulo.textContent = alumno.nombre;
   subtitulo.textContent = textoGrupo(alumno.grupo) + " · N.° " + alumno.numero_lista;
   botonImprimir.hidden = true;
+  const controlesProgreso = document.getElementById("modal-historial-progreso");
+  if (controlesProgreso) controlesProgreso.hidden = true;
+  datosHojaProgresoAlumno = null;
 
   const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
 
@@ -13689,15 +13692,18 @@ async function abrirModalHistorialAlumno(alumno) {
   // "progreso". crearSeccionTrimestreHistorial() se reutiliza sin cambios
   // (badges, nota y promedio vía calcularPromedioTrimestre). El botón de
   // imprimir historial queda oculto para este caso (botonImprimir.hidden
-  // ya se puso en true arriba y aquí no se vuelve a mostrar).
+  // ya se puso en true arriba y aquí no se vuelve a mostrar). En su lugar
+  // se muestra "🖨️ Imprimir progreso" (hoja neutra, ver
+  // generarHojaProgresoAlumno), alimentada con este mismo mapaProgreso.
   if (capturaManualHabilitada(alumno)) {
     contenido.textContent = "Cargando historial…";
     modal.showModal();
 
     const trimestres = ["1", "2", "3"];
-    const [entregablesPorTrimestre, resultadoManual] = await Promise.all([
+    const [entregablesPorTrimestre, resultadoManual, valorDesbloqueado] = await Promise.all([
       Promise.all(trimestres.map((trimestre) => obtenerEntregablesPorTipo("todos", trimestre))),
       obtenerDatos("progreso_manual", { eq: { registro_id: alumno.id } }),
+      obtenerTrimestreDesbloqueado(),
     ]);
 
     if (modal.dataset.alumnoId !== idAlumno) return;
@@ -13716,6 +13722,17 @@ async function abrirModalHistorialAlumno(alumno) {
         crearSeccionTrimestreHistorial(trimestre, entregablesPorTrimestre[indice], mapaProgreso, alumno)
       );
     });
+
+    // Solo si la lectura funcionó: con un error, una hoja impresa con
+    // todo en "Sin entregar" se confundiría con un dato real.
+    if (!resultadoManual.error && resultadoManual.data) {
+      datosHojaProgresoAlumno = {
+        alumno,
+        mapaProgreso,
+        entregablesPorTrimestre: Object.fromEntries(trimestres.map((t, i) => [t, entregablesPorTrimestre[i]])),
+      };
+      prepararControlesHojaProgreso(valorDesbloqueado);
+    }
     return;
   }
 
@@ -13796,6 +13813,202 @@ function activarImpresionHistorialCalificacion() {
 
   window.addEventListener("afterprint", () => {
     document.body.classList.remove("calificacion--imprimiendo-historial");
+  });
+}
+
+// ---------- Hoja de progreso imprimible (captura habilitada) ----------
+// Datos del alumno cuyo historial está abierto (CASO C de
+// abrirModalHistorialAlumno): el mismo mapaProgreso normalizado que ya
+// pinta el historial, sin una segunda consulta. null en cualquier otro
+// caso — el botón no se muestra y la hoja no tiene de dónde salir.
+let datosHojaProgresoAlumno = null;
+let tituloDocumentoAntesDeHoja = null;
+
+const NOMBRE_ESCUELA_HOJA = "Escuela Secundaria No. 10 Mixta “Fernando Hernández Alcalá”";
+const ASIGNATURA_HOJA = "Educación Tecnológica";
+const ETIQUETA_TIPO_HOJA = { tarea: "Tarea", actividad: "Actividad", proyecto: "Proyecto" };
+
+// Llena el selector con 1..trimestre_desbloqueado (valor leído de
+// config_sitio por obtenerTrimestreDesbloqueado, nunca asumido; su
+// fallback ya es conservador) y deja elegido el más reciente.
+function prepararControlesHojaProgreso(valorDesbloqueado) {
+  const controles = document.getElementById("modal-historial-progreso");
+  const selector = document.getElementById("selector-trimestre-progreso-alumno");
+  if (!controles || !selector) return;
+
+  const maximo = Math.min(3, Math.max(1, Number(valorDesbloqueado) || 1));
+  selector.replaceChildren();
+  for (let trimestre = 1; trimestre <= maximo; trimestre++) {
+    const opcion = document.createElement("option");
+    opcion.value = String(trimestre);
+    opcion.textContent = trimestre + "° Trimestre";
+    selector.appendChild(opcion);
+  }
+  selector.value = String(maximo);
+  controles.hidden = false;
+}
+
+function crearTablaHoja(encabezados, filas, clase) {
+  const tabla = document.createElement("table");
+  tabla.className = "hoja-progreso__tabla" + (clase ? " " + clase : "");
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  encabezados.forEach((texto) => {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  filas.forEach((valores) => {
+    const tr = document.createElement("tr");
+    valores.forEach((valor) => {
+      const td = document.createElement("td");
+      td.textContent = valor;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  tabla.appendChild(tbody);
+  return tabla;
+}
+
+// Arma la hoja neutra del trimestre elegido y la imprime. Todo el texto
+// va por textContent (observaciones incluidas, tal como están guardadas)
+// y se escribe desde cero: nada de los badges/insignias del historial.
+// Promedios: calcularPromedioTrimestre() tal cual; la regla de "sin
+// ninguna calificación → —" se evalúa SOLO con las filas del trimestre
+// elegido (el historial la evalúa con los 3, y no se toca).
+function generarHojaProgresoAlumno() {
+  const contenedor = document.getElementById("hoja-progreso-alumno");
+  const selector = document.getElementById("selector-trimestre-progreso-alumno");
+  if (!contenedor || !selector || !datosHojaProgresoAlumno) return;
+
+  const { alumno, mapaProgreso, entregablesPorTrimestre } = datosHojaProgresoAlumno;
+  const trimestre = selector.value;
+  const entregables = entregablesPorTrimestre[trimestre] || [];
+  const mapaTrimestre = new Map(
+    Array.from(mapaProgreso).filter(([, fila]) => String(fila.trimestre) === trimestre)
+  );
+
+  contenedor.replaceChildren();
+
+  const encabezado = document.createElement("header");
+  encabezado.className = "hoja-progreso__encabezado";
+  const titulo = document.createElement("h2");
+  titulo.textContent = "Reporte de progreso";
+  const escuela = document.createElement("p");
+  escuela.className = "hoja-progreso__institucion";
+  escuela.textContent = NOMBRE_ESCUELA_HOJA;
+  const asignatura = document.createElement("p");
+  asignatura.className = "hoja-progreso__institucion";
+  asignatura.textContent = ASIGNATURA_HOJA;
+  encabezado.append(titulo, escuela, asignatura);
+  contenedor.appendChild(encabezado);
+
+  const fechaEmision = new Date().toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" });
+  const datos = document.createElement("dl");
+  datos.className = "hoja-progreso__datos";
+  [
+    ["Alumno", alumno.nombre],
+    ["Grupo", textoGrupo(alumno.grupo)],
+    ["Trimestre", trimestre + "°"],
+    ["Fecha de emisión", fechaEmision],
+  ].forEach(([etiqueta, valor]) => {
+    const par = document.createElement("div");
+    const dt = document.createElement("dt");
+    dt.textContent = etiqueta + ":";
+    const dd = document.createElement("dd");
+    dd.textContent = valor;
+    par.append(dt, dd);
+    datos.appendChild(par);
+  });
+  contenedor.appendChild(datos);
+
+  const tituloEntregables = document.createElement("h3");
+  tituloEntregables.textContent = "Entregables";
+  contenedor.appendChild(tituloEntregables);
+
+  if (entregables.length === 0) {
+    const vacio = document.createElement("p");
+    vacio.textContent = "Sin entregables registrados para este trimestre.";
+    contenedor.appendChild(vacio);
+  } else {
+    const filas = entregables.map((item) => {
+      const fila = mapaTrimestre.get(item.tipoEntregable + "-" + item.id + "-" + trimestre);
+      const textoCalificacion = !fila
+        ? "Sin entregar"
+        : fila.calificacion == null
+        ? "Entregado, sin calificar"
+        : formatearCalificacion(fila.calificacion, "numero");
+      return [ETIQUETA_TIPO_HOJA[item.tipoEntregable] || item.tipoEntregable, item.titulo, textoCalificacion, fila?.nota || "—"];
+    });
+    contenedor.appendChild(
+      crearTablaHoja(["Tipo", "Entregable", "Calificación", "Observaciones"], filas, "hoja-progreso__tabla--entregables")
+    );
+  }
+
+  const itemsPorTipo = { tarea: [], actividad: [], proyecto: [] };
+  entregables.forEach((item) => itemsPorTipo[item.tipoEntregable]?.push(item));
+  const promedio = tieneAlgunaCalificacionCapturada(mapaTrimestre)
+    ? calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaTrimestre, alumno.grupo)
+    : { promedioFinal: null, promedioTarea: null, promedioActividad: null, promedioProyecto: null };
+
+  const tituloPromedios = document.createElement("h3");
+  tituloPromedios.textContent = "Promedios";
+  contenedor.appendChild(tituloPromedios);
+  contenedor.appendChild(
+    crearTablaHoja(
+      ["Concepto", "Promedio"],
+      [
+        ["Tareas", formatearCalificacion(promedio.promedioTarea, "numero")],
+        ["Actividades", formatearCalificacion(promedio.promedioActividad, "numero")],
+        ["Proyectos", formatearCalificacion(promedio.promedioProyecto, "numero")],
+      ],
+      "hoja-progreso__tabla--promedios"
+    )
+  );
+
+  const final = document.createElement("p");
+  final.className = "hoja-progreso__final";
+  final.textContent = "Calificación final del trimestre: " + formatearCalificacion(promedio.promedioFinal, "numero");
+  contenedor.appendChild(final);
+
+  // Redacción confirmada contra calcularPromedioTrimestre(): dentro de
+  // una secuencia ya vencida, "sin fila" (sin entregar) y calificacion
+  // null (sin calificar) suman 0; las secuencias aún no vencidas no
+  // participan.
+  const nota = document.createElement("p");
+  nota.className = "hoja-progreso__nota";
+  nota.textContent =
+    "Los entregables sin entregar o sin calificar de secuencias ya vencidas cuentan como 0 en el promedio. " +
+    "Las secuencias que aún no vencen no se incluyen.";
+  contenedor.appendChild(nota);
+
+  tituloDocumentoAntesDeHoja = document.title;
+  document.title = "Reporte de progreso — " + alumno.nombre;
+  document.body.classList.add("calificacion--imprimiendo-progreso");
+  window.print();
+}
+
+// "afterprint" restaura título y estado (no inmediatamente tras
+// window.print(), que no es garantizado-síncrono) y devuelve el foco al
+// botón — el <dialog> sigue abierto, así que Escape lo sigue cerrando.
+function activarHojaProgresoAlumno() {
+  const boton = document.getElementById("boton-imprimir-progreso-alumno");
+  if (!boton) return;
+
+  boton.addEventListener("click", generarHojaProgresoAlumno);
+  window.addEventListener("afterprint", () => {
+    if (!document.body.classList.contains("calificacion--imprimiendo-progreso")) return;
+    document.body.classList.remove("calificacion--imprimiendo-progreso");
+    if (tituloDocumentoAntesDeHoja !== null) document.title = tituloDocumentoAntesDeHoja;
+    tituloDocumentoAntesDeHoja = null;
+    document.getElementById("hoja-progreso-alumno")?.replaceChildren();
+    boton.focus();
   });
 }
 
@@ -14846,6 +15059,7 @@ async function inicializarModuloCalificacion() {
   activarDelegacionHistorialCalificacion();
   activarCierreModalHistorialCalificacion();
   activarImpresionHistorialCalificacion();
+  activarHojaProgresoAlumno();
   activarFormularioEditarEntrega();
   activarExportarCSVCalificacion();
   activarImpresionTablaCalificacion();

@@ -1027,6 +1027,21 @@
     <button type="button" id="boton-imprimir-historial" class="boton-secundario modal-historial__boton-imprimir" hidden>
       🖨️ Imprimir/exportar este historial
     </button>
+    <!-- Hoja de progreso imprimible (solo alumnos con captura habilitada,
+         ver prepararControlesHojaProgreso()/generarHojaProgresoAlumno() en
+         js/main.js). El selector solo ofrece trimestres ya desbloqueados en
+         config_sitio. #hoja-progreso-alumno nunca se ve en pantalla: se
+         llena justo antes de window.print() y se vacía en "afterprint". -->
+    <div id="modal-historial-progreso" class="modal-historial__progreso" hidden>
+      <div class="calificacion-filtro">
+        <label for="selector-trimestre-progreso-alumno">Trimestre</label>
+        <select id="selector-trimestre-progreso-alumno"></select>
+      </div>
+      <button type="button" id="boton-imprimir-progreso-alumno" class="boton-secundario">
+        🖨️ Imprimir progreso
+      </button>
+    </div>
+    <div id="hoja-progreso-alumno" class="hoja-progreso"></div>
   </dialog>
 
   <!-- Panel de marcar/editar una entrega manualmente: mismo patrón de

@@ -92,7 +92,7 @@ const DEMO_ALUMNOS_ENTREGA_MANUAL = [
 // actividad entregada sin calificar (calificacion null) y un proyecto
 // calificado, todo en el Trimestre 1.
 const DEMO_PROGRESO_MANUAL = [
-  { id: "demo-pm-01", registro_id: "demo-reg-26", tipo: "tarea", item_id: "t5", trimestre: 1, calificacion: 8, nota: "Entregada en papel", fecha_entrega_manual: "2026-09-01", actualizado_en: "2026-09-01T15:00:00Z" },
+  { id: "demo-pm-01", registro_id: "demo-reg-26", tipo: "tarea", item_id: "t5", trimestre: 1, calificacion: 8, nota: "Buen planteamiento del problema.", fecha_entrega_manual: "2026-09-01", actualizado_en: "2026-09-01T15:00:00Z" },
   { id: "demo-pm-02", registro_id: "demo-reg-26", tipo: "actividad", item_id: "a4", trimestre: 1, calificacion: null, nota: null, fecha_entrega_manual: "2026-09-03", actualizado_en: "2026-09-03T15:00:00Z" },
   { id: "demo-pm-03", registro_id: "demo-reg-26", tipo: "proyecto", item_id: "p3", trimestre: 1, calificacion: 9, nota: null, fecha_entrega_manual: "2026-09-26", actualizado_en: "2026-09-26T15:00:00Z" },
 ];

@@ -11287,6 +11287,26 @@ a.boton-secundario {
   margin-top: 1.5rem;
 }
 
+/* Controles de "🖨️ Imprimir progreso" (selector de trimestre + botón).
+   Reutiliza .calificacion-filtro para el label/select, sin estilos nuevos
+   de color. */
+.modal-historial__progreso {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.modal-historial__progreso[hidden] {
+  display: none;
+}
+
+/* La hoja nunca se ve en pantalla: solo existe durante la impresión. */
+#hoja-progreso-alumno {
+  display: none;
+}
+
 @media (min-width: 640px) {
   #modal-historial-alumno {
     width: 100%;
@@ -11489,8 +11509,163 @@ button.badge-estado {
   }
 
   body[data-pagina="admin"].calificacion--imprimiendo-historial .modal-detalle__cerrar,
-  body[data-pagina="admin"].calificacion--imprimiendo-historial #boton-imprimir-historial {
+  body[data-pagina="admin"].calificacion--imprimiendo-historial #boton-imprimir-historial,
+  body[data-pagina="admin"].calificacion--imprimiendo-historial #modal-historial-progreso {
     display: none !important;
+  }
+}
+
+/* ---------- Hoja de progreso imprimible ("🖨️ Imprimir progreso") ----------
+   Mismo aislamiento que la impresión del historial, con su propia clase
+   (.calificacion--imprimiendo-progreso, ver generarHojaProgresoAlumno()):
+   el <dialog> sigue abierto en la capa superior, así que se reposiciona
+   igual, pero dentro de él SOLO se imprime #hoja-progreso-alumno — el
+   resto del modal sale con display:none, no solo invisible, para que no
+   deje espacio en blanco arriba de la hoja.
+
+   Colores literales a propósito (no variables de tema): en papel los 20
+   temas no aplican. Texto oscuro de la paleta (#1B2A3A), navy #1B3A6B en
+   títulos/bordes y turquesa #14B8A6 solo como línea decorativa (no pasa
+   AA como texto sobre blanco). */
+@media print {
+  body[data-pagina="admin"].calificacion--imprimiendo-progreso * {
+    visibility: hidden;
+  }
+
+  body[data-pagina="admin"].calificacion--imprimiendo-progreso #hoja-progreso-alumno,
+  body[data-pagina="admin"].calificacion--imprimiendo-progreso #hoja-progreso-alumno * {
+    visibility: visible;
+  }
+
+  body[data-pagina="admin"].calificacion--imprimiendo-progreso #modal-historial-alumno {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    background: #fff;
+  }
+
+  body[data-pagina="admin"].calificacion--imprimiendo-progreso #modal-historial-alumno::backdrop {
+    display: none;
+    background: transparent;
+  }
+
+  body[data-pagina="admin"].calificacion--imprimiendo-progreso #modal-historial-alumno > :not(#hoja-progreso-alumno),
+  body[data-pagina="admin"].calificacion--imprimiendo-progreso .fab-volver-arriba {
+    display: none !important;
+  }
+
+  body[data-pagina="admin"].calificacion--imprimiendo-progreso #hoja-progreso-alumno {
+    display: block;
+    color: #1b2a3a;
+    background: #fff;
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+
+  body[data-pagina="admin"].calificacion--imprimiendo-progreso #hoja-progreso-alumno * {
+    color: #1b2a3a !important;
+    background: #fff !important;
+  }
+
+  .hoja-progreso__encabezado {
+    border-bottom: 3px solid #14b8a6;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Misma especificidad que la regla "#hoja-progreso-alumno *" de arriba
+     (y después de ella), para que el navy le gane al texto general. */
+  body[data-pagina="admin"].calificacion--imprimiendo-progreso #hoja-progreso-alumno h2,
+  body[data-pagina="admin"].calificacion--imprimiendo-progreso #hoja-progreso-alumno h3 {
+    color: #1b3a6b !important;
+  }
+
+  .hoja-progreso__encabezado h2 {
+    margin: 0 0 0.2rem;
+    font-size: 18pt;
+  }
+
+  .hoja-progreso__institucion {
+    margin: 0;
+    font-size: 10.5pt;
+  }
+
+  .hoja-progreso__datos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.2rem 1.5rem;
+    margin: 0 0 1rem;
+  }
+
+  .hoja-progreso__datos div {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .hoja-progreso__datos dt {
+    font-weight: 700;
+  }
+
+  .hoja-progreso__datos dd {
+    margin: 0;
+  }
+
+  #hoja-progreso-alumno h3 {
+    font-size: 12.5pt;
+    margin: 1rem 0 0.4rem;
+    break-after: avoid;
+  }
+
+  .hoja-progreso__tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+  }
+
+  .hoja-progreso__tabla--promedios {
+    width: auto;
+    min-width: 50%;
+  }
+
+  .hoja-progreso__tabla thead {
+    display: table-header-group;
+  }
+
+  .hoja-progreso__tabla tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .hoja-progreso__tabla th,
+  .hoja-progreso__tabla td {
+    border: 1px solid #1b3a6b;
+    padding: 0.3rem 0.5rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .hoja-progreso__tabla th {
+    font-weight: 700;
+  }
+
+  .hoja-progreso__final {
+    margin: 0.75rem 0 0;
+    font-size: 12.5pt;
+    font-weight: 700;
+    break-inside: avoid;
+  }
+
+  .hoja-progreso__nota {
+    margin: 0.75rem 0 0;
+    font-size: 9pt;
   }
 }
 
@@ -11570,18 +11745,18 @@ button.badge-estado {
    por clase (.badge-estado, etc.) sin importar de cuál de los dos
    contenedores sean descendientes. */
 @media print {
-  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial):not(.calificacion--imprimiendo-por-tipo) * {
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial):not(.calificacion--imprimiendo-por-tipo):not(.calificacion--imprimiendo-progreso) * {
     visibility: hidden;
   }
 
-  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial):not(.calificacion--imprimiendo-por-tipo)
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial):not(.calificacion--imprimiendo-por-tipo):not(.calificacion--imprimiendo-progreso)
     .calificacion-tabla-contenedor,
-  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial):not(.calificacion--imprimiendo-por-tipo)
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial):not(.calificacion--imprimiendo-por-tipo):not(.calificacion--imprimiendo-progreso)
     .calificacion-tabla-contenedor * {
     visibility: visible;
   }
 
-  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial):not(.calificacion--imprimiendo-por-tipo)
+  body[data-pagina="admin"]:not(.calificacion--imprimiendo-historial):not(.calificacion--imprimiendo-por-tipo):not(.calificacion--imprimiendo-progreso)
     .calificacion-tabla-contenedor {
     position: absolute;
     top: 0;
