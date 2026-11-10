@@ -85,6 +85,18 @@ const DEMO_ALUMNOS_ENTREGA_MANUAL = [
   { id: "demo-reg-26", auth_user_id: null, nombre: "Tomás Rivera Olmos", grupo: "3E", numero_lista: 13, codigo_invitacion: "DEMO-A026-TRO6", activo: true, usado: false, entrega_manual: true },
 ];
 
+// Capturas del docente para el alumno de arriba (tabla progreso_manual:
+// misma forma que la real, ligada a alumnos_registro.id vía registro_id,
+// sin completado/origen — esas las agrega normalizarFilaProgresoManual()
+// en js/main.js). Mínimo a propósito: una tarea calificada con nota, una
+// actividad entregada sin calificar (calificacion null) y un proyecto
+// calificado, todo en el Trimestre 1.
+const DEMO_PROGRESO_MANUAL = [
+  { id: "demo-pm-01", registro_id: "demo-reg-26", tipo: "tarea", item_id: "t5", trimestre: 1, calificacion: 8, nota: "Entregada en papel", fecha_entrega_manual: "2026-09-01", actualizado_en: "2026-09-01T15:00:00Z" },
+  { id: "demo-pm-02", registro_id: "demo-reg-26", tipo: "actividad", item_id: "a4", trimestre: 1, calificacion: null, nota: null, fecha_entrega_manual: "2026-09-03", actualizado_en: "2026-09-03T15:00:00Z" },
+  { id: "demo-pm-03", registro_id: "demo-reg-26", tipo: "proyecto", item_id: "p3", trimestre: 1, calificacion: 9, nota: null, fecha_entrega_manual: "2026-09-26", actualizado_en: "2026-09-26T15:00:00Z" },
+];
+
 // perfiles es una tabla real aparte (poblada por trigger al crear
 // cuenta, no por el docente) — se deriva de DEMO_ALUMNOS solo para no
 // duplicar nombre/grupo a mano en dos arreglos; la forma resultante

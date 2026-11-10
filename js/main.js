@@ -3940,6 +3940,7 @@ const DEMO_TABLAS = {
   alumnos_registro: () => [...DEMO_ALUMNOS, ...DEMO_ALUMNOS_ENTREGA_MANUAL],
   perfiles: () => DEMO_PERFILES,
   progreso: () => DEMO_PROGRESO,
+  progreso_manual: () => DEMO_PROGRESO_MANUAL,
   asistencia: () => DEMO_ASISTENCIA,
   avisos: () => DEMO_AVISOS,
   consultas: () => DEMO_CONSULTAS,
@@ -13131,7 +13132,7 @@ function crearBadgeCalificacion(alumno, item, filaProgreso, sinCuenta, trimestre
   // columnas de calificación numérica, que necesitan más ancho.
   celda.className = "calificacion-tabla__celda tabla-calificacion__col-item tabla-calificacion__col-item--compacto";
 
-  const claveMapaProgreso = alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id;
+  const claveMapaProgreso = claveProgresoAlumno(alumno) + "-" + item.tipoEntregable + "-" + item.id;
   pintarBadgeCalificacion(celda, {
     alumno,
     item,
@@ -13157,7 +13158,7 @@ function crearBadgeCalificacion(alumno, item, filaProgreso, sinCuenta, trimestre
 function calcularPorcentajeEntrega(items, alumno, mapaProgreso, sinCuenta) {
   if (sinCuenta || items.length === 0) return { completados: 0, porcentaje: null };
   const completados = items.filter((item) => {
-    const fila = mapaProgreso.get(alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id);
+    const fila = mapaProgreso.get(claveProgresoAlumno(alumno) + "-" + item.tipoEntregable + "-" + item.id);
     return fila && fila.completado;
   }).length;
   return { completados, porcentaje: Math.round((completados / items.length) * 100) };
@@ -13194,12 +13195,15 @@ function crearFilaAlumnoCalificacion(alumno, entregables, mapaProgreso, trimestr
   celdaAlumno.appendChild(envoltura);
   fila.appendChild(celdaAlumno);
 
-  const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
+  // "sinCuenta" aquí significa "celdas bloqueadas (🚫)": la captura
+  // manual (ver capturaManualHabilitada) desbloquea a un alumno sin
+  // cuenta, que entonces se pinta con el flujo normal.
+  const sinCuenta = esAlumnoSinCuenta(alumno) && !capturaManualHabilitada(alumno);
 
   entregables.forEach((item) => {
     const filaProgreso = sinCuenta
       ? null
-      : mapaProgreso.get(alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id);
+      : mapaProgreso.get(claveProgresoAlumno(alumno) + "-" + item.tipoEntregable + "-" + item.id);
     fila.appendChild(crearBadgeCalificacion(alumno, item, filaProgreso, sinCuenta, trimestre, mapaProgreso));
   });
 
@@ -13680,6 +13684,41 @@ async function abrirModalHistorialAlumno(alumno) {
 
   const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
 
+  // CASO C (sin cuenta + captura manual habilitada): mismo historial de 3
+  // trimestres que el CASO A, alimentado con progreso_manual en vez de
+  // "progreso". crearSeccionTrimestreHistorial() se reutiliza sin cambios
+  // (badges, nota y promedio vía calcularPromedioTrimestre). El botón de
+  // imprimir historial queda oculto para este caso (botonImprimir.hidden
+  // ya se puso en true arriba y aquí no se vuelve a mostrar).
+  if (capturaManualHabilitada(alumno)) {
+    contenido.textContent = "Cargando historial…";
+    modal.showModal();
+
+    const trimestres = ["1", "2", "3"];
+    const [entregablesPorTrimestre, resultadoManual] = await Promise.all([
+      Promise.all(trimestres.map((trimestre) => obtenerEntregablesPorTipo("todos", trimestre))),
+      obtenerDatos("progreso_manual", { eq: { registro_id: alumno.id } }),
+    ]);
+
+    if (modal.dataset.alumnoId !== idAlumno) return;
+
+    const mapaProgreso = new Map();
+    if (!resultadoManual.error && resultadoManual.data) {
+      resultadoManual.data.forEach((fila) => {
+        if (String(fila.registro_id) !== idAlumno) return;
+        mapaProgreso.set(fila.tipo + "-" + fila.item_id + "-" + String(fila.trimestre), normalizarFilaProgresoManual(fila));
+      });
+    }
+
+    contenido.innerHTML = "";
+    trimestres.forEach((trimestre, indice) => {
+      contenido.appendChild(
+        crearSeccionTrimestreHistorial(trimestre, entregablesPorTrimestre[indice], mapaProgreso, alumno)
+      );
+    });
+    return;
+  }
+
   if (sinCuenta) {
     contenido.innerHTML = "";
     const mensaje = document.createElement("p");
@@ -13823,6 +13862,15 @@ let contextoEdicionEntrega = null;
 function abrirModalEditarEntrega({ alumno, item, trimestre, filaProgreso, alGuardar, alDeshacer }) {
   const modal = document.getElementById("modal-editar-entrega");
   if (!modal) return;
+
+  // TEMPORAL (commit 2a, solo lectura): la escritura a progreso_manual
+  // llega en el 2b. Hasta entonces, el panel NO se abre para un alumno
+  // con captura manual: guardarEntregaManual() escribiría en "progreso"
+  // con alumno_id nulo. Se avisa en vez de no hacer nada.
+  if (capturaManualHabilitada(alumno)) {
+    mostrarToast("La captura manual se habilita en el siguiente cambio.", { icono: "🛠️" });
+    return;
+  }
 
   contextoEdicionEntrega = { alumno, item, trimestre, filaProgreso, alGuardar, alDeshacer };
 
@@ -14234,6 +14282,7 @@ async function renderizarTablaCalificacion() {
 
   const idsParaProgreso = alumnos.filter((alumno) => alumno.auth_user_id != null).map((alumno) => alumno.auth_user_id);
   const mapaProgreso = await obtenerMapaProgresoCalificacion(estadoCalificacion.trimestre, tipos, idsParaProgreso);
+  await agregarProgresoManualAlMapa(mapaProgreso, alumnos, estadoCalificacion.trimestre, tipos);
   await calcularYGuardarATiempo(mapaProgreso, estadoCalificacion.trimestre);
 
   contenedor.innerHTML = "";
@@ -14258,7 +14307,9 @@ async function renderizarTablaCalificacion() {
    historial: hay espacio de sobra en una lista vertical) y
    calcularPorcentajeEntrega() para el resumen del <summary>. --------- */
 function crearFichaAlumnoCalificacion(alumno, entregables, mapaProgreso, trimestre) {
-  const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
+  // Mismo criterio que crearFilaAlumnoCalificacion: la captura manual
+  // desbloquea a un alumno sin cuenta.
+  const sinCuenta = esAlumnoSinCuenta(alumno) && !capturaManualHabilitada(alumno);
 
   const detalles = document.createElement("details");
   detalles.className = "calificacion-ficha";
@@ -14313,14 +14364,14 @@ function crearFichaAlumnoCalificacion(alumno, entregables, mapaProgreso, trimest
 
     const filaProgreso = sinCuenta
       ? null
-      : mapaProgreso.get(alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id);
+      : mapaProgreso.get(claveProgresoAlumno(alumno) + "-" + item.tipoEntregable + "-" + item.id);
     const contenedorBadge = document.createElement("span");
     // Mismo "position: relative" que .calificacion-historial__badge-
     // contenedor: sin esto, el ícono superpuesto de 🖊️/⏰ (position:
     // absolute con top/right) no tiene contra qué anclarse y termina
     // flotando en la esquina de la ventana en vez de junto al badge.
     contenedorBadge.className = "calificacion-ficha__badge-contenedor";
-    const claveMapaProgreso = alumno.auth_user_id + "-" + item.tipoEntregable + "-" + item.id;
+    const claveMapaProgreso = claveProgresoAlumno(alumno) + "-" + item.tipoEntregable + "-" + item.id;
     pintarBadgeCalificacion(contenedorBadge, {
       alumno,
       item,
@@ -14371,6 +14422,7 @@ async function renderizarTarjetasCalificacion() {
 
   const idsParaProgreso = alumnos.filter((alumno) => alumno.auth_user_id != null).map((alumno) => alumno.auth_user_id);
   const mapaProgreso = await obtenerMapaProgresoCalificacion(estadoCalificacion.trimestre, tipos, idsParaProgreso);
+  await agregarProgresoManualAlMapa(mapaProgreso, alumnos, estadoCalificacion.trimestre, tipos);
   await calcularYGuardarATiempo(mapaProgreso, estadoCalificacion.trimestre);
 
   contenedor.innerHTML = "";
@@ -14418,7 +14470,9 @@ function crearFilaAlumnoAvanceTipo(alumno, itemsPorTipo, mapaProgreso) {
   celdaAlumno.appendChild(envoltura);
   fila.appendChild(celdaAlumno);
 
-  const sinCuenta = alumno.usado === false || !alumno.auth_user_id;
+  // Mismo criterio que crearFilaAlumnoCalificacion: la captura manual
+  // desbloquea a un alumno sin cuenta.
+  const sinCuenta = esAlumnoSinCuenta(alumno) && !capturaManualHabilitada(alumno);
 
   ["tarea", "actividad", "proyecto"].forEach((tipo) => {
     const { porcentaje } = calcularPorcentajeEntrega(itemsPorTipo[tipo] || [], alumno, mapaProgreso, sinCuenta);
@@ -14508,6 +14562,7 @@ async function renderizarTablaAvancePorTipo() {
     ["tarea", "actividad", "proyecto"],
     idsParaProgreso
   );
+  await agregarProgresoManualAlMapa(mapaProgreso, alumnos, estadoCalificacion.trimestre, ["tarea", "actividad", "proyecto"]);
 
   contenedor.innerHTML = "";
   contenedor.appendChild(construirTablaAvanceTipo(alumnos, itemsPorTipo, mapaProgreso));
@@ -14828,6 +14883,59 @@ function esAlumnoSinCuenta(alumno) {
 
 function esAlumnoEntregaManual(alumno) {
   return alumno.entrega_manual === true && esAlumnoSinCuenta(alumno);
+}
+
+// Único caso en que Calificación desbloquea las celdas de un alumno sin
+// cuenta: activo + sin cuenta + bandera. Dado de baja sigue en 🚫 aunque
+// conserve la bandera, y sin cuenta SIN bandera sigue en 🚫 como siempre.
+function capturaManualHabilitada(alumno) {
+  return alumno.activo !== false && esAlumnoEntregaManual(alumno);
+}
+
+// Prefijo de la clave de los mapas de progreso de Calificación
+// ("<prefijo>-<tipo>-<item_id>"). Con cuenta es EXACTAMENTE
+// auth_user_id, igual que antes de existir la entrega manual (y que
+// obtenerMapaProgresoCalificacion, que no cambia); sin cuenta se usa el
+// id de alumnos_registro con un prefijo que no puede chocar con un uuid
+// de auth. Un alumno sin cuenta y sin bandera nunca tiene filas con esa
+// clave, así que sus celdas siguen saliendo vacías/🚫.
+function claveProgresoAlumno(alumno) {
+  return esAlumnoSinCuenta(alumno) ? "registro:" + alumno.id : alumno.auth_user_id;
+}
+
+// Una fila de progreso_manual con la misma forma que una de "progreso"
+// marcada a mano: completado/origen/a_tiempo son implícitos en esa
+// tabla (no tiene esas columnas). Con origen "manual-docente" el resto
+// del módulo la trata sin cambios: badge 🟢 editable + 🖊️ en
+// pintarBadgeCalificacion, párrafo de nota en el historial, y
+// calcularYGuardarATiempo() la salta. "esProgresoManual" le dice al
+// panel de edición a qué tabla escribir.
+function normalizarFilaProgresoManual(fila) {
+  return { ...fila, completado: true, origen: "manual-docente", a_tiempo: null, esProgresoManual: true };
+}
+
+// Suma al mapa de Calificación (ya armado con "progreso" por
+// obtenerMapaProgresoCalificacion) las filas de progreso_manual de los
+// alumnos de "alumnos" con captura manual habilitada, con la clave de
+// claveProgresoAlumno(). obtenerDatos() aplica eq/in también en Modo Demo
+// (ver obtenerDatosDemo); aun así se vuelve a filtrar por registro y
+// trimestre aquí para que una fila nunca caiga en otro grupo/trimestre.
+async function agregarProgresoManualAlMapa(mapaProgreso, alumnos, trimestre, tipos) {
+  const alumnosManuales = alumnos.filter(capturaManualHabilitada);
+  if (alumnosManuales.length === 0) return;
+
+  const alumnoPorRegistro = new Map(alumnosManuales.map((alumno) => [String(alumno.id), alumno]));
+  const { data, error } = await obtenerDatos("progreso_manual", {
+    eq: { trimestre },
+    in: { registro_id: [...alumnoPorRegistro.keys()], tipo: tipos },
+  });
+  if (error || !data) return;
+
+  data.forEach((fila) => {
+    const alumno = alumnoPorRegistro.get(String(fila.registro_id));
+    if (!alumno || String(fila.trimestre) !== String(trimestre) || !tipos.includes(fila.tipo)) return;
+    mapaProgreso.set(claveProgresoAlumno(alumno) + "-" + fila.tipo + "-" + fila.item_id, normalizarFilaProgresoManual(fila));
+  });
 }
 
 // Activar/desactivar NO borra nada de progreso_manual: si se desactiva
