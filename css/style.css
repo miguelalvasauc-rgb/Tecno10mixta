@@ -11393,6 +11393,32 @@ button.badge-estado {
   align-items: center;
 }
 
+/* Campo de calificación (solo alumnos con entrega manual): mismo
+   apilado que los hijos directos de #formulario-editar-entrega (flex en
+   columna con gap), para que el contenedor extra no cambie el ritmo
+   vertical del formulario. El display:flex de aquí le ganaría al
+   [hidden] {display:none} del navegador (estilo de autor > estilo UA),
+   así que [hidden] se repite explícito abajo para que siga ocultando. */
+.modal-editar-entrega__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modal-editar-entrega__campo[hidden] {
+  display: none;
+}
+
+#formulario-editar-entrega .modal-editar-entrega__campo input {
+  margin-bottom: 0;
+}
+
+.modal-editar-entrega__ayuda {
+  margin: 0 0 0.75rem;
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto-suave);
+}
+
 /* Mismo patrón turquesa/navy (Light-Mode Turquoise Rule) que ya usa
    .boton-tema: relleno sólido con texto claro falla contraste AA en modo
    claro, así que ahí se cambia a navy. */

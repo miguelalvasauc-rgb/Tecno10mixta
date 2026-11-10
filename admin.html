@@ -1043,6 +1043,21 @@
       <label for="editar-entrega-fecha">Fecha de entrega</label>
       <input type="date" id="editar-entrega-fecha" name="fecha" required>
 
+      <!-- Solo para alumnos con entrega manual (sin cuenta): su calificación
+           se captura aquí mismo porque no tienen fila en "progreso" que el
+           modal de Evaluación pueda calificar después — ver
+           abrirModalEditarEntrega()/guardarProgresoManual() en js/main.js.
+           Oculto (hidden) para el resto, así que no entra en el orden de
+           tabulación ni en el árbol de accesibilidad. -->
+      <div id="editar-entrega-campo-calificacion" class="modal-editar-entrega__campo" hidden>
+        <label for="editar-entrega-calificacion">Calificación (0.0 – 10.0, opcional)</label>
+        <input type="number" id="editar-entrega-calificacion" name="calificacion" min="0" max="10" step="0.1"
+               inputmode="decimal" aria-describedby="editar-entrega-calificacion-ayuda">
+        <p id="editar-entrega-calificacion-ayuda" class="modal-editar-entrega__ayuda">
+          Déjala vacía si ya entregó pero todavía no lo calificas.
+        </p>
+      </div>
+
       <label for="editar-entrega-nota">Nota (opcional)</label>
       <textarea id="editar-entrega-nota" name="nota" rows="3"></textarea>
 

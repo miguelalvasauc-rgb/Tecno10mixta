@@ -13849,6 +13849,60 @@ async function eliminarEntregaManual(filaProgreso) {
   if (error) throw error;
 }
 
+// Campo de calificación opcional: vacío = null ("entregó, sin
+// calificar"); con valor, 0–10 redondeado a 1 decimal. Misma regla que
+// el modal de Evaluación (activarFormularioCalificar), que no se toca
+// aquí. Devuelve { valido, valor, motivo }.
+function leerCalificacionOpcional(texto) {
+  const limpio = texto.trim();
+  if (limpio === "") return { valido: true, valor: null, motivo: "" };
+  const valor = Number(limpio);
+  if (Number.isNaN(valor) || valor < 0 || valor > 10) {
+    return { valido: false, valor: null, motivo: "La calificación debe ser un número entre 0.0 y 10.0." };
+  }
+  return { valido: true, valor: Math.round(valor * 10) / 10, motivo: "" };
+}
+
+// Mismo contrato que guardarEntregaManual (update-o-insert explícito,
+// fecha + nota), pero en progreso_manual, ligada a alumnos_registro.id, y
+// con calificación. Al reclamar el código, reclamar_codigo_invitacion()
+// copia estas filas (fecha_entrega_manual incluida) a "progreso".
+// .select() + exactamente 1 fila: un UPDATE/INSERT que la RLS filtra
+// responde "éxito" con 0 filas, y la UI mostraría algo que no se guardó.
+// Devuelve la fila ya normalizada (forma de "progreso" marcada a mano).
+async function guardarProgresoManual({ alumno, item, trimestre, filaProgreso, fecha, nota, calificacion }) {
+  const payload = {
+    calificacion,
+    // El form es novalidate: si el docente borra la fecha llega "", que
+    // Postgres rechaza en una columna date; null sí es válido (nullable).
+    fecha_entrega_manual: fecha || null,
+    nota: nota || null,
+    actualizado_en: new Date().toISOString(),
+  };
+
+  const consulta = filaProgreso
+    ? clienteSupabase.from("progreso_manual").update(payload).eq("id", filaProgreso.id)
+    : clienteSupabase.from("progreso_manual").insert({
+        registro_id: alumno.id,
+        tipo: item.tipoEntregable,
+        item_id: item.id,
+        trimestre: Number(trimestre),
+        ...payload,
+      });
+
+  const { data, error } = await consulta.select();
+  if (error?.code === "23505") throw new Error("Ya hay una captura para este entregable; recarga la vista.");
+  if (error) throw error;
+  if (!data || data.length !== 1) throw new Error("no se guardó ningún registro.");
+  return normalizarFilaProgresoManual(data[0]);
+}
+
+async function eliminarProgresoManual(filaProgreso) {
+  const { data, error } = await clienteSupabase.from("progreso_manual").delete().eq("id", filaProgreso.id).select("id");
+  if (error) throw error;
+  if (!data || data.length !== 1) throw new Error("no se eliminó ningún registro.");
+}
+
 // Contexto del panel de marcar/editar entrega manual actualmente abierto
 // (alumno/item/trimestre/filaProgreso + los callbacks alGuardar/
 // alDeshacer que sabe repintar la celda o ítem exacto que lo abrió, sea
@@ -13863,16 +13917,17 @@ function abrirModalEditarEntrega({ alumno, item, trimestre, filaProgreso, alGuar
   const modal = document.getElementById("modal-editar-entrega");
   if (!modal) return;
 
-  // TEMPORAL (commit 2a, solo lectura): la escritura a progreso_manual
-  // llega en el 2b. Hasta entonces, el panel NO se abre para un alumno
-  // con captura manual: guardarEntregaManual() escribiría en "progreso"
-  // con alumno_id nulo. Se avisa en vez de no hacer nada.
-  if (capturaManualHabilitada(alumno)) {
-    mostrarToast("La captura manual se habilita en el siguiente cambio.", { icono: "🛠️" });
-    return;
-  }
+  // Alumno con captura manual (sin cuenta): mismo panel, pero escribe en
+  // progreso_manual (ver activarFormularioEditarEntrega) y muestra el
+  // campo de calificación, que para el resto de alumnos se captura
+  // después desde Evaluación.
+  const esCapturaManual = capturaManualHabilitada(alumno);
+  contextoEdicionEntrega = { alumno, item, trimestre, filaProgreso, alGuardar, alDeshacer, esCapturaManual };
 
-  contextoEdicionEntrega = { alumno, item, trimestre, filaProgreso, alGuardar, alDeshacer };
+  const campoCalificacion = document.getElementById("editar-entrega-calificacion");
+  document.getElementById("editar-entrega-campo-calificacion").hidden = !esCapturaManual;
+  campoCalificacion.value = esCapturaManual && filaProgreso?.calificacion != null ? String(filaProgreso.calificacion) : "";
+  campoCalificacion.removeAttribute("aria-invalid");
 
   const modoEditar = !!filaProgreso;
   document.getElementById("modal-editar-entrega-titulo").textContent = modoEditar
@@ -13920,24 +13975,53 @@ function activarFormularioEditarEntrega() {
     }
     if (!contextoEdicionEntrega) return;
 
-    const { alumno, item, trimestre, filaProgreso, alGuardar } = contextoEdicionEntrega;
+    const { alumno, item, trimestre, filaProgreso, alGuardar, esCapturaManual } = contextoEdicionEntrega;
     const campoFecha = document.getElementById("editar-entrega-fecha");
     const campoNota = document.getElementById("editar-entrega-nota");
+    const campoCalificacion = document.getElementById("editar-entrega-calificacion");
     const botonConfirmar = document.getElementById("editar-entrega-confirmar");
     const error = document.getElementById("editar-entrega-error");
 
     error.hidden = true;
+    campoCalificacion.removeAttribute("aria-invalid");
+
+    // Validación solo en la rama de captura manual: la marca manual de
+    // alumnos con cuenta conserva su comportamiento de antes, sin cambios.
+    let calificacion = null;
+    if (esCapturaManual) {
+      const resultadoCalificacion = leerCalificacionOpcional(campoCalificacion.value);
+      if (!resultadoCalificacion.valido) {
+        campoCalificacion.setAttribute("aria-invalid", "true");
+        error.textContent = resultadoCalificacion.motivo;
+        error.hidden = false;
+        campoCalificacion.focus();
+        return;
+      }
+      calificacion = resultadoCalificacion.valor;
+
+      const resultadoNota = validarTextoSeguro(campoNota.value.trim(), { maxLargo: 500 });
+      if (!resultadoNota.valido) {
+        error.textContent = "Nota: " + resultadoNota.motivo;
+        error.hidden = false;
+        campoNota.focus();
+        return;
+      }
+    }
+
     botonConfirmar.disabled = true;
 
     try {
-      const nuevaFila = await guardarEntregaManual({
+      const datos = {
         alumno,
         item,
         trimestre,
         filaProgreso,
         fecha: campoFecha.value,
         nota: campoNota.value.trim(),
-      });
+      };
+      const nuevaFila = esCapturaManual
+        ? await guardarProgresoManual({ ...datos, calificacion })
+        : await guardarEntregaManual(datos);
       cerrarDialogoAnimado(modal);
       alGuardar(nuevaFila);
     } catch (err) {
@@ -13966,7 +14050,11 @@ function activarFormularioEditarEntrega() {
     error.hidden = true;
 
     try {
-      await eliminarEntregaManual(contextoEdicionEntrega.filaProgreso);
+      if (contextoEdicionEntrega.esCapturaManual) {
+        await eliminarProgresoManual(contextoEdicionEntrega.filaProgreso);
+      } else {
+        await eliminarEntregaManual(contextoEdicionEntrega.filaProgreso);
+      }
       cerrarDialogoAnimado(modal);
       contextoEdicionEntrega.alDeshacer();
     } catch (err) {
@@ -14282,8 +14370,8 @@ async function renderizarTablaCalificacion() {
 
   const idsParaProgreso = alumnos.filter((alumno) => alumno.auth_user_id != null).map((alumno) => alumno.auth_user_id);
   const mapaProgreso = await obtenerMapaProgresoCalificacion(estadoCalificacion.trimestre, tipos, idsParaProgreso);
-  await agregarProgresoManualAlMapa(mapaProgreso, alumnos, estadoCalificacion.trimestre, tipos);
   await calcularYGuardarATiempo(mapaProgreso, estadoCalificacion.trimestre);
+  await agregarProgresoManualAlMapa(mapaProgreso, alumnos, estadoCalificacion.trimestre, tipos);
 
   contenedor.innerHTML = "";
   contenedor.appendChild(construirTablaCalificacion(alumnos, entregables, mapaProgreso, estadoCalificacion.trimestre));
@@ -14422,8 +14510,8 @@ async function renderizarTarjetasCalificacion() {
 
   const idsParaProgreso = alumnos.filter((alumno) => alumno.auth_user_id != null).map((alumno) => alumno.auth_user_id);
   const mapaProgreso = await obtenerMapaProgresoCalificacion(estadoCalificacion.trimestre, tipos, idsParaProgreso);
-  await agregarProgresoManualAlMapa(mapaProgreso, alumnos, estadoCalificacion.trimestre, tipos);
   await calcularYGuardarATiempo(mapaProgreso, estadoCalificacion.trimestre);
+  await agregarProgresoManualAlMapa(mapaProgreso, alumnos, estadoCalificacion.trimestre, tipos);
 
   contenedor.innerHTML = "";
   const lista = document.createElement("div");
@@ -14920,6 +15008,9 @@ function normalizarFilaProgresoManual(fila) {
 // claveProgresoAlumno(). obtenerDatos() aplica eq/in también en Modo Demo
 // (ver obtenerDatosDemo); aun así se vuelve a filtrar por registro y
 // trimestre aquí para que una fila nunca caiga en otro grupo/trimestre.
+// Si la lectura falla, se avisa (consola + toast, una vez por render: cada
+// render la llama una sola vez) en vez de pintar en silencio las celdas
+// como "sin entregar", que se confundiría con un dato real.
 async function agregarProgresoManualAlMapa(mapaProgreso, alumnos, trimestre, tipos) {
   const alumnosManuales = alumnos.filter(capturaManualHabilitada);
   if (alumnosManuales.length === 0) return;
@@ -14929,7 +15020,11 @@ async function agregarProgresoManualAlMapa(mapaProgreso, alumnos, trimestre, tip
     eq: { trimestre },
     in: { registro_id: [...alumnoPorRegistro.keys()], tipo: tipos },
   });
-  if (error || !data) return;
+  if (error || !data) {
+    console.warn("No se pudo leer progreso_manual:", error);
+    mostrarToastAdvertencia("No se pudieron cargar las capturas manuales; recarga la vista.");
+    return;
+  }
 
   data.forEach((fila) => {
     const alumno = alumnoPorRegistro.get(String(fila.registro_id));
