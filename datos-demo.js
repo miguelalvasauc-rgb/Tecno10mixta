@@ -73,6 +73,18 @@ const DEMO_ALUMNOS = [
   { id: "demo-reg-25", auth_user_id: "demo-uid-25", nombre: "Iker Gutiérrez Barrera", grupo: "3E", numero_lista: 12, codigo_invitacion: "DEMO-A025-IGB5", activo: true, usado: true },
 ];
 
+// Alumno con "entrega manual" (sin cuenta, el docente captura sus
+// entregas a mano — ver esAlumnoEntregaManual() en js/main.js). Arreglo
+// APARTE a propósito, no una fila más de DEMO_ALUMNOS: DEMO_PERFILES,
+// DEMO_CONFIG_AVANCE_ALUMNOS y DEMO_CONFIG_ASISTENCIA_ALUMNOS se derivan
+// de DEMO_ALUMNOS y todos asumen alumnos con cuenta (auth_user_id). Solo
+// se suma a la tabla "alumnos_registro" del mock (ver DEMO_TABLAS en
+// js/main.js), igual que en la base real, donde un alumno sin cuenta no
+// tiene perfil, progreso ni asistencia.
+const DEMO_ALUMNOS_ENTREGA_MANUAL = [
+  { id: "demo-reg-26", auth_user_id: null, nombre: "Tomás Rivera Olmos", grupo: "3E", numero_lista: 13, codigo_invitacion: "DEMO-A026-TRO6", activo: true, usado: false, entrega_manual: true },
+];
+
 // perfiles es una tabla real aparte (poblada por trigger al crear
 // cuenta, no por el docente) — se deriva de DEMO_ALUMNOS solo para no
 // duplicar nombre/grupo a mano en dos arreglos; la forma resultante

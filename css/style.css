@@ -11897,6 +11897,27 @@ button.badge-estado {
   gap: 0.5rem;
 }
 
+/* Insignia neutra "📝 Manual" (alumnos_registro.entrega_manual, ver
+   esAlumnoEntregaManual() en js/main.js). Solo contorno con
+   currentColor, sin color de relleno propio: hereda el color de texto
+   del tema activo, así que mantiene el mismo contraste que el texto
+   normal en claro/oscuro y en los 20 temas sin necesitar un token nuevo.
+   Es un dato administrativo, no un estado de alerta: no debe competir
+   con el badge de estado de cuenta que tiene arriba.
+   Bloque de ancho ajustado (debajo del badge, no al lado) y sin nowrap:
+   en móvil la columna "Estado de cuenta" es angosta y una píldora en
+   línea sin poder partirse ensanchaba toda la tabla ~30 px. */
+.badge-entrega-manual {
+  display: block;
+  width: fit-content;
+  margin-top: 0.3rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 600;
+}
+
 /* Texto simple en rojo, no un botón lleno: mismo criterio que
    .modal-editar-entrega__deshacer — es una acción poco frecuente que no
    debe competir visualmente con el resto de la fila. */

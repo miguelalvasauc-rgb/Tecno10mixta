@@ -3937,7 +3937,7 @@ async function obtenerDatos(tabla, opciones = {}) {
 // datos ficticios) estas funciones nunca se llaman, así que no hace
 // falta un guard de "variable no definida" aquí.
 const DEMO_TABLAS = {
-  alumnos_registro: () => DEMO_ALUMNOS,
+  alumnos_registro: () => [...DEMO_ALUMNOS, ...DEMO_ALUMNOS_ENTREGA_MANUAL],
   perfiles: () => DEMO_PERFILES,
   progreso: () => DEMO_PROGRESO,
   asistencia: () => DEMO_ASISTENCIA,
@@ -14812,6 +14812,60 @@ async function actualizarActivoAlumno(alumno, activo) {
   alumno.activo = activo;
 }
 
+// "Entrega manual": el docente captura a mano las entregas de un alumno
+// que todavía no tiene cuenta (alumnos_registro.entrega_manual, ver
+// sql_entrega_manual_2026-11.sql). Solo aplica mientras no haya cuenta:
+// sus calificaciones viven en progreso_manual (ligada a
+// alumnos_registro.id) y reclamar_codigo_invitacion() las migra a
+// "progreso" y apaga la bandera sola al reclamar el código. Con cuenta
+// ya no tiene sentido (sus entregas van directo a "progreso"), por eso
+// el interruptor no se ofrece y esta función devuelve false aunque la
+// columna quedara en true. Dato neutro a propósito: nunca se guarda ni
+// se muestra un motivo, y nada de esto llega a vistas públicas.
+function esAlumnoSinCuenta(alumno) {
+  return alumno.usado === false || !alumno.auth_user_id;
+}
+
+function esAlumnoEntregaManual(alumno) {
+  return alumno.entrega_manual === true && esAlumnoSinCuenta(alumno);
+}
+
+// Activar/desactivar NO borra nada de progreso_manual: si se desactiva
+// por error y se vuelve a activar, las calificaciones capturadas siguen
+// ahí (y se migran igual al reclamar el código, con o sin bandera).
+async function cambiarEntregaManualAlumno(alumno, fila) {
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
+  const nuevoValor = !esAlumnoEntregaManual(alumno);
+
+  try {
+    // .select("id"): sin él, un UPDATE que la RLS filtra a 0 filas
+    // responde "éxito" sin error, y la UI mostraría un cambio que no se
+    // guardó. Se exige exactamente 1 fila afectada.
+    const { data, error } = await clienteSupabase
+      .from("alumnos_registro")
+      .update({ entrega_manual: nuevoValor })
+      .eq("id", alumno.id)
+      .select("id");
+    if (error) throw error;
+    if (!data || data.length !== 1) throw new Error("no se actualizó ningún registro.");
+  } catch (error) {
+    window.alert("No se pudo actualizar la entrega manual: " + (error?.message || "intenta de nuevo."));
+    return;
+  }
+
+  alumno.entrega_manual = nuevoValor;
+  const filaNueva = crearFilaAlumno(alumno);
+  fila.replaceWith(filaNueva);
+  filtrarFilasTablaAlumnos();
+  // replaceWith() destruye el botón que tenía el foco: se devuelve al
+  // botón equivalente de la fila nueva para no mandar el foco al <body>.
+  filaNueva.querySelector(".alumnos-tabla__boton-entrega-manual")?.focus();
+  mostrarToast(nuevoValor ? "Entrega manual activada" : "Entrega manual desactivada");
+}
+
 async function darDeBajaAlumno(alumno, fila) {
   if (demoModeActivo()) {
     abrirModalDemo();
@@ -14965,6 +15019,12 @@ function crearFilaAlumno(alumno) {
   badge.dataset.estadoCuenta = estado;
   badge.textContent = texto;
   celdaEstado.appendChild(badge);
+  if (esAlumnoEntregaManual(alumno)) {
+    const insigniaManual = document.createElement("span");
+    insigniaManual.className = "badge-entrega-manual";
+    insigniaManual.textContent = "📝 Manual";
+    celdaEstado.appendChild(insigniaManual);
+  }
   fila.appendChild(celdaEstado);
 
   const celdaAcciones = document.createElement("td");
@@ -14976,6 +15036,21 @@ function crearFilaAlumno(alumno) {
   botonHistorial.textContent = "👁️ Ver historial completo";
   botonHistorial.addEventListener("click", () => abrirModalHistorialAlumno(alumno));
   celdaAcciones.appendChild(botonHistorial);
+
+  // Solo alumnos activos y sin cuenta (ver esAlumnoEntregaManual). La
+  // etiqueta dice la ACCIÓN que hará el clic ("Activar"/"Desactivar") y
+  // el estado actual ya lo anuncia la insignia "📝 Manual" de la columna
+  // de al lado — por eso sin aria-pressed: combinado con una etiqueta que
+  // cambia, el lector anunciaría "Desactivar…, presionado" (contradictorio).
+  if (alumno.activo !== false && esAlumnoSinCuenta(alumno)) {
+    const activa = esAlumnoEntregaManual(alumno);
+    const botonManual = document.createElement("button");
+    botonManual.type = "button";
+    botonManual.className = "boton-secundario alumnos-tabla__boton-entrega-manual";
+    botonManual.textContent = activa ? "Desactivar entrega manual" : "📝 Activar entrega manual";
+    botonManual.addEventListener("click", () => cambiarEntregaManualAlumno(alumno, fila));
+    celdaAcciones.appendChild(botonManual);
+  }
 
   // Independiente de activo/reactivar-baja: solo tiene sentido mientras
   // el código todavía no se consumió (regenerar uno ya usado no
