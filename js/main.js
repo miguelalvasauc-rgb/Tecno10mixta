@@ -1292,52 +1292,92 @@ const DATOS_TAREAS = {
       id: "t-s5-1",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
-      titulo: "🏠 Mi Presupuesto Mensual en Papel",
-      descripcion: "Crea un 'presupuesto' de tu mes: ingresos (dinero de papás, trabajo, regalos) y gastos (transporte, comida, pasatiempos).",
+      formatoEntrega: "digital",
+      titulo: "🏠 Mi Presupuesto Mensual",
+      descripcion: "En Excel, calcula si a una familia ficticia le alcanza su ingreso del mes: total de gastos, lo que sobra, porcentajes y una gráfica circular.",
       fechaEntrega: { "3C": "2026-12-15", "3E": "2026-12-16" },
       estado: "pendiente",
+      hojaAlumno: {
+        xlsx: "assets/Trabajos/Alumno/T5.1_Presupuesto_mensual_Alumno.xlsx",
+        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
+      },
       detalleCompleto: `
-        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla en cuaderno</p>
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa o en el taller) | 📦 Entregable: Libro de Excel T5.1 completo</p>
         <ul>
-          <li>Tabla: Concepto | Tipo (Ingreso/Gasto) | Cantidad ($)</li>
-          <li>Calcula a mano: total de ingresos, total de gastos, saldo final.</li>
-          <li>Responde: "¿Te alcanza? ¿Qué gasto podrías reducir?"</li>
+          <li>Computadora con Excel, el libro de la tarea T5.1 y la guía de bolsillo de Excel.</li>
+          <li>Primero llena la hoja Identidad (nombre, grupo y número de lista): el ingreso y los gastos de la familia cambian según tu número de lista.</li>
         </ul>
+        <ul>
+          <li>En la hoja Presupuesto suma todos los gastos con SUMA y calcula el dinero que sobra (ingreso menos gastos).</li>
+          <li>Usa la función SI para que la hoja diga "Sí alcanza" o "No alcanza".</li>
+          <li>Calcula qué porcentaje del ingreso es cada gasto (el total se fija con $, por ejemplo =B9/$B$6), cópialo hacia abajo y dale formato Porcentaje. Pon formato Moneda a los montos.</li>
+          <li>Inserta una gráfica circular de los gastos, con título, junto a la tabla.</li>
+          <li>Escribe tu recomendación para la familia (mínimo 2 frases).</li>
+        </ul>
+        <p>✅ La columna Control automático te avisa: ✔ cuando un cálculo está bien y "Revisa" cuando algo no cuadra. Esta tarea no tiene puntos de control.</p>
+        <p>📎 Tu libro trae las hojas Refuerzo y Ampliación: úsalas si tu maestro te lo indica.</p>
+        <p>📤 <strong>Guarda tu archivo como T5.1_Grupo_Lista_Apellido.xlsx</strong> (ejemplo: T5.1_3C_12_Lopez.xlsx) y súbelo al formulario. En el formulario elige: <strong>T2-t-s5-1 | 🏠 Mi Presupuesto Mensual</strong></p>
       `,
     },
     {
       id: "t-s5-2",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
+      formatoEntrega: "digital",
       titulo: "📐 Mi Horario Escolar como Hoja de Cálculo",
-      descripcion: "Dibuja tu horario escolar como si fuera una hoja de cálculo de Excel.",
+      descripcion: "Captura tu horario real en Excel, dale formato con colores y bordes, y cuenta tus horas de Tecnología con CONTAR.SI.",
       fechaEntrega: { "3C": "2027-01-12", "3E": "2027-01-13" },
       estado: "pendiente",
+      hojaAlumno: {
+        xlsx: "assets/Trabajos/Alumno/T5.2_Horario_escolar_Alumno.xlsx",
+        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
+      },
       detalleCompleto: `
-        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Dibujo de tabla en cuaderno</p>
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa o en el taller) | 📦 Entregable: Libro de Excel T5.2 completo</p>
         <ul>
-          <li>Dibuja la cuadrícula: columnas = días (Lunes a Viernes), filas = horas (7:00 a 14:00).</li>
-          <li>En cada celda, escribe la materia que tienes.</li>
-          <li>Colorea las celdas: verde = materias favoritas, rojo = materias difíciles, amarillo = recreos.</li>
-          <li>Cuenta cuántas horas a la semana tienes de cada materia y escribe cuál tiene más y cuál menos.</li>
+          <li>Computadora con Excel, el libro de la tarea T5.2, la guía de bolsillo de Excel y tu horario de clases real.</li>
+          <li>Primero llena la hoja Identidad con tu nombre, grupo y número de lista.</li>
         </ul>
+        <ul>
+          <li>Captura: en la hoja Horario escribe el título "Horario de [tu nombre]", los días de Lunes a Viernes (con acento donde corresponda), las horas de cada clase y tus 30 clases. En la fila del recreo escribe Recreo y combina esas celdas.</li>
+          <li>Formato: encabezado en negrita con relleno oscuro y letra blanca, un color distinto para cada materia, texto centrado, columnas ajustadas y bordes en toda la tabla.</li>
+          <li>Una fórmula: cuenta tus horas de Tecnología a la semana con =CONTAR.SI(B7:F13;"Tecnología"). Si tu Excel lo pide, separa con coma en vez de punto y coma.</li>
+        </ul>
+        <p>✅ La columna Control automático te avisa: ✔ cuando algo está bien y "Revisa" cuando falta algo (por ejemplo, un día sin acento). Esta tarea no tiene puntos de control.</p>
+        <p>📎 Tu libro trae las hojas Refuerzo y Ampliación: úsalas si tu maestro te lo indica.</p>
+        <p>📤 <strong>Guarda tu archivo como T5.2_Grupo_Lista_Apellido.xlsx</strong> (ejemplo: T5.2_3C_12_Lopez.xlsx) y súbelo al formulario. En el formulario elige: <strong>T2-t-s5-2 | 📐 Mi Horario Escolar como Hoja de Cálculo</strong></p>
       `,
     },
     {
       id: "t-s5-3",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
+      formatoEntrega: "digital",
       titulo: "📊 Mi Tienda Imaginaria",
-      descripcion: "Imagina que tienes una tienda de dulces. Registra las ventas de una semana.",
+      descripcion: "Inventa tu tienda con 6 productos en Excel y calcula ingreso, ganancia y si cada producto gana o pierde, con una gráfica de ingresos.",
       fechaEntrega: { "3C": "2027-01-25", "3E": "2027-01-26" },
       estado: "pendiente",
+      hojaAlumno: {
+        xlsx: "assets/Trabajos/Alumno/T5.3_Tienda_imaginaria_Alumno.xlsx",
+        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
+      },
       detalleCompleto: `
-        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla + cálculos en cuaderno</p>
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa o en el taller) | 📦 Entregable: Libro de Excel T5.3 completo</p>
         <ul>
-          <li>Tabla: Día | Producto | Cantidad vendida | Precio unitario | Total del día</li>
-          <li>Calcula a mano: total de la semana (SUMA), producto más vendido, promedio de ventas diarias (PROMEDIO).</li>
-          <li>Si vendiste más de $500, escribe "¡Buena semana!" (lógica SI…ENTONCES).</li>
+          <li>Computadora con Excel, el libro de la tarea T5.3 y la guía de bolsillo de Excel.</li>
+          <li>Primero llena la hoja Identidad (nombre, grupo y número de lista): el precio de tu primer producto depende de tu número de lista.</li>
         </ul>
+        <ul>
+          <li>En la hoja Tienda escribe el nombre de tu tienda y 6 productos inventados. El precio del producto 1 debe ser el que te indica la hoja.</li>
+          <li>Inventa el precio de venta, el costo y cuántos se vendieron de cada uno (el costo debe ser menor al precio en casi todos).</li>
+          <li>Calcula el ingreso (precio × vendidos) y la ganancia ((precio − costo) × vendidos) y copia las fórmulas hacia abajo.</li>
+          <li>Usa SI para marcar "Gana" o "Pierde" y agrega formato condicional rojo a "Pierde".</li>
+          <li>Calcula el ingreso total y la ganancia total con SUMA, el ingreso más alto con MAX y la ganancia promedio con PROMEDIO.</li>
+          <li>En la hoja Gráfica inserta una gráfica de columnas con producto e ingreso, con título.</li>
+        </ul>
+        <p>✅ La columna Control automático te avisa: ✔ cuando un cálculo está bien y "Revisa" cuando algo no cuadra. Esta tarea no tiene puntos de control.</p>
+        <p>📎 Tu libro trae las hojas Refuerzo y Ampliación: úsalas si tu maestro te lo indica.</p>
+        <p>📤 <strong>Guarda tu archivo como T5.3_Grupo_Lista_Apellido.xlsx</strong> (ejemplo: T5.3_3C_12_Lopez.xlsx) y súbelo al formulario. En el formulario elige: <strong>T2-t-s5-3 | 📊 Mi Tienda Imaginaria</strong></p>
       `,
     },
 
@@ -1996,19 +2036,28 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       formatoEntrega: "digital",
       titulo: "🖥️ Explorando la Interfaz",
-      descripcion: "Primer acercamiento guiado a Excel/LibreOffice: celdas, filas, columnas y formato básico.",
+      descripcion: "Conoce la pantalla de Excel, escribe texto, números y fechas en tus primeras celdas, dales formato y crea una hoja nueva.",
       fecha: { "3C": "2027-01-11", "3E": "2027-01-12" },
+      hojaAlumno: {
+        xlsx: "assets/Trabajos/Alumno/5.1_Explorando_la_interfaz_Alumno.xlsx",
+        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
+      },
       detalleCompleto: `
-        <p>👥 Modalidad: Individual, en taller de cómputo | ⏱️ Duración: 30 min</p>
+        <p>👥 Modalidad: Individual, en el taller de cómputo | ⏱️ Duración: 1 sesión (50 min)</p>
         <ul>
-          <li>Computadoras con Excel o LibreOffice, guía impresa de atajos.</li>
+          <li>Computadora con Excel, el libro de la actividad 5.1 y la guía de bolsillo de Excel.</li>
+          <li>Primero llena la hoja Identidad (nombre, grupo y número de lista): tu número de lista se usa dentro del archivo.</li>
         </ul>
         <ul>
-          <li>El docente proyecta la pantalla y explica celdas, filas, columnas, hojas y barra de fórmulas.</li>
-          <li>Los alumnos completan un "mapa de calor" guiado: escriben nombre, edad y materia favorita en celdas, cambian color de fondo, tamaño de letra y bordes.</li>
-          <li>Guardan el archivo como "MiPrimeraHoja.xlsx".</li>
-          <li>Reto final: crear una segunda hoja con los nombres de 5 compañeros.</li>
+          <li>Parte 1 · Conoce tu pantalla: ubica la celda, la fila, la columna, la hoja y la barra de fórmulas mientras tu maestro las señala en el proyector.</li>
+          <li>Parte 2 · Mi primera hoja: escribe tu nombre, tu edad y tu materia favorita; cambia el color de fondo, el tamaño de letra y pon bordes. Guarda el archivo con el nombre de la hoja Identidad.</li>
+          <li>Parte 3 · Tipos de datos: escribe un texto, un número y una fecha y observa hacia qué lado se acomoda cada uno. Calcula tu número de control (tu número de lista × 7).</li>
+          <li>Parte 4 · Reto final: crea una hoja nueva, llámala "Compañeros" y escribe los nombres de 5 compañeros.</li>
         </ul>
+        <p>🔒 Tiene 2 puntos de control: levantas la mano, tu maestro revisa tu pantalla y te da un código del día que escribes en tu archivo.</p>
+        <p>✅ La columna Control automático de la hoja "Mi primera hoja" te avisa con ✔ lo que ya está bien.</p>
+        <p>📎 Tu libro trae las hojas Refuerzo y Ampliación: úsalas si tu maestro te lo indica.</p>
+        <p>📤 <strong>Guarda tu archivo como 5.1_Grupo_Lista_Apellido.xlsx</strong> (ejemplo: 5.1_3C_12_Lopez.xlsx) y súbelo al formulario. En el formulario elige: <strong>T2-a-s5-1 | 🖥️ Explorando la Interfaz</strong></p>
       `,
     },
     {
@@ -2017,20 +2066,29 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       formatoEntrega: "digital",
       titulo: "🔢 Fórmulas en Acción: El Supermercado Escolar",
-      descripcion: "Los alumnos aplican fórmulas de Excel a un inventario ficticio de un supermercado escolar.",
+      descripcion: "Calcula con fórmulas el inventario de un supermercado escolar ficticio, decide qué reponer con la función SI y grafica los 5 productos con mayor total.",
       fecha: { "3C": "2027-01-18", "3E": "2027-01-19" },
-      archivoUrl: "https://docs.google.com/spreadsheets/d/1EqV4snRy_KgfvE6qguVY7W-VDL3eZ53v5XC-e7r5ZfY/edit?usp=sharing",
+      hojaAlumno: {
+        xlsx: "assets/Trabajos/Alumno/5.2_Supermercado_escolar_Alumno.xlsx",
+        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
+      },
       detalleCompleto: `
-        <p>👥 Modalidad: Individual, en taller de cómputo | ⏱️ Duración: 40 min</p>
+        <p>👥 Modalidad: Individual, en el taller de cómputo | ⏱️ Duración: 1 sesión (50 min)</p>
         <ul>
-          <li>Computadoras con Excel, lista de 15 productos impresa (nombre, precio unitario, cantidad en stock).</li>
+          <li>Computadora con Excel, el libro de la actividad 5.2 y la guía de bolsillo de Excel.</li>
+          <li>Primero llena la hoja Identidad (nombre, grupo y número de lista): las existencias de los 8 productos cambian según tu número de lista.</li>
         </ul>
         <ul>
-          <li>Crean columnas de nombre, precio, cantidad y total en inventario (fórmula =B2*C2).</li>
-          <li>Calculan SUMA de totales y PROMEDIO de precios unitarios.</li>
-          <li>Aplican fórmula SI para marcar "¿Reponer?" según el stock, con formato condicional en rojo/verde.</li>
-          <li>Crean una gráfica de barras con los 5 productos más caros.</li>
+          <li>Parte 1 · Total de cada producto: en la hoja Inventario escribe =B7*C7, cópiala hacia abajo con el cuadrito de la esquina y dale formato Moneda.</li>
+          <li>Parte 2 · Resume con funciones: usa SUMA para el total del inventario, PROMEDIO para el precio promedio y MAX y MIN para el precio más alto y el más bajo.</li>
+          <li>Parte 3 · Decide con SI: escribe =SI(C7&lt;10;"Reponer";"Suficiente"), cópiala hacia abajo y resalta "Reponer" en rojo claro con formato condicional.</li>
+          <li>Parte 4 · Tu gráfica: ordena la tabla por total de mayor a menor y haz una gráfica de columnas "Top 5 por total" en la hoja Gráfica, con tu nombre.</li>
+          <li>Reto extra (opcional): calcula el precio con un aumento de 10%.</li>
         </ul>
+        <p>🔒 Tiene 2 puntos de control: llamas a tu maestro, revisa tu pantalla y te da un código del día que escribes en tu archivo. 🎯 Al final hay un mini reto en clase, sin el archivo: tu calificación junta el archivo, los puntos de control y el mini reto.</p>
+        <p>✅ La columna Control automático te avisa: ✔ cuando un cálculo está bien y "Revisa" cuando algo no cuadra.</p>
+        <p>📎 Tu libro trae las hojas Refuerzo y Ampliación: úsalas si tu maestro te lo indica.</p>
+        <p>📤 <strong>Guarda tu archivo como 5.2_Grupo_Lista_Apellido.xlsx</strong> (ejemplo: 5.2_3C_12_Lopez.xlsx) y súbelo al formulario. En el formulario elige: <strong>T2-a-s5-2 | 🔢 Fórmulas en Acción: El Supermercado Escolar</strong></p>
       `,
     },
     {
@@ -2039,19 +2097,27 @@ const DATOS_ACTIVIDADES = {
       grupo: "todos",
       formatoEntrega: "digital",
       titulo: "🎨 Diseñando mi Primera Infografía en Excel",
-      descripcion: "En equipos, los alumnos crean gráficas a partir de una encuesta y las maquetan como infografía en Excel.",
+      descripcion: "Con una encuesta ficticia sobre cómo llegas a la escuela, calcula totales y porcentajes, haz una gráfica circular y una de columnas y arma tu infografía en Excel.",
       fecha: { "3C": "2027-01-26", "3E": "2027-01-27" },
-      archivoUrl: "https://docs.google.com/spreadsheets/d/1rr9-Lvssi0IuZ-G67hxGlrL9hDOKNK7G506cRFE0JB0/edit?usp=sharing",
+      hojaAlumno: {
+        xlsx: "assets/Trabajos/Alumno/5.3_Infografia_de_datos_Alumno.xlsx",
+        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
+      },
       detalleCompleto: `
-        <p>👥 Modalidad: Equipos de 3, en taller de cómputo | ⏱️ Duración: 45 min</p>
+        <p>👥 Modalidad: Individual, en el taller de cómputo | ⏱️ Duración: 1 sesión (50 min)</p>
         <ul>
-          <li>Computadoras con Excel, dataset impreso: "Encuesta de 30 alumnos sobre uso de redes sociales".</li>
+          <li>Computadora con Excel, el libro de la actividad 5.3 y la guía de bolsillo de Excel.</li>
+          <li>Primero llena la hoja Identidad (nombre, grupo y número de lista): los resultados de la encuesta cambian según tu número de lista.</li>
         </ul>
         <ul>
-          <li>Ingresan los datos en Excel y crean 2 gráficas (pastel de redes favoritas, barras de horas por edad).</li>
-          <li>Maquetan una infografía: título, gráficas con bordes y colores, 3 datos destacados y 1 conclusión.</li>
-          <li>Guardan o imprimen como PDF y exponen 2 minutos por equipo.</li>
+          <li>Parte 1 · Prepara los datos: en la hoja Datos suma los alumnos con SUMA y calcula el porcentaje de cada medio de transporte con =B7/$B$12 (el signo $ fija el total). Dale formato Porcentaje.</li>
+          <li>Parte 2 · Tus gráficas: haz una gráfica circular y una de columnas con los medios y los alumnos, ponles título, muestra los porcentajes en la circular y muévelas a la hoja Infografía.</li>
+          <li>Parte 3 · Tu infografía: escribe un título llamativo, el medio más usado (con MAX), el menos usado y una conclusión de una o dos frases con tu recomendación. Acomoda todo ordenado y pon tu nombre al pie.</li>
         </ul>
+        <p>🔒 Tiene 2 puntos de control: llamas a tu maestro, revisa tu pantalla y te da un código del día que escribes en tu archivo. 🎯 Al final hay un mini reto en clase, sin el archivo (una gráfica con otros datos): tu calificación junta el archivo, los puntos de control y el mini reto.</p>
+        <p>✅ La columna Control automático te avisa: ✔ cuando un cálculo está bien y "Revisa" cuando algo no cuadra.</p>
+        <p>📎 Tu libro trae las hojas Refuerzo y Ampliación: úsalas si tu maestro te lo indica.</p>
+        <p>📤 <strong>Guarda tu archivo como 5.3_Grupo_Lista_Apellido.xlsx</strong> (ejemplo: 5.3_3C_12_Lopez.xlsx) y súbelo al formulario. En el formulario elige: <strong>T2-a-s5-3 | 🎨 Diseñando mi Primera Infografía en Excel</strong></p>
       `,
     },
 
@@ -2416,23 +2482,30 @@ const DATOS_PROYECTOS = {
       grupo: "todos",
       formatoEntrega: "digital",
       titulo: "Mi Hoja de Cálculo para Decidir",
-      descripcion: "Cada alumno crea una hoja de cálculo en Excel que resuelve un problema real de toma de decisiones en su vida escolar o familiar.",
+      descripcion: "Usa Excel para tomar una decisión real de tu vida: compara 3 opciones con 5 criterios y sus pesos, calcula cuál gana y explica qué eliges y por qué.",
       avance: 0,
       fechaEntrega: { "3C": "2027-02-02", "3E": "2027-02-02" },
-      materialApoyoUrl: "https://docs.google.com/spreadsheets/d/1WJdm70e8AbrAjy1WPuxqrkPREjTP0zB5hD9ZqYHPkj4/edit?usp=sharing",
+      hojaAlumno: {
+        xlsx: "assets/Trabajos/Alumno/P5_Hoja_para_decidir_Alumno.xlsx",
+        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
+      },
       detalleCompleto: `
-        <p>⏱️ Tiempo: 4 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
-        <p>El alumno elige uno de estos enfoques: planificador de estudio, control de gastos familiares, o comparador de calificaciones.</p>
+        <p>⏱️ Tiempo: 4 sesiones de taller (50 min c/u) | 👥 Modalidad: Individual</p>
+        <p>Elige una decisión real (qué celular, bici, viaje o escuela, por ejemplo) y compara 3 opciones con datos reales o aproximados. La decisión es tuya: nadie más tendrá los mismos datos.</p>
         <ul>
-          <li>Computadora con Excel o LibreOffice</li>
-          <li>Impresora para el entregable final</li>
+          <li>Computadora con Excel, el libro del proyecto P5 y la guía de bolsillo de Excel.</li>
+          <li>Primero llena la hoja Identidad con tu nombre, grupo y número de lista.</li>
         </ul>
         <ul>
-          <li>Sesión 1 — Planificación: elige el problema y diseña la estructura de la hoja en papel primero.</li>
-          <li>Sesión 2 — Ingreso de datos y fórmulas: crea la hoja en Excel con mínimo 15 registros y aplica fórmulas básicas (SUMA, PROMEDIO, SI).</li>
-          <li>Sesión 3 — Gráficas y formato: crea 2 gráficas (barras y pastel) con títulos y aplica formato profesional.</li>
-          <li>Sesión 4 — Conclusión y presentación (entrega): escribe una conclusión de 3 líneas, guarda e imprime, presenta a 2 compañeros.</li>
+          <li>Sesión 1 — Elige y planea: escribe tu pregunta y tus 3 opciones, y elige 5 criterios (precio, calidad, tamaño…) con un peso del 1 al 3 según su importancia. Investiga o estima los datos (si no tienes internet, anótalos en tu cuaderno).</li>
+          <li>Sesión 2 — Captura los datos: califica cada opción en cada criterio del 1 al 5, escribe el precio de cada opción y tu presupuesto, y dales formato Moneda.</li>
+          <li>Sesión 3 — Fórmulas y formato: calcula el puntaje total de cada opción con SUMAPRODUCTO (peso × calificación), marca la mejor con SI y MAX, usa SI para saber si te alcanza y aplica formato condicional (verde para "✔ Mejor", rojo para "No alcanza").</li>
+          <li>Sesión 4 — Gráfica y decisión final: haz una gráfica de columnas con el puntaje de cada opción y escribe tu decisión final y por qué (mínimo 3 frases). Puede ser distinta a la opción con más puntos si lo explicas.</li>
         </ul>
+        <p>🔒 Tiene 4 puntos de control, uno por sesión: le muestras tu avance a tu maestro, revisa tu pantalla y te da un código del día que escribes en tu archivo. 🎯 Al final hay un mini reto en clase, sin el archivo: cambias un peso y explicas qué opción gana ahora y por qué.</p>
+        <p>✅ La columna Control automático te avisa: ✔ cuando algo está bien y "Revisa" cuando algo no cuadra.</p>
+        <p>📎 Tu libro trae las hojas Refuerzo y Ampliación: úsalas si tu maestro te lo indica.</p>
+        <p>📤 <strong>Guarda tu archivo como P5_Grupo_Lista_Apellido.xlsx</strong> (ejemplo: P5_3C_12_Lopez.xlsx) y súbelo al formulario. En el formulario elige: <strong>T2-p-s5 | Mi Hoja de Cálculo para Decidir</strong></p>
       `,
     },
     {
@@ -2567,7 +2640,7 @@ const DATOS_PRESENTACIONES = {
       id: "pres2",
       titulo: "Secuencia 5: Hojas de Cálculo para la Toma de Decisiones",
       descripcion: "Fórmulas, gráficas y formato condicional para organizar información.",
-      gammaEmbedUrl: "https://gamma.app/embed/4ung0vsjiii6f7o",
+      gammaEmbedUrl: "https://gamma.app/embed/za603rmh939vii6",
     },
     {
       id: "pres3",
@@ -4357,9 +4430,12 @@ function crearEnlaceDescarga(url, texto) {
 }
 
 // "hojaAlumno": campo OPCIONAL de tareas, actividades y proyectos
-// ({ pdf, docx }, rutas a assets/Trabajos/Alumno) para la hoja impresa
-// que el alumno llena. Reusa crearEnlaceDescarga (mismo botón secundario
-// que "archivoUrl"/"materialApoyoUrl"), un botón por formato.
+// ({ pdf, docx, xlsx, guia }, rutas a assets/Trabajos/Alumno) para la
+// hoja o el libro que el alumno llena. "xlsx" es el libro de Excel de las
+// secuencias que se trabajan en computadora (S5); "guia" es la guía de
+// bolsillo en PDF que acompaña a ese libro. Reusa crearEnlaceDescarga
+// (mismo botón secundario que "archivoUrl"/"materialApoyoUrl"), un botón
+// por archivo.
 function agregarEnlacesHojaAlumno(tarjeta, item) {
   if (!item.hojaAlumno) return;
   if (item.hojaAlumno.pdf) {
@@ -4367,6 +4443,12 @@ function agregarEnlacesHojaAlumno(tarjeta, item) {
   }
   if (item.hojaAlumno.docx) {
     tarjeta.appendChild(crearEnlaceDescarga(item.hojaAlumno.docx, "📝 Hoja del alumno (Word)"));
+  }
+  if (item.hojaAlumno.xlsx) {
+    tarjeta.appendChild(crearEnlaceDescarga(item.hojaAlumno.xlsx, "📊 Libro de Excel (.xlsx)"));
+  }
+  if (item.hojaAlumno.guia) {
+    tarjeta.appendChild(crearEnlaceDescarga(item.hojaAlumno.guia, "📘 Guía de bolsillo (PDF)"));
   }
 }
 
