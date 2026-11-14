@@ -59,14 +59,53 @@ const DATOS_AVISOS = [
   },
 ];
 
-// Horario de clases de Educación Tecnológica por grupo.
+// Horario de clases de Educación Tecnológica por grupo — el ACTUAL (el
+// más reciente de cada grupo). Para saber qué horario regía en una
+// fecha concreta (asistencia, "¿hay clase este día?", portada) no se lee
+// este arreglo directo: se usa horarioDelGrupoEnFecha(), que también
+// consulta HORARIOS_ANTERIORES.
 const DATOS_HORARIO = [
   { id: "h1", grupo: "3C", dia: "Lunes", horaInicio: "11:40", horaFin: "1:20 pm" },
   { id: "h2", grupo: "3C", dia: "Martes", horaInicio: "12:30", horaFin: "1:20 pm" },
-  { id: "h3", grupo: "3E", dia: "Martes", horaInicio: "7:00", horaFin: "7:50 am" },
-  { id: "h4", grupo: "3E", dia: "Martes", horaInicio: "10:50", horaFin: "11:40 am" },
-  { id: "h5", grupo: "3E", dia: "Miércoles", horaInicio: "7:00", horaFin: "7:50 am" },
+  { id: "h3", grupo: "3E", dia: "Lunes", horaInicio: "10:00", horaFin: "10:50 am" },
+  { id: "h4", grupo: "3E", dia: "Martes", horaInicio: "7:50", horaFin: "8:40 am" },
+  { id: "h5", grupo: "3E", dia: "Jueves", horaInicio: "7:00", horaFin: "7:50 am" },
 ];
+
+// Horarios que ya dejaron de regir, con su último día de vigencia
+// (inclusive). El de 3°E cambió el martes 2026-11-17: hasta el lunes 16
+// tenía clase martes y miércoles, así que la asistencia del Trimestre 1
+// (incluidos los miércoles) se sigue validando contra este horario.
+const HORARIOS_ANTERIORES = [
+  {
+    grupo: "3E",
+    vigenteHasta: "2026-11-16",
+    registros: [
+      { id: "h3-2026", grupo: "3E", dia: "Martes", horaInicio: "7:00", horaFin: "7:50 am" },
+      { id: "h4-2026", grupo: "3E", dia: "Martes", horaInicio: "10:50", horaFin: "11:40 am" },
+      { id: "h5-2026", grupo: "3E", dia: "Miércoles", horaInicio: "7:00", horaFin: "7:50 am" },
+    ],
+  },
+];
+
+// Registros de horario de un grupo que regían en fechaISO ("AAAA-MM-DD").
+// Si la fecha cae dentro de uno o más horarios anteriores, gana el que
+// terminó primero (el más antiguo que todavía cubre esa fecha); si no,
+// el horario actual de DATOS_HORARIO.
+function horarioDelGrupoEnFecha(grupo, fechaISO) {
+  const anterior = HORARIOS_ANTERIORES.filter(
+    (periodo) => periodo.grupo === grupo && fechaISO <= periodo.vigenteHasta
+  ).sort((a, b) => a.vigenteHasta.localeCompare(b.vigenteHasta))[0];
+  if (anterior) return anterior.registros;
+  return DATOS_HORARIO.filter((registro) => registro.grupo === grupo);
+}
+
+// Horario completo (todos los grupos, en el orden de DATOS_HORARIO) que
+// regía en fechaISO.
+function horarioVigenteEn(fechaISO) {
+  const grupos = [...new Set(DATOS_HORARIO.map((registro) => registro.grupo))];
+  return grupos.flatMap((grupo) => horarioDelGrupoEnFecha(grupo, fechaISO));
+}
 
 // Calendario oficial del ciclo escolar SEP 2026-2027 (agosto 2026 a julio
 // 2027): "tipo de día" del ciclo (vacaciones, CTE, suspensión, etc.), un
@@ -1183,16 +1222,21 @@ const DATOS_TAREAS = {
       secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
       titulo: "🔍 Detective de Datos en mi Vida",
-      descripcion: "Busca 5 situaciones de tu día donde alguien (o algo) use datos para tomar decisiones sobre ti.",
-      fechaEntrega: { "3C": "2026-11-17", "3E": "2026-11-17" },
+      descripcion: "Anota 5 situaciones de tu día en las que alguien (o algo) usa datos para decidir sobre ti: qué datos usa, quién decide y si lo sabías.",
+      fechaEntrega: { "3C": "2026-12-01", "3E": "2026-12-03" },
       estado: "pendiente",
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/T4.1_Tarea_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/T4.1_Tarea_Hoja_del_alumno.docx",
+      },
       detalleCompleto: `
-        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla en cuaderno</p>
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla en tu cuaderno o en la hoja de la tarea</p>
         <ul>
-          <li>Tabla: Situación | ¿Qué datos usan? | ¿Quién decide? | ¿Lo sabías?</li>
-          <li>Ejemplos guía: YouTube recomienda videos, mamá revisa tus calificaciones, el camión de la escuela tiene ruta fija, el refrigerador avisa que falta leche, el banco te envía promociones.</li>
+          <li>Tabla de 5 filas: Situación | ¿Qué datos usan? | ¿Quién decide? | ¿Lo sabías? (Sí / No)</li>
+          <li>Ejemplos guía: YouTube recomienda videos, tu mamá revisa tus calificaciones, el camión de la escuela tiene ruta fija, el refrigerador avisa que falta leche, el banco te manda promociones.</li>
         </ul>
         <p>💡 Tip: Puedes preguntar en casa. No necesitas internet.</p>
+        <p>📤 <strong>Entrega la hoja en papel con tu nombre, grupo y número de lista.</strong> En el formulario elige: <strong>T2-t-s4-1 | 🔍 Detective de Datos en mi Vida</strong></p>
       `,
     },
     {
@@ -1200,16 +1244,23 @@ const DATOS_TAREAS = {
       secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
       titulo: "📊 Mi Semana en Números",
-      descripcion: "Registra durante 5 días cuántas horas dedicas a: escuela, redes sociales, deportes, familia y sueño.",
-      fechaEntrega: { "3C": "2026-11-23", "3E": "2026-11-18" },
+      descripcion: "Registra 3 días de escuela tus horas de pantalla y para qué las usaste; saca el total, el promedio y tus días de más y menos uso.",
+      fechaEntrega: { "3C": "2026-12-07", "3E": "2026-12-08" },
       estado: "pendiente",
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/T4.2_Tarea_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/T4.2_Tarea_Hoja_del_alumno.docx",
+      },
       detalleCompleto: `
-        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Tabla + gráfica de barras en cuaderno</p>
+        <p>⏱️ Tiempo: 15 min en total (5 min por día) | 👥 Modalidad: Individual (en casa) | 📦 Entregable: La tabla con tus cuentas, sin gráfica</p>
         <ul>
-          <li>Crea una tabla en tu cuaderno con los 5 días y las 5 categorías.</li>
-          <li>Al final, dibuja una gráfica de barras a mano mostrando el total de horas por categoría.</li>
-          <li>Escribe 3 líneas: "La categoría donde más invierto tiempo es… Esto me sorprende porque… Podría mejorar si…".</li>
+          <li>Tabla de 3 filas: Día y fecha | Horas de pantalla (número) | ¿Para qué la usé más?</li>
+          <li>Cuenta celular, tele, computadora y consola. Revisa "Tiempo de uso" o "Bienestar digital"; si no tienes, suma los ratos del día y redondea a media hora (por ejemplo 4 o 4.5).</li>
+          <li>Mis cuentas: total de los 3 días, promedio por día (suma ÷ 3), día de más uso y día de menos uso.</li>
+          <li>Completa: "Esto me sorprende porque…" y "Podría mejorar si…".</li>
         </ul>
+        <p>💡 Si eliges "Mis hábitos digitales" para tu proyecto, estos datos serán tus primeros registros.</p>
+        <p>📤 <strong>Entrega la hoja en papel con tu nombre, grupo y número de lista.</strong> En el formulario elige: <strong>T2-t-s4-2 | 📊 Mi Semana en Números</strong></p>
       `,
     },
     {
@@ -1217,16 +1268,22 @@ const DATOS_TAREAS = {
       secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
       titulo: "🕵️‍♂️ El Algoritmo me Vigila",
-      descripcion: "Imagina que un algoritmo decide TODO por ti durante un día: qué comer, qué vestir, qué ver, con quién hablar.",
-      fechaEntrega: { "3C": "2026-11-24", "3E": "2026-11-24" },
+      descripcion: "Anota el tema de los últimos 10 videos de tu feed, cuenta cuántos te recomendó la app y elige un tema nuevo para romper tu burbuja.",
+      fechaEntrega: { "3C": "2026-12-08", "3E": "2026-12-10" },
       estado: "pendiente",
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/T4.3_Tarea_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/T4.3_Tarea_Hoja_del_alumno.docx",
+      },
       detalleCompleto: `
-        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Texto de 10 líneas + dibujo</p>
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Hoja de la tarea completa</p>
         <ul>
-          <li>Escribe una historia de 10 líneas narrando un día completo controlado por un algoritmo.</li>
-          <li>Dibuja tu "asistente algorítmico" como si fuera un personaje.</li>
-          <li>Responde: "¿Te gustaría que un algoritmo decidiera por ti? ¿Por qué sí o por qué no?"</li>
+          <li>Anota los últimos 10 videos o publicaciones que te aparecieron: solo el tema (fútbol, humor, música, cocina, noticias, juegos, otro) y si lo buscaste o te lo recomendaron.</li>
+          <li>Cuenta: el tema que más se repitió y cuántos de los 10 te recomendó la app.</li>
+          <li>Responde: ¿qué temas que te gustan NO aparecieron?, ¿qué crees que usó la app para elegirlos? y ¿qué tema distinto vas a buscar esta semana para romper tu burbuja?</li>
         </ul>
+        <p>💡 Si no tienes celular o internet: pregúntale a un familiar o a un amigo, o recuerda los últimos 10 programas o videos que viste en la tele.</p>
+        <p>📤 <strong>Entrega la hoja en papel con tu nombre, grupo y número de lista.</strong> En el formulario elige: <strong>T2-t-s4-3 | 🕵️‍♂️ El Algoritmo me Vigila</strong></p>
       `,
     },
 
@@ -1827,64 +1884,108 @@ const DATOS_ACTIVIDADES = {
       id: "a-s4-1",
       secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
-      titulo: "🧩 Rompecabezas del Pipeline de Datos",
-      descripcion: "Dinámica grupal donde los alumnos forman la cadena completa del pipeline de datos con fichas.",
+      titulo: "🏭 La fábrica de datos del grupo",
+      descripcion: "Conoce los 5 pasos del camino de los datos y, en equipo, limpia una base ficticia de 15 encuestas: formatos, vacíos, repetidos y errores.",
       fecha: { "3C": "2026-11-30", "3E": "2026-12-01" },
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/4.1_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/4.1_Hoja_del_alumno.docx",
+      },
       detalleCompleto: `
-        <p>👥 Modalidad: Grupal, en parejas o individual | ⏱️ Duración: 25 min</p>
+        <p>👥 Modalidad: Individual y en equipos de 4 | ⏱️ Duración: 50 min</p>
         <ul>
-          <li>20 fichas impresas por el docente (5 etapas × 4 descripciones cada una).</li>
-          <li>Etapas: Recolección → Limpieza → Análisis → Visualización → Decisión.</li>
+          <li>Hoja de la actividad 4.1, tira de encuesta anónima y una base ficticia de 15 respuestas.</li>
+          <li>El camino de los datos: Recolección → Limpieza → Análisis → Visualización → Decisión.</li>
         </ul>
         <ul>
-          <li>Cada ficha tiene una etapa o una descripción de lo que pasa en esa etapa.</li>
-          <li>Se reparte una ficha a cada alumno (con 40 alumnos, se hacen 2 rondas o parejas).</li>
-          <li>Los alumnos deben encontrar a sus 4 compañeros de "pipeline" formando la cadena completa.</li>
-          <li>Una vez formados, leen en voz alta y el docente corrige.</li>
+          <li>Apertura (10 min): conoces los 5 pasos y contestas la encuesta anónima. Tú eres el paso 1.</li>
+          <li>Práctica de limpieza (20 min): en equipo buscan formatos distintos, casillas vacías, filas repetidas, datos imposibles y nombres de apps mal escritos, y anotan cómo los arreglaron en la bitácora de auditoría.</li>
+          <li>Ampliación: compara el promedio de horas de pantalla con y sin el dato de 30 horas.</li>
+          <li>Cierre (10 min): tu equipo copia sus datos limpios en la tabla del grupo, que se usa en la siguiente actividad.</li>
         </ul>
+        <p>📤 <strong>Entrega la hoja en papel con tu nombre, grupo y número de lista.</strong> En el formulario elige: <strong>T2-a-s4-1 | 🏭 La fábrica de datos del grupo</strong></p>
+        <p>📎 Si tu maestro te entregó una hoja de refuerzo o de ampliación, entrégala engrapada a tu hoja principal.</p>
       `,
     },
     {
       id: "a-s4-2",
       secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
-      titulo: "🎭 Juego de Roles: El Algoritmo en Acción",
-      descripcion: "Los alumnos representan usuarios de redes sociales y descubren cómo actúa un algoritmo de recomendación.",
-      fecha: { "3C": "2026-12-07", "3E": "2026-12-02" },
+      titulo: "📊 Analiza y grafica",
+      descripcion: "En equipo cuentan con marcas una variable de la encuesta del grupo, sacan promedio y moda y dibujan a mano una gráfica de barras.",
+      fecha: { "3C": "2026-11-30", "3E": "2026-12-03" },
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/4.2_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/4.2_Hoja_del_alumno.docx",
+      },
       detalleCompleto: `
-        <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 35 min</p>
+        <p>👥 Modalidad: Individual y en equipo | ⏱️ Duración: 50 min</p>
         <ul>
-          <li>Hojas con perfiles de usuario impresas, papelógrafo, marcadores.</li>
-          <li>4 perfiles de "usuarios de red social" con edad, gustos y ubicación distintos.</li>
+          <li>Hoja de la actividad 4.2, tarjeta con tu variable y la "Tabla del grupo" de la presentación.</li>
         </ul>
         <ul>
-          <li>En equipos de 4, cada alumno recibe un perfil.</li>
-          <li>El docente ("el algoritmo") muestra 10 "posts"; los alumnos levantan la mano si creen que se lo mostraría a SU usuario.</li>
-          <li>Después de cada post, el equipo discute por qué sí o por qué no.</li>
-          <li>Al final, cada equipo dibuja en papelógrafo qué posts NO vio su usuario y si eso es bueno o malo.</li>
-          <li>Se introduce el concepto de filtro burbuja y sesgo algorítmico.</li>
+          <li>Calentamiento (5 min): calcula un promedio, una moda y la diferencia entre el valor mayor y el menor.</li>
+          <li>Cuentas del equipo (15 min): copia los datos de tu variable, cuenta con marcas y haz las operaciones que pide tu tarjeta. Los "Sin dato" no se cuentan.</li>
+          <li>Gráfica de barras a mano (15 min): escala que empieza en 0 y sube siempre igual, título, ejes con nombre y barras separadas.</li>
+          <li>Conclusión (10 min): escribe algo que puedes afirmar con un número, una pregunta que estos datos NO responden y cómo conseguirías esa información.</li>
+          <li>Cierre (5 min): 3 equipos comparten en 30 segundos su variable y lo que no pudieron saber.</li>
         </ul>
+        <p>📤 <strong>Entrega la hoja en papel con tu nombre, grupo y número de lista.</strong> En el formulario elige: <strong>T2-a-s4-2 | 📊 Analiza y grafica</strong></p>
+        <p>📎 Si tu maestro te entregó una hoja de refuerzo o de ampliación, entrégala engrapada a tu hoja principal.</p>
       `,
     },
     {
       id: "a-s4-3",
       secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
-      titulo: "📊 Taller de Infografías de Papel",
-      descripcion: "En equipos, los alumnos analizan un dataset impreso y crean una infografía en cartulina.",
-      fecha: { "3C": "2026-12-08", "3E": "2026-12-08" },
+      titulo: "🤖 El reclutador robot",
+      descripcion: "Descubre cómo un robot aprende una regla injusta de datos del pasado, revisa su sesgo y analiza cómo te encierra el filtro burbuja.",
+      fecha: { "3C": "2026-12-01", "3E": "2026-12-07" },
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/4.3_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/4.3_Hoja_del_alumno.docx",
+      },
       detalleCompleto: `
-        <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 40 min</p>
+        <p>👥 Modalidad: Individual y en equipo | ⏱️ Duración: 50 min</p>
         <ul>
-          <li>Hojas carta, lápices de colores, reglas, revistas viejas, pegamento.</li>
-          <li>Dataset impreso: "Calificaciones de 20 alumnos en 5 materias".</li>
+          <li>Hoja de la actividad 4.3 con 12 solicitudes pasadas de la tienda TecnoTienda (datos ficticios).</li>
         </ul>
         <ul>
-          <li>Calcular el promedio grupal por materia (a mano, sin calculadora).</li>
-          <li>Identificar qué materia tiene mejor y peor promedio.</li>
-          <li>Crear una infografía en cartulina con título, 3 gráficas de barras, 1 conclusión y 1 pregunta que los datos NO responden.</li>
-          <li>Exposición de 2 minutos por equipo.</li>
+          <li>Entrena al robot (8 min): cuenta solicitudes y contrataciones por zona y descubre la regla que aprendió.</li>
+          <li>El robot decide (10 min): aplica su regla a 6 aspirantes y compárala con tu decisión por mérito (experiencia y prueba práctica).</li>
+          <li>Auditoría del algoritmo (12 min): ¿a quién contrató?, ¿qué dato causó la injusticia, de dónde viene el sesgo y qué 2 soluciones propones?</li>
+          <li>Filtro burbuja (8 min): analiza 3 casos y escribe qué puedes hacer tú para salir de tu propia burbuja.</li>
+          <li>Cierre (5 min): ¿por qué un algoritmo puede ser injusto aunque sea una máquina?</li>
         </ul>
+        <p>📤 <strong>Entrega la hoja en papel con tu nombre, grupo y número de lista.</strong> En el formulario elige: <strong>T2-a-s4-3 | 🤖 El reclutador robot</strong></p>
+        <p>📎 Si tu maestro te entregó una hoja de refuerzo o de ampliación, entrégala engrapada a tu hoja principal.</p>
+      `,
+    },
+    {
+      id: "a-s4-4",
+      secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
+      grupo: "todos",
+      titulo: "🌐 Datos abiertos y Big Data",
+      descripcion: "Lee datos reales del INEGI sobre internet en Jalisco y México, descubre qué no dicen y arranca tu proyecto con tu pregunta y tus datos.",
+      fecha: { "3C": "2026-12-07", "3E": "2026-12-08" },
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/4.4_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/4.4_Hoja_del_alumno.docx",
+      },
+      detalleCompleto: `
+        <p>👥 Modalidad: Individual | ⏱️ Duración: 50 min</p>
+        <ul>
+          <li>Hoja de la actividad 4.4 con datos reales del INEGI (ENDUTIH 2024 Jalisco y ENDUTIH 2025 México).</li>
+        </ul>
+        <ul>
+          <li>Mucho más que 38 respuestas (5 min): qué son los datos abiertos y el Big Data.</li>
+          <li>Datos de Jalisco y de México (14 min): encuentra los usos de internet más y menos frecuentes, resta puntos y compara 2015 con 2025 y zona urbana con rural.</li>
+          <li>Lo que los datos no dicen (6 min): por qué los porcentajes suman más de 100, qué pregunta no responde la tabla y quién podría usar estos datos.</li>
+          <li>Arranque de tu proyecto (25 min): eliges tu propósito (calificaciones, tiempo o hábitos digitales), escribes tu pregunta, haces tu plan de datos y anotas tus primeros registros (mínimo 10).</li>
+        </ul>
+        <p>💡 Guarda esta hoja: la vas a usar en las sesiones de tu proyecto "Mi Análisis de Datos Escolar".</p>
+        <p>📤 <strong>Entrega la hoja en papel con tu nombre, grupo y número de lista.</strong> En el formulario elige: <strong>T2-a-s4-4 | 🌐 Datos abiertos y Big Data</strong></p>
+        <p>📎 Si tu maestro te entregó una hoja de refuerzo o de ampliación, entrégala engrapada a tu hoja principal.</p>
       `,
     },
 
@@ -2286,22 +2387,27 @@ const DATOS_PROYECTOS = {
       secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
       titulo: "Mi Análisis de Datos Escolar",
-      descripcion: "Cada alumno analiza datos reales de su propio rendimiento, tiempo o hábitos y crea un informe visual en papel.",
+      descripcion: "Analiza tus propios datos (calificaciones, tiempo o hábitos digitales): límpialos, haz tus cuentas, grafica a mano y escribe tus conclusiones.",
       avance: 0,
-      fechaEntrega: { "3C": "2026-12-14", "3E": "2026-12-09" },
+      fechaEntrega: { "3C": "2026-12-08", "3E": "2026-12-14" },
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/P4_Proyecto_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/P4_Proyecto_Hoja_del_alumno.docx",
+      },
       detalleCompleto: `
-        <p>⏱️ Tiempo: 3 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual</p>
-        <p>El alumno elige uno de estos enfoques: análisis de sus calificaciones, análisis de su tiempo fuera de clase, o análisis de sus hábitos (sueño, alimentación, ejercicio).</p>
+        <p>⏱️ Tiempo: 2 sesiones de clase (50 min c/u), con arranque en la Actividad 4.4 | 👥 Modalidad: Individual</p>
+        <p>Elige un propósito: tus calificaciones (¿en qué materia necesito mejorar?), tu tiempo fuera de clase (¿cómo uso mis horas?) o tus hábitos digitales (¿cuánto tiempo paso en pantalla y para qué?).</p>
         <ul>
-          <li>Hojas blancas y cartulina para portada, tabla, gráficas y conclusiones</li>
+          <li>Hoja del proyecto, hojas blancas y cartulina para la portada y las gráficas</li>
           <li>Lápices de colores, regla</li>
         </ul>
         <ul>
-          <li>Sesión 1 — Recolección y limpieza: el alumno junta sus datos (calificaciones, horarios, hábitos) y los organiza en una tabla de mínimo 10 registros.</li>
-          <li>Sesión 2 — Análisis y visualización: calcula promedios, identifica patrones y dibuja 2 gráficas de barras o pastel a mano.</li>
-          <li>Sesión 3 — Conclusiones y presentación (entrega): escribe 3 hallazgos, una propuesta de mejora con 2 acciones concretas, y presenta a un compañero.</li>
-          <li>Entrega final: portada + tabla de datos + gráficas + conclusiones + propuesta de mejora, juntos.</li>
+          <li>Sesión 5 — Análisis y gráficas: limpias tu tabla (mínimo 10 registros; nunca inventes un dato, si falta escribe "Sin dato"), haces tus cuentas (suma, promedio, dato más alto, más bajo y moda) y dibujas 2 gráficas de barras o pastel a mano y a color. Las revisas con un compañero.</li>
+          <li>Sesión 6 — Conclusiones y entrega: escribes 3 hallazgos, 2 acciones de mejora, qué decidiría un algoritmo con tus datos y qué sesgo podría tener, 3 preguntas que tus datos NO responden y cómo conseguirías esa información, y un mini glosario (ciencia de datos, algoritmo y Big Data con tus palabras). Presentas tu trabajo 2 minutos a un compañero.</li>
+          <li>Entrega final (en papel, en este orden): portada + tabla de datos limpia + 2 gráficas + hoja del proyecto completa (pasos 1 a 10).</li>
         </ul>
+        <p>📤 <strong>Entrega la hoja en papel con tu nombre, grupo y número de lista.</strong> En el formulario elige: <strong>T2-p-s4 | Mi Análisis de Datos Escolar</strong></p>
+        <p>📎 Si tu maestro te entregó una hoja de refuerzo o de ampliación, entrégala engrapada a tu hoja principal.</p>
       `,
     },
     {
@@ -2455,7 +2561,7 @@ const DATOS_PRESENTACIONES = {
       id: "pres1",
       titulo: "Secuencia 4: Introducción a la Ciencia de Datos",
       descripcion: "Qué son los datos, algoritmos, Big Data y datos abiertos.",
-      gammaEmbedUrl: "https://gamma.app/embed/45iqniawlb21puz",
+      gammaEmbedUrl: "https://gamma.app/embed/ukyk4c216565162",
     },
     {
       id: "pres2",
@@ -3527,8 +3633,10 @@ async function obtenerEventos() {
   }));
 }
 
+// Horario que rige HOY (fecha local del dispositivo): la portada
+// (#horario-clases) muestra el vigente, no necesariamente el más reciente.
 async function obtenerHorario() {
-  return DATOS_HORARIO;
+  return horarioVigenteEn(formatearClaveFecha(new Date()));
 }
 
 // Estas funciones sí reciben el trimestre (1, 2 o 3). Cuando se conecte
@@ -4246,6 +4354,20 @@ function crearEnlaceDescarga(url, texto) {
   enlace.rel = "noopener noreferrer";
   enlace.textContent = texto || "📎 Descargar material";
   return enlace;
+}
+
+// "hojaAlumno": campo OPCIONAL de tareas, actividades y proyectos
+// ({ pdf, docx }, rutas a assets/Trabajos/Alumno) para la hoja impresa
+// que el alumno llena. Reusa crearEnlaceDescarga (mismo botón secundario
+// que "archivoUrl"/"materialApoyoUrl"), un botón por formato.
+function agregarEnlacesHojaAlumno(tarjeta, item) {
+  if (!item.hojaAlumno) return;
+  if (item.hojaAlumno.pdf) {
+    tarjeta.appendChild(crearEnlaceDescarga(item.hojaAlumno.pdf, "📄 Hoja del alumno (PDF)"));
+  }
+  if (item.hojaAlumno.docx) {
+    tarjeta.appendChild(crearEnlaceDescarga(item.hojaAlumno.docx, "📝 Hoja del alumno (Word)"));
+  }
 }
 
 // Botón principal de una tarea: más prominente que crearEnlaceDescarga,
@@ -5946,6 +6068,7 @@ async function renderizarTareas() {
       if (item.materialApoyoUrl) {
         tarjeta.appendChild(crearEnlaceDescarga(item.materialApoyoUrl, "📎 Material de apoyo"));
       }
+      agregarEnlacesHojaAlumno(tarjeta, item);
       if (item.detalleCompleto) {
         tarjeta.appendChild(crearBotonVerDetalle(item));
       }
@@ -6312,6 +6435,7 @@ async function renderizarActividades() {
       if (item.archivoUrl) {
         tarjeta.appendChild(crearEnlaceDescarga(item.archivoUrl));
       }
+      agregarEnlacesHojaAlumno(tarjeta, item);
       if (item.detalleCompleto) {
         tarjeta.appendChild(crearBotonVerDetalle(item));
       }
@@ -6489,6 +6613,7 @@ async function renderizarProyectos() {
       if (item.materialApoyoUrl) {
         tarjeta.appendChild(crearEnlaceDescarga(item.materialApoyoUrl, "📎 Material de apoyo"));
       }
+      agregarEnlacesHojaAlumno(tarjeta, item);
       if (item.detalleCompleto) {
         tarjeta.appendChild(crearBotonVerDetalle(item));
       }
@@ -17048,7 +17173,7 @@ function esDiaDeClasePara(grupo, fechaISO) {
 
   const [anio, mes, dia] = fechaISO.split("-").map(Number);
   const nombreDia = NOMBRES_DIA_COMPLETO[new Date(anio, mes - 1, dia).getDay()];
-  return DATOS_HORARIO.some((registro) => registro.grupo === grupo && registro.dia === nombreDia);
+  return horarioDelGrupoEnFecha(grupo, fechaISO).some((registro) => registro.dia === nombreDia);
 }
 
 // Roster completo del grupo (alumnos_registro, igual que
@@ -22321,8 +22446,10 @@ const MESES_CORTOS_ES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago",
 // Etiqueta visible de cada barra: solo el día de inicio de esa semana
 // (el lunes que ya calcula inicioSemanaISO en obtenerTendenciaSemanalAsistencia),
 // no el rango completo lunes-viernes — un rango fabricado sería engañoso
-// aquí, porque cada grupo solo tiene clase 2 días de esa semana (ver
-// DATOS_HORARIO), no los 5, y además una semana que cruza de mes (ej.
+// aquí, porque cada grupo solo tiene clase algunos días de esa semana
+// (3°C lunes y martes; 3°E martes y miércoles hasta el 16 nov 2026 y
+// lunes, martes y jueves desde el 17 — ver horarioDelGrupoEnFecha), no
+// los 5, y además una semana que cruza de mes (ej.
 // 31 ago-4 sep) necesitaría mostrar 2 meses para no ser incorrecta.
 // "al menos el día de inicio" ya es suficiente para ubicar la semana en
 // el calendario sin ese riesgo.
@@ -22923,9 +23050,9 @@ function activarChatbotReglas() {
    15. FILTRO BURBUJA (trimestre-2-practica.html, Secuencia 4)
    ========================================================= */
 
-// 4 perfiles de usuario — mismo concepto que el Juego de Roles "El
-// Algoritmo en Acción" (ver a-s4-2 en DATOS_ACTIVIDADES[2]), digital en
-// vez de en papel. .interes es el único tipo de post que ese perfil "sí
+// 4 perfiles de usuario — mismo concepto que el filtro burbuja de la
+// Actividad 4.3 "El reclutador robot" (ver a-s4-3 en DATOS_ACTIVIDADES[2]),
+// digital en vez de en papel. .interes es el único tipo de post que ese perfil "sí
 // le interesa" — el resto de la lógica vive en postEsVisiblePorPerfil().
 const DATOS_PERFILES_FILTRO_BURBUJA = [
   { id: "A", nombre: "Videojuegos", emoji: "🎮", interes: "videojuegos" },
