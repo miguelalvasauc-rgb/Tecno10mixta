@@ -2811,7 +2811,7 @@ const DATOS_RETOS = {
         {
           tipo: "detectar_error",
           secuencia: "Secuencia 5 — Hojas de Cálculo",
-          contexto: "Esta fórmula da como resultado el error #DIV/0!",
+          contexto: "Las celdas A1:A5 están vacías y esta fórmula da como resultado el error #DIV/0!",
           fragmento: "=PROMEDIO(A1:A5)",
         },
         {
@@ -3321,10 +3321,10 @@ const DATOS_TEMARIO = {
       id: "tm2-4",
       unidad: "🧮 Secuencia 5 — Hojas de Cálculo",
       titulo: "Primeros pasos en Excel",
-      descripcion: "Celdas, filas, columnas, tipos de datos y formato básico.",
+      descripcion: "Celdas, filas, columnas, rango, tipos de datos, formato básico y fórmulas que empiezan con =.",
       imagen: "assets/temario/t2-seq5-tema1.webp",
       detalleTemario: `
-        <p>🎯 <strong>Qué vas a aprender:</strong> Qué son celdas, filas, columnas, tipos de datos y cómo dar formato básico a una hoja.</p>
+        <p>🎯 <strong>Qué vas a aprender:</strong> Qué son celdas, filas, columnas y rangos, qué tipos de datos puedes escribir, cómo dar formato básico a una hoja y cómo escribir fórmulas que empiezan con =.</p>
         <p>🔍 <strong>Por qué importa:</strong> Es la herramienta que más se usa en oficinas, negocios y hasta para llevar las cuentas de la casa.</p>
         <p>💡 <strong>Dato curioso:</strong> Excel existe desde 1985 — ¡tiene más de 40 años y sigue siendo la hoja de cálculo más usada del mundo!</p>
       `,
@@ -3333,10 +3333,10 @@ const DATOS_TEMARIO = {
       id: "tm2-5",
       unidad: "🧮 Secuencia 5 — Hojas de Cálculo",
       titulo: "Fórmulas y funciones",
-      descripcion: "SUMA, PROMEDIO, CONTAR y otras funciones para analizar datos.",
+      descripcion: "SUMA, PROMEDIO, MAX, MIN, CONTAR.SI, SI y referencias fijas con $.",
       imagen: "assets/temario/t2-seq5-tema2.webp",
       detalleTemario: `
-        <p>🎯 <strong>Qué vas a aprender:</strong> A usar SUMA, PROMEDIO, CONTAR y otras funciones para analizar datos automáticamente.</p>
+        <p>🎯 <strong>Qué vas a aprender:</strong> A usar SUMA, PROMEDIO, MAX, MIN, CONTAR.SI y SI, y a fijar una celda con $ para copiar tus fórmulas sin que se muevan.</p>
         <p>🔍 <strong>Por qué importa:</strong> En vez de sumar a mano 100 números, una fórmula lo hace en un segundo y sin errores.</p>
         <p>💡 <strong>Dato curioso:</strong> Excel tiene más de 450 funciones distintas — en la secundaria usarás apenas un puñado de las más útiles.</p>
       `,
@@ -3345,10 +3345,10 @@ const DATOS_TEMARIO = {
       id: "tm2-6",
       unidad: "🧮 Secuencia 5 — Hojas de Cálculo",
       titulo: "Gráficos e infografías",
-      descripcion: "Cómo representar datos visualmente para tomar mejores decisiones.",
+      descripcion: "Gráficas, ordenar, formato condicional y decisión con criterios y pesos (SUMAPRODUCTO).",
       imagen: "assets/temario/t2-seq5-tema3.webp",
       detalleTemario: `
-        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo representar tus datos visualmente para tomar mejores decisiones.</p>
+        <p>🎯 <strong>Qué vas a aprender:</strong> Cómo representar tus datos con gráficas, ordenarlos, resaltarlos con formato condicional y tomar una decisión con criterios y pesos (SUMAPRODUCTO).</p>
         <p>🔍 <strong>Por qué importa:</strong> Convertir una tabla aburrida en una gráfica clara ayuda a explicar tus ideas a cualquier persona.</p>
         <p>💡 <strong>Dato curioso:</strong> Combinar datos con buen diseño es exactamente lo que hacen los periódicos y noticieros para explicar estadísticas.</p>
       `,
@@ -3583,6 +3583,12 @@ const DATOS_GLOSARIO = {
     { id: "gl-b2-20", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Porcentaje", definicion: "Parte de un total expresada en base 100" },
     { id: "gl-b2-21", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Gráfica", definicion: "Representación visual de datos" },
     { id: "gl-b2-22", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Infografía", definicion: "Combinación de datos, gráficas y diseño para comunicar un mensaje" },
+    { id: "gl-b2-36", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Referencia fija ($)", definicion: "Celda con $ (ej: $B$12) que no se mueve cuando copias la fórmula" },
+    { id: "gl-b2-37", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "CONTAR.SI", definicion: "Cuenta cuántas veces aparece algo en un rango (ej: tus horas de Tecnología)" },
+    { id: "gl-b2-38", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "SUMAPRODUCTO", definicion: "Multiplica cada dato por su peso y suma todo en un solo paso" },
+    { id: "gl-b2-39", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Formato condicional", definicion: "Regla que pinta una celda de un color según su valor (ej: rojo si dice \"Reponer\")" },
+    { id: "gl-b2-40", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Criterio y peso", definicion: "Criterio: lo que te importa al decidir; peso: qué tanto importa (del 1 al 3)" },
+    { id: "gl-b2-41", secuencia: 5, secuenciaTitulo: "🧮 Secuencia 5 — Hojas de Cálculo", termino: "Errores comunes", definicion: "#¡DIV/0!: divides entre cero o una celda vacía; #¿NOMBRE?: función mal escrita; #####: la columna es muy angosta" },
 
     // ===== SECUENCIA 6 — SEGURIDAD DIGITAL =====
     { id: "gl-b2-23", secuencia: 6, secuenciaTitulo: "🔒 Secuencia 6 — Seguridad Digital", termino: "Ciberseguridad", definicion: "Protección de sistemas y datos en el entorno digital" },
