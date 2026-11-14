@@ -200,9 +200,11 @@ const CALENDARIO_ESCOLAR_2026_2027 = [
 // El resto del contenido SÍ depende del trimestre. Cada constante es un
 // objeto { 1: [...], 2: [...], 3: [...] } para que, más adelante, cada
 // clave se pueda mapear a su propia pestaña de Google Sheets.
-// "niveles" describe los 4 niveles de desempeño de cada rúbrica
-// (Excelente, Bueno, Regular, Deficiente) sobre una escala de 0 a 20
-// puntos. La tarjeta de rúbrica los muestra al expandirse.
+// "niveles" describe los niveles de desempeño de cada rúbrica
+// (Excelente, Bueno, Regular, Deficiente): de 1 a 4 puntos por criterio,
+// 24 en total por proyecto. S5 usa 10 puntos (pesos 1·2·3·2·1·1 del libro
+// P5; sus criterios de 1 punto omiten "Bueno"). La tarjeta de rúbrica
+// los muestra al expandirse.
 const DATOS_RUBRICAS = {
   1: [
     // ===== PROYECTO: MI CHATBOT EN PAPEL (Secuencia 1 - IA) =====
@@ -484,13 +486,13 @@ const DATOS_RUBRICAS = {
       secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
       titulo: "🔗 Relación Datos-Algoritmos-Decisiones",
-      descripcion: "Evalúa la comprensión de cómo los datos y algoritmos influyen en decisiones cotidianas.",
+      descripcion: "Evalúa si explica qué decidiría un algoritmo con sus propios datos y a quién afectaría esa decisión.",
       ponderacion: "4 de 24 pts — Proyecto: Mi Análisis de Datos Escolar",
       niveles: [
-        { nivel: "Excelente", puntos: "4", descripcion: "Explica la relación con 4+ ejemplos concretos de su vida cotidiana." },
-        { nivel: "Bueno", puntos: "3", descripcion: "Explica la relación con 2-3 ejemplos básicos." },
-        { nivel: "Regular", puntos: "2", descripcion: "Menciona la relación pero sin ejemplos claros." },
-        { nivel: "Deficiente", puntos: "1", descripcion: "No establece relación entre datos, algoritmos y decisiones." },
+        { nivel: "Excelente", puntos: "4", descripcion: "Explica con sus datos qué decidiría un algoritmo, quién usaría esa decisión y cómo le afectaría." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Explica qué decidiría un algoritmo con sus datos, sin decir a quién afecta." },
+        { nivel: "Regular", puntos: "2", descripcion: "Menciona una decisión sin relacionarla con sus datos." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No relaciona sus datos con una decisión." },
       ],
     },
     {
@@ -498,13 +500,13 @@ const DATOS_RUBRICAS = {
       secuencia: "📘 Secuencia 4 — Ciencia de Datos · Proyecto: Mi Análisis de Datos Escolar",
       grupo: "todos",
       titulo: "🕵️‍♂️ Identificación de Sesgos Algorítmicos",
-      descripcion: "Evalúa la capacidad de identificar sesgos en recomendaciones algorítmicas y proponer soluciones.",
+      descripcion: "Evalúa si reconoce un sesgo que podría tener el algoritmo con sus datos y propone cómo hacerlo más justo.",
       ponderacion: "4 de 24 pts — Proyecto: Mi Análisis de Datos Escolar",
       niveles: [
-        { nivel: "Excelente", puntos: "4", descripcion: "Identifica 3+ sesgos en recomendaciones y propone soluciones." },
-        { nivel: "Bueno", puntos: "3", descripcion: "Identifica 2 sesgos algorítmicos básicos." },
-        { nivel: "Regular", puntos: "2", descripcion: "Identifica 1 sesgo de forma vaga." },
-        { nivel: "Deficiente", puntos: "1", descripcion: "No identifica sesgos algorítmicos." },
+        { nivel: "Excelente", puntos: "4", descripcion: "Identifica un sesgo concreto del algoritmo con sus datos, explica por qué es injusto y propone cómo corregirlo." },
+        { nivel: "Bueno", puntos: "3", descripcion: "Identifica un sesgo y propone una mejora general." },
+        { nivel: "Regular", puntos: "2", descripcion: "Menciona un sesgo de forma vaga, sin propuesta." },
+        { nivel: "Deficiente", puntos: "1", descripcion: "No identifica sesgos." },
       ],
     },
     {
@@ -551,88 +553,86 @@ const DATOS_RUBRICAS = {
     },
 
     // ===== PROYECTO: MI HOJA DE CÁLCULO PARA DECIDIR (Secuencia 5 - Hojas de Cálculo) =====
+    // Pesos del libro P5 (hoja Instrucciones): 1 · 2 · 3 · 2 · 1 · 1 = 10 pts, directo a la calificación.
     {
       id: "s5c1",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
-      titulo: "🖥️ Manejo de la Interfaz",
-      descripcion: "Evalúa la fluidez al navegar la hoja de cálculo, crear hojas y aplicar formato.",
-      ponderacion: "4 de 24 pts — Proyecto: Mi Hoja de Cálculo para Decidir",
+      titulo: "❓ Pregunta, Opciones y Criterios",
+      descripcion: "Evalúa si plantea su decisión con una pregunta, 3 opciones y 5 criterios con su peso.",
+      ponderacion: "1 de 10 pts — Proyecto: Mi Hoja de Cálculo para Decidir",
       niveles: [
-        { nivel: "Excelente", puntos: "4", descripcion: "Navega con fluidez, usa atajos, crea múltiples hojas y formato avanzado." },
-        { nivel: "Bueno", puntos: "3", descripcion: "Navega correctamente, crea hojas y aplica formato básico." },
-        { nivel: "Regular", puntos: "2", descripcion: "Navega con dificultad, necesita ayuda frecuente." },
-        { nivel: "Deficiente", puntos: "1", descripcion: "No logra navegar la interfaz." },
+        { nivel: "Excelente", puntos: "1", descripcion: "Escribe su pregunta, sus 3 opciones y 5 criterios, cada uno con peso del 1 al 3." },
+        { nivel: "Regular", puntos: "0.5", descripcion: "Le falta la pregunta, alguna opción o algún criterio, o pone pesos fuera de 1 a 3." },
+        { nivel: "Deficiente", puntos: "0", descripcion: "No escribe su pregunta, opciones ni criterios." },
       ],
     },
     {
       id: "s5c2",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
-      titulo: "🔢 Uso de Fórmulas",
-      descripcion: "Evalúa el uso correcto de fórmulas básicas (SUMA, PROMEDIO, CONTAR, SI).",
-      ponderacion: "4 de 24 pts — Proyecto: Mi Hoja de Cálculo para Decidir",
+      titulo: "🗂️ Datos Completos",
+      descripcion: "Evalúa si califica cada opción en cada criterio y anota precios y presupuesto realistas.",
+      ponderacion: "2 de 10 pts — Proyecto: Mi Hoja de Cálculo para Decidir",
       niveles: [
-        { nivel: "Excelente", puntos: "4", descripcion: "Usa 4+ fórmulas (SUMA, PROMEDIO, CONTAR, SI) correctamente y las explica." },
-        { nivel: "Bueno", puntos: "3", descripcion: "Usa 2-3 fórmulas correctamente." },
-        { nivel: "Regular", puntos: "2", descripcion: "Usa 1 fórmula con errores o no las entiende." },
-        { nivel: "Deficiente", puntos: "1", descripcion: "No usa fórmulas o todas son incorrectas." },
+        { nivel: "Excelente", puntos: "2", descripcion: "Califica las 3 opciones en los 5 criterios (del 1 al 5) y anota precios y presupuesto realistas." },
+        { nivel: "Bueno", puntos: "1.5", descripcion: "Le faltan 1 o 2 datos, o alguno no es realista." },
+        { nivel: "Regular", puntos: "1", descripcion: "Le faltan varios datos: calificaciones, precios o presupuesto." },
+        { nivel: "Deficiente", puntos: "0", descripcion: "No captura los datos de sus opciones." },
       ],
     },
     {
       id: "s5c3",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
-      titulo: "📊 Creación de Gráficas",
-      descripcion: "Evalúa la creación de gráficas con título, leyenda, ejes y colores apropiados.",
-      ponderacion: "4 de 24 pts — Proyecto: Mi Hoja de Cálculo para Decidir",
+      titulo: "🔢 Fórmulas (SUMAPRODUCTO, SI, MAX)",
+      descripcion: "Evalúa si las fórmulas del proyecto calculan el puntaje, marcan la mejor opción y revisan el presupuesto.",
+      ponderacion: "3 de 10 pts — Proyecto: Mi Hoja de Cálculo para Decidir",
       niveles: [
-        { nivel: "Excelente", puntos: "4", descripcion: "Crea 2+ gráficas con título, leyenda, ejes y colores apropiados." },
-        { nivel: "Bueno", puntos: "3", descripcion: "Crea 1-2 gráficas básicas con título." },
-        { nivel: "Regular", puntos: "2", descripcion: "Crea 1 gráfica incompleta o sin formato." },
-        { nivel: "Deficiente", puntos: "1", descripcion: "No crea gráficas." },
+        { nivel: "Excelente", puntos: "3", descripcion: "Sus 3 fórmulas funcionan: SUMAPRODUCTO para el puntaje, SI con MAX para la mejor opción y SI para el presupuesto." },
+        { nivel: "Bueno", puntos: "2", descripcion: "2 de sus 3 fórmulas funcionan." },
+        { nivel: "Regular", puntos: "1", descripcion: "Solo 1 fórmula funciona." },
+        { nivel: "Deficiente", puntos: "0", descripcion: "Ninguna fórmula funciona o escribe los resultados a mano." },
       ],
     },
     {
       id: "s5c4",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
-      titulo: "🎨 Diseño Visual y Infografía",
-      descripcion: "Evalúa la combinación creativa de datos y elementos visuales en la infografía.",
-      ponderacion: "4 de 24 pts — Proyecto: Mi Hoja de Cálculo para Decidir",
+      titulo: "📊 Formato y Gráfica",
+      descripcion: "Evalúa si su hoja se lee bien y si la gráfica muestra el puntaje de cada opción.",
+      ponderacion: "2 de 10 pts — Proyecto: Mi Hoja de Cálculo para Decidir",
       niveles: [
-        { nivel: "Excelente", puntos: "4", descripcion: "Diseño excepcional, combinación creativa de datos y elementos visuales." },
-        { nivel: "Bueno", puntos: "3", descripcion: "Diseño agradable, buena combinación de datos y visuales." },
-        { nivel: "Regular", puntos: "2", descripcion: "Diseño básico, poco cuidado en presentación." },
-        { nivel: "Deficiente", puntos: "1", descripcion: "Diseño descuidado o ausente." },
+        { nivel: "Excelente", puntos: "2", descripcion: "Hace una gráfica de columnas con título y el puntaje de cada opción, usa formato Moneda y formato condicional, y todo se lee." },
+        { nivel: "Bueno", puntos: "1.5", descripcion: "Hace la gráfica con título, pero le falta el formato Moneda o el formato condicional." },
+        { nivel: "Regular", puntos: "1", descripcion: "Hace la gráfica sin título o con datos que no se leen." },
+        { nivel: "Deficiente", puntos: "0", descripcion: "No hace gráfica ni da formato a su hoja." },
       ],
     },
     {
       id: "s5c5",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
-      titulo: "🧠 Aplicación a Casos Reales",
-      descripcion: "Evalúa la resolución de un problema real con datos propios y conclusiones sustentadas.",
-      ponderacion: "4 de 24 pts — Proyecto: Mi Hoja de Cálculo para Decidir",
+      titulo: "🧠 Decisión Explicada",
+      descripcion: "Evalúa si escribe su decisión final y la explica con sus propios datos.",
+      ponderacion: "1 de 10 pts — Proyecto: Mi Hoja de Cálculo para Decidir",
       niveles: [
-        { nivel: "Excelente", puntos: "4", descripcion: "Resuelve problema real con datos propios y conclusiones basadas en evidencia." },
-        { nivel: "Bueno", puntos: "3", descripcion: "Resuelve problema básico con datos dados y conclusiones simples." },
-        { nivel: "Regular", puntos: "2", descripcion: "Resuelve problema con dificultades, conclusiones sin sustento." },
-        { nivel: "Deficiente", puntos: "1", descripcion: "No aplica hojas de cálculo a un caso real." },
+        { nivel: "Excelente", puntos: "1", descripcion: "Escribe su decisión final en al menos 3 frases y la explica con sus datos (puntajes o presupuesto)." },
+        { nivel: "Regular", puntos: "0.5", descripcion: "Escribe su decisión, pero no la explica con sus datos." },
+        { nivel: "Deficiente", puntos: "0", descripcion: "No escribe su decisión final." },
       ],
     },
     {
       id: "s5c6",
       secuencia: "📗 Secuencia 5 — Hojas de Cálculo · Proyecto: Mi Hoja de Cálculo para Decidir",
       grupo: "todos",
-      titulo: "📝 Presentación y Documentación",
-      descripcion: "Evalúa la organización, nombre y documentación del archivo entregado.",
-      ponderacion: "4 de 24 pts — Proyecto: Mi Hoja de Cálculo para Decidir",
+      titulo: "🔒 Puntos de Control y Mini Reto",
+      descripcion: "Evalúa los 4 códigos del día del proyecto y el mini reto final en clase.",
+      ponderacion: "1 de 10 pts — Proyecto: Mi Hoja de Cálculo para Decidir",
       niveles: [
-        { nivel: "Excelente", puntos: "4", descripcion: "Archivo bien organizado, nombrado correctamente, con documentación clara." },
-        { nivel: "Bueno", puntos: "3", descripcion: "Archivo organizado, mínimos errores de nombre o estructura." },
-        { nivel: "Regular", puntos: "2", descripcion: "Archivo desorganizado, errores frecuentes." },
-        { nivel: "Deficiente", puntos: "1", descripcion: "No entrega archivo o está corrupto." },
+        { nivel: "Excelente", puntos: "1", descripcion: "Tiene los 4 códigos del día y resuelve el mini reto: cambia un peso y explica qué opción gana." },
+        { nivel: "Regular", puntos: "0.5", descripcion: "Le faltan códigos o no resuelve el mini reto." },
+        { nivel: "Deficiente", puntos: "0", descripcion: "No tiene códigos ni presenta el mini reto." },
       ],
     },
 
