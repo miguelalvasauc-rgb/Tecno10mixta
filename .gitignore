@@ -12,8 +12,21 @@ Prompt_ClaudeCode_Bloque3.md
 # graphify: índice local, regenerable con `graphify update .`
 graphify-out/
 
-# Material del T2: no publicar antes de desbloquear el trimestre
-assets/Trabajos/
+# Material del T2: no publicar antes de desbloquear el trimestre.
+# Todo assets/Trabajos sigue ignorado EXCEPTO las hojas del alumno de S4
+# (actividades 4.1-4.4, tareas T4.1-T4.3 y proyecto P4, .docx y .pdf).
+# Diferenciación, S5 y S6 siguen sin publicarse. Git no puede reincluir
+# un archivo si su carpeta está ignorada, por eso se ignora el CONTENIDO
+# (/*) y se reincluye la subcarpeta Alumno/ antes de las excepciones.
+assets/Trabajos/*
+!assets/Trabajos/Alumno/
+assets/Trabajos/Alumno/*
+!assets/Trabajos/Alumno/4.[1-4]_Hoja_del_alumno.docx
+!assets/Trabajos/Alumno/4.[1-4]_Hoja_del_alumno.pdf
+!assets/Trabajos/Alumno/T4.[1-3]_Tarea_Hoja_del_alumno.docx
+!assets/Trabajos/Alumno/T4.[1-3]_Tarea_Hoja_del_alumno.pdf
+!assets/Trabajos/Alumno/P4_Proyecto_Hoja_del_alumno.docx
+!assets/Trabajos/Alumno/P4_Proyecto_Hoja_del_alumno.pdf
 
 # Notas y fuentes de trabajo
 /Proyectos del Trimestre*.md
