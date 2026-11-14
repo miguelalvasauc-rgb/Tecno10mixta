@@ -4103,6 +4103,12 @@ function ocultarOverlayCargaTrimestre(overlay) {
 // portada y en FAQ, esos enlaces deben apuntar a la página de este
 // último trimestre visto (ver actualizarEnlacesTrimestreEnSidebar).
 const CLAVE_ULTIMO_TRIMESTRE = "ultimoTrimestreVisto";
+// Se lee ANTES del "|| '1'" de abajo: ese respaldo sigue igual para todo
+// lo demás, pero un dispositivo que nunca ha abierto una página de
+// trimestre no tiene un "último visto" real, y su menú debe llevar al
+// trimestre desbloqueado (ver trimestreDestinoMenu, sección 8).
+const tieneHistorialTrimestre =
+  localStorage.getItem(CLAVE_ULTIMO_TRIMESTRE) !== null || Boolean(TRIMESTRE_ACTUAL);
 let ultimoTrimestreVisto = localStorage.getItem(CLAVE_ULTIMO_TRIMESTRE) || "1";
 if (TRIMESTRE_ACTUAL) {
   ultimoTrimestreVisto = TRIMESTRE_ACTUAL;
@@ -10793,28 +10799,86 @@ const ANCLAS_PRACTICA = [
   "proyectos",
 ];
 
+// Trimestre al que apunta el menú de Trimestre (riel y barra inferior)
+// fuera de las páginas de trimestre:
+// - Con historial (ultimoTrimestreVisto guardado), ese trimestre.
+// - Sin historial, el trimestre desbloqueado; si todavía no se conoce, el
+//   último valor en caché de este dispositivo; y si tampoco hay, "1".
+// Solo lee memoria/localStorage, nunca espera a Supabase: así se puede
+// llamar al inicio de la carga y de nuevo cuando llega la respuesta.
+function trimestreDestinoMenu() {
+  if (TRIMESTRE_ACTUAL || tieneHistorialTrimestre) return ultimoTrimestreVisto;
+
+  const esTrimestreValido = (numero) => Number.isInteger(numero) && numero >= 1 && numero <= 3;
+  if (esTrimestreValido(trimestreDesbloqueado)) return String(trimestreDesbloqueado);
+
+  const enCache = Number(localStorage.getItem(CLAVE_CACHE_TRIMESTRE_DESBLOQUEADO));
+  if (esTrimestreValido(enCache)) return String(enCache);
+
+  return "1";
+}
+
+// Badge del ícono "Trimestre", anclas data-enlace, texto "Trimestre N" y
+// tab 1°/2°/3° activa — todo lo que depende solo del destino del menú, no
+// de trimestreDesbloqueado. Corre al inicio de DOMContentLoaded (antes de
+// cualquier await) para que un clic temprano ya vaya al trimestre correcto,
+// y otra vez desde actualizarEnlacesTrimestreEnSidebar() en dispositivos
+// sin historial, cuando ya se conoce el trimestre desbloqueado.
+function reescribirEnlacesTrimestreMenu() {
+  const destino = trimestreDestinoMenu();
+
+  // En las páginas de trimestre destino === TRIMESTRE_ACTUAL (ver la
+  // sincronización de ultimoTrimestreVisto en la sección 2).
+  document.querySelectorAll(".trimestre-badge").forEach((badge) => {
+    badge.textContent = destino;
+  });
+
+  // En una página de trimestre las anclas ya son locales ("#temario").
+  if (TRIMESTRE_ACTUAL) return;
+
+  ANCLAS_TEORIA.forEach((id) => {
+    document.querySelectorAll('[data-enlace="' + id + '"]').forEach((enlace) => {
+      enlace.href = "trimestre-" + destino + ".html#" + id;
+    });
+  });
+
+  ANCLAS_PRACTICA.forEach((id) => {
+    document.querySelectorAll('[data-enlace="' + id + '"]').forEach((enlace) => {
+      enlace.href = "trimestre-" + destino + "-practica.html#" + id;
+    });
+  });
+
+  document.querySelectorAll("[data-texto-trimestre]").forEach((texto) => {
+    texto.textContent = "Trimestre " + destino;
+  });
+
+  document.querySelectorAll(".riel-flyout__trimestre-tab[data-trimestre-tab]").forEach((tab) => {
+    const activo = tab.dataset.trimestreTab === destino;
+    tab.classList.toggle("riel-flyout__trimestre-tab--activo", activo);
+    tab.setAttribute("aria-selected", String(activo));
+  });
+}
+
 // Puebla a la vez el flyout de Trimestre del riel (desktop) y el sheet de
 // Trimestre de la barra inferior (móvil): mismo dato (badge, píldora
 // "Activo", candados, anclas, tab activa), dos contenedores según
 // breakpoint — por eso todas las consultas de abajo son de página
 // completa (querySelectorAll/[data-*]), no escopeadas a un único flyout.
+// Necesita trimestreDesbloqueado ya resuelto (píldora y candados); el
+// destino de las anclas ya lo puso reescribirEnlacesTrimestreMenu() al
+// inicio de la carga.
 function actualizarEnlacesTrimestreEnSidebar() {
-  // El badge del ícono "Trimestre" (riel y barra inferior) refleja
-  // ultimoTrimestreVisto en cualquier página (incluidas las de trimestre,
-  // donde ya coincide con TRIMESTRE_ACTUAL — ver la sincronización en la
-  // sección 2).
-  document.querySelectorAll(".trimestre-badge").forEach((badge) => {
-    badge.textContent = ultimoTrimestreVisto;
-  });
+  // Sin historial, el destino puede haber cambiado ahora que se conoce
+  // el trimestre desbloqueado (antes era el de caché o el respaldo "1").
+  // Con historial el resultado sería idéntico, así que no se repite.
+  if (!tieneHistorialTrimestre) reescribirEnlacesTrimestreMenu();
 
   // Píldora "Activo" junto al título del flyout/sheet: solo si el
   // trimestre que se está mostrando ahí (TRIMESTRE_ACTUAL en páginas de
-  // trimestre, ultimoTrimestreVisto en el resto) es el mismo que
+  // trimestre, el destino del menú en el resto) es el mismo que
   // trimestreDesbloqueado — no simplemente "el que se visitó por última
-  // vez". Corre en las 7 páginas, antes del early-return de abajo (ese
-  // early-return es solo para el reescrito de anclas/tabs, que no aplica
-  // en páginas de trimestre).
-  const numeroMostrado = Number(TRIMESTRE_ACTUAL || ultimoTrimestreVisto);
+  // vez". Corre en las 7 páginas.
+  const numeroMostrado = Number(TRIMESTRE_ACTUAL || trimestreDestinoMenu());
   const estadoMostrado = calcularEstadoTrimestre(numeroMostrado);
   document.querySelectorAll(".pill-activo-trimestre").forEach((pill) => {
     pill.hidden = estadoMostrado !== "actual";
@@ -10831,30 +10895,6 @@ function actualizarEnlacesTrimestreEnSidebar() {
     tab.classList.toggle("riel-flyout__trimestre-tab--bloqueada", bloqueada);
     const numeroTexto = numero + "°";
     tab.textContent = bloqueada ? "🔒 " + numeroTexto : numeroTexto;
-  });
-
-  if (TRIMESTRE_ACTUAL) return;
-
-  ANCLAS_TEORIA.forEach((id) => {
-    document.querySelectorAll('[data-enlace="' + id + '"]').forEach((enlace) => {
-      enlace.href = "trimestre-" + ultimoTrimestreVisto + ".html#" + id;
-    });
-  });
-
-  ANCLAS_PRACTICA.forEach((id) => {
-    document.querySelectorAll('[data-enlace="' + id + '"]').forEach((enlace) => {
-      enlace.href = "trimestre-" + ultimoTrimestreVisto + "-practica.html#" + id;
-    });
-  });
-
-  document.querySelectorAll("[data-texto-trimestre]").forEach((texto) => {
-    texto.textContent = "Trimestre " + ultimoTrimestreVisto;
-  });
-
-  document.querySelectorAll(".riel-flyout__trimestre-tab[data-trimestre-tab]").forEach((tab) => {
-    const activo = tab.dataset.trimestreTab === ultimoTrimestreVisto;
-    tab.classList.toggle("riel-flyout__trimestre-tab--activo", activo);
-    tab.setAttribute("aria-selected", String(activo));
   });
 }
 
@@ -23314,6 +23354,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   crearBarraGrupo();
   activarPilaFija();
   const marcarRenderInicialListo = sostenerAnclaEnCarga();
+  // Destino del menú de Trimestre con lo que ya hay en localStorage, sin
+  // esperar las consultas a Supabase de abajo (ver trimestreDestinoMenu).
+  reescribirEnlacesTrimestreMenu();
 
   // Un evento forzado (Navidad, ver Fase 4) gana siempre sobre el tema
   // personal — ni siquiera se lee localStorage/Supabase de temaActual en
