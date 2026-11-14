@@ -1295,7 +1295,7 @@ const DATOS_TAREAS = {
       formatoEntrega: "digital",
       titulo: "🏠 Mi Presupuesto Mensual",
       descripcion: "En Excel, calcula si a una familia ficticia le alcanza su ingreso del mes: total de gastos, lo que sobra, porcentajes y una gráfica circular.",
-      fechaEntrega: { "3C": "2026-12-15", "3E": "2026-12-16" },
+      fechaEntrega: { "3C": "2027-01-12", "3E": "2027-01-11" },
       estado: "pendiente",
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/T5.1_Presupuesto_mensual_Alumno.xlsx",
@@ -1326,7 +1326,7 @@ const DATOS_TAREAS = {
       formatoEntrega: "digital",
       titulo: "📐 Mi Horario Escolar como Hoja de Cálculo",
       descripcion: "Captura tu horario real en Excel, dale formato con colores y bordes, y cuenta tus horas de Tecnología con CONTAR.SI.",
-      fechaEntrega: { "3C": "2027-01-12", "3E": "2027-01-13" },
+      fechaEntrega: { "3C": "2027-01-11", "3E": "2027-01-07" },
       estado: "pendiente",
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/T5.2_Horario_escolar_Alumno.xlsx",
@@ -1355,7 +1355,7 @@ const DATOS_TAREAS = {
       formatoEntrega: "digital",
       titulo: "📊 Mi Tienda Imaginaria",
       descripcion: "Inventa tu tienda con 6 productos en Excel y calcula ingreso, ganancia y si cada producto gana o pierde, con una gráfica de ingresos.",
-      fechaEntrega: { "3C": "2027-01-25", "3E": "2027-01-26" },
+      fechaEntrega: { "3C": "2027-01-18", "3E": "2027-01-12" },
       estado: "pendiente",
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/T5.3_Tienda_imaginaria_Alumno.xlsx",
@@ -2037,7 +2037,7 @@ const DATOS_ACTIVIDADES = {
       formatoEntrega: "digital",
       titulo: "🖥️ Explorando la Interfaz",
       descripcion: "Conoce la pantalla de Excel, escribe texto, números y fechas en tus primeras celdas, dales formato y crea una hoja nueva.",
-      fecha: { "3C": "2027-01-11", "3E": "2027-01-12" },
+      fecha: { "3C": "2026-12-14", "3E": "2026-12-15" },
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/5.1_Explorando_la_interfaz_Alumno.xlsx",
         guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
@@ -2067,7 +2067,7 @@ const DATOS_ACTIVIDADES = {
       formatoEntrega: "digital",
       titulo: "🔢 Fórmulas en Acción: El Supermercado Escolar",
       descripcion: "Calcula con fórmulas el inventario de un supermercado escolar ficticio, decide qué reponer con la función SI y grafica los 5 productos con mayor total.",
-      fecha: { "3C": "2027-01-18", "3E": "2027-01-19" },
+      fecha: { "3C": "2026-12-15", "3E": "2026-12-17" },
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/5.2_Supermercado_escolar_Alumno.xlsx",
         guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
@@ -2098,7 +2098,7 @@ const DATOS_ACTIVIDADES = {
       formatoEntrega: "digital",
       titulo: "🎨 Diseñando mi Primera Infografía en Excel",
       descripcion: "Con una encuesta ficticia sobre cómo llegas a la escuela, calcula totales y porcentajes, haz una gráfica circular y una de columnas y arma tu infografía en Excel.",
-      fecha: { "3C": "2027-01-26", "3E": "2027-01-27" },
+      fecha: { "3C": "2027-01-11", "3E": "2027-01-07" },
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/5.3_Infografia_de_datos_Alumno.xlsx",
         guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
@@ -2484,7 +2484,7 @@ const DATOS_PROYECTOS = {
       titulo: "Mi Hoja de Cálculo para Decidir",
       descripcion: "Usa Excel para tomar una decisión real de tu vida: compara 3 opciones con 5 criterios y sus pesos, calcula cuál gana y explica qué eliges y por qué.",
       avance: 0,
-      fechaEntrega: { "3C": "2027-02-02", "3E": "2027-02-02" },
+      fechaEntrega: { "3C": "2027-01-18", "3E": "2027-01-18" },
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/P5_Hoja_para_decidir_Alumno.xlsx",
         guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
