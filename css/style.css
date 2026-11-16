@@ -1574,6 +1574,50 @@ a {
   color: var(--color-turquesa);
 }
 
+/* Franja fija de celulares (trimestre-1/2/3.html): en el flujo normal
+   entre las migas y el banner — no es sticky, así que nunca tapa las
+   migas ni el enlace "Saltar al contenido". 14px mínimo; el foco usa la
+   regla global a:focus-visible.
+   Mobile-first: el acento turquesa va arriba y el margen lateral es
+   mínimo, porque el texto mide ~600px en una línea y a 360px solo cabe
+   en 2 líneas si cada una tiene ~344px útiles. */
+.franja-celulares {
+  background-color: var(--color-superficie);
+  border-top: 3px solid var(--color-turquesa);
+  border-bottom: 1px solid var(--color-borde);
+  padding: 0.4rem 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .franja-celulares {
+    border-top: 0;
+    border-left: 4px solid var(--color-turquesa);
+    padding: 0.4rem 1rem;
+  }
+}
+
+.franja-celulares p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--color-texto);
+  text-align: center;
+}
+
+/* Color de texto (no turquesa): en temas claros como amor-y-amistad el
+   turquesa del tema no llega a 4.5:1 sobre la superficie. El subrayado
+   sí va en turquesa, como acento. */
+.franja-celulares a,
+.aviso-tarjeta__enlace a {
+  color: var(--color-texto);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--color-turquesa);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
 /* Ícono distintivo por trimestre: PNG como mask-image para que el color
    siga viniendo de --color-primario (tema activo) y no de píxeles fijos
    del PNG — se adapta a los 13 temas sin tocar validate_palette.js. */
@@ -2352,6 +2396,55 @@ summary {
    renglones vacíos al inicio/final). */
 .lista-avisos .aviso-tarjeta__cuerpo p {
   white-space: pre-line;
+}
+
+/* Aviso fijo (celulares): misma tarjeta, fuera de .lista-avisos (ver
+   index.html). Borde turquesa del tema en vez del primario: en claro y
+   oscuro es el #14B8A6 institucional. El ícono ocupa el lugar de la fecha. */
+.aviso-tarjeta--fijo {
+  border-left-color: var(--color-turquesa);
+  margin-bottom: 1rem;
+}
+
+.aviso-tarjeta__icono {
+  font-size: 1.75rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.aviso-tarjeta__lista {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.aviso-tarjeta__lista li {
+  display: flex;
+  gap: 0.5rem;
+  font-size: var(--tamano-fuente-accion);
+  color: var(--color-texto);
+}
+
+.aviso-tarjeta__lista li > span {
+  flex-shrink: 0;
+}
+
+.aviso-tarjeta__cuerpo .aviso-tarjeta__nota {
+  margin-top: 0.6rem;
+  font-style: italic;
+}
+
+/* El enlace (faq.html#celulares) toma el estilo de .franja-celulares a. */
+.aviso-tarjeta__cuerpo .aviso-tarjeta__enlace {
+  margin-top: 0.6rem;
+}
+
+/* El nowrap es solo para la franja: aquí el texto es más largo y en la
+   columna angosta de la tarjeta (360px) se saldría del borde. */
+.aviso-tarjeta__enlace a {
+  white-space: normal;
 }
 
 /* Escritorio: cada aviso es una fila ancha y baja en vez de una tarjeta
@@ -5079,6 +5172,30 @@ summary {
   height: auto;
   margin: 1rem auto 0;
   border-radius: 10px;
+}
+
+/* "Fuentes oficiales" de faq.html#celulares: la lista reutiliza
+   .padres-lista-enlaces (mismo color de enlace y foco por tema). */
+.faq-fuentes {
+  margin-top: 1.5rem;
+}
+
+.faq-fuentes h3 {
+  margin: 0 0 0.75rem;
+  font-size: var(--tamano-fuente-subtitulo-tarjeta);
+  color: var(--color-texto);
+}
+
+/* Sin descripción al lado: el ancho fijo de 300px de padres.html partía
+   el enlace largo en dos renglones aunque hubiera espacio. */
+.faq-fuentes .padres-lista-enlaces li a {
+  flex: 0 1 auto;
+}
+
+.faq-fuentes__nota {
+  margin: 1rem 0 0;
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto-suave);
 }
 
 .padres-lista-enlaces {

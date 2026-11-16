@@ -476,6 +476,26 @@
         <h2>Avisos y anuncios</h2>
         <p>Mantente al tanto de la información más reciente del grupo.</p>
       </div>
+      <!-- Aviso fijo (sin cerrar, sin localStorage, sin filtro de grupo):
+           va FUERA de #contenedor-avisos porque renderizarAvisos() vacía
+           ese <ul> con innerHTML = "" en cada carga. -->
+      <div class="aviso-tarjeta aviso-tarjeta--fijo" role="note" aria-labelledby="aviso-celulares-titulo">
+        <div class="aviso-tarjeta__icono" aria-hidden="true">📵</div>
+        <div class="aviso-tarjeta__cuerpo">
+          <div class="aviso-tarjeta__cabecera">
+            <h3 id="aviso-celulares-titulo">Celulares en la escuela</h3>
+          </div>
+          <p>Desde el martes 3 de noviembre, el uso del celular está prohibido durante toda la jornada escolar (clases y recreos), por disposición de la SEP (Acuerdo 09/09/26).</p>
+          <ul class="aviso-tarjeta__lista">
+            <li><span aria-hidden="true">🏠</span> Lo mejor es dejarlo en casa.</li>
+            <li><span aria-hidden="true">🩺</span> Excepciones: emergencias, salud o inclusión.</li>
+            <li><span aria-hidden="true">📞</span> ¿Emergencia? Puedes llamar a tu familia desde el teléfono de la escuela.</li>
+            <li><span aria-hidden="true">🎯</span> ¿Para qué? Más concentración, mejor convivencia y más bienestar. También reduce el riesgo de robo a la salida.</li>
+          </ul>
+          <p class="aviso-tarjeta__nota">Este sitio es para consultarse fuera del horario de clase.</p>
+          <p class="aviso-tarjeta__enlace"><a href="faq.html#celulares">Más información y fuentes oficiales</a></p>
+        </div>
+      </div>
       <ul id="contenedor-avisos" class="lista-avisos" aria-live="polite"></ul>
     </section>
 
