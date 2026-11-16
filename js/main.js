@@ -2603,7 +2603,7 @@ const DATOS_PROYECTOS = {
         <p>⚠️ Nada de contraseñas reales ni datos personales de nadie (domicilio, teléfono, cuentas) en tu manual. Los casos y datos salen de la Hoja de casos; si usas otro caso, anota de dónde lo sacaste. Escríbelo con tus palabras: un manual copiado de un compañero no se califica.</p>
         <p>🔒 Tiene 4 puntos de control, uno por sesión: tu maestro revisa tu pantalla y te da un código del día que anotas en tu hoja del proyecto.</p>
         <p>📤 <strong>Entrega tu tríptico impreso en clase y guarda el archivo como P6_Grupo_Lista_Apellido.docx</strong> (ejemplo: P6_3C_12_Lopez.docx); súbelo al formulario. En el formulario elige: <strong>T2-p-s6 | Mi Manual de Supervivencia Digital</strong></p>
-        <p>📎 Si tu maestro te entregó una hoja de refuerzo o de ampliación, guárdala engrapada a tu hoja principal.</p>
+        <p>📎 Si tu maestro te entregó una hoja de refuerzo o de ampliación, entrégala engrapada a tu hoja principal.</p>
       `,
     },
   ],
