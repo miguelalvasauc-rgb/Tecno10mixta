@@ -639,7 +639,7 @@ const DATOS_RUBRICAS = {
     // ===== PROYECTO: MI MANUAL DE SUPERVIVENCIA DIGITAL (Secuencia 6 - Seguridad Digital) =====
     {
       id: "s6c1",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
       titulo: "🛡️ Evaluación de Sistemas Tecnológicos",
       descripcion: "Evalúa el análisis crítico de sistemas con criterios técnicos de seguridad.",
@@ -653,7 +653,7 @@ const DATOS_RUBRICAS = {
     },
     {
       id: "s6c2",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
       titulo: "🔐 Gestión de Contraseñas y Cifrado",
       descripcion: "Evalúa la creación de contraseñas seguras y la comprensión del cifrado básico.",
@@ -667,7 +667,7 @@ const DATOS_RUBRICAS = {
     },
     {
       id: "s6c3",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
       titulo: "🕵️‍♂️ Identificación de Amenazas",
       descripcion: "Evalúa la identificación de amenazas digitales con ejemplos reales.",
@@ -681,7 +681,7 @@ const DATOS_RUBRICAS = {
     },
     {
       id: "s6c4",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
       titulo: "📰 Análisis de Casos Históricos",
       descripcion: "Evalúa el análisis de casos históricos de ataques cibernéticos.",
@@ -695,7 +695,7 @@ const DATOS_RUBRICAS = {
     },
     {
       id: "s6c5",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
       titulo: "⚖️ Ética Digital y Ciudadanía",
       descripcion: "Evalúa la propuesta de reglas de ciudadanía digital con argumentos sólidos.",
@@ -709,7 +709,7 @@ const DATOS_RUBRICAS = {
     },
     {
       id: "s6c6",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
       titulo: "📝 Presentación del Manual",
       descripcion: "Evalúa la estructura, claridad e ilustraciones del manual entregado.",
@@ -5693,7 +5693,7 @@ async function renderizarRubricas() {
         nombreNivel.textContent = nivelInfo.nivel;
         const puntosNivel = document.createElement("span");
         puntosNivel.className = "nivel-item__puntos";
-        puntosNivel.textContent = nivelInfo.puntos + " pts";
+        puntosNivel.textContent = nivelInfo.puntos + (nivelInfo.puntos === "1" ? " pt" : " pts");
         infoNivel.append(nombreNivel, puntosNivel);
 
         const iconoNivel = document.createElement("span");
