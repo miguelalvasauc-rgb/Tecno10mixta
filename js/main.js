@@ -11619,6 +11619,25 @@ function crearBarraGrupo() {
 
   estado.append(icono, textoLargo, textoCorto, notaAccesible);
 
+  // AVISO CELULARES: quitar cuando ya no aplique (también su CSS
+  // .barra-grupo__celulares y la franja/recordatorio de trimestre-1/2/3.html).
+  // Solo en las páginas que traen .franja-celulares (los 3 trimestres).
+  let enlaceCelulares = null;
+  if (document.querySelector(".franja-celulares")) {
+    enlaceCelulares = document.createElement("a");
+    enlaceCelulares.className = "barra-grupo__celulares";
+    enlaceCelulares.href = "faq.html#celulares";
+    enlaceCelulares.title = "Celulares en la escuela";
+    enlaceCelulares.setAttribute("aria-label", "Celulares en la escuela: ver información");
+    const iconoCelulares = document.createElement("span");
+    iconoCelulares.setAttribute("aria-hidden", "true");
+    iconoCelulares.textContent = "📵";
+    const textoCelulares = document.createElement("span");
+    textoCelulares.className = "barra-grupo__celulares-texto";
+    textoCelulares.textContent = "Celulares";
+    enlaceCelulares.append(iconoCelulares, textoCelulares);
+  }
+
   const opciones = document.createElement("div");
   opciones.id = "barra-grupo-opciones";
   opciones.className = "barra-grupo__opciones";
@@ -11632,7 +11651,7 @@ function crearBarraGrupo() {
   anuncio.className = "sr-only";
   anuncio.setAttribute("aria-live", "polite");
 
-  barra.append(estado, opciones, anuncio);
+  barra.append(estado, ...(enlaceCelulares ? [enlaceCelulares] : []), opciones, anuncio);
 
   const ancla = document.querySelector(".migas-de-pan") || document.getElementById("main-content");
   ancla.parentNode.insertBefore(barra, ancla);

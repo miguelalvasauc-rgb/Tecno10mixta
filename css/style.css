@@ -1604,6 +1604,27 @@ a {
   text-align: center;
 }
 
+/* AVISO CELULARES: quitar cuando ya no aplique.
+   Variante de espaciado para el recordatorio al final de <main> en
+   trimestre-1/2/3.html: misma franja, como bloque separado del borde y
+   centrado, en el flujo normal (no sticky). */
+.franja-celulares--final {
+  margin: 1.5rem 1rem 2rem;
+  border: 1px solid var(--color-borde);
+  border-top: 3px solid var(--color-turquesa);
+  border-radius: var(--radio-lg);
+  padding: 0.75rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .franja-celulares--final {
+    max-width: 48rem;
+    margin: 2rem auto 2.5rem;
+    border-top: 1px solid var(--color-borde);
+    border-left: 4px solid var(--color-turquesa);
+  }
+}
+
 /* Color de texto (no turquesa): en temas claros como amor-y-amistad el
    turquesa del tema no llega a 4.5:1 sobre la superficie. El subrayado
    sí va en turquesa, como acento. */
@@ -16075,6 +16096,78 @@ body.modo-demo-toast-visible {
      medía 54.59px. Con 1.4 caben en los 44px útiles y la barra conserva
      --alto-barra-grupo, que también usa scroll-padding-top. */
   .barra-grupo--destacada .barra-grupo__estado {
+    line-height: 1.4;
+  }
+}
+
+/* AVISO CELULARES: quitar cuando ya no aplique (lo crea crearBarraGrupo()
+   en js/main.js, solo en trimestre-1/2/3.html).
+   Chip a faq.html#celulares dentro de la barra de grupo. margin-left:auto
+   lo junta con los botones de grupo (a la derecha) en vez de dejarlo
+   flotando al centro por el space-between. Colores neutros de la barra
+   (texto/superficie/borde): AA en todos los temas, sin turquesa.
+   Medido en navegador: con "📵 Celulares" (111px) la barra solo cabe en una
+   línea desde ~443px de ancho, así que el chip completo aparece desde
+   480px; debajo es solo el ícono, 44×44. */
+.barra-grupo__celulares {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  margin-left: auto;
+  padding: 0;
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.barra-grupo__celulares:hover {
+  background-color: var(--color-superficie-alterna);
+}
+
+/* Mismo anillo de foco neutro que .barra-grupo__opcion. */
+:root .barra-grupo .barra-grupo__celulares:focus-visible {
+  outline-color: var(--color-texto);
+  outline-offset: 2px;
+}
+
+.barra-grupo__celulares-texto {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .barra-grupo__celulares {
+    padding: 0 0.75rem;
+  }
+
+  .barra-grupo__celulares-texto {
+    display: inline;
+  }
+}
+
+/* Debajo de 400px los 3 botones de grupo pasan de 53px a 47px de ancho
+   (siguen en 44px de alto) para que el chip quepa en la misma línea. */
+@media (max-width: 399.98px) {
+  .barra-grupo__celulares ~ .barra-grupo__opciones .barra-grupo__opcion {
+    min-width: 47px;
+    padding-inline: 0.5rem;
+  }
+}
+
+/* A 320px "Grupo: 3°E" pasa a 2 líneas (ya pasaba sin el chip con los 3
+   botones de docente); con line-height 1.4 caben en 44px y la barra se
+   queda en 53px, mismo arreglo que .barra-grupo--destacada. */
+@media (max-width: 359.98px) {
+  .barra-grupo:has(.barra-grupo__celulares) .barra-grupo__estado {
     line-height: 1.4;
   }
 }
