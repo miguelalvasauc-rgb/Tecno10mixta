@@ -15,8 +15,12 @@ graphify-out/
 # Material del T2: no publicar antes de desbloquear el trimestre.
 # Todo assets/Trabajos sigue ignorado EXCEPTO las hojas del alumno de S4
 # (actividades 4.1-4.4, tareas T4.1-T4.3 y proyecto P4, .docx y .pdf) y
-# los libros del alumno de S5 (7 .xlsx) con su guía de bolsillo en PDF.
-# Diferenciación, material del docente y S6 siguen sin publicarse. Git no puede reincluir
+# los libros del alumno de S5 (7 .xlsx) con su guía de bolsillo en PDF, y
+# el material del alumno de S6 (hojas 6.1-6.3, T6.1-T6.3 y P6 en .docx y
+# .pdf, anexo de hallazgos y casos, tarjetas de correos, laboratorio de
+# contraseñas y simulador Detective de phishing).
+# Diferenciación, material del docente y Prueba_de_compatibilidad siguen
+# sin publicarse. Git no puede reincluir
 # un archivo si su carpeta está ignorada, por eso se ignora el CONTENIDO
 # (/*) y se reincluye la subcarpeta Alumno/ antes de las excepciones.
 assets/Trabajos/*
@@ -36,6 +40,17 @@ assets/Trabajos/Alumno/*
 !assets/Trabajos/Alumno/T5.3_Tienda_imaginaria_Alumno.xlsx
 !assets/Trabajos/Alumno/P5_Hoja_para_decidir_Alumno.xlsx
 !assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf
+!assets/Trabajos/Alumno/6.[1-3]_Hoja_del_alumno.docx
+!assets/Trabajos/Alumno/6.[1-3]_Hoja_del_alumno.pdf
+!assets/Trabajos/Alumno/T6.[1-3]_Tarea_Hoja_del_alumno.docx
+!assets/Trabajos/Alumno/T6.[1-3]_Tarea_Hoja_del_alumno.pdf
+!assets/Trabajos/Alumno/P6_Proyecto_Hoja_del_alumno.docx
+!assets/Trabajos/Alumno/P6_Proyecto_Hoja_del_alumno.pdf
+!assets/Trabajos/Alumno/P6_Anexo_Hallazgos_y_Casos.docx
+!assets/Trabajos/Alumno/P6_Anexo_Hallazgos_y_Casos.pdf
+!assets/Trabajos/Alumno/6.1_Tarjetas_de_correos_impresas.pdf
+!assets/Trabajos/Alumno/6.2_Laboratorio_de_contrasenas_Alumno.xlsx
+!assets/Trabajos/Alumno/Detective_de_phishing.html
 
 # Notas y fuentes de trabajo
 /Proyectos del Trimestre*.md
