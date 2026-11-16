@@ -1003,7 +1003,8 @@ const DATOS_RUBRICAS = {
 // corta de la tarjeta. Si el campo no existe, el botón no se muestra.
 const DATOS_TAREAS = {
   // Fechas reales, verificadas contra CALENDARIO_ESCOLAR_2026_2027
-  // (126/126 coinciden con días lectivos).
+  // (128/128 fechas en día lectivo; horario 3C lun/mar, 3E lun/mar/jue desde
+  // el 17-nov. Pendiente aparte: 9 fechas de 3E del T3 aún en miércoles).
   1: [
     {
       id: "t5",
@@ -1214,7 +1215,8 @@ const DATOS_TAREAS = {
     },
   ],
   // Fechas reales, verificadas contra CALENDARIO_ESCOLAR_2026_2027
-  // (126/126 coinciden con días lectivos).
+  // (128/128 fechas en día lectivo; horario 3C lun/mar, 3E lun/mar/jue desde
+  // el 17-nov. Pendiente aparte: 9 fechas de 3E del T3 aún en miércoles).
   2: [
     // ===== SECUENCIA 4: CIENCIA DE DATOS =====
     {
@@ -1378,60 +1380,95 @@ const DATOS_TAREAS = {
       `,
     },
 
-    // ===== SECUENCIA 6: SEGURIDAD DIGITAL AVANZADA =====
+    // ===== SECUENCIA 6: SEGURIDAD DIGITAL Y CIUDADANÍA =====
     {
       id: "t-s6-1",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
-      titulo: "🔍 Mi Huella Digital",
-      descripcion: "Haz una lista de TODAS las cuentas, apps, juegos y redes sociales donde tienes perfil.",
-      fechaEntrega: { "3C": "2027-02-09", "3E": "2027-02-10" },
+      formatoEntrega: "digital",
+      titulo: "🔍 Mi huella digital",
+      descripcion: "Anota 6 lugares donde tengas cuenta o perfil, qué datos diste y si son públicos o privados, y elige un cambio de privacidad para esta semana.",
+      fechaEntrega: { "3C": "2027-02-08", "3E": "2027-02-08" },
       estado: "pendiente",
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/T6.1_Tarea_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/T6.1_Tarea_Hoja_del_alumno.docx",
+      },
       detalleCompleto: `
-        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Lista + dibujo en cuaderno</p>
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Hoja de la tarea T6.1 (Word o papel)</p>
         <ul>
-          <li>Tabla: Plataforma | ¿Qué datos di? (nombre, foto, teléfono, escuela, dirección) | ¿Es privado o público?</li>
-          <li>Responde: "Si un desconocido viera toda esta información, ¿qué podría saber de ti? ¿Te preocupa?"</li>
-          <li>Dibuja tu "huella digital" como una huella de pie donde cada línea es una plataforma.</li>
+          <li>Tu huella digital es todo lo que dejas en internet. Anota 6 lugares donde tengas cuenta o perfil (redes, juegos, apps, tiendas, escuela). No escribas contraseñas.</li>
+          <li>Tabla: Plataforma o app | ¿Qué datos di? (nombre, foto, teléfono, escuela…) | ¿Público o privado? | ¿Lo cambiaría? (Sí / No)</li>
         </ul>
+        <ul>
+          <li>Responde: "Si un desconocido viera toda esta información, ¿qué podría saber de ti? ¿Te preocupa?"</li>
+          <li>Elige una cuenta y escribe un cambio de privacidad que harás esta semana.</li>
+          <li>Opcional: dibuja tu huella digital al reverso, como una huella de pie donde cada línea es una plataforma.</li>
+        </ul>
+        <p>💡 Si no tienes celular o internet: pregunta en casa o recuerda dónde has dado tus datos (la escuela, una tienda, un videojuego, un programa de la tele). Cuenta igual.</p>
+        <p>📤 <strong>Guarda tu archivo como T6.1_Grupo_Lista_Apellido.docx</strong> (ejemplo: T6.1_3C_12_Lopez.docx) y súbelo al formulario. Si no puedes, entrega la hoja impresa o en papel con tu nombre, grupo y número de lista. En el formulario elige: <strong>T2-t-s6-1 | 🔍 Mi huella digital</strong></p>
       `,
     },
     {
       id: "t-s6-2",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
-      titulo: "🔐 La Contraseña Invencible",
-      descripcion: "Crea 3 contraseñas seguras para 3 situaciones diferentes y explica por qué son fuertes.",
-      fechaEntrega: { "3C": "2027-02-16", "3E": "2027-02-17" },
+      formatoEntrega: "digital",
+      titulo: "🔐 La contraseña invencible",
+      descripcion: "Crea 3 contraseñas de ejemplo (banco, redes sociales y escuela) con frase + números + símbolos, pruébalas en el laboratorio de Excel y explica por qué son fuertes.",
+      fechaEntrega: { "3C": "2027-02-15", "3E": "2027-02-11" },
       estado: "pendiente",
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/T6.2_Tarea_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/T6.2_Tarea_Hoja_del_alumno.docx",
+        xlsx: "assets/Trabajos/Alumno/6.2_Laboratorio_de_contrasenas_Alumno.xlsx",
+      },
       detalleCompleto: `
-        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: 3 contraseñas + explicación</p>
+        <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Hoja de la tarea T6.2 + prueba en el laboratorio de Excel</p>
+        <p>⚠️ <strong>Regla de oro:</strong> escribe contraseñas de EJEMPLO. No uses ninguna que uses de verdad, ni tu nombre, fecha de nacimiento o teléfono.</p>
         <ul>
-          <li>Reglas: mínimo 12 caracteres, mayúsculas, minúsculas, números y símbolos. NO usar datos personales.</li>
-          <li>Crea una contraseña para: el banco, redes sociales y la escuela, explicando por qué cada una es fuerte.</li>
-          <li>Responde: "¿Usas la misma contraseña en varios lugares? ¿Por qué eso es peligroso?"</li>
+          <li>Usa la fórmula frase + números + símbolos y mínimo 12 caracteres.</li>
+          <li>Tabla para Banco, Redes sociales y Escuela: Frase base | Contraseña de ejemplo | Largo / tipos | ¿Por qué es fuerte?</li>
+          <li>Pruébalas en el laboratorio de Excel de la Actividad 6.2 para anotar su largo y los tipos de caracteres.</li>
         </ul>
+        <ul>
+          <li>Responde: "¿Usas la misma contraseña en varios lugares? ¿Por qué eso es peligroso?"</li>
+          <li>Tu sistema: ¿cómo vas a recordar contraseñas distintas sin repetirlas ni dejarlas a la vista?</li>
+        </ul>
+        <p>💡 Dato real: en 2021 entraron a una empresa de gasolina de Estados Unidos con la contraseña de una cuenta que ya nadie usaba y que no tenía verificación en dos pasos.</p>
+        <p>📤 <strong>Guarda tu archivo como T6.2_Grupo_Lista_Apellido.docx</strong> (ejemplo: T6.2_3C_12_Lopez.docx) y súbelo al formulario. Si no puedes, entrega la hoja impresa o en papel con tu nombre, grupo y número de lista. En el formulario elige: <strong>T2-t-s6-2 | 🔐 La contraseña invencible</strong></p>
       `,
     },
     {
       id: "t-s6-3",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
-      titulo: "📰 Reportero de Ciberseguridad",
-      descripcion: "Investiga un caso de robo de datos o estafa por internet y cuéntalo como noticia.",
-      fechaEntrega: { "3C": "2027-03-01", "3E": "2027-03-02" },
+      formatoEntrega: "digital",
+      titulo: "📰 Reportero de ciberseguridad",
+      descripcion: "Elige un caso de la Hoja de casos y cuéntalo como noticia con tus palabras: qué pasó, qué se afectó, cómo se pudo evitar y 3 consejos de prevención.",
+      fechaEntrega: { "3C": "2027-02-15", "3E": "2027-02-15" },
       estado: "pendiente",
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/T6.3_Tarea_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/T6.3_Tarea_Hoja_del_alumno.docx",
+      },
       detalleCompleto: `
-        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Noticia de 10 líneas + cartel de prevención</p>
+        <p>⏱️ Tiempo: 25 min | 👥 Modalidad: Individual (en casa) | 📦 Entregable: Hoja de la tarea T6.3 (Word o papel)</p>
         <ul>
-          <li>Formato: titular, fecha, redacción de 8-10 líneas, ¿qué información se robó?, ¿cómo se pudo evitar?</li>
-          <li>Dibuja un cartel de prevención con 3 consejos visuales (candado, ojo tachado, escudo).</li>
+          <li>Elige un caso de la Hoja de casos (ILOVEYOU, WannaCry, Equifax, Colonial Pipeline o Twitter). Si prefieres otro caso de robo de datos o estafa, pregunta en casa o recuerda una noticia.</li>
+          <li>Escribe el titular y la fecha del hecho.</li>
+          <li>Noticia de 8 a 10 líneas con tus propias palabras: ¿qué pasó, a quién y cómo?</li>
+          <li>¿Qué información o servicio se vio afectado? ¿Cómo se pudo evitar?</li>
+          <li>Cartel de prevención: 3 consejos para tus compañeros (candado, ojo tachado y escudo); puedes dibujarlos al reverso.</li>
         </ul>
+        <p>📚 La Hoja de casos viene en el Anexo de hallazgos y casos, que está en el apartado de materiales de S6.</p>
+        <p>📤 <strong>Guarda tu archivo como T6.3_Grupo_Lista_Apellido.docx</strong> (ejemplo: T6.3_3C_12_Lopez.docx) y súbelo al formulario. Si no puedes, entrega la hoja impresa o en papel con tu nombre, grupo y número de lista. En el formulario elige: <strong>T2-t-s6-3 | 📰 Reportero de ciberseguridad</strong></p>
       `,
     },
   ],
   // Fechas reales, verificadas contra CALENDARIO_ESCOLAR_2026_2027
-  // (126/126 coinciden con días lectivos).
+  // (128/128 fechas en día lectivo; horario 3C lun/mar, 3E lun/mar/jue desde
+  // el 17-nov. Pendiente aparte: 9 fechas de 3E del T3 aún en miércoles).
   3: [
     // ===== SECUENCIA 7: SOLUCIONES DIGITALES =====
     {
@@ -1701,7 +1738,8 @@ const DATOS_PROYECTOS_3E = {
 // comentario ahí); abre el modal "📖 Ver detalles" con HTML de confianza.
 const DATOS_ACTIVIDADES = {
   // Fechas reales, verificadas contra CALENDARIO_ESCOLAR_2026_2027
-  // (126/126 coinciden con días lectivos).
+  // (128/128 fechas en día lectivo; horario 3C lun/mar, 3E lun/mar/jue desde
+  // el 17-nov. Pendiente aparte: 9 fechas de 3E del T3 aún en miércoles).
   1: [
     {
       id: "a4",
@@ -2115,63 +2153,91 @@ const DATOS_ACTIVIDADES = {
       `,
     },
 
-    // ===== SECUENCIA 6: SEGURIDAD DIGITAL AVANZADA =====
+    // ===== SECUENCIA 6: SEGURIDAD DIGITAL Y CIUDADANÍA =====
     {
       id: "a-s6-1",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
-      titulo: "🎭 Teatro de Phishing",
-      descripcion: "En equipos, los alumnos clasifican correos reales y de phishing e identifican señales de alarma.",
-      fecha: { "3C": "2027-02-08", "3E": "2027-02-03" },
+      formatoEntrega: "fisico",
+      titulo: "🎣 Detective de phishing",
+      descripcion: "Aprende las 6 señales del phishing (A a F) y revisa 8 correos ficticios: decide si cada uno es phishing o real, anota sus señales y qué harías.",
+      fecha: { "3C": "2027-02-02", "3E": "2027-02-02" },
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/6.1_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/6.1_Hoja_del_alumno.docx",
+      },
       detalleCompleto: `
-        <p>👥 Modalidad: Equipos de 4 | ⏱️ Duración: 30 min</p>
+        <p>👥 Modalidad: Individual y en pareja | ⏱️ Duración: 50 min</p>
         <ul>
-          <li>Tarjetas impresas con 8 correos (4 reales, 4 de phishing), marcadores, papelógrafo.</li>
+          <li>Hoja de la actividad 6.1 y la simulación "Detective de phishing" en tu computadora (o las tarjetas impresas). Los dos están en el apartado de materiales de S6.</li>
+          <li>Las 6 señales: A remitente o dirección rara · B urgencia o amenaza · C premio o regalo inesperado · D pide datos, tarjeta o contraseña · E enlace o archivo sospechoso · F saludo genérico o faltas de ortografía.</li>
         </ul>
         <ul>
-          <li>Clasifican cada correo como phishing o real y subrayan las señales de alarma (faltas de ortografía, URLs raras, urgencia extrema, premios inesperados).</li>
-          <li>Escriben en papelógrafo las "5 señales de phishing" consensuadas y las presentan.</li>
-          <li>El docente comenta el caso real de WannaCry (2017) como ejemplo histórico.</li>
+          <li>Apertura (5 min): conoces las 6 señales y la pregunta que te haces con cada una.</li>
+          <li>Investigación (25 min): revisas 8 correos inventados. Marcas si es phishing o real, anotas las letras de las señales que encuentres y escribes qué harías. Un correo real no tiene señales.</li>
+          <li>Pareja de detectives (10 min): comparan los correos 1 y 4, comentan cuál fue el más difícil y escriben las 3 señales que más se repitieron.</li>
+          <li>Un caso real (5 min): el gusano ILOVEYOU (4 de mayo de 2000) llegaba como archivo adjunto y se reenviaba solo a los contactos. ¿Cuál de las señales A a F habría ayudado a no caer?</li>
         </ul>
+        <p>🔒 Al cierre, tu maestro revisa tu hoja o tu pantalla y te da un código del día que anotas en tu hoja. 🎯 Mini reto: tu maestro puede pedirte, sin la hoja, que clasifiques un correo nuevo y expliques tus señales.</p>
+        <p>📤 <strong>Muestra tu hoja a tu maestro y guárdala.</strong> En el formulario elige: <strong>T2-a-s6-1 | 🎣 Detective de phishing</strong></p>
+        <p>📎 Si tu maestro te entregó una hoja de refuerzo o de ampliación, guárdala engrapada a tu hoja principal.</p>
       `,
     },
     {
       id: "a-s6-2",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
-      titulo: "🏰 Construyendo Murallas Digitales",
-      descripcion: "En equipos, los alumnos diseñan un 'castillo digital' con 3 niveles de defensa contra amenazas.",
-      fecha: { "3C": "2027-02-15", "3E": "2027-02-16" },
+      formatoEntrega: "fisico",
+      titulo: "🏰 Murallas digitales",
+      descripcion: "Mide qué tan fuertes son 4 contraseñas de prueba en un laboratorio de Excel, cifra y descifra con el cifrado César y protege un documento de Word con contraseña.",
+      fecha: { "3C": "2027-02-08", "3E": "2027-02-04" },
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/6.2_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/6.2_Hoja_del_alumno.docx",
+        xlsx: "assets/Trabajos/Alumno/6.2_Laboratorio_de_contrasenas_Alumno.xlsx",
+      },
       detalleCompleto: `
-        <p>👥 Modalidad: Equipos de 3 | ⏱️ Duración: 35 min</p>
+        <p>👥 Modalidad: Individual, con un compañero en el cifrado César | ⏱️ Duración: 50 min</p>
+        <p>⚠️ <strong>Regla de oro de hoy:</strong> nunca escribas una contraseña que uses de verdad. Aquí solo se usan contraseñas de práctica; al terminar, no las uses en ninguna cuenta.</p>
         <ul>
-          <li>Hojas de papel, lápices de colores, cartulinas.</li>
+          <li>Hoja de la actividad 6.2, computadora con Excel y Word, y el libro 6.2_Laboratorio_de_contrasenas.</li>
         </ul>
         <ul>
-          <li>Diseñan un castillo con muralla exterior (contraseñas, 2FA), media (privacidad en redes) e interior (cifrado, respaldos).</li>
-          <li>Dibujan el castillo en cartulina con 3 murallas etiquetadas, 2 "soldados" por muralla y 1 "dragón" (amenaza) que cada muralla detiene.</li>
-          <li>Exponen qué harían si un "dragón" (hacker) intentara entrar a su castillo.</li>
+          <li>Laboratorio de contraseñas (15 min): escribes 4 contraseñas de prueba (123456, futbol2010, G@t0&amp;Ll7 y tacos de pastor los martes) y el archivo calcula sus combinaciones y el tiempo para adivinarlas. Explicas cuál es la más débil y qué hace fuerte a la frase larga.</li>
+          <li>Cifrado César (15 min): descifras UHVSHWR con clave 3, cifras en Excel una palabra tuya de 5 a 8 letras con tu clave (el último dígito de tu número de lista; si es 0, usa 10) y tu compañero la descifra.</li>
+          <li>Cifrar un documento de Word (10 min): creas un documento con una frase inventada, lo cifras con una contraseña de práctica (Archivo → Información → Proteger documento → Cifrar con contraseña), lo cierras y lo vuelves a abrir.</li>
+          <li>Cierre (5 min): escribes tu consejo para crear una contraseña fuerte en una frase.</li>
         </ul>
+        <p>🔒 Al cierre, tu maestro revisa tu pantalla y te da un código del día que escribes en tu hoja.</p>
+        <p>📤 <strong>Muestra tu hoja a tu maestro y guárdala.</strong> En el formulario elige: <strong>T2-a-s6-2 | 🏰 Murallas digitales</strong></p>
       `,
     },
     {
       id: "a-s6-3",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
+      formatoEntrega: "fisico",
       titulo: "⚖️ Tribunal del Ciberespacio",
-      descripcion: "Los alumnos debaten 3 dilemas digitales en formato de juicio (juez, defensores, acusadores, jurado).",
-      fecha: { "3C": "2027-02-23", "3E": "2027-02-23" },
+      descripcion: "En formato de juicio, el grupo debate 3 casos inventados de ética digital y cada alumno escribe 3 reglas de oro del ciudadano digital, cada una con su porque.",
+      fecha: { "3C": "2027-02-08", "3E": "2027-02-08" },
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/6.3_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/6.3_Hoja_del_alumno.docx",
+      },
       detalleCompleto: `
-        <p>👥 Modalidad: Grupal | ⏱️ Duración: 30 min</p>
+        <p>👥 Modalidad: Grupal, con roles que cambian en cada caso | ⏱️ Duración: 50 min</p>
         <ul>
-          <li>Tarjetas de "juez", "acusado", "defensor", papelógrafo.</li>
-          <li>3 casos de dilemas digitales: publicar fotos sin permiso, venta de datos de menores, hacker "bueno" que reporta una falla.</li>
+          <li>Hoja de la actividad 6.3. Los casos son inventados.</li>
+          <li>Roles: Juez (1) escucha, pregunta y dicta el veredicto explicándolo · Defensores (2) dan razones a favor de la acción · Acusadores (2) dan razones en contra · Jurado (3) escucha y vota; cada voto lleva una razón.</li>
         </ul>
         <ul>
-          <li>Por caso: 1 juez, 2 defensores, 2 acusadores y 3 de jurado.</li>
-          <li>Cada parte argumenta 2 minutos; el juez dicta veredicto y explica.</li>
-          <li>Al final, el grupo escribe 3 "reglas de oro" para ser un ciudadano digital responsable.</li>
+          <li>Roles del tribunal (5 min): conoces qué hace cada rol y cuánto tiempo tiene para hablar.</li>
+          <li>Tres casos, tres juicios (30 min): la foto sin permiso, los datos de los jugadores y la falla en la página de la escuela. En cada uno anotas tu rol, tu argumento y el veredicto del grupo con su razón.</li>
+          <li>Reglas de oro del ciudadano digital (10 min): con lo que escuchaste, escribes 3 reglas para ser un ciudadano digital responsable, cada una con su razón ("porque…").</li>
         </ul>
+        <p>🔒 Al cierre, tu maestro revisa tu hoja y te da un código del día que anotas en tu hoja. Guarda tus reglas: pueden ir en el panel 6 de tu manual (el tríptico del proyecto).</p>
+        <p>📤 <strong>Muestra tu hoja a tu maestro y guárdala.</strong> En el formulario elige: <strong>T2-a-s6-3 | ⚖️ Tribunal del Ciberespacio</strong></p>
+        <p>📎 Si tu maestro te entregó una hoja de refuerzo o de ampliación, guárdala engrapada a tu hoja principal.</p>
       `,
     },
   ],
@@ -2360,7 +2426,8 @@ const DATOS_ACTIVIDADES = {
 // comentario ahí); abre el modal "📖 Ver detalles" con HTML de confianza.
 const DATOS_PROYECTOS = {
   // Fechas reales, verificadas contra CALENDARIO_ESCOLAR_2026_2027
-  // (126/126 coinciden con días lectivos).
+  // (128/128 fechas en día lectivo; horario 3C lun/mar, 3E lun/mar/jue desde
+  // el 17-nov. Pendiente aparte: 9 fechas de 3E del T3 aún en miércoles).
   1: [
     {
       id: "p3",
@@ -2503,25 +2570,40 @@ const DATOS_PROYECTOS = {
     },
     {
       id: "p-s6",
-      secuencia: "📙 Secuencia 6 — Seguridad Digital Avanzada · Proyecto: Mi Manual de Supervivencia Digital",
+      secuencia: "📙 Secuencia 6 — Seguridad digital y ciudadanía · Proyecto: Mi Manual de Supervivencia Digital",
       grupo: "todos",
+      formatoEntrega: "digital",
       titulo: "Mi Manual de Supervivencia Digital",
-      descripcion: "Cada alumno crea un manual físico (librito o tríptico) de ciberseguridad personal dirigido a estudiantes de secundaria.",
+      descripcion: "Haz en Word un tríptico de ciberseguridad personal para estudiantes de secundaria (6 paneles) con lo que descubriste en las actividades, e imprímelo al final. No necesitas internet.",
       avance: 0,
-      fechaEntrega: { "3C": "2027-03-02", "3E": "2027-03-03" },
+      fechaEntrega: { "3C": "2027-02-22", "3E": "2027-02-18" },
+      hojaAlumno: {
+        pdf: "assets/Trabajos/Alumno/P6_Proyecto_Hoja_del_alumno.pdf",
+        docx: "assets/Trabajos/Alumno/P6_Proyecto_Hoja_del_alumno.docx",
+      },
       detalleCompleto: `
-        <p>⏱️ Tiempo: 4 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual (con asesoría entre pares)</p>
-        <p>El alumno elige el enfoque: manual del novato, manual del experto, o manual familiar (para papás y hermanos pequeños).</p>
+        <p>⏱️ Tiempo: 4 sesiones de clase (50 min c/u) | 👥 Modalidad: Individual</p>
+        <p>Elige tu enfoque: manual del novato (para alumnos que apenas empiezan con redes sociales y juegos), manual del experto (para alumnos que ya usan muchas apps y necesitan protegerse mejor) o manual familiar (para enseñar a papás y hermanos pequeños a navegar seguros).</p>
         <ul>
-          <li>Hojas y cartulina para el librito/tríptico</li>
-          <li>Lápices de colores, marcadores, tijeras, pegamento</li>
+          <li>Computadora con Word, la hoja del proyecto y el Anexo de hallazgos y casos (está en el apartado de materiales de S6).</li>
+          <li>Tu tríptico es una hoja carta horizontal en 3 columnas por cada cara: 6 paneles.</li>
+          <li>Panel 1 Portada: título atractivo, tu nombre, enfoque elegido e ilustración.</li>
+          <li>Panel 2 Amenazas que debo conocer: 5 o más amenazas (phishing, virus, robo de identidad), cada una con un ejemplo real.</li>
+          <li>Panel 3 Mis sistemas revisados: 3 sistemas (equipo del taller, archivos de Word, USB o correo) con su vulnerabilidad, cómo prevenirla e impacto.</li>
+          <li>Panel 4 Contraseñas y cifrado: 3 contraseñas de ejemplo bien hechas, cómo cifrar un archivo y tu sistema para recordarlas.</li>
+          <li>Panel 5 Casos que enseñan: 2 casos reales con causas, consecuencias y lección aprendida.</li>
+          <li>Panel 6 Reglas de ciudadanía digital: 4 o más reglas, cada una con su argumento.</li>
         </ul>
         <ul>
-          <li>Sesión 1 — Investigación y estructura: elige el enfoque, investiga amenazas y diseña la estructura del manual en borrador.</li>
-          <li>Sesión 2 — Redacción e ilustración: escribe el capítulo "Conoce al enemigo" (3 amenazas) y "Tus armas" (5 consejos prácticos), con dibujos e iconos.</li>
-          <li>Sesión 3 — Casos y conclusiones: escribe el resumen de 2 casos históricos y el "juramento digital" con 5 reglas y su firma.</li>
-          <li>Sesión 4 — Ensamblado y presentación (entrega): arma el librito/tríptico con portada y contraportada, presenta a 2 compañeros y recibe retroalimentación.</li>
+          <li>Sesión 1 — Revisión del equipo: revisas la seguridad, los permisos y la huella de un archivo en tu computadora y llenas la Hoja de hallazgos 1.</li>
+          <li>Sesión 2 — Secuestro simulado: en parejas, un archivo de práctica se cifra y se recupera con una copia en la USB; llenas la Hoja de hallazgos 2.</li>
+          <li>Sesión 3 — Casos y ética: analizas 2 casos de la Hoja de casos y redactas 4 reglas.</li>
+          <li>Sesión 4 — Armado y entrega: armas el tríptico en Word, lo imprimes y lo presentas en 1 minuto a 2 compañeros.</li>
         </ul>
+        <p>⚠️ Nada de contraseñas reales ni datos personales de nadie (domicilio, teléfono, cuentas) en tu manual. Los casos y datos salen de la Hoja de casos; si usas otro caso, anota de dónde lo sacaste. Escríbelo con tus palabras: un manual copiado de un compañero no se califica.</p>
+        <p>🔒 Tiene 4 puntos de control, uno por sesión: tu maestro revisa tu pantalla y te da un código del día que anotas en tu hoja del proyecto.</p>
+        <p>📤 <strong>Entrega tu tríptico impreso en clase y guarda el archivo como P6_Grupo_Lista_Apellido.docx</strong> (ejemplo: P6_3C_12_Lopez.docx); súbelo al formulario. En el formulario elige: <strong>T2-p-s6 | Mi Manual de Supervivencia Digital</strong></p>
+        <p>📎 Si tu maestro te entregó una hoja de refuerzo o de ampliación, guárdala engrapada a tu hoja principal.</p>
       `,
     },
   ],
@@ -2637,9 +2719,9 @@ const DATOS_PRESENTACIONES = {
     },
     {
       id: "pres3",
-      titulo: "Secuencia 6: Seguridad Digital Avanzada",
+      titulo: "Secuencia 6: Seguridad digital y ciudadanía",
       descripcion: "Phishing, contraseñas seguras, cifrado y huella digital.",
-      gammaEmbedUrl: "https://gamma.app/embed/mz4hi5zpg9xgca9",
+      gammaEmbedUrl: "https://gamma.app/embed/tcct3sw8juk32qk",
     },
   ],
   3: [
@@ -3084,7 +3166,7 @@ const DATOS_VIDEOS = {
     {
       id: "v3",
       grupo: "todos",
-      titulo: "Secuencia 6: Seguridad Digital Avanzada",
+      titulo: "Secuencia 6: Seguridad digital y ciudadanía",
       descripcion: "Riesgos de phishing y robo de identidad, huella digital y cómo crear contraseñas seguras.",
       idYoutube: "BHiMuhbrJK0",
     },
@@ -3357,7 +3439,7 @@ const DATOS_TEMARIO = {
       detalleTemario: `
         <p>🎯 <strong>Qué vas a aprender:</strong> Qué es el phishing, el robo de identidad y tu "huella digital" (todo lo que compartes en línea).</p>
         <p>🔍 <strong>Por qué importa:</strong> Todos dejamos rastro en internet sin darnos cuenta; saber identificarlo te protege.</p>
-        <p>💡 <strong>Dato curioso:</strong> El virus "ILOVEYOU" del año 2000 llegaba como un correo de amor y logró infectar 50 millones de computadoras en todo el mundo.</p>
+        <p>💡 <strong>Dato curioso:</strong> El gusano "ILOVEYOU" (4 de mayo de 2000) llegaba como un correo con un archivo adjunto y, al abrirlo, se reenviaba solo a los contactos: generó cientos de reportes el primer día y afectó a numerosos equipos en distintos países.</p>
       `,
     },
     {
@@ -3381,7 +3463,7 @@ const DATOS_TEMARIO = {
       detalleTemario: `
         <p>🎯 <strong>Qué vas a aprender:</strong> Ejemplos reales (como WannaCry) para entender cómo ocurren los ataques y cómo prevenirlos.</p>
         <p>🔍 <strong>Por qué importa:</strong> Aprender de casos reales te enseña a reconocer señales de peligro antes de que te pase a ti.</p>
-        <p>💡 <strong>Dato curioso:</strong> El ataque WannaCry de 2017 "secuestró" archivos de hospitales en 150 países y pedía pago en bitcoins para liberarlos.</p>
+        <p>💡 <strong>Dato curioso:</strong> WannaCry (12 de mayo de 2017) cifró archivos y pedía un rescate en Bitcoin: más de 200,000 víctimas en al menos 150 países, y hospitales del Reino Unido cancelaron citas y cirugías. Aprovechó una falla de Windows que Microsoft ya había corregido el 14 de marzo de 2017 (MS17-010).</p>
       `,
     },
   ],
