@@ -1299,12 +1299,11 @@ const DATOS_TAREAS = {
       estado: "pendiente",
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/T5.1_Presupuesto_mensual_Alumno.xlsx",
-        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
       },
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa o en el taller) | 📦 Entregable: Libro de Excel T5.1 completo</p>
         <ul>
-          <li>Computadora con Excel, el libro de la tarea T5.1 y la guía de bolsillo de Excel.</li>
+          <li>Computadora con Excel y el libro de la tarea T5.1.</li>
           <li>Primero llena la hoja Identidad (nombre, grupo y número de lista): el ingreso y los gastos de la familia cambian según tu número de lista.</li>
         </ul>
         <ul>
@@ -1330,12 +1329,11 @@ const DATOS_TAREAS = {
       estado: "pendiente",
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/T5.2_Horario_escolar_Alumno.xlsx",
-        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
       },
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa o en el taller) | 📦 Entregable: Libro de Excel T5.2 completo</p>
         <ul>
-          <li>Computadora con Excel, el libro de la tarea T5.2, la guía de bolsillo de Excel y tu horario de clases real.</li>
+          <li>Computadora con Excel, el libro de la tarea T5.2 y tu horario de clases real.</li>
           <li>Primero llena la hoja Identidad con tu nombre, grupo y número de lista.</li>
         </ul>
         <ul>
@@ -1359,12 +1357,11 @@ const DATOS_TAREAS = {
       estado: "pendiente",
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/T5.3_Tienda_imaginaria_Alumno.xlsx",
-        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
       },
       detalleCompleto: `
         <p>⏱️ Tiempo: 20 min | 👥 Modalidad: Individual (en casa o en el taller) | 📦 Entregable: Libro de Excel T5.3 completo</p>
         <ul>
-          <li>Computadora con Excel, el libro de la tarea T5.3 y la guía de bolsillo de Excel.</li>
+          <li>Computadora con Excel y el libro de la tarea T5.3.</li>
           <li>Primero llena la hoja Identidad (nombre, grupo y número de lista): el precio de tu primer producto depende de tu número de lista.</li>
         </ul>
         <ul>
@@ -2040,12 +2037,11 @@ const DATOS_ACTIVIDADES = {
       fecha: { "3C": "2026-12-14", "3E": "2026-12-15" },
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/5.1_Explorando_la_interfaz_Alumno.xlsx",
-        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
       },
       detalleCompleto: `
         <p>👥 Modalidad: Individual, en el taller de cómputo | ⏱️ Duración: 1 sesión (50 min)</p>
         <ul>
-          <li>Computadora con Excel, el libro de la actividad 5.1 y la guía de bolsillo de Excel.</li>
+          <li>Computadora con Excel y el libro de la actividad 5.1.</li>
           <li>Primero llena la hoja Identidad (nombre, grupo y número de lista): tu número de lista se usa dentro del archivo.</li>
         </ul>
         <ul>
@@ -2070,12 +2066,11 @@ const DATOS_ACTIVIDADES = {
       fecha: { "3C": "2026-12-15", "3E": "2026-12-17" },
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/5.2_Supermercado_escolar_Alumno.xlsx",
-        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
       },
       detalleCompleto: `
         <p>👥 Modalidad: Individual, en el taller de cómputo | ⏱️ Duración: 1 sesión (50 min)</p>
         <ul>
-          <li>Computadora con Excel, el libro de la actividad 5.2 y la guía de bolsillo de Excel.</li>
+          <li>Computadora con Excel y el libro de la actividad 5.2.</li>
           <li>Primero llena la hoja Identidad (nombre, grupo y número de lista): las existencias de los 8 productos cambian según tu número de lista.</li>
         </ul>
         <ul>
@@ -2101,12 +2096,11 @@ const DATOS_ACTIVIDADES = {
       fecha: { "3C": "2027-01-11", "3E": "2027-01-07" },
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/5.3_Infografia_de_datos_Alumno.xlsx",
-        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
       },
       detalleCompleto: `
         <p>👥 Modalidad: Individual, en el taller de cómputo | ⏱️ Duración: 1 sesión (50 min)</p>
         <ul>
-          <li>Computadora con Excel, el libro de la actividad 5.3 y la guía de bolsillo de Excel.</li>
+          <li>Computadora con Excel y el libro de la actividad 5.3.</li>
           <li>Primero llena la hoja Identidad (nombre, grupo y número de lista): los resultados de la encuesta cambian según tu número de lista.</li>
         </ul>
         <ul>
@@ -2487,13 +2481,12 @@ const DATOS_PROYECTOS = {
       fechaEntrega: { "3C": "2027-01-18", "3E": "2027-01-18" },
       hojaAlumno: {
         xlsx: "assets/Trabajos/Alumno/P5_Hoja_para_decidir_Alumno.xlsx",
-        guia: "assets/Trabajos/Alumno/Guia_de_bolsillo_Excel_S5.pdf",
       },
       detalleCompleto: `
         <p>⏱️ Tiempo: 4 sesiones de taller (50 min c/u) | 👥 Modalidad: Individual</p>
         <p>Elige una decisión real (qué celular, bici, viaje o escuela, por ejemplo) y compara 3 opciones con datos reales o aproximados. La decisión es tuya: nadie más tendrá los mismos datos.</p>
         <ul>
-          <li>Computadora con Excel, el libro del proyecto P5 y la guía de bolsillo de Excel.</li>
+          <li>Computadora con Excel y el libro del proyecto P5.</li>
           <li>Primero llena la hoja Identidad con tu nombre, grupo y número de lista.</li>
         </ul>
         <ul>
@@ -4439,7 +4432,8 @@ function crearEnlaceDescarga(url, texto) {
 // ({ pdf, docx, xlsx, guia }, rutas a assets/Trabajos/Alumno) para la
 // hoja o el libro que el alumno llena. "xlsx" es el libro de Excel de las
 // secuencias que se trabajan en computadora (S5); "guia" es la guía de
-// bolsillo en PDF que acompaña a ese libro. Reusa crearEnlaceDescarga
+// bolsillo en PDF que acompaña a ese libro (la de S5 ya no va por pieza:
+// es un apartado único en trimestre-2-practica.html). Reusa crearEnlaceDescarga
 // (mismo botón secundario que "archivoUrl"/"materialApoyoUrl"), un botón
 // por archivo.
 function agregarEnlacesHojaAlumno(tarjeta, item) {
