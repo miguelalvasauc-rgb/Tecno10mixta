@@ -14597,6 +14597,218 @@ async function guardarRetroalimentacion({ puntos, puntosMax, comentario, ...clav
   return data[0];
 }
 
+/* ---------- Retroalimentación: captura dentro de un formulario ----------
+   Mismo bloque en #modal-calificar (prefijo "calificar") y en
+   #modal-editar-entrega (prefijo "editar-entrega"), con ids
+   <prefijo>-campo-puntos / -puntos / -puntos-ayuda / -puntos-resultado /
+   -comentario / -comentario-contador / -retro-estado. El estado de cada
+   apertura vive aquí, no en el DOM. --------- */
+const capturasRetro = {};
+
+function elementosCapturaRetro(prefijo) {
+  const porId = (sufijo) => document.getElementById(prefijo + "-" + sufijo);
+  return {
+    bloquePuntos: porId("campo-puntos"),
+    campoPuntos: porId("puntos"),
+    ayudaPuntos: porId("puntos-ayuda"),
+    resultado: porId("puntos-resultado"),
+    comentario: porId("comentario"),
+    contador: porId("comentario-contador"),
+    estado: porId("retro-estado"),
+  };
+}
+
+function actualizarContadorRetro(prefijo) {
+  const { comentario, contador } = elementosCapturaRetro(prefijo);
+  if (comentario && contador) contador.textContent = comentario.value.length + "/" + LARGO_MAX_COMENTARIO_RETRO;
+}
+
+function textoBandaRetro(calificacion) {
+  const banda = bandaRetro(calificacion);
+  return banda ? banda.charAt(0).toUpperCase() + banda.slice(1) : "";
+}
+
+// Escribe en el comentario solo si está vacío o todavía es una frase
+// del banco: lo que el docente escribió o editó nunca se pisa.
+function reponerFraseRetro(prefijo, frase) {
+  const { comentario } = elementosCapturaRetro(prefijo);
+  if (!comentario) return;
+  if (comentario.value.trim() !== "" && !esFraseDelBanco(comentario.value)) return;
+  comentario.value = frase;
+  actualizarContadorRetro(prefijo);
+}
+
+// Al escribir puntos: calcula la calificación en vivo, la pone en el
+// campo de calificación de siempre y sugiere la frase de su banda.
+function aplicarPuntosRetro(prefijo) {
+  const captura = capturasRetro[prefijo];
+  const { campoPuntos, resultado } = elementosCapturaRetro(prefijo);
+  if (!captura?.contexto.rango || !campoPuntos) return;
+
+  const lectura = leerPuntosRubrica(campoPuntos.value, captura.contexto.rango);
+  if (lectura.valido) campoPuntos.removeAttribute("aria-invalid");
+  else campoPuntos.setAttribute("aria-invalid", "true");
+  if (!lectura.valido) {
+    resultado.textContent = lectura.motivo;
+    return;
+  }
+  if (lectura.valor == null) {
+    resultado.textContent = "";
+    reponerFraseRetro(prefijo, "");
+    return;
+  }
+
+  const calificacion = calificacionDesdePuntos(lectura.valor, captura.contexto.rango);
+  captura.campoCalificacion.value = String(calificacion);
+  captura.alCambiarCalificacion?.();
+  resultado.textContent =
+    lectura.valor + " pts → " + calificacion.toFixed(1) + (bandaRetro(calificacion) ? " · " + textoBandaRetro(calificacion) : "");
+  reponerFraseRetro(prefijo, fraseRetroSugerida(calificacion, captura.contexto));
+}
+
+// El docente cambió la calificación a mano (teclado o botón rápido),
+// incluso dejándola vacía: es captura directa, así que se quitan los
+// puntos, y la frase automática solo se borra si nadie la editó.
+function alEditarCalificacionRetro(prefijo) {
+  const captura = capturasRetro[prefijo];
+  const { campoPuntos, resultado, comentario } = elementosCapturaRetro(prefijo);
+  if (!captura || !campoPuntos) return;
+
+  if (campoPuntos.value.trim() !== "") {
+    campoPuntos.value = "";
+    campoPuntos.removeAttribute("aria-invalid");
+    resultado.textContent = captura.contexto.rango ? "Captura directa: no se guardan puntos." : "";
+  }
+  if (comentario && esFraseDelBanco(comentario.value)) {
+    comentario.value = "";
+    actualizarContadorRetro(prefijo);
+  }
+}
+
+// Listeners una sola vez por formulario (desde activarFormulario*).
+// alCambiarCalificacion: para resincronizar los botones rápidos cuando
+// los puntos llenan la calificación por código (asignar .value no
+// dispara "input").
+function enlazarCapturaRetro(prefijo, campoCalificacion, alCambiarCalificacion) {
+  const { campoPuntos, comentario } = elementosCapturaRetro(prefijo);
+  if (!campoPuntos || !comentario || !campoCalificacion) return;
+  capturasRetro[prefijo] = { contexto: {}, campoCalificacion, alCambiarCalificacion, cargada: false, filaRetro: null, turno: 0 };
+
+  campoPuntos.addEventListener("input", () => aplicarPuntosRetro(prefijo));
+  campoCalificacion.addEventListener("input", () => alEditarCalificacionRetro(prefijo));
+  comentario.addEventListener("input", () => actualizarContadorRetro(prefijo));
+}
+
+// Al abrir el modal: limpia el bloque, configura el campo de puntos (solo
+// proyectos con rúbrica) y carga la retroalimentación ya guardada para
+// editarla. Si esa lectura falla, el bloque queda deshabilitado y al
+// guardar NO se toca la retroalimentación (no se pisa algo que no se vio).
+// contexto: { registroId, tipo, itemId, trimestre, grupo, numeroLista, rango }
+async function prepararCapturaRetro(prefijo, contexto, { visible = true } = {}) {
+  const captura = capturasRetro[prefijo];
+  const el = elementosCapturaRetro(prefijo);
+  if (!captura || !el.campoPuntos) return;
+
+  const turno = ++captura.turno;
+  captura.contexto = contexto;
+  captura.cargada = false;
+  captura.filaRetro = null;
+  captura.visible = visible;
+
+  const { rango } = contexto;
+  el.bloquePuntos.hidden = !visible || !rango;
+  el.campoPuntos.value = "";
+  el.campoPuntos.removeAttribute("aria-invalid");
+  el.resultado.textContent = "";
+  if (rango) {
+    el.campoPuntos.min = String(rango.min);
+    el.campoPuntos.max = String(rango.max);
+    el.campoPuntos.step = String(rango.paso);
+    el.ayudaPuntos.textContent =
+      "De " + rango.min + " a " + rango.max + " pts" + (rango.paso === 1 ? "" : ", en pasos de " + rango.paso) +
+      ". La calificación se calcula sola.";
+  }
+  el.comentario.value = "";
+  actualizarContadorRetro(prefijo);
+  el.estado.textContent = "";
+  if (!visible) return;
+
+  el.campoPuntos.disabled = true;
+  el.comentario.disabled = true;
+  try {
+    const fila = await obtenerRetroalimentacion(contexto);
+    if (turno !== captura.turno) return; // ya se abrió otro alumno
+    captura.filaRetro = fila;
+    captura.cargada = true;
+    if (fila) {
+      if (rango && fila.puntos_rubrica != null) {
+        el.campoPuntos.value = String(Number(fila.puntos_rubrica));
+        const calificacion = calificacionDesdePuntos(Number(fila.puntos_rubrica), rango);
+        el.resultado.textContent = Number(fila.puntos_rubrica) + " pts → " + calificacion.toFixed(1);
+      }
+      el.comentario.value = fila.comentario || "";
+      actualizarContadorRetro(prefijo);
+    }
+  } catch (err) {
+    if (turno !== captura.turno) return;
+    console.warn("No se pudo leer retroalimentacion:", err);
+    el.estado.textContent =
+      "No se pudo cargar la retroalimentación guardada. Puedes guardar la calificación; la retroalimentación no se modificará.";
+  } finally {
+    if (turno === captura.turno) {
+      el.campoPuntos.disabled = !captura.cargada;
+      el.comentario.disabled = !captura.cargada;
+    }
+  }
+}
+
+// Valida (sin guardar) lo capturado. calificacion: la que se va a
+// guardar (null = vacía, y entonces nunca hay puntos).
+// Devuelve { valido, motivo, campo, omitir, datos }.
+function leerCapturaRetro(prefijo, calificacion) {
+  const captura = capturasRetro[prefijo];
+  const el = elementosCapturaRetro(prefijo);
+  if (!captura || !captura.visible || !captura.cargada) return { valido: true, omitir: true };
+
+  const { rango } = captura.contexto;
+  let puntos = null;
+  if (rango && calificacion != null) {
+    const lectura = leerPuntosRubrica(el.campoPuntos.value, rango);
+    if (!lectura.valido) return { valido: false, motivo: lectura.motivo, campo: el.campoPuntos };
+    puntos = lectura.valor;
+    if (puntos != null && calificacionDesdePuntos(puntos, rango) !== calificacion) {
+      return {
+        valido: false,
+        motivo: "La calificación no coincide con los puntos; vuelve a escribir los puntos o borra ese campo.",
+        campo: el.campoPuntos,
+      };
+    }
+  }
+
+  const texto = el.comentario.value.trim();
+  if (texto !== "") {
+    const resultado = validarTextoSeguro(texto, { maxLargo: LARGO_MAX_COMENTARIO_RETRO });
+    if (!resultado.valido) return { valido: false, motivo: "Comentario: " + resultado.motivo, campo: el.comentario };
+  }
+  const comentario = texto === "" ? null : texto;
+
+  // Nada capturado y nada guardado antes: no hace falta ir a Supabase.
+  if (puntos == null && comentario == null && !captura.filaRetro) return { valido: true, omitir: true };
+
+  return {
+    valido: true,
+    omitir: false,
+    datos: { ...captura.contexto, puntos, puntosMax: rango ? rango.max : null, comentario },
+  };
+}
+
+async function guardarCapturaRetro(prefijo, lectura) {
+  if (lectura.omitir) return;
+  const fila = await guardarRetroalimentacion(lectura.datos);
+  const captura = capturasRetro[prefijo];
+  if (captura) captura.filaRetro = fila;
+}
+
 // Campo de calificación opcional: vacío = null ("entregó, sin
 // calificar"); con valor, 0–10 redondeado a 1 decimal. Misma regla que
 // el modal de Evaluación (activarFormularioCalificar), que no se toca
@@ -19752,6 +19964,21 @@ function abrirModalCalificar({ alumno, item, filaProgreso, alGuardar }) {
   sincronizarBotonesValorRapidoCalificacion();
 
   document.getElementById("calificar-error").hidden = true;
+  document.getElementById("calificar-confirmar").textContent = "Guardar calificación";
+
+  // registro_id = alumnos_registro.id (el "alumno" de Evaluación ES esa
+  // fila); el trimestre sale de la propia fila de progreso.
+  const trimestre = filaProgreso.trimestre ?? estadoEvaluacion.trimestre;
+  prepararCapturaRetro("calificar", {
+    registroId: alumno.id,
+    tipo: item.tipoEntregable,
+    itemId: item.id,
+    trimestre,
+    grupo: alumno.grupo,
+    numeroLista: alumno.numero_lista,
+    rango: rangoPuntosRubrica(Number(trimestre), item),
+  });
+
   modal.showModal();
 }
 
@@ -19776,6 +20003,12 @@ function activarFormularioCalificar() {
   const modal = document.getElementById("modal-calificar");
   const formulario = document.getElementById("formulario-calificar");
   if (!modal || !formulario) return;
+
+  enlazarCapturaRetro(
+    "calificar",
+    document.getElementById("calificar-valor"),
+    sincronizarBotonesValorRapidoCalificacion
+  );
 
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
@@ -19807,13 +20040,38 @@ function activarFormularioCalificar() {
       valor = redondearUnDecimal(valor);
     }
 
+    // Se valida TODO antes de guardar nada: un comentario inválido no
+    // debe dejar la calificación guardada a medias.
+    const lecturaRetro = leerCapturaRetro("calificar", valor);
+    if (!lecturaRetro.valido) {
+      error.textContent = lecturaRetro.motivo;
+      error.hidden = false;
+      lecturaRetro.campo?.focus();
+      return;
+    }
+
+    // 1) calificación por el flujo de siempre; 2) retroalimentación. Si
+    // falla la 2, la 1 ya quedó guardada (y pintada en la tabla): el
+    // modal sigue abierto para reintentar (re-guardar la misma
+    // calificación es idempotente).
     botonConfirmar.disabled = true;
+    let calificacionGuardada = false;
     try {
       const nuevaFila = await guardarCalificacion(filaProgreso, valor);
-      cerrarDialogoAnimado(modal);
+      calificacionGuardada = true;
+      contextoCalificar.filaProgreso = nuevaFila;
       alGuardar(nuevaFila);
+      await guardarCapturaRetro("calificar", lecturaRetro);
+      cerrarDialogoAnimado(modal);
     } catch (err) {
-      error.textContent = "No se pudo guardar: " + (err?.message || "intenta de nuevo.");
+      const detalle = err?.message || "intenta de nuevo.";
+      if (calificacionGuardada) {
+        error.textContent =
+          "La calificación sí se guardó, pero la retroalimentación no (" + detalle + "). Toca «Reintentar» para guardarla.";
+        botonConfirmar.textContent = "Reintentar retroalimentación";
+      } else {
+        error.textContent = "No se pudo guardar: " + detalle;
+      }
       error.hidden = false;
     } finally {
       botonConfirmar.disabled = false;
@@ -19857,7 +20115,9 @@ function activarBotonesValorRapidoCalificacion() {
     const boton = evento.target.closest(".calificar-valor-rapido__boton");
     if (!boton) return;
     campoValor.value = boton.dataset.valorRapido;
-    sincronizarBotonesValorRapidoCalificacion();
+    // Mismo evento que al escribir a mano: resincroniza los botones y
+    // marca la captura directa en la retroalimentación (quita puntos).
+    campoValor.dispatchEvent(new Event("input", { bubbles: true }));
   });
 
   campoValor.addEventListener("input", sincronizarBotonesValorRapidoCalificacion);

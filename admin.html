@@ -1339,6 +1339,17 @@
     </a>
     <p id="modal-calificar-emocion" class="badge-emocion" hidden></p>
     <form id="formulario-calificar" novalidate>
+      <!-- Solo proyectos con rúbrica (ver prepararCapturaRetro() en
+           js/main.js): min/max/step se calculan desde DATOS_RUBRICAS y
+           la calificación de abajo se llena sola. -->
+      <div id="calificar-campo-puntos" class="retro-puntos" hidden>
+        <label for="calificar-puntos">Puntos de la rúbrica</label>
+        <input type="number" id="calificar-puntos" name="puntos" inputmode="decimal"
+               aria-describedby="calificar-puntos-ayuda calificar-puntos-resultado">
+        <p id="calificar-puntos-ayuda" class="modal-editar-entrega__ayuda"></p>
+        <output id="calificar-puntos-resultado" for="calificar-puntos" class="retro-puntos__resultado"></output>
+      </div>
+
       <label for="calificar-valor">Calificación (0.0 – 10.0)</label>
       <input type="number" id="calificar-valor" name="calificacion" min="0" max="10" step="0.1">
 
@@ -1351,6 +1362,12 @@
         <button type="button" class="calificar-valor-rapido__boton" data-valor-rapido="9">9</button>
         <button type="button" class="calificar-valor-rapido__boton" data-valor-rapido="10">10</button>
       </div>
+
+      <label for="calificar-comentario">Comentario para el alumno (opcional)</label>
+      <textarea id="calificar-comentario" name="comentario" rows="4" maxlength="500"
+                aria-describedby="calificar-comentario-contador"></textarea>
+      <p id="calificar-comentario-contador" class="retro-comentario__contador">0/500</p>
+      <p id="calificar-retro-estado" class="modal-editar-entrega__ayuda" aria-live="polite"></p>
 
       <p id="calificar-error" class="cuenta-error" role="alert" hidden></p>
 

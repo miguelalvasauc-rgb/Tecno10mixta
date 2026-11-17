@@ -13671,7 +13671,8 @@ button.badge-estado {
   color: var(--color-texto-suave);
 }
 
-#formulario-calificar input {
+#formulario-calificar input,
+#formulario-calificar textarea {
   padding: 0.6rem 0.75rem;
   border-radius: 6px;
   border: 1px solid var(--color-borde);
@@ -13714,6 +13715,67 @@ button.badge-estado {
   background-color: var(--color-primario);
   border-color: var(--color-primario);
   color: var(--color-primario-texto);
+}
+
+/* ---------- Retroalimentación (Etapa 2) en #modal-calificar y
+   #modal-editar-entrega ----------
+   Solo tokens ya existentes y sin color por banda (Excelente/Bueno/…
+   va en texto): rojo/naranja quedan reservados para estados. */
+#formulario-calificar textarea {
+  resize: vertical;
+  margin-bottom: 0;
+}
+
+/* Mismo truco que .modal-editar-entrega__campo: display:flex le ganaría
+   al [hidden] del navegador, así que se repite explícito. */
+.retro-puntos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.retro-puntos[hidden] {
+  display: none;
+}
+
+#formulario-calificar .retro-puntos input,
+#formulario-editar-entrega .retro-puntos input {
+  margin-bottom: 0;
+  min-height: 48px;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.retro-puntos .modal-editar-entrega__ayuda {
+  margin-bottom: 0;
+}
+
+.retro-puntos__resultado {
+  display: block;
+  min-height: 1.4em;
+  margin: 0 0 0.75rem;
+  font-size: var(--tamano-fuente-accion);
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.retro-comentario__contador {
+  margin: 0;
+  text-align: right;
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto-suave);
+}
+
+#calificar-retro-estado:empty,
+#editar-entrega-retro-estado:empty {
+  display: none;
+}
+
+/* Botones de acción con área táctil de 44px en celular (uso con una
+   mano al calificar a todo el grupo seguido). */
+#formulario-calificar .modal-editar-entrega__acciones button,
+#formulario-editar-entrega .modal-editar-entrega__acciones button {
+  min-height: 44px;
 }
 
 /* =========================================================
