@@ -18,7 +18,8 @@ graphify-out/
 # los libros del alumno de S5 (7 .xlsx) con su guía de bolsillo en PDF, y
 # el material del alumno de S6 (hojas 6.1-6.3, T6.1-T6.3 y P6 en .docx y
 # .pdf, anexo de hallazgos y casos, tarjetas de correos, laboratorio de
-# contraseñas y simulador Detective de phishing).
+# contraseñas y simulador Detective de phishing), y el carnet de entregas
+# del T2 (.docx y .pdf).
 # Diferenciación, material del docente y Prueba_de_compatibilidad siguen
 # sin publicarse. Git no puede reincluir
 # un archivo si su carpeta está ignorada, por eso se ignora el CONTENIDO
@@ -51,6 +52,8 @@ assets/Trabajos/Alumno/*
 !assets/Trabajos/Alumno/6.1_Tarjetas_de_correos_impresas.pdf
 !assets/Trabajos/Alumno/6.2_Laboratorio_de_contrasenas_Alumno.xlsx
 !assets/Trabajos/Alumno/Detective_de_phishing.html
+!assets/Trabajos/Alumno/Carnet_de_entregas_T2.docx
+!assets/Trabajos/Alumno/Carnet_de_entregas_T2.pdf
 
 # Notas y fuentes de trabajo
 /Proyectos del Trimestre*.md
