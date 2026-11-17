@@ -1064,6 +1064,16 @@
            abrirModalEditarEntrega()/guardarProgresoManual() en js/main.js.
            Oculto (hidden) para el resto, así que no entra en el orden de
            tabulación ni en el árbol de accesibilidad. -->
+      <!-- Retroalimentación (solo entrega manual y proyectos con rúbrica):
+           ver prepararCapturaRetro() en js/main.js. -->
+      <div id="editar-entrega-campo-puntos" class="retro-puntos" hidden>
+        <label for="editar-entrega-puntos">Puntos de la rúbrica</label>
+        <input type="number" id="editar-entrega-puntos" name="puntos" inputmode="decimal"
+               aria-describedby="editar-entrega-puntos-ayuda editar-entrega-puntos-resultado">
+        <p id="editar-entrega-puntos-ayuda" class="modal-editar-entrega__ayuda"></p>
+        <output id="editar-entrega-puntos-resultado" for="editar-entrega-puntos" class="retro-puntos__resultado"></output>
+      </div>
+
       <div id="editar-entrega-campo-calificacion" class="modal-editar-entrega__campo" hidden>
         <label for="editar-entrega-calificacion">Calificación (0.0 – 10.0, opcional)</label>
         <input type="number" id="editar-entrega-calificacion" name="calificacion" min="0" max="10" step="0.1"
@@ -1073,8 +1083,18 @@
         </p>
       </div>
 
-      <label for="editar-entrega-nota">Nota (opcional)</label>
+      <label for="editar-entrega-nota">Nota (sale en el reporte impreso; no se muestra en el sitio)</label>
       <textarea id="editar-entrega-nota" name="nota" rows="3"></textarea>
+
+      <!-- Comentario para el alumno: va a la tabla retroalimentacion, nunca
+           se mezcla con la nota de arriba (progreso_manual.nota). -->
+      <div id="editar-entrega-campo-comentario" class="modal-editar-entrega__campo" hidden>
+        <label for="editar-entrega-comentario">Comentario para el alumno (opcional)</label>
+        <textarea id="editar-entrega-comentario" name="comentario" rows="4" maxlength="500"
+                  aria-describedby="editar-entrega-comentario-contador"></textarea>
+        <p id="editar-entrega-comentario-contador" class="retro-comentario__contador">0/500</p>
+        <p id="editar-entrega-retro-estado" class="modal-editar-entrega__ayuda" aria-live="polite"></p>
+      </div>
 
       <p id="editar-entrega-error" class="cuenta-error" role="alert" hidden></p>
 

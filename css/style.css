@@ -11567,7 +11567,8 @@ button.badge-estado {
   display: none;
 }
 
-#formulario-editar-entrega .modal-editar-entrega__campo input {
+#formulario-editar-entrega .modal-editar-entrega__campo input,
+#formulario-editar-entrega .modal-editar-entrega__campo textarea {
   margin-bottom: 0;
 }
 

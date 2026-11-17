@@ -14889,6 +14889,23 @@ function abrirModalEditarEntrega({ alumno, item, trimestre, filaProgreso, alGuar
   campoCalificacion.value = esCapturaManual && filaProgreso?.calificacion != null ? String(filaProgreso.calificacion) : "";
   campoCalificacion.removeAttribute("aria-invalid");
 
+  // Retroalimentación: solo para entrega manual (los alumnos con cuenta
+  // la reciben desde Evaluación, junto con su calificación).
+  document.getElementById("editar-entrega-campo-comentario").hidden = !esCapturaManual;
+  prepararCapturaRetro(
+    "editar-entrega",
+    {
+      registroId: alumno.id,
+      tipo: item.tipoEntregable,
+      itemId: item.id,
+      trimestre,
+      grupo: alumno.grupo,
+      numeroLista: alumno.numero_lista,
+      rango: rangoPuntosRubrica(Number(trimestre), item),
+    },
+    { visible: esCapturaManual }
+  );
+
   const modoEditar = !!filaProgreso;
   document.getElementById("modal-editar-entrega-titulo").textContent = modoEditar
     ? "Editar marca manual"
@@ -14923,6 +14940,8 @@ function activarFormularioEditarEntrega() {
   const formulario = document.getElementById("formulario-editar-entrega");
   if (!modal || !formulario) return;
 
+  enlazarCapturaRetro("editar-entrega", document.getElementById("editar-entrega-calificacion"));
+
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     if (demoModeActivo()) {
@@ -14948,6 +14967,7 @@ function activarFormularioEditarEntrega() {
     // Validación solo en la rama de captura manual: la marca manual de
     // alumnos con cuenta conserva su comportamiento de antes, sin cambios.
     let calificacion = null;
+    let lecturaRetro = { valido: true, omitir: true };
     if (esCapturaManual) {
       const resultadoCalificacion = leerCalificacionOpcional(campoCalificacion.value);
       if (!resultadoCalificacion.valido) {
@@ -14966,10 +14986,22 @@ function activarFormularioEditarEntrega() {
         campoNota.focus();
         return;
       }
+
+      lecturaRetro = leerCapturaRetro("editar-entrega", calificacion);
+      if (!lecturaRetro.valido) {
+        error.textContent = lecturaRetro.motivo;
+        error.hidden = false;
+        lecturaRetro.campo?.focus();
+        return;
+      }
     }
 
     botonConfirmar.disabled = true;
 
+    // Igual que en Evaluación: 1) progreso_manual por el flujo de
+    // siempre, 2) retroalimentación. Si falla la 2, la fila ya guardada
+    // pasa al contexto (el reintento hace UPDATE, no un INSERT duplicado).
+    let calificacionGuardada = false;
     try {
       const datos = {
         alumno,
@@ -14982,12 +15014,25 @@ function activarFormularioEditarEntrega() {
       const nuevaFila = esCapturaManual
         ? await guardarProgresoManual({ ...datos, calificacion })
         : await guardarEntregaManual(datos);
-      cerrarDialogoAnimado(modal);
+      calificacionGuardada = true;
+      contextoEdicionEntrega.filaProgreso = nuevaFila;
       alGuardar(nuevaFila);
+      await guardarCapturaRetro("editar-entrega", lecturaRetro);
+      cerrarDialogoAnimado(modal);
     } catch (err) {
       // No se cierra el dialog ni se pierde lo que el docente ya
       // escribió: el error se muestra dentro del mismo panel.
-      error.textContent = "No se pudo guardar: " + (err?.message || "intenta de nuevo.");
+      const detalle = err?.message || "intenta de nuevo.";
+      if (calificacionGuardada) {
+        error.textContent =
+          "La entrega y la calificación sí se guardaron, pero la retroalimentación no (" +
+          detalle +
+          "). Toca «Reintentar» para guardarla.";
+        botonConfirmar.textContent = "Reintentar retroalimentación";
+        document.getElementById("editar-entrega-deshacer").hidden = false;
+      } else {
+        error.textContent = "No se pudo guardar: " + detalle;
+      }
       error.hidden = false;
     } finally {
       botonConfirmar.disabled = false;
@@ -15003,13 +15048,22 @@ function activarFormularioEditarEntrega() {
       abrirModalDemo();
       return;
     }
-    if (!window.confirm("¿Seguro que quieres deshacer esta marca manual? Se eliminará el registro de progreso."))
+    if (
+      !window.confirm(
+        "¿Seguro que quieres deshacer esta marca manual? Se eliminará el registro de progreso y también la retroalimentación de este trabajo (si existe)."
+      )
+    )
       return;
 
     const error = document.getElementById("editar-entrega-error");
     error.hidden = true;
 
     try {
+      // Primero la retroalimentación: si eso falla, la marca sigue intacta
+      // y no queda un comentario huérfano de un trabajo "no entregado".
+      const { alumno, item, trimestre } = contextoEdicionEntrega;
+      await eliminarRetroalimentacion({ registroId: alumno.id, tipo: item.tipoEntregable, itemId: item.id, trimestre });
+
       if (contextoEdicionEntrega.esCapturaManual) {
         await eliminarProgresoManual(contextoEdicionEntrega.filaProgreso);
       } else {
