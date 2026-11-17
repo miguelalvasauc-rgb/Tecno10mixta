@@ -14939,6 +14939,19 @@ function abrirModalEditarEntrega({ alumno, item, trimestre, filaProgreso, alGuar
 // cierre estándar del dialog. Un solo listener por elemento, registrado
 // una vez desde inicializarModuloCalificacion() — el contexto de CADA
 // apertura vive en contextoEdicionEntrega, no en el DOM.
+// Una sola operación a la vez en el panel (guardar o deshacer): mientras
+// corre, "Confirmar"/"Guardar cambios" y "Deshacer marca manual" quedan
+// deshabilitados y un segundo clic/toque/Enter no dispara otra.
+let operacionEntregaEnCurso = false;
+
+function bloquearAccionesEntrega(bloquear) {
+  operacionEntregaEnCurso = bloquear;
+  ["editar-entrega-confirmar", "editar-entrega-deshacer"].forEach((id) => {
+    const boton = document.getElementById(id);
+    if (boton) boton.disabled = bloquear;
+  });
+}
+
 function activarFormularioEditarEntrega() {
   const modal = document.getElementById("modal-editar-entrega");
   const formulario = document.getElementById("formulario-editar-entrega");
@@ -14948,6 +14961,7 @@ function activarFormularioEditarEntrega() {
 
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
+    if (operacionEntregaEnCurso) return;
     if (demoModeActivo()) {
       // Cierra este dialog antes de abrir modal-demo: sin esto, los dos
       // <dialog> quedarían apilados uno encima del otro (ambos usan
@@ -15000,7 +15014,7 @@ function activarFormularioEditarEntrega() {
       }
     }
 
-    botonConfirmar.disabled = true;
+    bloquearAccionesEntrega(true);
 
     // Igual que en Evaluación: 1) progreso_manual por el flujo de
     // siempre, 2) retroalimentación. Si falla la 2, la fila ya guardada
@@ -15039,13 +15053,14 @@ function activarFormularioEditarEntrega() {
       }
       error.hidden = false;
     } finally {
-      botonConfirmar.disabled = false;
+      bloquearAccionesEntrega(false);
     }
   });
 
   document.getElementById("editar-entrega-cancelar").addEventListener("click", () => cerrarDialogoAnimado(modal));
 
   document.getElementById("editar-entrega-deshacer").addEventListener("click", async () => {
+    if (operacionEntregaEnCurso) return;
     if (!contextoEdicionEntrega?.filaProgreso) return;
     if (demoModeActivo()) {
       await cerrarDialogoAnimado(modal);
@@ -15062,6 +15077,7 @@ function activarFormularioEditarEntrega() {
     const error = document.getElementById("editar-entrega-error");
     error.hidden = true;
 
+    bloquearAccionesEntrega(true);
     try {
       // Primero la retroalimentación: si eso falla, la marca sigue intacta
       // y no queda un comentario huérfano de un trabajo "no entregado".
@@ -15078,6 +15094,8 @@ function activarFormularioEditarEntrega() {
     } catch (err) {
       error.textContent = "No se pudo deshacer: " + (err?.message || "intenta de nuevo.");
       error.hidden = false;
+    } finally {
+      bloquearAccionesEntrega(false);
     }
   });
 
