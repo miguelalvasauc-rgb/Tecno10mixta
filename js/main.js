@@ -14410,6 +14410,193 @@ async function eliminarEntregaManual(filaProgreso) {
   if (error) throw error;
 }
 
+/* ---------- Retroalimentación (Etapa 2): helpers y banco de frases ----------
+   Tabla "retroalimentacion" (Supabase): una fila por (registro_id, tipo,
+   item_id, trimestre) con puntos_rubrica/puntos_max (solo proyectos con
+   rúbrica) y/o un comentario para el alumno. La calificación real NO vive
+   aquí: sigue en progreso.calificacion / progreso_manual.calificacion,
+   guardada por el flujo de siempre; esta tabla solo la acompaña. --------- */
+
+// Redondeo a 1 decimal compartido por los formularios de calificación.
+// toPrecision(12) absorbe el ruido binario antes de redondear
+// (8.75 → 87.5 → 88 → 8.8, y no 87.49999… → 8.7).
+function redondearUnDecimal(valor) {
+  return Math.round(Number((valor * 10).toPrecision(12))) / 10;
+}
+
+// Frases iniciales por banda de calificación (Hiram las ajustará). Solo
+// se pre-llenan en proyectos calificados con puntos de rúbrica — en
+// tareas/actividades el comentario es libre, sin sugerencia.
+const DATOS_RETRO_FRASES = {
+  excelente: [
+    "¡Excelente trabajo! Cumpliste con todos los criterios de la rúbrica y se nota tu dedicación. Para seguir creciendo, anímate a explicar tus ideas con ejemplos propios.",
+    "Tu trabajo está muy bien logrado: claro, completo y bien presentado. Sigue con ese nivel y apoya a tus compañeros cuando lo necesiten.",
+    "Muy buen resultado. Mostraste dominio del tema y cuidaste los detalles. El reto para el siguiente trabajo es proponer algo aún más original.",
+  ],
+  bueno: [
+    "Buen trabajo. Cumpliste con lo principal y se entiende bien tu propuesta. Para llegar al nivel excelente, revisa la rúbrica y agrega más ejemplos o detalles.",
+    "Vas por buen camino. Tu trabajo está claro, aunque a algunos puntos les faltó profundidad. Revisa los criterios donde no alcanzaste el máximo.",
+    "Buen esfuerzo y buen resultado. Cuida la presentación y la ortografía, y completa cada criterio de la rúbrica para subir tu calificación.",
+  ],
+  regular: [
+    "Entregaste lo esencial, pero varios criterios quedaron incompletos. Revisa la rúbrica y compara tu trabajo con el nivel que sigue.",
+    "Hay avances, aunque tu trabajo necesita más detalle y mejor organización. Apóyate en el material del sitio y pregúntame tus dudas en clase.",
+    "Vas avanzando, pero aún te falta desarrollar varias partes. En el próximo trabajo empieza con tiempo y revisa la rúbrica antes de entregar.",
+  ],
+  deficiente: [
+    "Tu trabajo todavía no alcanza lo mínimo esperado. No te desanimes: revisa la rúbrica y acércate conmigo para ver cómo mejorarlo.",
+    "Faltaron varios elementos importantes. Puedes mejorar si revisas el material del tema y consultas tus dudas conmigo en clase.",
+    "Este resultado puede mejorar. Si tienes dudas, pregúntame en clase; con apoyo y una nueva revisión de la rúbrica puedes lograrlo.",
+  ],
+};
+
+const LARGO_MAX_COMENTARIO_RETRO = 500;
+
+// Rango de puntos de la rúbrica de un proyecto, calculado DIRECTO de
+// DATOS_RUBRICAS (sin números fijos): por criterio, el menor y el mayor
+// "puntos" de sus niveles, sumados. El paso es 0.5 si algún nivel usa
+// medios puntos (hoy solo S5). El proyecto se liga a sus criterios por
+// el mismo texto de "secuencia" (así ya se agrupan en las páginas de
+// trimestre). Devuelve null si no es proyecto o no tiene rúbrica (ej. el
+// proyecto de recuperación de 3°E): ahí solo hay captura directa.
+function rangoPuntosRubrica(trimestre, item) {
+  if (!item || item.tipoEntregable !== "proyecto" || !item.secuencia) return null;
+  const criterios = (DATOS_RUBRICAS[trimestre] || []).filter((criterio) => criterio.secuencia === item.secuencia);
+  if (criterios.length === 0) return null;
+
+  let min = 0;
+  let max = 0;
+  let admiteMedios = false;
+  for (const criterio of criterios) {
+    const valores = (criterio.niveles || []).map((nivel) => Number(nivel.puntos)).filter(Number.isFinite);
+    if (valores.length === 0) return null;
+    min += Math.min(...valores);
+    max += Math.max(...valores);
+    if (valores.some((valor) => !Number.isInteger(valor))) admiteMedios = true;
+  }
+  if (!(max > min)) return null;
+  return { min, max, paso: admiteMedios ? 0.5 : 1 };
+}
+
+// Escala lineal: el mínimo de la rúbrica vale 5.0 y el máximo 10.0.
+function calificacionDesdePuntos(puntos, rango) {
+  return redondearUnDecimal(5 + ((puntos - rango.min) * 5) / (rango.max - rango.min));
+}
+
+// "" → { valido, valor: null }. Con texto: número dentro del rango y
+// múltiplo del paso (6, 7… o 0, 0.5, 1…).
+function leerPuntosRubrica(texto, rango) {
+  const limpio = String(texto).trim().replace(",", ".");
+  if (limpio === "") return { valido: true, valor: null, motivo: "" };
+  const valor = Number(limpio);
+  const pasos = (valor - rango.min) / rango.paso;
+  if (
+    Number.isNaN(valor) ||
+    valor < rango.min ||
+    valor > rango.max ||
+    Math.abs(pasos - Math.round(pasos)) > 1e-9
+  ) {
+    const textoPaso = rango.paso === 1 ? "en números enteros" : "en pasos de " + rango.paso;
+    return {
+      valido: false,
+      valor: null,
+      motivo: "Los puntos van de " + rango.min + " a " + rango.max + ", " + textoPaso + ".",
+    };
+  }
+  return { valido: true, valor, motivo: "" };
+}
+
+// 9–10 Excelente · 8–8.9 Bueno · 6–7.9 Regular · <6 Deficiente.
+// Calificación 0 (o vacía) no tiene banda: no se pre-llena nada.
+function bandaRetro(calificacion) {
+  if (calificacion == null || !(calificacion > 0)) return null;
+  if (calificacion >= 9) return "excelente";
+  if (calificacion >= 8) return "bueno";
+  if (calificacion >= 6) return "regular";
+  return "deficiente";
+}
+
+// Hash FNV-1a de 32 bits: determinista, sin dependencias.
+function hashTextoRetro(texto) {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < texto.length; i++) {
+    hash ^= texto.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
+
+// Variante ESTABLE (nunca aleatoria): base = hash del trabajo + grupo,
+// desplazada por el número de lista, así que al reabrir sale la misma
+// frase y dos alumnos consecutivos del mismo grupo nunca reciben el
+// mismo texto. Sin número de lista, se desplaza por hash del registro_id.
+function fraseRetroSugerida(calificacion, { registroId, tipo, itemId, grupo, numeroLista }) {
+  const banda = bandaRetro(calificacion);
+  if (!banda) return "";
+  const base = hashTextoRetro(tipo + "|" + itemId + "|" + (grupo || ""));
+  const desplazamiento = Number.isInteger(numeroLista) ? numeroLista : hashTextoRetro(String(registroId));
+  const variantes = DATOS_RETRO_FRASES[banda];
+  return variantes[(base + desplazamiento) % variantes.length];
+}
+
+// true si el texto sigue siendo, tal cual, una frase del banco (o sea,
+// el docente no lo ha escrito ni editado) — solo así se puede reponer o
+// borrar en automático.
+function esFraseDelBanco(texto) {
+  const limpio = String(texto || "").trim();
+  if (limpio === "") return false;
+  return Object.values(DATOS_RETRO_FRASES).some((variantes) => variantes.includes(limpio));
+}
+
+function clavesRetro({ registroId, tipo, itemId, trimestre }) {
+  return { registro_id: registroId, tipo, item_id: String(itemId), trimestre: Number(trimestre) };
+}
+
+// Lectura vía obtenerDatos() (en Modo Demo sale de DEMO_TABLAS).
+async function obtenerRetroalimentacion(claves) {
+  const { data, error } = await obtenerDatos("retroalimentacion", { eq: clavesRetro(claves) });
+  if (error) throw error;
+  return data?.[0] || null;
+}
+
+async function eliminarRetroalimentacion(claves) {
+  const filtro = clavesRetro(claves);
+  const { error } = await clienteSupabase
+    .from("retroalimentacion")
+    .delete()
+    .eq("registro_id", filtro.registro_id)
+    .eq("tipo", filtro.tipo)
+    .eq("item_id", filtro.item_id)
+    .eq("trimestre", filtro.trimestre);
+  if (error) throw error;
+}
+
+// Upsert por la llave única. Sin puntos ni comentario la fila no puede
+// existir (CHECK retroalimentacion_no_vacia_check): se borra la que
+// hubiera. .select() + 1 fila: un upsert que la RLS filtra respondería
+// "éxito" sin guardar nada.
+async function guardarRetroalimentacion({ puntos, puntosMax, comentario, ...claves }) {
+  if (puntos == null && !comentario) {
+    await eliminarRetroalimentacion(claves);
+    return null;
+  }
+  const { data, error } = await clienteSupabase
+    .from("retroalimentacion")
+    .upsert(
+      {
+        ...clavesRetro(claves),
+        puntos_rubrica: puntos ?? null,
+        puntos_max: puntos == null ? null : puntosMax,
+        comentario: comentario || null,
+      },
+      { onConflict: "registro_id,tipo,item_id,trimestre" }
+    )
+    .select();
+  if (error) throw error;
+  if (!data || data.length !== 1) throw new Error("no se guardó ningún registro.");
+  return data[0];
+}
+
 // Campo de calificación opcional: vacío = null ("entregó, sin
 // calificar"); con valor, 0–10 redondeado a 1 decimal. Misma regla que
 // el modal de Evaluación (activarFormularioCalificar), que no se toca
@@ -14421,7 +14608,7 @@ function leerCalificacionOpcional(texto) {
   if (Number.isNaN(valor) || valor < 0 || valor > 10) {
     return { valido: false, valor: null, motivo: "La calificación debe ser un número entre 0.0 y 10.0." };
   }
-  return { valido: true, valor: Math.round(valor * 10) / 10, motivo: "" };
+  return { valido: true, valor: redondearUnDecimal(valor), motivo: "" };
 }
 
 // Mismo contrato que guardarEntregaManual (update-o-insert explícito,
@@ -19617,7 +19804,7 @@ function activarFormularioCalificar() {
       }
       // step="0.1" ya lo sugiere en el input, pero no impide escribir más
       // decimales a mano — se redondea a 1 decimal antes de guardar.
-      valor = Math.round(valor * 10) / 10;
+      valor = redondearUnDecimal(valor);
     }
 
     botonConfirmar.disabled = true;
