@@ -13787,6 +13787,31 @@ button.badge-estado {
   min-height: 44px;
 }
 
+/* "Quitar entrega" del modal Calificar: al final, separado de Guardar
+   por espacio y una línea, para no tocarlo por accidente en celular.
+   Color y subrayado los pone .modal-editar-entrega__deshacer (igual que
+   "Deshacer marca manual"); aquí solo el área táctil. */
+.calificar-quitar {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-borde);
+}
+
+.calificar-quitar[hidden] {
+  display: none;
+}
+
+#calificar-origen-ayuda {
+  margin: 1rem 0 0;
+}
+
+.calificar-quitar .modal-editar-entrega__deshacer {
+  min-height: 44px;
+  padding: 0.5rem 0;
+  margin-left: 0;
+  text-align: left;
+}
+
 /* =========================================================
    ANIMACIONES SCROLL-DRIVEN (mejora progresiva, solo index.html)
 

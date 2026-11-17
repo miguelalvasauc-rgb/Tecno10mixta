@@ -1402,6 +1402,17 @@
         <button type="submit" class="boton-secundario" id="calificar-confirmar">Guardar</button>
         <button type="button" class="boton-secundario" id="calificar-cancelar">Cancelar</button>
       </div>
+
+      <!-- Solo con una marca manual del docente (ver abrirModalCalificar):
+           separado de Guardar para evitar toques accidentales. -->
+      <div class="calificar-quitar" id="calificar-quitar-bloque" hidden>
+        <button type="button" class="modal-editar-entrega__deshacer" id="calificar-quitar-entrega">
+          Quitar entrega (volver a sin entrega)
+        </button>
+      </div>
+      <p id="calificar-origen-ayuda" class="modal-editar-entrega__ayuda" hidden>
+        Esta entrega llegó por el formulario; aquí solo puedes vaciar la calificación
+      </p>
     </form>
   </dialog>
 

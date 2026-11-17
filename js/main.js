@@ -14408,10 +14408,13 @@ async function guardarEntregaManual({ alumno, item, trimestre, filaProgreso, fec
 
 // Elimina por completo la fila de progreso de una marca manual: el
 // estado vuelve a calcularse como pendiente/atrasada normal (ya no hay
-// fila que consultar).
+// fila que consultar). .select() + exactamente 1 fila, igual que
+// eliminarProgresoManual: un DELETE que la RLS filtra (o una fila que ya
+// no existe) responde "éxito" con 0 filas.
 async function eliminarEntregaManual(filaProgreso) {
-  const { error } = await clienteSupabase.from("progreso").delete().eq("id", filaProgreso.id);
+  const { data, error } = await clienteSupabase.from("progreso").delete().eq("id", filaProgreso.id).select("id");
   if (error) throw error;
+  if (!data || data.length !== 1) throw new Error("no se eliminó ningún registro.");
 }
 
 /* ---------- Retroalimentación (Etapa 2): helpers y banco de frases ----------
@@ -14934,6 +14937,21 @@ function abrirModalEditarEntrega({ alumno, item, trimestre, filaProgreso, alGuar
   modal.showModal();
 }
 
+// Quita una marca manual del docente (vuelve a "sin entrega"). La usan
+// "Deshacer marca manual" (Calificación y progreso) y "Quitar entrega"
+// (modal Calificar de Evaluación). Primero la retroalimentación de ese
+// alumno + trabajo + trimestre: si eso falla, la marca sigue intacta y
+// no queda un comentario huérfano de un trabajo "no entregado".
+async function quitarMarcaManual({ alumno, item, trimestre, filaProgreso, esCapturaManual }) {
+  await eliminarRetroalimentacion({ registroId: alumno.id, tipo: item.tipoEntregable, itemId: item.id, trimestre });
+
+  if (esCapturaManual) {
+    await eliminarProgresoManual(filaProgreso);
+  } else {
+    await eliminarEntregaManual(filaProgreso);
+  }
+}
+
 // Envía el formulario (Confirmar/Guardar cambios), el botón "Deshacer
 // marca manual" (con confirmación previa porque borra el registro), y el
 // cierre estándar del dialog. Un solo listener por elemento, registrado
@@ -15079,16 +15097,7 @@ function activarFormularioEditarEntrega() {
 
     bloquearAccionesEntrega(true);
     try {
-      // Primero la retroalimentación: si eso falla, la marca sigue intacta
-      // y no queda un comentario huérfano de un trabajo "no entregado".
-      const { alumno, item, trimestre } = contextoEdicionEntrega;
-      await eliminarRetroalimentacion({ registroId: alumno.id, tipo: item.tipoEntregable, itemId: item.id, trimestre });
-
-      if (contextoEdicionEntrega.esCapturaManual) {
-        await eliminarProgresoManual(contextoEdicionEntrega.filaProgreso);
-      } else {
-        await eliminarEntregaManual(contextoEdicionEntrega.filaProgreso);
-      }
+      await quitarMarcaManual(contextoEdicionEntrega);
       cerrarDialogoAnimado(modal);
       contextoEdicionEntrega.alDeshacer();
     } catch (err) {
@@ -19723,6 +19732,12 @@ function pintarCeldaEvaluacion(contenedor, contexto) {
         if (mapaProgreso && claveMapaProgreso) mapaProgreso.set(claveMapaProgreso, nuevaFila);
         pintarCeldaEvaluacion(contenedor, { ...contexto, filaProgreso: nuevaFila });
       },
+      // "Quitar entrega" (solo marcas manuales): sin fila, la celda vuelve
+      // a 🟡/🔒 con el mismo criterio de siempre (estadoCeldaEvaluacion).
+      alQuitar: () => {
+        if (mapaProgreso && claveMapaProgreso) mapaProgreso.delete(claveMapaProgreso);
+        pintarCeldaEvaluacion(contenedor, { ...contexto, filaProgreso: null });
+      },
     });
   });
   contenedor.appendChild(boton);
@@ -20020,12 +20035,21 @@ function buscarSiguientePorCalificar(celda) {
   return null;
 }
 
-function abrirModalCalificar({ alumno, item, filaProgreso, alGuardar, celda = null }) {
+function abrirModalCalificar({ alumno, item, filaProgreso, alGuardar, alQuitar = null, celda = null }) {
   const modal = document.getElementById("modal-calificar");
   if (!modal) return;
 
-  const contexto = { filaProgreso, alGuardar, celda, alumno };
+  // registro_id = alumnos_registro.id (el "alumno" de Evaluación ES esa
+  // fila); el trimestre sale de la propia fila de progreso.
+  const trimestre = filaProgreso.trimestre ?? estadoEvaluacion.trimestre;
+  const contexto = { filaProgreso, alGuardar, alQuitar, celda, alumno, item, trimestre };
   contextoCalificar = contexto;
+
+  // "Quitar entrega" solo para marcas manuales del docente; una entrega
+  // del formulario no se borra desde aquí (solo se vacía la calificación).
+  const esMarcaManual = filaProgreso.origen === "manual-docente";
+  document.getElementById("calificar-quitar-bloque").hidden = !esMarcaManual || !alQuitar;
+  document.getElementById("calificar-origen-ayuda").hidden = filaProgreso.origen !== "formulario";
 
   const { fila, filas } = filasVisiblesEvaluacion(celda);
   const posicion = fila ? filas.indexOf(fila) + 1 : 0;
@@ -20077,9 +20101,6 @@ function abrirModalCalificar({ alumno, item, filaProgreso, alGuardar, celda = nu
   document.getElementById("calificar-confirmar").textContent = "Guardar";
   document.getElementById("calificar-confirmar-siguiente").textContent = "Guardar y siguiente";
 
-  // registro_id = alumnos_registro.id (el "alumno" de Evaluación ES esa
-  // fila); el trimestre sale de la propia fila de progreso.
-  const trimestre = filaProgreso.trimestre ?? estadoEvaluacion.trimestre;
   const carga = prepararCapturaRetro("calificar", {
     registroId: alumno.id,
     tipo: item.tipoEntregable,
@@ -20121,6 +20142,20 @@ async function guardarCalificacion(filaProgreso, valor) {
   return data;
 }
 
+// Una sola operación a la vez en el modal Calificar (mismo patrón que
+// bloquearAccionesEntrega): mientras guarda o quita, "Guardar y
+// siguiente", "Guardar" y "Quitar entrega" quedan deshabilitados y un
+// segundo clic/toque/Enter no dispara otra.
+let operacionCalificarEnCurso = false;
+
+function bloquearAccionesCalificar(bloquear) {
+  operacionCalificarEnCurso = bloquear;
+  ["calificar-confirmar-siguiente", "calificar-confirmar", "calificar-quitar-entrega"].forEach((id) => {
+    const boton = document.getElementById(id);
+    if (boton) boton.disabled = bloquear;
+  });
+}
+
 // Campo vacío guarda NULL (permite "desmarcar" una calificación puesta
 // por error, sin un botón aparte para eso) — no es required a propósito.
 function activarFormularioCalificar() {
@@ -20136,6 +20171,7 @@ function activarFormularioCalificar() {
 
   formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
+    if (operacionCalificarEnCurso) return;
     if (demoModeActivo()) {
       await cerrarDialogoAnimado(modal);
       abrirModalDemo();
@@ -20181,8 +20217,7 @@ function activarFormularioCalificar() {
     // falla la 2, la 1 ya quedó guardada (y pintada en la tabla): el
     // modal sigue abierto para reintentar (re-guardar la misma
     // calificación es idempotente).
-    const botonesGuardar = [botonSiguiente, document.getElementById("calificar-confirmar")];
-    botonesGuardar.forEach((boton) => (boton.disabled = true));
+    bloquearAccionesCalificar(true);
     let calificacionGuardada = false;
     try {
       const nuevaFila = await guardarCalificacion(filaProgreso, valor);
@@ -20216,11 +20251,52 @@ function activarFormularioCalificar() {
       }
       error.hidden = false;
     } finally {
-      botonesGuardar.forEach((boton) => (boton.disabled = false));
+      bloquearAccionesCalificar(false);
     }
   });
 
   document.getElementById("calificar-cancelar").addEventListener("click", () => cerrarDialogoAnimado(modal));
+
+  // "Quitar entrega (volver a sin entrega)": solo visible con una marca
+  // manual del docente (ver abrirModalCalificar). Misma función y mismo
+  // orden que "Deshacer marca manual" (quitarMarcaManual).
+  document.getElementById("calificar-quitar-entrega").addEventListener("click", async () => {
+    if (operacionCalificarEnCurso) return;
+    const contexto = contextoCalificar;
+    if (!contexto?.filaProgreso || contexto.filaProgreso.origen !== "manual-docente" || !contexto.alQuitar) return;
+    if (demoModeActivo()) {
+      await cerrarDialogoAnimado(modal);
+      abrirModalDemo();
+      return;
+    }
+    const { alumno, item, trimestre, filaProgreso } = contexto;
+    if (
+      !window.confirm(
+        "¿Quitar la entrega de " +
+          alumno.nombre +
+          " en «" +
+          item.titulo +
+          "»? Volverá a «sin entrega» y también se borrará la retroalimentación de este trabajo (si existe)."
+      )
+    )
+      return;
+
+    const error = document.getElementById("calificar-error");
+    error.hidden = true;
+
+    bloquearAccionesCalificar(true);
+    try {
+      await quitarMarcaManual({ alumno, item, trimestre, filaProgreso, esCapturaManual: false });
+      cerrarDialogoAnimado(modal);
+      contexto.alQuitar();
+      mostrarToast("Entrega quitada: " + alumno.nombre + " vuelve a sin entrega");
+    } catch (err) {
+      error.textContent = "No se pudo quitar la entrega: " + (err?.message || "intenta de nuevo.");
+      error.hidden = false;
+    } finally {
+      bloquearAccionesCalificar(false);
+    }
+  });
 
   const botonCerrar = modal.querySelector(".modal-detalle__cerrar");
   if (botonCerrar) botonCerrar.addEventListener("click", () => cerrarDialogoAnimado(modal));

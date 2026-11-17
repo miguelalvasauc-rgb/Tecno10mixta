@@ -420,6 +420,35 @@ const DEMO_OVERRIDE_CALIFICACION_POR_TRIMESTRE = {
   "demo-uid-13": { 3: { calificacionMin: 8.6, calificacionMax: 9.4, porcentajeAvance: 1 } },
 };
 
+// Pocas filas marcadas a mano por el docente (origen "manual-docente"),
+// el resto siguen como "formulario": así en Evaluación el modal Calificar
+// muestra "Quitar entrega" en estas y la ayuda de "llegó por el
+// formulario" en las demás. Mismas columnas que deja guardarEntregaManual
+// (js/main.js): sin a_tiempo calculado ni emoción, con fecha manual.
+const DEMO_MARCAS_MANUALES = [
+  { alumno_id: "demo-uid-01", trimestre: 1, tipo: "proyecto", item_id: "p3" }, // Valeria
+  { alumno_id: "demo-uid-04", trimestre: 1, tipo: "tarea", item_id: "t5" }, // Bruno
+];
+
+function demoAplicarMarcaManual(fila) {
+  const esMarcaManual = DEMO_MARCAS_MANUALES.some(
+    (marca) =>
+      marca.alumno_id === fila.alumno_id &&
+      marca.trimestre === fila.trimestre &&
+      marca.tipo === fila.tipo &&
+      marca.item_id === fila.item_id
+  );
+  if (!esMarcaManual) return fila;
+  return {
+    ...fila,
+    origen: "manual-docente",
+    a_tiempo: null,
+    emocion_animo: null,
+    emocion_motivo: null,
+    fecha_entrega_manual: fila.actualizado_en.slice(0, 10),
+  };
+}
+
 const DEMO_PROGRESO = DEMO_CONFIG_AVANCE_ALUMNOS
   .flatMap((config, indice) =>
     [1, 2, 3].flatMap((trimestre) => {
@@ -442,6 +471,7 @@ const DEMO_PROGRESO = DEMO_CONFIG_AVANCE_ALUMNOS
   // DEMO_CONFIG_AVANCE_ALUMNOS): descarta sus filas de trimestre 3 para
   // simular que ese trimestre aún no se ha capturado.
   .filter((fila) => !(fila.alumno_id === "demo-uid-06" && fila.trimestre === 3))
+  .map(demoAplicarMarcaManual)
   .map((fila, indice) => ({ id: "demo-prog-" + (indice + 1), ...fila }));
 
 /* ---------------------------------------------------------
