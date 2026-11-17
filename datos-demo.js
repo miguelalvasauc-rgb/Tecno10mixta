@@ -94,7 +94,18 @@ const DEMO_ALUMNOS_ENTREGA_MANUAL = [
 const DEMO_PROGRESO_MANUAL = [
   { id: "demo-pm-01", registro_id: "demo-reg-26", tipo: "tarea", item_id: "t5", trimestre: 1, calificacion: 8, nota: "Buen planteamiento del problema.", fecha_entrega_manual: "2026-09-01", actualizado_en: "2026-09-01T15:00:00Z" },
   { id: "demo-pm-02", registro_id: "demo-reg-26", tipo: "actividad", item_id: "a4", trimestre: 1, calificacion: null, nota: null, fecha_entrega_manual: "2026-09-03", actualizado_en: "2026-09-03T15:00:00Z" },
-  { id: "demo-pm-03", registro_id: "demo-reg-26", tipo: "proyecto", item_id: "p3", trimestre: 1, calificacion: 9, nota: null, fecha_entrega_manual: "2026-09-26", actualizado_en: "2026-09-26T15:00:00Z" },
+  { id: "demo-pm-03", registro_id: "demo-reg-26", tipo: "proyecto", item_id: "p3", trimestre: 1, calificacion: 9.2, nota: null, fecha_entrega_manual: "2026-09-26", actualizado_en: "2026-09-26T15:00:00Z" },
+];
+
+// Retroalimentación del docente (tabla retroalimentacion: misma forma
+// que la real, ligada a alumnos_registro.id vía registro_id). Solo para
+// el alumno de entrega manual de arriba, para que coincida con sus
+// capturas: el proyecto p3 calificado con puntos de rúbrica (21 de 6–24
+// → 9.2, la misma calificación de demo-pm-03) y la tarea t5 con un
+// comentario libre, sin puntos.
+const DEMO_RETROALIMENTACION = [
+  { id: "demo-retro-01", registro_id: "demo-reg-26", tipo: "proyecto", item_id: "p3", trimestre: 1, puntos_rubrica: 21, puntos_max: 24, comentario: "Tu trabajo está muy bien logrado: claro, completo y bien presentado. Sigue con ese nivel y apoya a tus compañeros cuando lo necesiten.", created_at: "2026-09-26T15:05:00Z", updated_at: "2026-09-26T15:05:00Z" },
+  { id: "demo-retro-02", registro_id: "demo-reg-26", tipo: "tarea", item_id: "t5", trimestre: 1, puntos_rubrica: null, puntos_max: null, comentario: "Buen planteamiento; la próxima vez agrega un ejemplo propio.", created_at: "2026-09-01T15:05:00Z", updated_at: "2026-09-01T15:05:00Z" },
 ];
 
 // perfiles es una tabla real aparte (poblada por trigger al crear

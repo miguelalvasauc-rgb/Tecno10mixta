@@ -4203,6 +4203,10 @@ const DEMO_TABLAS = {
   perfiles: () => DEMO_PERFILES,
   progreso: () => DEMO_PROGRESO,
   progreso_manual: () => DEMO_PROGRESO_MANUAL,
+  // Etapa 2: solo lectura en demo — las escrituras (upsert/borrado) nunca
+  // llegan aquí: los submit de Calificar/entrega manual y "Deshacer"
+  // cortan antes con demoModeActivo() → abrirModalDemo().
+  retroalimentacion: () => DEMO_RETROALIMENTACION,
   asistencia: () => DEMO_ASISTENCIA,
   avisos: () => DEMO_AVISOS,
   consultas: () => DEMO_CONSULTAS,
