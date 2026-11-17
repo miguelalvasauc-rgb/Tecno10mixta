@@ -19700,6 +19700,7 @@ function pintarCeldaEvaluacion(contenedor, contexto) {
       alumno,
       item,
       filaProgreso,
+      celda: contenedor,
       alGuardar: (nuevaFila) => {
         if (mapaProgreso && claveMapaProgreso) mapaProgreso.set(claveMapaProgreso, nuevaFila);
         pintarCeldaEvaluacion(contenedor, { ...contexto, filaProgreso: nuevaFila });
@@ -19976,13 +19977,46 @@ const ETIQUETAS_MOTIVO = {
 // invoca desde celdas en estado "sin-calificar"/"calificada", ambas
 // con completado=true, o sea que ya hay una fila real en progreso que
 // actualizar — nunca hace falta un INSERT.
-function abrirModalCalificar({ alumno, item, filaProgreso, alGuardar }) {
+// Filas visibles (respeta el buscador; el grupo ya viene filtrado en la
+// propia tabla) del tbody de una celda de Evaluación, en el orden en
+// pantalla — base de "12 de 38" y de "Guardar y siguiente".
+function filasVisiblesEvaluacion(celda) {
+  const fila = celda?.closest("tr");
+  const tbody = fila?.parentElement;
+  if (!fila || !tbody) return { fila: null, filas: [] };
+  return { fila, filas: [...tbody.rows].filter((candidata) => !candidata.hidden) };
+}
+
+// Siguiente alumno (hacia abajo y luego desde arriba) con algo por
+// calificar en la MISMA columna (mismo trabajo). Devuelve su botón o null.
+function buscarSiguientePorCalificar(celda) {
+  const { fila, filas } = filasVisiblesEvaluacion(celda);
+  if (!fila) return null;
+  const indiceColumna = [...fila.children].indexOf(celda);
+  const posicion = filas.indexOf(fila);
+  const orden = [...filas.slice(posicion + 1), ...filas.slice(0, Math.max(posicion, 0))];
+  for (const candidata of orden) {
+    const boton = candidata.children[indiceColumna]?.querySelector('.badge-calificacion[data-estado="sin-calificar"]');
+    if (boton) return boton;
+  }
+  return null;
+}
+
+function abrirModalCalificar({ alumno, item, filaProgreso, alGuardar, celda = null }) {
   const modal = document.getElementById("modal-calificar");
   if (!modal) return;
 
-  contextoCalificar = { filaProgreso, alGuardar };
+  const contexto = { filaProgreso, alGuardar, celda, alumno };
+  contextoCalificar = contexto;
 
-  document.getElementById("modal-calificar-contexto").textContent = alumno.nombre + " — " + item.titulo;
+  const { fila, filas } = filasVisiblesEvaluacion(celda);
+  const posicion = fila ? filas.indexOf(fila) + 1 : 0;
+  document.getElementById("modal-calificar-alumno").textContent =
+    alumno.nombre +
+    " · N.° " + alumno.numero_lista +
+    " · " + textoGrupo(alumno.grupo) +
+    (posicion > 0 ? " · " + posicion + " de " + filas.length : "");
+  document.getElementById("modal-calificar-contexto").textContent = item.titulo;
 
   const enlaceArchivo = document.getElementById("modal-calificar-archivo");
   if (filaProgreso.archivo_url) {
@@ -20022,12 +20056,13 @@ function abrirModalCalificar({ alumno, item, filaProgreso, alGuardar }) {
   sincronizarBotonesValorRapidoCalificacion();
 
   document.getElementById("calificar-error").hidden = true;
-  document.getElementById("calificar-confirmar").textContent = "Guardar calificación";
+  document.getElementById("calificar-confirmar").textContent = "Guardar";
+  document.getElementById("calificar-confirmar-siguiente").textContent = "Guardar y siguiente";
 
   // registro_id = alumnos_registro.id (el "alumno" de Evaluación ES esa
   // fila); el trimestre sale de la propia fila de progreso.
   const trimestre = filaProgreso.trimestre ?? estadoEvaluacion.trimestre;
-  prepararCapturaRetro("calificar", {
+  const carga = prepararCapturaRetro("calificar", {
     registroId: alumno.id,
     tipo: item.tipoEntregable,
     itemId: item.id,
@@ -20037,7 +20072,20 @@ function abrirModalCalificar({ alumno, item, filaProgreso, alGuardar }) {
     rango: rangoPuntosRubrica(Number(trimestre), item),
   });
 
-  modal.showModal();
+  // "Guardar y siguiente" lo reabre estando ya abierto: showModal() solo
+  // la primera vez.
+  if (!modal.open) modal.showModal();
+
+  // Foco listo para escribir: Puntos en proyectos con rúbrica (cuando
+  // termina de cargar, porque mientras tanto está deshabilitado) o
+  // Calificación en tareas/actividades.
+  carga.finally(() => {
+    if (contextoCalificar !== contexto || !modal.open) return;
+    const bloquePuntos = document.getElementById("calificar-campo-puntos");
+    const campoPuntos = document.getElementById("calificar-puntos");
+    const destino = !bloquePuntos.hidden && !campoPuntos.disabled ? campoPuntos : campoValor;
+    destino.focus();
+  });
 }
 
 // UPDATE de progreso.calificacion (+ actualizado_en) SOLO — nunca toca
@@ -20077,10 +20125,13 @@ function activarFormularioCalificar() {
     }
     if (!contextoCalificar) return;
 
-    const { filaProgreso, alGuardar } = contextoCalificar;
+    const contexto = contextoCalificar;
+    const { filaProgreso, alGuardar } = contexto;
     const campoValor = document.getElementById("calificar-valor");
     const error = document.getElementById("calificar-error");
-    const botonConfirmar = document.getElementById("calificar-confirmar");
+    const botonSiguiente = document.getElementById("calificar-confirmar-siguiente");
+    const pasarAlSiguiente = evento.submitter ? evento.submitter === botonSiguiente : true;
+    const botonConfirmar = pasarAlSiguiente ? botonSiguiente : document.getElementById("calificar-confirmar");
 
     error.hidden = true;
 
@@ -20112,15 +20163,30 @@ function activarFormularioCalificar() {
     // falla la 2, la 1 ya quedó guardada (y pintada en la tabla): el
     // modal sigue abierto para reintentar (re-guardar la misma
     // calificación es idempotente).
-    botonConfirmar.disabled = true;
+    const botonesGuardar = [botonSiguiente, document.getElementById("calificar-confirmar")];
+    botonesGuardar.forEach((boton) => (boton.disabled = true));
     let calificacionGuardada = false;
     try {
       const nuevaFila = await guardarCalificacion(filaProgreso, valor);
       calificacionGuardada = true;
-      contextoCalificar.filaProgreso = nuevaFila;
+      contexto.filaProgreso = nuevaFila;
       alGuardar(nuevaFila);
       await guardarCapturaRetro("calificar", lecturaRetro);
-      cerrarDialogoAnimado(modal);
+
+      const siguiente = pasarAlSiguiente ? buscarSiguientePorCalificar(contexto.celda) : null;
+      if (siguiente) {
+        // El click del badge ya sabe abrir a ese alumno con su contexto
+        // (reutiliza abrirModalCalificar con el modal abierto).
+        siguiente.click();
+        const anuncio = document.getElementById("calificar-anuncio");
+        anuncio.textContent = "";
+        requestAnimationFrame(() => {
+          anuncio.textContent = "Guardado. Siguiente: " + (contextoCalificar?.alumno?.nombre || "");
+        });
+      } else {
+        cerrarDialogoAnimado(modal);
+        if (pasarAlSiguiente) mostrarToast("No quedan pendientes en este trabajo");
+      }
     } catch (err) {
       const detalle = err?.message || "intenta de nuevo.";
       if (calificacionGuardada) {
@@ -20132,7 +20198,7 @@ function activarFormularioCalificar() {
       }
       error.hidden = false;
     } finally {
-      botonConfirmar.disabled = false;
+      botonesGuardar.forEach((boton) => (boton.disabled = false));
     }
   });
 

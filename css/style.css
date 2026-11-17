@@ -13638,6 +13638,14 @@ button.badge-estado {
   margin-bottom: 0.75rem;
 }
 
+.modal-calificar__alumno {
+  margin: 0.2rem 0 0.1rem;
+  font-size: var(--tamano-fuente-accion);
+  font-weight: 700;
+  color: var(--color-texto);
+  overflow-wrap: anywhere;
+}
+
 /* Respuesta emocional del alumno (Google Form de entrega, columnas
    emocion_animo/emocion_motivo de "progreso") — solo lectura, oculta
    por completo cuando la fila no trae el dato (entregas marcadas a

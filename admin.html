@@ -1353,7 +1353,11 @@
   <dialog id="modal-calificar" aria-labelledby="modal-calificar-titulo">
     <button type="button" class="modal-detalle__cerrar" aria-label="Cerrar">✕</button>
     <h3 id="modal-calificar-titulo">Calificar entrega</h3>
+    <!-- Nombre · N.° de lista · grupo · "12 de 38": siempre visible para
+         no calificar al alumno equivocado al usar "Guardar y siguiente". -->
+    <p id="modal-calificar-alumno" class="modal-calificar__alumno"></p>
     <p id="modal-calificar-contexto" class="modal-historial__subtitulo"></p>
+    <p id="calificar-anuncio" class="sr-only" aria-live="polite"></p>
     <a id="modal-calificar-archivo" href="#" target="_blank" rel="noopener noreferrer" class="enlace-descarga" hidden>
       📄 Ver archivo entregado
     </a>
@@ -1392,7 +1396,10 @@
       <p id="calificar-error" class="cuenta-error" role="alert" hidden></p>
 
       <div class="modal-editar-entrega__acciones">
-        <button type="submit" class="modal-editar-entrega__confirmar" id="calificar-confirmar">Guardar calificación</button>
+        <!-- Primer submit = el que usa Enter: guardar y pasar al siguiente
+             alumno con algo por calificar en esta misma columna. -->
+        <button type="submit" class="modal-editar-entrega__confirmar" id="calificar-confirmar-siguiente">Guardar y siguiente</button>
+        <button type="submit" class="boton-secundario" id="calificar-confirmar">Guardar</button>
         <button type="button" class="boton-secundario" id="calificar-cancelar">Cancelar</button>
       </div>
     </form>
