@@ -11973,6 +11973,7 @@ async function sincronizarPerfilActivo() {
   // cualquier repoblación de perfilActivoCache/progresoCache (cambio de
   // sesión o de grupo) puede volver obsoleto el detalle ya calculado.
   cacheProgresoDetallado = null;
+  invalidarCacheMiRetroalimentacion();
 
   const { data: { session } } = await clienteSupabase.auth.getSession();
   if (!session) {
@@ -14605,6 +14606,70 @@ async function guardarRetroalimentacion({ puntos, puntosMax, comentario, ...clav
   if (error) throw error;
   if (!data || data.length !== 1) throw new Error("no se guardó ningún registro.");
   return data[0];
+}
+
+/* ---------- Retroalimentación (Etapa 3): lectura del alumno ----------
+   Solo para progreso.html y solo con rol "alumno". La consulta NO filtra
+   por alumno: la RLS ("Alumno lee su retroalimentacion", registro_id =
+   mi_registro_id()) ya entrega solo las filas de quien tiene la sesión.
+   Con rol docente la misma consulta traería las de todo el grupo, por eso
+   ni se intenta. Columnas acotadas: nunca progreso.nota ni otras de más.
+   Va directo a clienteSupabase (igual que progresoCache), no por
+   obtenerDatos(): el mock de Modo Demo no tiene RLS y devolvería las
+   filas ficticias de otro alumno. --------- */
+
+// Mapa ya resuelto (no una promesa), mismo criterio que
+// cacheProgresoDetallado. "turno" evita que una consulta lanzada antes de
+// un cambio de sesión llene la caché con datos del perfil anterior.
+let cacheMiRetroalimentacion = null;
+let turnoMiRetroalimentacion = 0;
+
+function invalidarCacheMiRetroalimentacion() {
+  cacheMiRetroalimentacion = null;
+  turnoMiRetroalimentacion++;
+}
+
+function claveMiRetroalimentacion(tipo, itemId, trimestre) {
+  return tipo + "|" + String(itemId) + "|" + Number(trimestre);
+}
+
+// Devuelve un Map clave(tipo, item_id, trimestre) → fila. Vacío si no es
+// alumno, si la consulta falla (no rompe el progreso) o si aparece una
+// clave repetida: con la UNIQUE (registro_id, tipo, item_id, trimestre),
+// una repetida solo puede venir de filas de más de un alumno, así que se
+// descarta TODO el resultado en vez de adivinar cuál es la suya.
+async function obtenerMiRetroalimentacion() {
+  const vacio = new Map();
+  if (obtenerPerfilActivo()?.rol !== "alumno") return vacio;
+  if (cacheMiRetroalimentacion) return cacheMiRetroalimentacion;
+
+  const turno = turnoMiRetroalimentacion;
+  let filas;
+  try {
+    const { data, error } = await clienteSupabase
+      .from("retroalimentacion")
+      .select("tipo, item_id, trimestre, puntos_rubrica, puntos_max, comentario");
+    if (error) throw error;
+    filas = data || [];
+  } catch (err) {
+    console.warn("No se pudo leer la retroalimentación del alumno:", err);
+    return vacio;
+  }
+  if (turno !== turnoMiRetroalimentacion) return vacio; // cambió la sesión
+
+  let mapa = new Map();
+  for (const fila of filas) {
+    const clave = claveMiRetroalimentacion(fila.tipo, fila.item_id, fila.trimestre);
+    if (mapa.has(clave)) {
+      console.warn("Retroalimentación descartada: llegaron filas repetidas para el mismo trabajo.");
+      mapa = vacio;
+      break;
+    }
+    mapa.set(clave, fila);
+  }
+
+  cacheMiRetroalimentacion = mapa;
+  return mapa;
 }
 
 /* ---------- Retroalimentación: captura dentro de un formulario ----------
