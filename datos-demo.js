@@ -108,6 +108,29 @@ const DEMO_RETROALIMENTACION = [
   { id: "demo-retro-02", registro_id: "demo-reg-26", tipo: "tarea", item_id: "t5", trimestre: 1, puntos_rubrica: null, puntos_max: null, comentario: "Buen planteamiento; la próxima vez agrega un ejemplo propio.", created_at: "2026-09-01T15:05:00Z", updated_at: "2026-09-01T15:05:00Z" },
 ];
 
+// Calificación final del trimestre (tabla calificacion_trimestre: misma
+// forma que la real, ligada a alumnos_registro.id vía registro_id). Solo
+// T1, para que la vista "Publicar trimestre" de Evaluación muestre cada
+// estado: en 3E, dos publicadas (Santiago, Daniela), un borrador
+// ajustado a mano (Renata), un borrador normal (Diego), el alumno de
+// entrega manual en borrador (Tomás) y un borrador viejo de una alumna
+// que hoy sale "Sin dato" (Sofía, sinCalificar); en 3C, una publicada
+// (Valeria) y un borrador (Emiliano). Los demás salen "Sin calcular" (o
+// "Sin dato", como Leonardo). El progreso ficticio se sortea en cada
+// carga, así que el promedio de hoy casi nunca coincide con el
+// calificacion_calculada guardado aquí: la vista lo marca con "Cambió
+// desde el cálculo", que también sirve para probar esa nota.
+const DEMO_CALIFICACION_TRIMESTRE = [
+  { id: "demo-ct-01", registro_id: "demo-reg-06", trimestre: 1, calificacion: 5.0, calificacion_calculada: 4.912, ajustada_manual: false, desglose: { tarea: 4.5, actividad: 5.1, proyecto: 5.05 }, publicada: true, publicada_en: "2026-11-14T16:30:00Z", created_at: "2026-11-13T18:00:00Z", updated_at: "2026-11-14T16:30:00Z" },
+  { id: "demo-ct-02", registro_id: "demo-reg-18", trimestre: 1, calificacion: 8.1, calificacion_calculada: 8.142, ajustada_manual: false, desglose: { tarea: 8.3, actividad: 7.9, proyecto: 8.2 }, publicada: true, publicada_en: "2026-11-14T16:30:00Z", created_at: "2026-11-13T18:00:00Z", updated_at: "2026-11-14T16:30:00Z" },
+  { id: "demo-ct-03", registro_id: "demo-reg-07", trimestre: 1, calificacion: 6.0, calificacion_calculada: 2.72, ajustada_manual: true, desglose: { tarea: 2.6, actividad: 2.9, proyecto: 2.68 }, publicada: false, publicada_en: null, created_at: "2026-11-13T18:00:00Z", updated_at: "2026-11-13T18:20:00Z" },
+  { id: "demo-ct-04", registro_id: "demo-reg-08", trimestre: 1, calificacion: 5.0, calificacion_calculada: 0.48, ajustada_manual: false, desglose: { tarea: 0.5, actividad: 0.6, proyecto: 0.35 }, publicada: false, publicada_en: null, created_at: "2026-11-13T18:00:00Z", updated_at: "2026-11-13T18:00:00Z" },
+  { id: "demo-ct-05", registro_id: "demo-reg-26", trimestre: 1, calificacion: 5.0, calificacion_calculada: 1.493, ajustada_manual: false, desglose: { tarea: 0.889, actividad: 0, proyecto: 3.067 }, publicada: false, publicada_en: null, created_at: "2026-11-13T18:00:00Z", updated_at: "2026-11-13T18:00:00Z" },
+  { id: "demo-ct-06", registro_id: "demo-reg-20", trimestre: 1, calificacion: 7.0, calificacion_calculada: 7.0, ajustada_manual: false, desglose: { tarea: 7.0, actividad: 7.0, proyecto: null }, publicada: false, publicada_en: null, created_at: "2026-11-10T18:00:00Z", updated_at: "2026-11-10T18:00:00Z" },
+  { id: "demo-ct-07", registro_id: "demo-reg-01", trimestre: 1, calificacion: 7.4, calificacion_calculada: 7.381, ajustada_manual: false, desglose: { tarea: 7.5, actividad: 7.2, proyecto: 7.42 }, publicada: true, publicada_en: "2026-11-15T14:05:00Z", created_at: "2026-11-15T13:50:00Z", updated_at: "2026-11-15T14:05:00Z" },
+  { id: "demo-ct-08", registro_id: "demo-reg-02", trimestre: 1, calificacion: 6.9, calificacion_calculada: 6.874, ajustada_manual: false, desglose: { tarea: 6.8, actividad: 7.0, proyecto: 6.84 }, publicada: false, publicada_en: null, created_at: "2026-11-15T13:50:00Z", updated_at: "2026-11-15T13:50:00Z" },
+];
+
 // perfiles es una tabla real aparte (poblada por trigger al crear
 // cuenta, no por el docente) — se deriva de DEMO_ALUMNOS solo para no
 // duplicar nombre/grupo a mano en dos arreglos; la forma resultante

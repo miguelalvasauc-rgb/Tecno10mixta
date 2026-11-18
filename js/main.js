@@ -4207,6 +4207,11 @@ const DEMO_TABLAS = {
   // llegan aquí: los submit de Calificar/entrega manual y "Deshacer"
   // cortan antes con demoModeActivo() → abrirModalDemo().
   retroalimentacion: () => DEMO_RETROALIMENTACION,
+  // Etapa 3B: también solo lectura — Calcular, Guardar, Publicar y
+  // Retirar cortan con demoModeActivo() → abrirModalDemo() justo antes
+  // de escribir (después de validar y confirmar, para poder probar ese
+  // flujo en demo).
+  calificacion_trimestre: () => DEMO_CALIFICACION_TRIMESTRE,
   asistencia: () => DEMO_ASISTENCIA,
   avisos: () => DEMO_AVISOS,
   consultas: () => DEMO_CONSULTAS,
