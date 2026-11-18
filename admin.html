@@ -640,6 +640,7 @@
         <div class="calificacion-acciones">
           <button type="button" id="evaluacion-boton-vista-promedios" class="boton-secundario">📊 Ver tabla de promedios</button>
           <button type="button" id="evaluacion-boton-vista-final" class="boton-secundario">🏁 Ver calificación final</button>
+          <button type="button" id="evaluacion-boton-vista-publicar" class="boton-secundario">🎓 Publicar trimestre</button>
         </div>
 
         <div id="evaluacion-captura-vista">
@@ -699,6 +700,26 @@
           <div id="evaluacion-final-alertas" class="evaluacion-final-alertas" role="alert" hidden></div>
 
           <div id="evaluacion-final-contenedor" class="calificacion-tabla-contenedor" aria-live="polite"></div>
+        </div>
+
+        <!-- Vista "Publicar trimestre": calificación final 5.0–10.0 que
+             verá el alumno (tabla calificacion_trimestre). Calcular arma
+             borradores con calcularPromedioTrimestre() + piso de 5.0; el
+             docente los revisa/ajusta y publica por grupo y trimestre (o
+             retira). Solo Trimestre/Grupo aplican, igual que promedios —
+             ver renderizarVistaPublicacion() en js/main.js. Reutiliza
+             .calificacion-tabla-contenedor (scroll horizontal en móvil). -->
+        <div id="evaluacion-publicar-vista" hidden>
+          <div class="calificacion-acciones">
+            <button type="button" id="evaluacion-publicar-boton-volver" class="boton-secundario">← Volver a captura individual</button>
+            <button type="button" id="evaluacion-publicar-boton-calcular" class="boton-secundario">🧮 Calcular borradores</button>
+          </div>
+
+          <div id="evaluacion-publicar-aviso" class="evaluacion-publicar-aviso" hidden></div>
+          <p id="evaluacion-publicar-resumen" class="evaluacion-publicar-resumen"></p>
+          <p id="evaluacion-publicar-mensaje" class="evaluacion-publicar-mensaje" role="status" aria-live="polite"></p>
+
+          <div id="evaluacion-publicar-contenedor" class="calificacion-tabla-contenedor" aria-live="polite"></div>
         </div>
       </section>
 

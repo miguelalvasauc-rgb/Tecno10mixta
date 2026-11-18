@@ -21422,6 +21422,455 @@ async function cambiarPublicacionCalificaciones(ids, publicar) {
   }
 }
 
+/* ---------- Publicar trimestre: vista ----------
+   Una fila por alumno ACTIVO del grupo: N.º, nombre, promedio calculado
+   (el de hoy, con la fórmula), calificación (campo editable solo en
+   borradores), estado y fecha de publicación. Todo el texto de alumnos
+   va por textContent. Una sola operación de escritura a la vez
+   (operacionPublicacionEnCurso, mismo patrón que el modal Calificar):
+   mientras corre, los botones se deshabilitan y los campos quedan de
+   solo lectura (sin perder lo escrito ni el foco). --------- */
+
+const ESTADOS_PUBLICACION = {
+  sin_dato: { texto: "Sin dato", clase: "chip-estado-publicacion--neutro" },
+  sin_calcular: { texto: "Sin calcular", clase: "chip-estado-publicacion--neutro" },
+  borrador: { texto: "✎ Borrador", clase: "chip-estado-publicacion--borrador" },
+  ajustada: { texto: "✎ Ajustada", clase: "chip-estado-publicacion--ajustada" },
+  publicada: { texto: "✓ Publicada", clase: "chip-estado-publicacion--publicada" },
+};
+
+// datos: lo que devolvió cargarDatosPublicacionTrimestre() para el
+// filtro actual (null mientras carga o si falló). turno descarta una
+// carga vieja si el docente cambia el filtro antes de que termine.
+const estadoPublicacion = { datos: null, turno: 0 };
+let operacionPublicacionEnCurso = false;
+
+function textoGrupoTrimestre(datos) {
+  return textoGrupo(datos.grupo) + " · Trimestre " + datos.trimestre;
+}
+
+function textoSecuenciasSinVencer(cantidad) {
+  return (
+    "⚠ " +
+    cantidad +
+    (cantidad === 1 ? " secuencia de este trimestre aún no vence" : " secuencias de este trimestre aún no vencen") +
+    ": no entran al promedio, así que una calificación calculada hoy sería parcial."
+  );
+}
+
+function textoTrimestreBloqueado(trimestre) {
+  return (
+    "🔒 El Trimestre " +
+    trimestre +
+    " todavía está bloqueado para los alumnos: aunque publiques, no lo verán hasta que lo desbloquees."
+  );
+}
+
+function formatearPromedioReal(valor) {
+  return Number(valor).toFixed(2);
+}
+
+function formatearFechaPublicacion(iso) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("es-MX", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+// Mensaje persistente de la vista (role="status" + aria-live en el HTML).
+// tipo: "info" | "exito" | "error". Un error se queda hasta la siguiente
+// acción: nunca se pierde en un toast que desaparece solo.
+function mostrarMensajePublicacion(texto, tipo = "info") {
+  const mensaje = document.getElementById("evaluacion-publicar-mensaje");
+  if (!mensaje) return;
+  mensaje.textContent = texto;
+  mensaje.classList.toggle("evaluacion-publicar-mensaje--error", tipo === "error");
+  mensaje.classList.toggle("evaluacion-publicar-mensaje--exito", tipo === "exito");
+}
+
+function crearNotaPublicacion(texto) {
+  const nota = document.createElement("span");
+  nota.className = "evaluacion-publicar__nota";
+  nota.textContent = texto;
+  return nota;
+}
+
+function construirCeldaCalificacionPublicacion(fila, estado) {
+  const { alumno, calculo, guardada } = fila;
+  const celda = document.createElement("td");
+
+  if (estado === "publicada") {
+    const valor = document.createElement("strong");
+    valor.className = "evaluacion-publicar__valor";
+    valor.textContent = Number(guardada.calificacion).toFixed(1);
+    celda.appendChild(valor);
+    return celda;
+  }
+
+  if (estado === "borrador" || estado === "ajustada") {
+    const formulario = document.createElement("form");
+    formulario.className = "evaluacion-publicar__form";
+    formulario.noValidate = true;
+    formulario.dataset.registroId = String(alumno.id);
+
+    const idCampo = "publicar-calificacion-" + alumno.id;
+    const etiqueta = document.createElement("label");
+    etiqueta.className = "sr-only";
+    etiqueta.htmlFor = idCampo;
+    etiqueta.textContent = "Calificación final de " + alumno.nombre;
+
+    const campo = document.createElement("input");
+    campo.type = "text";
+    campo.inputMode = "decimal";
+    campo.id = idCampo;
+    campo.className = "evaluacion-publicar__campo";
+    campo.autocomplete = "off";
+    campo.maxLength = 4;
+    campo.value = Number(guardada.calificacion).toFixed(1);
+
+    const boton = document.createElement("button");
+    boton.type = "submit";
+    boton.className = "boton-secundario evaluacion-publicar__guardar";
+    boton.textContent = "Guardar";
+    boton.setAttribute("aria-label", "Guardar la calificación de " + alumno.nombre);
+
+    formulario.append(etiqueta, campo, boton);
+    celda.appendChild(formulario);
+    return celda;
+  }
+
+  if (estado === "sin_calcular") {
+    celda.textContent = "—";
+    celda.appendChild(crearNotaPublicacion(calculo.calificacion.toFixed(1) + " al calcular"));
+    return celda;
+  }
+
+  // sin_dato: si quedó un borrador de antes, se avisa que no se publicará.
+  celda.textContent = "—";
+  if (guardada) {
+    celda.appendChild(crearNotaPublicacion("Borrador anterior: " + Number(guardada.calificacion).toFixed(1) + " (no se publicará)"));
+  }
+  return celda;
+}
+
+function construirFilaPublicacion(fila) {
+  const { alumno, calculo, guardada } = fila;
+  const estado = estadoFilaPublicacion(fila);
+
+  const tr = document.createElement("tr");
+  tr.dataset.registroId = String(alumno.id);
+
+  const celdaNumero = document.createElement("td");
+  celdaNumero.textContent = String(alumno.numero_lista);
+  tr.appendChild(celdaNumero);
+
+  const celdaAlumno = document.createElement("td");
+  const envoltura = document.createElement("div");
+  envoltura.className = "calificacion-tabla__alumno";
+  const nombre = document.createElement("span");
+  nombre.className = "calificacion-tabla__alumno-nombre";
+  nombre.textContent = alumno.nombre;
+  envoltura.appendChild(nombre);
+  if (esAlumnoEntregaManual(alumno)) {
+    const etiqueta = document.createElement("span");
+    etiqueta.className = "calificacion-tabla__alumno-numero";
+    etiqueta.textContent = "Entrega manual";
+    envoltura.appendChild(etiqueta);
+  }
+  celdaAlumno.appendChild(envoltura);
+  tr.appendChild(celdaAlumno);
+
+  const celdaPromedio = document.createElement("td");
+  if (!calculo) {
+    celdaPromedio.textContent = "—";
+  } else {
+    celdaPromedio.textContent = formatearPromedioReal(calculo.calificacion_calculada);
+    if (calculo.calificacion_calculada < CALIFICACION_FINAL_MINIMA) {
+      celdaPromedio.appendChild(crearNotaPublicacion("Se aplica el piso de 5.0"));
+    }
+    // El promedio de hoy ya no es el que se guardó (calificaron algo
+    // después de calcular, o venció otra secuencia).
+    if (guardada && Math.abs(Number(guardada.calificacion_calculada) - calculo.calificacion_calculada) > 0.0005) {
+      const guardado = formatearPromedioReal(guardada.calificacion_calculada);
+      celdaPromedio.appendChild(
+        crearNotaPublicacion(
+          guardada.publicada ? "Se publicó con " + guardado : "Cambió desde el cálculo (guardado: " + guardado + ")"
+        )
+      );
+    }
+  }
+  tr.appendChild(celdaPromedio);
+
+  tr.appendChild(construirCeldaCalificacionPublicacion(fila, estado));
+
+  const celdaEstado = document.createElement("td");
+  const chip = document.createElement("span");
+  chip.className = "chip-estado-publicacion " + ESTADOS_PUBLICACION[estado].clase;
+  chip.textContent = ESTADOS_PUBLICACION[estado].texto;
+  celdaEstado.appendChild(chip);
+  tr.appendChild(celdaEstado);
+
+  const celdaFecha = document.createElement("td");
+  celdaFecha.textContent = guardada?.publicada ? formatearFechaPublicacion(guardada.publicada_en) : "—";
+  tr.appendChild(celdaFecha);
+
+  return tr;
+}
+
+function construirTablaPublicacion(datos) {
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-calificacion tabla-publicar";
+
+  const titulo = document.createElement("caption");
+  titulo.className = "sr-only";
+  titulo.textContent = "Calificaciones finales de " + textoGrupoTrimestre(datos);
+  tabla.appendChild(titulo);
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  ["N.º", "Alumno", "Promedio calculado", "Calificación", "Estado", "Publicada el"].forEach((texto) => {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  datos.filas.forEach((fila) => tbody.appendChild(construirFilaPublicacion(fila)));
+  tabla.appendChild(tbody);
+  return tabla;
+}
+
+function pintarAvisoPublicacion(datos) {
+  const aviso = document.getElementById("evaluacion-publicar-aviso");
+  if (!aviso) return;
+  const lineas = [];
+  if (datos.secuenciasSinVencer > 0) lineas.push(textoSecuenciasSinVencer(datos.secuenciasSinVencer));
+  if (Number(datos.trimestre) > Number(datos.trimestreDesbloqueado)) lineas.push(textoTrimestreBloqueado(datos.trimestre));
+
+  aviso.replaceChildren(
+    ...lineas.map((texto) => {
+      const parrafo = document.createElement("p");
+      parrafo.textContent = texto;
+      return parrafo;
+    })
+  );
+  aviso.hidden = lineas.length === 0;
+}
+
+function pintarResumenPublicacion(datos) {
+  const resumen = document.getElementById("evaluacion-publicar-resumen");
+  if (!resumen) return;
+  const conteo = { sin_dato: 0, sin_calcular: 0, borrador: 0, ajustada: 0, publicada: 0 };
+  datos.filas.forEach((fila) => conteo[estadoFilaPublicacion(fila)]++);
+  resumen.textContent =
+    datos.filas.length +
+    (datos.filas.length === 1 ? " alumno activo" : " alumnos activos") +
+    " · " + conteo.publicada + " publicadas" +
+    " · " + (conteo.borrador + conteo.ajustada) + " borradores" +
+    (conteo.ajustada > 0 ? " (" + conteo.ajustada + " ajustadas)" : "") +
+    " · " + conteo.sin_calcular + " sin calcular" +
+    " · " + conteo.sin_dato + " sin dato";
+}
+
+// Habilita cada acción según los datos cargados y la operación en curso.
+// Los campos de la tabla pasan a solo lectura (no disabled) para no
+// perder el foco ni lo escrito mientras se guarda.
+function actualizarBotonesPublicacion() {
+  const datos = estadoPublicacion.datos;
+  const filas = datos?.filas || [];
+  const bloqueado = operacionPublicacionEnCurso || !datos;
+
+  const botonCalcular = document.getElementById("evaluacion-publicar-boton-calcular");
+  if (botonCalcular) botonCalcular.disabled = bloqueado || construirFilasParaCalcular(filas, datos?.trimestre).length === 0;
+
+  const contenedor = document.getElementById("evaluacion-publicar-contenedor");
+  contenedor?.querySelectorAll("button").forEach((boton) => {
+    boton.disabled = operacionPublicacionEnCurso;
+  });
+  contenedor?.querySelectorAll("input").forEach((campo) => {
+    campo.readOnly = operacionPublicacionEnCurso;
+  });
+}
+
+function bloquearAccionesPublicacion(bloquear) {
+  operacionPublicacionEnCurso = bloquear;
+  actualizarBotonesPublicacion();
+}
+
+async function renderizarVistaPublicacion() {
+  const contenedor = document.getElementById("evaluacion-publicar-contenedor");
+  const aviso = document.getElementById("evaluacion-publicar-aviso");
+  const resumen = document.getElementById("evaluacion-publicar-resumen");
+  if (!contenedor) return;
+
+  const turno = ++estadoPublicacion.turno;
+  estadoPublicacion.datos = null;
+  if (aviso) aviso.hidden = true;
+  if (resumen) resumen.textContent = "";
+  actualizarBotonesPublicacion();
+
+  const { grupo, trimestre } = estadoEvaluacion;
+  if (grupo === "todos") {
+    mostrarSinResultados(contenedor, "Selecciona un grupo específico (3°C o 3°E) para calcular y publicar sus calificaciones.");
+    return;
+  }
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  let datos;
+  try {
+    datos = await cargarDatosPublicacionTrimestre(grupo, trimestre);
+  } catch (err) {
+    if (turno !== estadoPublicacion.turno) return;
+    console.warn("No se pudieron cargar las calificaciones finales:", err);
+    mostrarSinResultados(
+      contenedor,
+      "No se pudieron cargar los datos del grupo. Vuelve a abrir la vista; no se calculó ni se publicó nada."
+    );
+    return;
+  }
+  if (turno !== estadoPublicacion.turno) return;
+
+  if (datos.filas.length === 0) {
+    mostrarSinResultados(contenedor, "No hay alumnos activos registrados en este grupo.");
+    return;
+  }
+
+  estadoPublicacion.datos = datos;
+  contenedor.replaceChildren(construirTablaPublicacion(datos));
+  pintarAvisoPublicacion(datos);
+  pintarResumenPublicacion(datos);
+  actualizarBotonesPublicacion();
+}
+
+function buscarFilaPublicacion(registroId) {
+  return estadoPublicacion.datos?.filas.find((fila) => String(fila.alumno.id) === String(registroId)) || null;
+}
+
+// Guardar el campo de UN borrador. Si falla, lo escrito se queda en el
+// campo y el error en el mensaje de la vista.
+async function guardarEdicionBorradorPublicacion(formulario) {
+  if (operacionPublicacionEnCurso) return;
+  const fila = buscarFilaPublicacion(formulario.dataset.registroId);
+  if (!fila?.guardada || fila.guardada.publicada) return;
+
+  const nombre = fila.alumno.nombre;
+  const campo = formulario.querySelector("input");
+  const lectura = leerCalificacionFinal(campo.value);
+  if (!lectura.valido) {
+    campo.setAttribute("aria-invalid", "true");
+    mostrarMensajePublicacion(nombre + ": " + lectura.motivo, "error");
+    campo.focus();
+    return;
+  }
+  campo.removeAttribute("aria-invalid");
+
+  if (lectura.valor === Number(fila.guardada.calificacion)) {
+    campo.value = lectura.valor.toFixed(1);
+    mostrarMensajePublicacion("Sin cambios en la calificación de " + nombre + ".");
+    return;
+  }
+
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
+
+  bloquearAccionesPublicacion(true);
+  mostrarMensajePublicacion("Guardando la calificación de " + nombre + "…");
+  try {
+    fila.guardada = await guardarCalificacionBorrador(fila.guardada, lectura.valor);
+  } catch (err) {
+    console.warn("No se guardó la calificación final:", err);
+    bloquearAccionesPublicacion(false);
+    mostrarMensajePublicacion(
+      "No se guardó la calificación de " + nombre + ": " + (err?.message || "error desconocido") +
+        " Lo que escribiste sigue en el campo.",
+      "error"
+    );
+    campo.focus();
+    return;
+  }
+  bloquearAccionesPublicacion(false);
+
+  const filaNueva = construirFilaPublicacion(fila);
+  formulario.closest("tr")?.replaceWith(filaNueva);
+  if (estadoPublicacion.datos) pintarResumenPublicacion(estadoPublicacion.datos);
+  actualizarBotonesPublicacion();
+  filaNueva.querySelector("input")?.focus();
+  mostrarMensajePublicacion(
+    "Se guardó " + lectura.valor.toFixed(1) + " para " + nombre +
+      (fila.guardada.ajustada_manual ? " (ajustada a mano)." : " (la que da la fórmula)."),
+    "exito"
+  );
+}
+
+// Confirmación previa a "Calcular borradores". Hasta que exista el
+// diálogo de confirmación, siempre continúa.
+async function confirmarCalculoPublicacion() {
+  return true;
+}
+
+async function calcularBorradoresPublicacion() {
+  if (operacionPublicacionEnCurso) return;
+  const datos = estadoPublicacion.datos;
+  if (!datos) return;
+
+  const payload = construirFilasParaCalcular(datos.filas, datos.trimestre);
+  if (payload.length === 0) {
+    mostrarMensajePublicacion("No hay borradores que calcular: los alumnos sin dato no se calculan y los publicados no se tocan.");
+    return;
+  }
+  if (!(await confirmarCalculoPublicacion(datos, payload))) return;
+
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
+
+  bloquearAccionesPublicacion(true);
+  mostrarMensajePublicacion("Calculando y guardando " + payload.length + " borradores…");
+  let guardado = false;
+  try {
+    await guardarBorradoresCalculados(payload);
+    guardado = true;
+  } catch (err) {
+    console.warn("No se guardaron los borradores:", err);
+    mostrarMensajePublicacion(
+      "No se guardó ningún borrador: " + (err?.message || "error desconocido") +
+        " Las calificaciones publicadas no cambiaron.",
+      "error"
+    );
+  } finally {
+    bloquearAccionesPublicacion(false);
+  }
+  if (!guardado) return;
+
+  const ajustadas = payload.filter((fila) => fila.ajustada_manual).length;
+  await renderizarVistaPublicacion();
+  mostrarMensajePublicacion(
+    "Se guardaron " + payload.length + " borradores de " + textoGrupoTrimestre(datos) + "." +
+      (ajustadas > 0 ? " " + ajustadas + " ajustados a mano conservaron su calificación." : ""),
+    "exito"
+  );
+}
+
+function activarAccionesPublicacion() {
+  const botonCalcular = document.getElementById("evaluacion-publicar-boton-calcular");
+  const contenedor = document.getElementById("evaluacion-publicar-contenedor");
+  if (!botonCalcular || !contenedor) return;
+
+  botonCalcular.addEventListener("click", calcularBorradoresPublicacion);
+
+  contenedor.addEventListener("submit", (evento) => {
+    const formulario = evento.target.closest(".evaluacion-publicar__form");
+    if (!formulario) return;
+    evento.preventDefault();
+    guardarEdicionBorradorPublicacion(formulario);
+  });
+}
+
 // Alterna entre #evaluacion-captura-vista, #evaluacion-promedios-vista y
 // #evaluacion-final-vista (nunca más de una visible) y oculta Tipo/
 // Secuencia mientras promedios o final están activos — esos dos filtros
@@ -21450,23 +21899,36 @@ function activarVistasEvaluacion() {
   const filtroSecuencia = document.getElementById("evaluacion-filtro-secuencia")?.closest(".calificacion-filtro");
   const filtroTrimestre = document.getElementById("evaluacion-filtro-trimestre")?.closest(".calificacion-filtro");
 
+  // Cuarta vista, "Publicar trimestre": opcional en el guard de arriba
+  // para no romper las otras tres si faltara su HTML.
+  const botonVerPublicar = document.getElementById("evaluacion-boton-vista-publicar");
+  const botonVolverPublicar = document.getElementById("evaluacion-publicar-boton-volver");
+  const vistaPublicar = document.getElementById("evaluacion-publicar-vista");
+
   async function mostrarVista(vista) {
     vistaEvaluacionActiva = vista;
     vistaCaptura.hidden = vista !== "captura";
     vistaPromedios.hidden = vista !== "promedios";
     vistaFinal.hidden = vista !== "final";
+    if (vistaPublicar) vistaPublicar.hidden = vista !== "publicar";
     if (filtroTipo) filtroTipo.hidden = vista !== "captura";
     if (filtroSecuencia) filtroSecuencia.hidden = vista !== "captura";
     if (filtroTrimestre) filtroTrimestre.hidden = vista === "final";
 
     if (vista === "promedios") await renderizarTablaPromedios();
     else if (vista === "final") await renderizarTablaFinal();
+    else if (vista === "publicar") {
+      mostrarMensajePublicacion("");
+      await renderizarVistaPublicacion();
+    }
   }
 
   botonVerPromedios.addEventListener("click", () => mostrarVista("promedios"));
   botonVerFinal.addEventListener("click", () => mostrarVista("final"));
   botonVolverPromedios.addEventListener("click", () => mostrarVista("captura"));
   botonVolverFinal.addEventListener("click", () => mostrarVista("captura"));
+  botonVerPublicar?.addEventListener("click", () => mostrarVista("publicar"));
+  botonVolverPublicar?.addEventListener("click", () => mostrarVista("captura"));
 }
 
 // Compartido entre exportarCSVPromedios/exportarCSVFinal: ambas tablas
@@ -21601,6 +22063,7 @@ async function inicializarModuloEvaluacion() {
   activarFormularioCalificar();
   activarBotonesValorRapidoCalificacion();
   activarVistasEvaluacion();
+  activarAccionesPublicacion();
   activarExportarCSVPromedios();
   activarExportarCSVFinal();
   activarImpresionTabla("evaluacion-promedios-boton-imprimir");
@@ -21613,6 +22076,8 @@ async function inicializarModuloEvaluacion() {
       await renderizarTablaPromedios();
     } else if (vistaEvaluacionActiva === "final") {
       await renderizarTablaFinal();
+    } else if (vistaEvaluacionActiva === "publicar") {
+      await renderizarVistaPublicacion();
     } else {
       await renderizarTablaEvaluacion();
     }
@@ -21625,6 +22090,8 @@ async function inicializarModuloEvaluacion() {
       await renderizarTablaPromedios();
     } else if (vistaEvaluacionActiva === "final") {
       await renderizarTablaFinal();
+    } else if (vistaEvaluacionActiva === "publicar") {
+      await renderizarVistaPublicacion();
     } else {
       await renderizarTablaEvaluacion();
     }
