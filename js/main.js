@@ -22009,9 +22009,10 @@ async function publicarGrupoPublicacion() {
   const parrafos = [
     "Vas a publicar " + textoGrupoTrimestre(datos) + " para " + pluralAlumnos(publicables.length) + ". Ellos podrán verlo.",
   ];
-  if (sinDato > 0) parrafos.push("Quedan fuera " + pluralAlumnos(sinDato) + " sin dato (sin calificaciones en este trimestre).");
+  const quedanFuera = (cantidad) => (cantidad === 1 ? "Queda fuera " : "Quedan fuera ") + pluralAlumnos(cantidad);
+  if (sinDato > 0) parrafos.push(quedanFuera(sinDato) + " sin dato (sin calificaciones en este trimestre).");
   if (sinCalcular > 0) {
-    parrafos.push("Quedan fuera " + pluralAlumnos(sinCalcular) + " sin calcular: usa “Calcular borradores” si quieres incluirlos.");
+    parrafos.push(quedanFuera(sinCalcular) + " sin calcular: usa “Calcular borradores” si quieres incluirlos.");
   }
   if (datos.secuenciasSinVencer > 0) parrafos.push(textoSecuenciasSinVencer(datos.secuenciasSinVencer));
   if (Number(datos.trimestre) > Number(datos.trimestreDesbloqueado)) parrafos.push(textoTrimestreBloqueado(datos.trimestre));
