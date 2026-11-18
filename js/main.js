@@ -13851,11 +13851,15 @@ function calcularPromedioTrimestre(alumnoId, trimestre, itemsPorTipo, mapaProgre
     promedioFinal = tiposConDato.reduce((s, t) => s + (PESO_BASE_POR_TIPO[t.tipo] / sumaPesos) * t.valor, 0);
   }
 
+  // sinRedondear: los mismos 4 valores antes del redondeo a 1 decimal.
+  // Solo los usa "Publicar trimestre" (calificacion_calculada guarda el
+  // promedio real con 3 decimales); el resto de llamadores no los lee.
   return {
     promedioFinal: redondear1Decimal(promedioFinal),
     promedioTarea: redondear1Decimal(promedioTarea),
     promedioActividad: redondear1Decimal(promedioActividad),
     promedioProyecto: redondear1Decimal(promedioProyecto),
+    sinRedondear: { promedioFinal, promedioTarea, promedioActividad, promedioProyecto },
   };
 }
 
@@ -20496,7 +20500,11 @@ function activarBotonesValorRapidoCalificacion() {
 // alumno_id: calcularPromedioTrimestre espera un Map por alumno, sin el
 // alumno_id en la llave (mismo formato que ya arma abrirModalHistorialAlumno
 // para un único alumno).
-async function obtenerMapaProgresoPorAlumno(trimestre, alumnoIds) {
+// opciones.lanzarError: en vez de devolver el mapa vacío si la lectura
+// falla (lo de siempre, para las tablas de solo lectura), lanza el error
+// — "Publicar trimestre" lo necesita: con un mapa vacío calcularía y
+// guardaría borradores como si nadie tuviera calificaciones.
+async function obtenerMapaProgresoPorAlumno(trimestre, alumnoIds, opciones = {}) {
   const mapaPorAlumno = new Map();
   if (alumnoIds.length === 0) return mapaPorAlumno;
 
@@ -20505,7 +20513,10 @@ async function obtenerMapaProgresoPorAlumno(trimestre, alumnoIds) {
     in: { alumno_id: alumnoIds },
   });
 
-  if (error) return mapaPorAlumno;
+  if (error || !data) {
+    if (opciones.lanzarError) throw error || new Error("no se pudo leer el progreso del grupo.");
+    return mapaPorAlumno;
+  }
 
   data.forEach((fila) => {
     if (!mapaPorAlumno.has(fila.alumno_id)) mapaPorAlumno.set(fila.alumno_id, new Map());
@@ -21150,6 +21161,265 @@ async function renderizarTablaFinal() {
   contenedor.innerHTML = "";
   contenedor.appendChild(tabla);
   actualizarAlertasFinal(alertas, alumnosEnRiesgo);
+}
+
+/* ---------- Publicar trimestre (dentro de Evaluación): datos ----------
+   Tabla "calificacion_trimestre" (Supabase, ver
+   sql_calificacion_trimestre_2026-11.sql): una fila por (registro_id,
+   trimestre) con la calificación final 5.0–10.0 que ve el alumno, el
+   promedio real sin piso (calificacion_calculada, 3 decimales), si el
+   docente la ajustó a mano y el desglose por tipo. Es borrador hasta que
+   el docente publica; una fila publicada no se puede cambiar ni borrar
+   (triggers de la BD), solo retirar. La fórmula es la de siempre,
+   calcularPromedioTrimestre(); aquí solo se aplica el piso de 5.0.
+   publicada_en lo pone la BD (trigger): la app nunca lo envía.
+   Ligada a alumnos_registro.id (registro_id) para cubrir también a los
+   alumnos de entrega manual, cuyas calificaciones viven en progreso_manual. --------- */
+
+const CALIFICACION_FINAL_MINIMA = 5;
+const CALIFICACION_FINAL_MAXIMA = 10;
+
+// Mismo cuidado que redondearUnDecimal() (toPrecision absorbe el ruido
+// binario), a 3 decimales: es la escala de calificacion_calculada.
+function redondearTresDecimales(valor) {
+  return valor == null ? null : Math.round(Number((valor * 1000).toPrecision(12))) / 1000;
+}
+
+// La calificación que le corresponde a un promedio real ya guardado con
+// 3 decimales: piso de 5.0 y un decimal. Se usa al calcular Y al decidir
+// si una edición manual es "ajustada", siempre sobre el valor de 3
+// decimales, para que las dos decisiones nunca se contradigan.
+function calificacionFinalDesdeCalculada(calculada) {
+  if (calculada == null) return null;
+  return Math.max(CALIFICACION_FINAL_MINIMA, redondearUnDecimal(calculada));
+}
+
+// Valida lo que escribe el docente en el campo de un borrador: 5.0–10.0
+// con máximo un decimal (acepta coma decimal). { valido, valor, motivo }.
+function leerCalificacionFinal(texto) {
+  const limpio = String(texto ?? "").trim().replace(",", ".");
+  if (limpio === "") return { valido: false, motivo: "Escribe una calificación de 5.0 a 10.0." };
+  if (!/^\d{1,2}(\.\d)?$/.test(limpio)) {
+    return { valido: false, motivo: "Usa un número con máximo un decimal, por ejemplo 8.5." };
+  }
+  const valor = Number(limpio);
+  if (valor < CALIFICACION_FINAL_MINIMA || valor > CALIFICACION_FINAL_MAXIMA) {
+    return { valido: false, motivo: "La calificación debe estar entre 5.0 y 10.0." };
+  }
+  return { valido: true, valor };
+}
+
+// Suma a mapaPorAlumno (el de obtenerMapaProgresoPorAlumno: clave =
+// auth_user_id → Map "tipo-item_id-trimestre") las filas de
+// progreso_manual de los alumnos con captura manual habilitada, con la
+// clave "registro:<id>" de claveProgresoAlumno() — mismo patrón que
+// agregarProgresoManualAlMapa(), pero agrupado por alumno, que es la
+// forma que espera calcularPromedioTrimestre(). Si la lectura falla,
+// lanza el error (nunca se calcula con datos a medias).
+async function agregarProgresoManualPorAlumno(mapaPorAlumno, alumnos, trimestre) {
+  const alumnosManuales = alumnos.filter(capturaManualHabilitada);
+  if (alumnosManuales.length === 0) return;
+
+  const alumnoPorRegistro = new Map(alumnosManuales.map((alumno) => [String(alumno.id), alumno]));
+  const { data, error } = await obtenerDatos("progreso_manual", {
+    eq: { trimestre },
+    in: { registro_id: [...alumnoPorRegistro.keys()] },
+  });
+  if (error || !data) throw error || new Error("no se pudieron leer las capturas manuales.");
+
+  data.forEach((fila) => {
+    const alumno = alumnoPorRegistro.get(String(fila.registro_id));
+    if (!alumno || String(fila.trimestre) !== String(trimestre)) return;
+    const clave = claveProgresoAlumno(alumno);
+    if (!mapaPorAlumno.has(clave)) mapaPorAlumno.set(clave, new Map());
+    mapaPorAlumno.get(clave).set(fila.tipo + "-" + fila.item_id + "-" + String(fila.trimestre), normalizarFilaProgresoManual(fila));
+  });
+}
+
+// registro_id → fila de calificacion_trimestre del trimestre dado.
+async function leerCalificacionesTrimestre(trimestre, registroIds) {
+  const mapa = new Map();
+  if (registroIds.length === 0) return mapa;
+
+  const { data, error } = await obtenerDatos("calificacion_trimestre", {
+    eq: { trimestre },
+    in: { registro_id: registroIds },
+  });
+  if (error || !data) throw error || new Error("no se pudieron leer las calificaciones guardadas.");
+
+  data.forEach((fila) => mapa.set(String(fila.registro_id), fila));
+  return mapa;
+}
+
+// Lo que "Calcular borradores" guardaría para un alumno, o null si no
+// hay dato (mismo criterio que la tabla de promedios: sin ninguna
+// calificación capturada en el trimestre → "—", nunca 0.0; o
+// calcularPromedioTrimestre() sin ningún tipo con secuencias vencidas).
+// desglose lleva null en el tipo sin dato.
+function calcularFinalAlumno(alumno, itemsPorTipo, mapaProgresoAlumno, trimestre) {
+  if (!mapaProgresoAlumno || !tieneAlgunaCalificacionCapturada(mapaProgresoAlumno)) return null;
+
+  const { sinRedondear } = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAlumno, alumno.grupo);
+  if (sinRedondear.promedioFinal == null) return null;
+
+  const calculada = redondearTresDecimales(sinRedondear.promedioFinal);
+  return {
+    calificacion: calificacionFinalDesdeCalculada(calculada),
+    calificacion_calculada: calculada,
+    desglose: {
+      tarea: redondearTresDecimales(sinRedondear.promedioTarea),
+      actividad: redondearTresDecimales(sinRedondear.promedioActividad),
+      proyecto: redondearTresDecimales(sinRedondear.promedioProyecto),
+    },
+  };
+}
+
+// Secuencias del trimestre con algún trabajo todavía sin vencer: no
+// entran al promedio (ver calcularPromedioTrimestre), así que un
+// borrador calculado hoy sería parcial. Se cuentan secuencias distintas
+// (claveSecuenciaDeEntregable), no trabajos.
+function contarSecuenciasSinVencer(itemsPorTipo, grupo) {
+  const sinVencer = new Set();
+  ["tarea", "actividad", "proyecto"].forEach((tipo) => {
+    (itemsPorTipo[tipo] || []).forEach((item) => {
+      if (!itemEstaVencido(tipo, item, grupo)) sinVencer.add(claveSecuenciaDeEntregable(item));
+    });
+  });
+  return sinVencer.size;
+}
+
+// Todo lo que necesita la vista para un grupo y trimestre: solo alumnos
+// activos; progreso + progreso_manual; filas ya guardadas; secuencias
+// sin vencer y el trimestre desbloqueado (para los avisos). Cualquier
+// lectura que falle lanza el error: la vista no ofrece calcular ni
+// publicar sobre datos incompletos.
+async function cargarDatosPublicacionTrimestre(grupo, trimestre) {
+  const [alumnosDelGrupo, entregablesTodos, desbloqueado] = await Promise.all([
+    obtenerAlumnosParaCalificacion(grupo),
+    obtenerEntregablesPorTipo("todos", trimestre),
+    obtenerTrimestreDesbloqueado(),
+  ]);
+
+  const alumnos = alumnosDelGrupo.filter((alumno) => alumno.activo !== false);
+  const entregables = entregablesTodos.filter((item) => item.grupo === "todos" || item.grupo === grupo);
+  const itemsPorTipo = { tarea: [], actividad: [], proyecto: [] };
+  entregables.forEach((item) => itemsPorTipo[item.tipoEntregable]?.push(item));
+
+  const idsConCuenta = alumnos.filter((alumno) => !esAlumnoSinCuenta(alumno)).map((alumno) => alumno.auth_user_id);
+  const [mapaPorAlumno, guardadas] = await Promise.all([
+    obtenerMapaProgresoPorAlumno(trimestre, idsConCuenta, { lanzarError: true }),
+    leerCalificacionesTrimestre(trimestre, alumnos.map((alumno) => alumno.id)),
+  ]);
+  await agregarProgresoManualPorAlumno(mapaPorAlumno, alumnos, trimestre);
+
+  const filas = alumnos.map((alumno) => ({
+    alumno,
+    calculo: calcularFinalAlumno(alumno, itemsPorTipo, mapaPorAlumno.get(claveProgresoAlumno(alumno)), trimestre),
+    guardada: guardadas.get(String(alumno.id)) || null,
+  }));
+
+  return {
+    grupo,
+    trimestre,
+    filas,
+    secuenciasSinVencer: contarSecuenciasSinVencer(itemsPorTipo, grupo),
+    trimestreDesbloqueado: desbloqueado,
+  };
+}
+
+// Estado que ve el docente en cada fila. "sin_dato" gana sobre un
+// borrador viejo: si el alumno ya no tiene dato, ese borrador no se
+// publica (ver filasPublicables).
+function estadoFilaPublicacion({ calculo, guardada }) {
+  if (guardada?.publicada) return "publicada";
+  if (!calculo) return "sin_dato";
+  if (!guardada) return "sin_calcular";
+  return guardada.ajustada_manual ? "ajustada" : "borrador";
+}
+
+// Filas que "Calcular borradores" envía: nunca las publicadas (el
+// trigger de la BD rechazaría el upsert completo con P0001), nunca las
+// "sin dato". Un borrador ajustado a mano conserva su calificación: solo
+// se actualizan calificacion_calculada y desglose (se reenvía su propia
+// calificación para que todas las filas del upsert tengan las mismas
+// columnas).
+function construirFilasParaCalcular(filas, trimestre) {
+  return filas
+    .filter(({ calculo, guardada }) => calculo && !guardada?.publicada)
+    .map(({ alumno, calculo, guardada }) => {
+      const ajustada = guardada?.ajustada_manual === true;
+      return {
+        registro_id: alumno.id,
+        trimestre: Number(trimestre),
+        calificacion: ajustada ? Number(guardada.calificacion) : calculo.calificacion,
+        calificacion_calculada: calculo.calificacion_calculada,
+        ajustada_manual: ajustada,
+        desglose: calculo.desglose,
+      };
+    });
+}
+
+// Borradores que "Publicar grupo" publica: guardados, sin publicar y con
+// dato vigente.
+function filasPublicables(filas) {
+  return filas.filter(({ calculo, guardada }) => calculo && guardada && !guardada.publicada);
+}
+
+function filasPublicadas(filas) {
+  return filas.filter(({ guardada }) => guardada?.publicada);
+}
+
+// Un solo upsert por la UNIQUE (registro_id, trimestre). .select(): sin
+// él, un upsert que la RLS filtra respondería "éxito" sin guardar nada;
+// se exige una fila devuelta por cada fila enviada.
+async function guardarBorradoresCalculados(payload) {
+  if (payload.length === 0) return [];
+  const { data, error } = await clienteSupabase
+    .from("calificacion_trimestre")
+    .upsert(payload, { onConflict: "registro_id,trimestre" })
+    .select();
+  if (error) throw error;
+  if (!data || data.length !== payload.length) {
+    throw new Error("se guardaron " + (data?.length ?? 0) + " de " + payload.length + " borradores.");
+  }
+  return data;
+}
+
+// Edición manual de un borrador. ajustada_manual = true solo si el valor
+// difiere del que da la fórmula (piso incluido); si el docente vuelve a
+// escribir ese mismo valor, deja de contar como ajustada. El filtro
+// publicada = false evita pisar una fila que se publicó desde otra
+// pestaña: en ese caso no se actualiza nada y se avisa.
+async function guardarCalificacionBorrador(guardada, calificacion) {
+  const deLaFormula = calificacionFinalDesdeCalculada(Number(guardada.calificacion_calculada));
+  const { data, error } = await clienteSupabase
+    .from("calificacion_trimestre")
+    .update({ calificacion, ajustada_manual: calificacion !== deLaFormula })
+    .eq("id", guardada.id)
+    .eq("publicada", false)
+    .select();
+  if (error) throw error;
+  if (!data || data.length !== 1) throw new Error("no se guardó: puede que ya esté publicada. Recarga la vista.");
+  return data[0];
+}
+
+// Publica (true) o retira (false) las filas dadas. Solo toca las que
+// están en el estado contrario; si alguna ya había cambiado (otra
+// pestaña), el conteo no cuadra y se avisa para recargar.
+async function cambiarPublicacionCalificaciones(ids, publicar) {
+  if (ids.length === 0) return;
+  const { data, error } = await clienteSupabase
+    .from("calificacion_trimestre")
+    .update({ publicada: publicar })
+    .in("id", ids)
+    .eq("publicada", !publicar)
+    .select("id");
+  if (error) throw error;
+  if (!data || data.length !== ids.length) {
+    throw new Error(
+      "solo se " + (publicar ? "publicaron " : "retiraron ") + (data?.length ?? 0) + " de " + ids.length + ". Recarga la vista."
+    );
+  }
 }
 
 // Alterna entre #evaluacion-captura-vista, #evaluacion-promedios-vista y
