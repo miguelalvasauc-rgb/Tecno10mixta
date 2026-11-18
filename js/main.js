@@ -7927,6 +7927,9 @@ async function renderizarProgresoDetallado() {
   const tarjetaRacha = await construirTarjetaRachaPuntualidad();
   const { tarjetaConteo: tarjetaConteoAsistencia, tarjetaRacha: tarjetaRachaAsistencia } =
     await construirResumenAsistenciaProgreso(String(trimestreDesbloqueado));
+  // Vacío para docente/visitante, si falla la consulta o si se descartó
+  // por claves repetidas (ver obtenerMiRetroalimentacion()).
+  const miRetroalimentacion = await obtenerMiRetroalimentacion();
 
   const porcentaje = totalGeneral === 0 ? 0 : Math.round((completadasGeneral / totalGeneral) * 100);
 
@@ -8098,6 +8101,11 @@ async function renderizarProgresoDetallado() {
         fechaItem.className = "panel-progreso__item-fecha";
         fechaItem.textContent = "Entrega: " + resolverFechaItem(valorFecha, perfil.grupo);
         fila.appendChild(fechaItem);
+
+        // También en trabajos pendientes, si el docente ya dejó algo.
+        const filaRetro = miRetroalimentacion.get(claveMiRetroalimentacion(tipo, item.id, trimestre));
+        const bloqueRetro = filaRetro ? construirBloqueMiRetroalimentacion(filaRetro, tipo, item, trimestre) : null;
+        if (bloqueRetro) fila.appendChild(bloqueRetro);
 
         lista.appendChild(fila);
       });
@@ -14670,6 +14678,70 @@ async function obtenerMiRetroalimentacion() {
 
   cacheMiRetroalimentacion = mapa;
   return mapa;
+}
+
+// Bloque "💬 Retroalimentación de tu docente" de un renglón de
+// progreso.html. null si no hay nada que mostrar (sin nodos vacíos).
+//   - Proyecto con puntos: "Rúbrica: X/Y puntos → Calificación Z" + el
+//     desplegable "¿Cómo se calcula?". Z se recalcula de los puntos con
+//     calificacionDesdePuntos() (no se lee progreso.calificacion). Si la
+//     rúbrica cambió después de calificar (puntos_max ≠ rango.max), o el
+//     proyecto ya no tiene rúbrica, solo "Rúbrica: X/Y puntos", sin Z ni
+//     desplegable: la escala vigente ya no corresponde a esos puntos.
+//   - Tarea, actividad o proyecto sin puntos: solo el comentario.
+// Texto del docente siempre por textContent; los saltos de línea los
+// respeta white-space: pre-line (ver .retro-alumno__comentario).
+function construirBloqueMiRetroalimentacion(fila, tipo, item, trimestre) {
+  const comentario = String(fila.comentario || "").trim();
+  const tienePuntos = tipo === "proyecto" && fila.puntos_rubrica != null && fila.puntos_max != null;
+  if (!tienePuntos && comentario === "") return null;
+
+  const bloque = document.createElement("div");
+  bloque.className = "retro-alumno";
+
+  const titulo = document.createElement("p");
+  titulo.className = "retro-alumno__titulo";
+  titulo.textContent = "💬 Retroalimentación de tu docente";
+  bloque.appendChild(titulo);
+
+  if (tienePuntos) {
+    const puntos = Number(fila.puntos_rubrica);
+    const puntosMax = Number(fila.puntos_max);
+    const rango = rangoPuntosRubrica(Number(trimestre), { ...item, tipoEntregable: "proyecto" });
+    const rangoVigente = Boolean(rango) && puntosMax === rango.max;
+
+    const rubrica = document.createElement("p");
+    rubrica.className = "retro-alumno__rubrica";
+    rubrica.textContent =
+      "Rúbrica: " + puntos + "/" + puntosMax + " puntos" +
+      (rangoVigente ? " → Calificación " + calificacionDesdePuntos(puntos, rango).toFixed(1) : "");
+    bloque.appendChild(rubrica);
+
+    if (rangoVigente) {
+      const calculo = document.createElement("details");
+      calculo.className = "retro-alumno__calculo";
+      const resumen = document.createElement("summary");
+      resumen.className = "retro-alumno__calculo-resumen";
+      resumen.textContent = "¿Cómo se calcula?";
+      const explicacion = document.createElement("p");
+      explicacion.className = "retro-alumno__calculo-texto";
+      explicacion.textContent =
+        "Tus puntos van de " + rango.min + " a " + rango.max + ". " +
+        rango.min + " puntos equivalen a 5.0 y " + rango.max + " puntos a 10.0; " +
+        "los puntos intermedios se reparten de forma proporcional.";
+      calculo.append(resumen, explicacion);
+      bloque.appendChild(calculo);
+    }
+  }
+
+  if (comentario !== "") {
+    const texto = document.createElement("p");
+    texto.className = "retro-alumno__comentario";
+    texto.textContent = comentario;
+    bloque.appendChild(texto);
+  }
+
+  return bloque;
 }
 
 /* ---------- Retroalimentación: captura dentro de un formulario ----------
