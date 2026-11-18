@@ -4382,9 +4382,12 @@ if (TRIMESTRE_ACTUAL) {
 }
 
 // Cuenta e identificación de alumno (ver sección 11 para el resto de la
-// lógica). perfilActivoCache guarda {grupo, nombre} del alumno con sesión
-// iniciada en Supabase; lo puebla sincronizarPerfilActivo() de forma
-// async, pero se lee de forma síncrona en el resto del archivo.
+// lógica). perfilActivoCache guarda {grupo, nombre, rol} de quien tiene
+// sesión iniciada en Supabase; lo puebla sincronizarPerfilActivo() de
+// forma async, pero se lee de forma síncrona en el resto del archivo.
+// "rol" solo decide qué se consulta/muestra en el cliente (ej. la
+// retroalimentación del alumno en progreso.html): los accesos reales
+// siguen en RLS y en el RPC es_docente().
 let perfilActivoCache = null;
 
 // progresoCache guarda las filas {tipo, item_id, trimestre} de la tabla
@@ -9352,8 +9355,8 @@ function leerColoresTema(slug) {
 //   - Sin perfil (sin sesión): nada desbloqueado — no hay grupo que
 //     consultar, comportamiento seguro por default.
 //   - Docente (RPC es_docente(), el mismo chequeo real que ya usa
-//     guardPanelDocente/el atajo de cuenta.html — perfilActivoCache no
-//     guarda "rol" hoy): los 9 quedan desbloqueados sin tocar
+//     guardPanelDocente/el atajo de cuenta.html — no perfilActivoCache.rol,
+//     que solo es de UI): los 9 quedan desbloqueados sin tocar
 //     temas_desbloqueados_grupo, es una regla de UI.
 //   - Alumno con grupo: consulta temas_desbloqueados_grupo filtrando por
 //     su grupo, vía obtenerDatos() para heredar el mock de Modo Demo
@@ -11999,7 +12002,7 @@ async function sincronizarPerfilActivo() {
       .eq("alumno_id", session.user.id),
   ]);
 
-  perfilActivoCache = perfil ? { nombre: perfil.nombre, grupo: perfil.grupo } : null;
+  perfilActivoCache = perfil ? { nombre: perfil.nombre, grupo: perfil.grupo, rol: perfil.rol } : null;
   await sincronizarTemaConCuenta(perfil?.tema_preferido);
 
   // El grupo del alumno con sesión iniciada gana sobre el <select>/
