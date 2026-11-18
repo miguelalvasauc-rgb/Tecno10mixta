@@ -5101,7 +5101,8 @@ summary {
   grid-template-columns: 1fr 130px 150px;
   grid-template-areas:
     "titulo badge enlace"
-    "fecha fecha fecha";
+    "fecha fecha fecha"
+    "retro retro retro";
   align-items: center;
   column-gap: 0.6rem;
   row-gap: 0.3rem;
@@ -5138,14 +5139,90 @@ summary {
   color: var(--color-texto-suave);
 }
 
+/* Retroalimentación del docente (Etapa 3, ver
+   construirBloqueMiRetroalimentacion() en js/main.js): fila propia a todo
+   lo ancho del renglón, solo cuando hay algo que mostrar. Solo usa
+   --color-texto/--color-texto-suave sobre --color-superficie-alterna, el
+   mismo par que ya usa .panel-progreso__item-fecha en los 10 temas. */
+.retro-alumno {
+  grid-area: retro;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.2rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--color-texto-suave);
+  color: var(--color-texto);
+}
+
+.retro-alumno__titulo {
+  margin: 0;
+  font-weight: 700;
+}
+
+.retro-alumno__rubrica {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* El comentario del docente llega como texto plano (textContent): pre-line
+   respeta sus saltos de línea sin interpretar nada como HTML. */
+.retro-alumno__comentario {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* Desplegable "¿Cómo se calcula?": summary de 44 px de alto (objetivo
+   táctil); el foco visible lo da la regla global summary:focus-visible. */
+.retro-alumno__calculo-resumen {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 44px;
+  list-style: none;
+  cursor: pointer;
+  color: var(--color-texto);
+  font-weight: 600;
+}
+
+.retro-alumno__calculo-resumen::-webkit-details-marker {
+  display: none;
+}
+
+/* Triángulo propio (display:flex quita el marcador nativo). La segunda
+   declaración oculta el símbolo a lectores de pantalla; los navegadores
+   que no la entienden se quedan con la primera. */
+.retro-alumno__calculo-resumen::before {
+  content: "▸";
+  content: "▸" / "";
+}
+
+.retro-alumno__calculo[open] > .retro-alumno__calculo-resumen::before {
+  content: "▾";
+  content: "▾" / "";
+}
+
+.retro-alumno__calculo-texto {
+  margin: 0;
+  color: var(--color-texto-suave);
+}
+
 /* Pantallas angostas: 2 filas por renglón (título arriba; badge + enlace
-   abajo) en vez de 3 columnas apretadas. */
+   abajo) en vez de 3 columnas apretadas. La fecha y la retroalimentación
+   van debajo, a todo lo ancho (antes "fecha" no estaba declarada aquí y
+   el navegador la mandaba a una columna implícita extra). */
 @media (max-width: 480px) {
   .panel-progreso__item {
     grid-template-columns: 1fr auto;
     grid-template-areas:
       "titulo titulo"
-      "badge enlace";
+      "badge enlace"
+      "fecha fecha"
+      "retro retro";
   }
 }
 
