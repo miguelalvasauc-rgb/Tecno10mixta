@@ -21612,6 +21612,20 @@ function construirFilaPublicacion(fila) {
   celdaFecha.textContent = guardada?.publicada ? formatearFechaPublicacion(guardada.publicada_en) : "—";
   tr.appendChild(celdaFecha);
 
+  // "Retirar" por alumno, para corregir a uno solo sin retirar el grupo.
+  // No existe "publicar por fila": se publica siempre por grupo.
+  const celdaAccion = document.createElement("td");
+  if (estado === "publicada") {
+    const botonRetirar = document.createElement("button");
+    botonRetirar.type = "button";
+    botonRetirar.className = "boton-secundario evaluacion-publicar__retirar";
+    botonRetirar.dataset.registroId = String(alumno.id);
+    botonRetirar.textContent = "Retirar";
+    botonRetirar.setAttribute("aria-label", "Retirar la calificación publicada de " + alumno.nombre);
+    celdaAccion.appendChild(botonRetirar);
+  }
+  tr.appendChild(celdaAccion);
+
   return tr;
 }
 
@@ -21626,7 +21640,7 @@ function construirTablaPublicacion(datos) {
 
   const thead = document.createElement("thead");
   const filaEncabezado = document.createElement("tr");
-  ["N.º", "Alumno", "Promedio calculado", "Calificación", "Estado", "Publicada el"].forEach((texto) => {
+  ["N.º", "Alumno", "Promedio calculado", "Calificación", "Estado", "Publicada el", "Acción"].forEach((texto) => {
     const th = document.createElement("th");
     th.scope = "col";
     th.textContent = texto;
@@ -21663,14 +21677,14 @@ function pintarResumenPublicacion(datos) {
   if (!resumen) return;
   const conteo = { sin_dato: 0, sin_calcular: 0, borrador: 0, ajustada: 0, publicada: 0 };
   datos.filas.forEach((fila) => conteo[estadoFilaPublicacion(fila)]++);
+  // Formato "Etiqueta: N" para no depender de singular/plural.
   resumen.textContent =
-    datos.filas.length +
-    (datos.filas.length === 1 ? " alumno activo" : " alumnos activos") +
-    " · " + conteo.publicada + " publicadas" +
-    " · " + (conteo.borrador + conteo.ajustada) + " borradores" +
-    (conteo.ajustada > 0 ? " (" + conteo.ajustada + " ajustadas)" : "") +
-    " · " + conteo.sin_calcular + " sin calcular" +
-    " · " + conteo.sin_dato + " sin dato";
+    "Alumnos activos: " + datos.filas.length +
+    " · Publicadas: " + conteo.publicada +
+    " · Borradores: " + (conteo.borrador + conteo.ajustada) +
+    (conteo.ajustada > 0 ? " (ajustadas: " + conteo.ajustada + ")" : "") +
+    " · Sin calcular: " + conteo.sin_calcular +
+    " · Sin dato: " + conteo.sin_dato;
 }
 
 // Habilita cada acción según los datos cargados y la operación en curso.
@@ -21683,6 +21697,10 @@ function actualizarBotonesPublicacion() {
 
   const botonCalcular = document.getElementById("evaluacion-publicar-boton-calcular");
   if (botonCalcular) botonCalcular.disabled = bloqueado || construirFilasParaCalcular(filas, datos?.trimestre).length === 0;
+  const botonPublicar = document.getElementById("evaluacion-publicar-boton-publicar");
+  if (botonPublicar) botonPublicar.disabled = bloqueado || filasPublicables(filas).length === 0;
+  const botonRetirar = document.getElementById("evaluacion-publicar-boton-retirar");
+  if (botonRetirar) botonRetirar.disabled = bloqueado || filasPublicadas(filas).length === 0;
 
   const contenedor = document.getElementById("evaluacion-publicar-contenedor");
   contenedor?.querySelectorAll("button").forEach((boton) => {
@@ -21806,10 +21824,98 @@ async function guardarEdicionBorradorPublicacion(formulario) {
   );
 }
 
-// Confirmación previa a "Calcular borradores". Hasta que exista el
-// diálogo de confirmación, siempre continúa.
-async function confirmarCalculoPublicacion() {
-  return true;
+// Abre #modal-confirmar-publicacion y resuelve true (Confirmar) o false
+// (Cancelar, ✕, Escape o clic en el fondo). parrafos: textos que se
+// pintan por textContent. El foco inicial va a Cancelar: publicar o
+// retirar llega a los alumnos, así que Enter por inercia no confirma.
+function pedirConfirmacionPublicacion({ titulo, parrafos, textoConfirmar }) {
+  const modal = document.getElementById("modal-confirmar-publicacion");
+  const tituloEl = document.getElementById("modal-confirmar-publicacion-titulo");
+  const texto = document.getElementById("publicacion-confirmar-texto");
+  const botonConfirmar = document.getElementById("publicacion-confirmar-confirmar");
+  const botonCancelar = document.getElementById("publicacion-confirmar-cancelar");
+  const botonCerrar = modal?.querySelector(".modal-detalle__cerrar");
+  if (!modal || !tituloEl || !texto || !botonConfirmar || !botonCancelar) return Promise.resolve(false);
+
+  tituloEl.textContent = titulo;
+  texto.replaceChildren(
+    ...parrafos.map((linea) => {
+      const parrafo = document.createElement("p");
+      parrafo.textContent = linea;
+      return parrafo;
+    })
+  );
+  botonConfirmar.textContent = textoConfirmar;
+
+  return new Promise((resolve) => {
+    let resuelto = false;
+    function terminar(valor) {
+      if (resuelto) return;
+      resuelto = true;
+      botonConfirmar.removeEventListener("click", alConfirmar);
+      botonCancelar.removeEventListener("click", alCancelar);
+      botonCerrar?.removeEventListener("click", alCancelar);
+      modal.removeEventListener("click", alClicFondo);
+      modal.removeEventListener("close", alCerrar);
+      resolve(valor);
+    }
+    function alConfirmar() {
+      terminar(true);
+      cerrarDialogoAnimado(modal);
+    }
+    function alCancelar() {
+      terminar(false);
+      cerrarDialogoAnimado(modal);
+    }
+    function alClicFondo(evento) {
+      if (evento.target === modal) alCancelar();
+    }
+    function alCerrar() {
+      terminar(false);
+    }
+
+    botonConfirmar.addEventListener("click", alConfirmar);
+    botonCancelar.addEventListener("click", alCancelar);
+    botonCerrar?.addEventListener("click", alCancelar);
+    modal.addEventListener("click", alClicFondo);
+    modal.addEventListener("close", alCerrar);
+    modal.showModal();
+    botonCancelar.focus();
+  });
+}
+
+// Conteos que se repiten en las confirmaciones.
+function contarFilasPublicacion(filas) {
+  return {
+    sinDato: filas.filter((fila) => estadoFilaPublicacion(fila) === "sin_dato").length,
+    sinCalcular: filas.filter((fila) => estadoFilaPublicacion(fila) === "sin_calcular").length,
+    publicadas: filasPublicadas(filas).length,
+  };
+}
+
+function pluralAlumnos(cantidad) {
+  return cantidad + (cantidad === 1 ? " alumno" : " alumnos");
+}
+
+// Confirmación previa a "Calcular borradores": cuántos se calculan, qué
+// no cambia y el aviso de secuencias sin vencer.
+function confirmarCalculoPublicacion(datos, payload) {
+  const { sinDato, publicadas } = contarFilasPublicacion(datos.filas);
+  const ajustadas = payload.filter((fila) => fila.ajustada_manual).length;
+  const parrafos = ["Vas a calcular la calificación de " + pluralAlumnos(payload.length) + " de " + textoGrupoTrimestre(datos) + "."];
+  if (publicadas > 0) {
+    parrafos.push(publicadas === 1 ? "1 ya publicada no cambia." : publicadas + " ya publicadas no cambian.");
+  }
+  if (ajustadas > 0) {
+    parrafos.push(
+      (ajustadas === 1 ? "1 ajustada a mano conserva" : ajustadas + " ajustadas a mano conservan") +
+        " su calificación; solo se actualiza el promedio guardado."
+    );
+  }
+  if (sinDato > 0) parrafos.push(pluralAlumnos(sinDato) + " sin dato: " + (sinDato === 1 ? "no se calcula." : "no se calculan."));
+  if (datos.secuenciasSinVencer > 0) parrafos.push(textoSecuenciasSinVencer(datos.secuenciasSinVencer));
+  parrafos.push("Son borradores: los alumnos no los ven hasta que publiques.");
+  return pedirConfirmacionPublicacion({ titulo: "Calcular borradores", parrafos, textoConfirmar: "Calcular" });
 }
 
 async function calcularBorradoresPublicacion() {
@@ -21830,7 +21936,7 @@ async function calcularBorradoresPublicacion() {
   }
 
   bloquearAccionesPublicacion(true);
-  mostrarMensajePublicacion("Calculando y guardando " + payload.length + " borradores…");
+  mostrarMensajePublicacion("Calculando la calificación de " + pluralAlumnos(payload.length) + "…");
   let guardado = false;
   try {
     await guardarBorradoresCalculados(payload);
@@ -21850,24 +21956,159 @@ async function calcularBorradoresPublicacion() {
   const ajustadas = payload.filter((fila) => fila.ajustada_manual).length;
   await renderizarVistaPublicacion();
   mostrarMensajePublicacion(
-    "Se guardaron " + payload.length + " borradores de " + textoGrupoTrimestre(datos) + "." +
-      (ajustadas > 0 ? " " + ajustadas + " ajustados a mano conservaron su calificación." : ""),
+    "Se calculó la calificación de " + pluralAlumnos(payload.length) + " de " + textoGrupoTrimestre(datos) + " (borrador)." +
+      (ajustadas > 0 ? " Ajustadas a mano que conservaron su calificación: " + ajustadas + "." : ""),
     "exito"
   );
 }
 
+// Publica o retira las filas dadas (ids de calificacion_trimestre) y
+// recarga la vista para mostrar publicada_en tal como lo puso la BD.
+// textos: { enCurso, exito, error } ya armados por el llamador.
+async function ejecutarCambioPublicacion(ids, publicar, textos) {
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
+
+  bloquearAccionesPublicacion(true);
+  mostrarMensajePublicacion(textos.enCurso);
+  let hecho = false;
+  try {
+    await cambiarPublicacionCalificaciones(ids, publicar);
+    hecho = true;
+  } catch (err) {
+    console.warn("No se pudo cambiar la publicación:", err);
+    mostrarMensajePublicacion(textos.error + ": " + (err?.message || "error desconocido"), "error");
+  } finally {
+    bloquearAccionesPublicacion(false);
+  }
+  // Aun si falló, se recarga: un conteo que no cuadra significa que
+  // algo cambió en otra pestaña, y la tabla debe mostrar lo real. El
+  // mensaje de error se conserva (renderizar no lo toca).
+  await renderizarVistaPublicacion();
+  if (hecho) mostrarMensajePublicacion(textos.exito, "exito");
+}
+
+// "Publicar grupo": solo borradores guardados con dato vigente. Avisa
+// quiénes quedan fuera, las secuencias sin vencer y, si el trimestre
+// todavía está bloqueado, que los alumnos no lo verán hasta desbloquearlo
+// (se permite continuar).
+async function publicarGrupoPublicacion() {
+  if (operacionPublicacionEnCurso) return;
+  const datos = estadoPublicacion.datos;
+  if (!datos) return;
+
+  const publicables = filasPublicables(datos.filas);
+  if (publicables.length === 0) {
+    mostrarMensajePublicacion("No hay borradores que publicar. Calcula primero los borradores del grupo.");
+    return;
+  }
+
+  const { sinDato, sinCalcular } = contarFilasPublicacion(datos.filas);
+  const parrafos = [
+    "Vas a publicar " + textoGrupoTrimestre(datos) + " para " + pluralAlumnos(publicables.length) + ". Ellos podrán verlo.",
+  ];
+  if (sinDato > 0) parrafos.push("Quedan fuera " + pluralAlumnos(sinDato) + " sin dato (sin calificaciones en este trimestre).");
+  if (sinCalcular > 0) {
+    parrafos.push("Quedan fuera " + pluralAlumnos(sinCalcular) + " sin calcular: usa “Calcular borradores” si quieres incluirlos.");
+  }
+  if (datos.secuenciasSinVencer > 0) parrafos.push(textoSecuenciasSinVencer(datos.secuenciasSinVencer));
+  if (Number(datos.trimestre) > Number(datos.trimestreDesbloqueado)) parrafos.push(textoTrimestreBloqueado(datos.trimestre));
+
+  const confirmado = await pedirConfirmacionPublicacion({ titulo: "Publicar calificaciones", parrafos, textoConfirmar: "Publicar" });
+  if (!confirmado) return;
+
+  await ejecutarCambioPublicacion(
+    publicables.map((fila) => fila.guardada.id),
+    true,
+    {
+      enCurso: "Publicando " + pluralAlumnos(publicables.length) + "…",
+      exito: "Se publicó " + textoGrupoTrimestre(datos) + " para " + pluralAlumnos(publicables.length) + ".",
+      error: "No se publicó",
+    }
+  );
+}
+
+// "Retirar publicación" de todo el grupo/trimestre: las filas vuelven a
+// borrador (publicada_en se limpia en la BD) y el alumno deja de verlas.
+async function retirarGrupoPublicacion() {
+  if (operacionPublicacionEnCurso) return;
+  const datos = estadoPublicacion.datos;
+  if (!datos) return;
+
+  const publicadas = filasPublicadas(datos.filas);
+  if (publicadas.length === 0) {
+    mostrarMensajePublicacion("No hay calificaciones publicadas en " + textoGrupoTrimestre(datos) + ".");
+    return;
+  }
+
+  const confirmado = await pedirConfirmacionPublicacion({
+    titulo: "Retirar publicación",
+    parrafos: [
+      "Vas a retirar la publicación de " + textoGrupoTrimestre(datos) + " para " + pluralAlumnos(publicadas.length) + ".",
+      "Dejarán de ver su calificación hasta que la vuelvas a publicar. Las calificaciones quedan como borrador, sin cambios.",
+    ],
+    textoConfirmar: "Retirar",
+  });
+  if (!confirmado) return;
+
+  await ejecutarCambioPublicacion(
+    publicadas.map((fila) => fila.guardada.id),
+    false,
+    {
+      enCurso: "Retirando la publicación…",
+      exito: "Se retiró la publicación de " + pluralAlumnos(publicadas.length) + ".",
+      error: "No se retiró la publicación",
+    }
+  );
+}
+
+async function retirarFilaPublicacion(registroId) {
+  if (operacionPublicacionEnCurso) return;
+  const fila = buscarFilaPublicacion(registroId);
+  if (!fila?.guardada?.publicada) return;
+  const nombre = fila.alumno.nombre;
+
+  const confirmado = await pedirConfirmacionPublicacion({
+    titulo: "Retirar calificación",
+    parrafos: [
+      "Vas a retirar la calificación publicada de " + nombre + " (" + Number(fila.guardada.calificacion).toFixed(1) + ").",
+      "Dejará de verla y quedará como borrador para que la corrijas; después publica el grupo otra vez.",
+    ],
+    textoConfirmar: "Retirar",
+  });
+  if (!confirmado) return;
+
+  await ejecutarCambioPublicacion([fila.guardada.id], false, {
+    enCurso: "Retirando la calificación de " + nombre + "…",
+    exito: "Se retiró la calificación de " + nombre + ". Ya puedes corregirla.",
+    error: "No se retiró la calificación de " + nombre,
+  });
+}
+
 function activarAccionesPublicacion() {
   const botonCalcular = document.getElementById("evaluacion-publicar-boton-calcular");
+  const botonPublicar = document.getElementById("evaluacion-publicar-boton-publicar");
+  const botonRetirar = document.getElementById("evaluacion-publicar-boton-retirar");
   const contenedor = document.getElementById("evaluacion-publicar-contenedor");
   if (!botonCalcular || !contenedor) return;
 
   botonCalcular.addEventListener("click", calcularBorradoresPublicacion);
+  botonPublicar?.addEventListener("click", publicarGrupoPublicacion);
+  botonRetirar?.addEventListener("click", retirarGrupoPublicacion);
 
   contenedor.addEventListener("submit", (evento) => {
     const formulario = evento.target.closest(".evaluacion-publicar__form");
     if (!formulario) return;
     evento.preventDefault();
     guardarEdicionBorradorPublicacion(formulario);
+  });
+
+  contenedor.addEventListener("click", (evento) => {
+    const boton = evento.target.closest(".evaluacion-publicar__retirar");
+    if (!boton) return;
+    retirarFilaPublicacion(boton.dataset.registroId);
   });
 }
 
