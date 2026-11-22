@@ -4207,6 +4207,11 @@ const DEMO_TABLAS = {
   // llegan aquí: los submit de Calificar/entrega manual y "Deshacer"
   // cortan antes con demoModeActivo() → abrirModalDemo().
   retroalimentacion: () => DEMO_RETROALIMENTACION,
+  // Etapa 3B: también solo lectura — Calcular, Guardar, Publicar y
+  // Retirar cortan con demoModeActivo() → abrirModalDemo() justo antes
+  // de escribir (después de validar y confirmar, para poder probar ese
+  // flujo en demo).
+  calificacion_trimestre: () => DEMO_CALIFICACION_TRIMESTRE,
   asistencia: () => DEMO_ASISTENCIA,
   avisos: () => DEMO_AVISOS,
   consultas: () => DEMO_CONSULTAS,
@@ -13865,11 +13870,15 @@ function calcularPromedioTrimestre(alumnoId, trimestre, itemsPorTipo, mapaProgre
     promedioFinal = tiposConDato.reduce((s, t) => s + (PESO_BASE_POR_TIPO[t.tipo] / sumaPesos) * t.valor, 0);
   }
 
+  // sinRedondear: los mismos 4 valores antes del redondeo a 1 decimal.
+  // Solo los usa "Publicar trimestre" (calificacion_calculada guarda el
+  // promedio real con 3 decimales); el resto de llamadores no los lee.
   return {
     promedioFinal: redondear1Decimal(promedioFinal),
     promedioTarea: redondear1Decimal(promedioTarea),
     promedioActividad: redondear1Decimal(promedioActividad),
     promedioProyecto: redondear1Decimal(promedioProyecto),
+    sinRedondear: { promedioFinal, promedioTarea, promedioActividad, promedioProyecto },
   };
 }
 
@@ -20510,7 +20519,11 @@ function activarBotonesValorRapidoCalificacion() {
 // alumno_id: calcularPromedioTrimestre espera un Map por alumno, sin el
 // alumno_id en la llave (mismo formato que ya arma abrirModalHistorialAlumno
 // para un único alumno).
-async function obtenerMapaProgresoPorAlumno(trimestre, alumnoIds) {
+// opciones.lanzarError: en vez de devolver el mapa vacío si la lectura
+// falla (lo de siempre, para las tablas de solo lectura), lanza el error
+// — "Publicar trimestre" lo necesita: con un mapa vacío calcularía y
+// guardaría borradores como si nadie tuviera calificaciones.
+async function obtenerMapaProgresoPorAlumno(trimestre, alumnoIds, opciones = {}) {
   const mapaPorAlumno = new Map();
   if (alumnoIds.length === 0) return mapaPorAlumno;
 
@@ -20519,7 +20532,10 @@ async function obtenerMapaProgresoPorAlumno(trimestre, alumnoIds) {
     in: { alumno_id: alumnoIds },
   });
 
-  if (error) return mapaPorAlumno;
+  if (error || !data) {
+    if (opciones.lanzarError) throw error || new Error("no se pudo leer el progreso del grupo.");
+    return mapaPorAlumno;
+  }
 
   data.forEach((fila) => {
     if (!mapaPorAlumno.has(fila.alumno_id)) mapaPorAlumno.set(fila.alumno_id, new Map());
@@ -21166,6 +21182,956 @@ async function renderizarTablaFinal() {
   actualizarAlertasFinal(alertas, alumnosEnRiesgo);
 }
 
+/* ---------- Publicar trimestre (dentro de Evaluación): datos ----------
+   Tabla "calificacion_trimestre" (Supabase, ver
+   sql_calificacion_trimestre_2026-11.sql): una fila por (registro_id,
+   trimestre) con la calificación final 5.0–10.0 que ve el alumno, el
+   promedio real sin piso (calificacion_calculada, 3 decimales), si el
+   docente la ajustó a mano y el desglose por tipo. Es borrador hasta que
+   el docente publica; una fila publicada no se puede cambiar ni borrar
+   (triggers de la BD), solo retirar. La fórmula es la de siempre,
+   calcularPromedioTrimestre(); aquí solo se aplica el piso de 5.0.
+   publicada_en lo pone la BD (trigger): la app nunca lo envía.
+   Ligada a alumnos_registro.id (registro_id) para cubrir también a los
+   alumnos de entrega manual, cuyas calificaciones viven en progreso_manual. --------- */
+
+const CALIFICACION_FINAL_MINIMA = 5;
+const CALIFICACION_FINAL_MAXIMA = 10;
+
+// Mismo cuidado que redondearUnDecimal() (toPrecision absorbe el ruido
+// binario), a 3 decimales: es la escala de calificacion_calculada.
+function redondearTresDecimales(valor) {
+  return valor == null ? null : Math.round(Number((valor * 1000).toPrecision(12))) / 1000;
+}
+
+// La calificación que le corresponde a un promedio real ya guardado con
+// 3 decimales: piso de 5.0 y un decimal. Se usa al calcular Y al decidir
+// si una edición manual es "ajustada", siempre sobre el valor de 3
+// decimales, para que las dos decisiones nunca se contradigan.
+function calificacionFinalDesdeCalculada(calculada) {
+  if (calculada == null) return null;
+  return Math.max(CALIFICACION_FINAL_MINIMA, redondearUnDecimal(calculada));
+}
+
+// Valida lo que escribe el docente en el campo de un borrador: 5.0–10.0
+// con máximo un decimal (acepta coma decimal). { valido, valor, motivo }.
+function leerCalificacionFinal(texto) {
+  const limpio = String(texto ?? "").trim().replace(",", ".");
+  if (limpio === "") return { valido: false, motivo: "Escribe una calificación de 5.0 a 10.0." };
+  if (!/^\d{1,2}(\.\d)?$/.test(limpio)) {
+    return { valido: false, motivo: "Usa un número con máximo un decimal, por ejemplo 8.5." };
+  }
+  const valor = Number(limpio);
+  if (valor < CALIFICACION_FINAL_MINIMA || valor > CALIFICACION_FINAL_MAXIMA) {
+    return { valido: false, motivo: "La calificación debe estar entre 5.0 y 10.0." };
+  }
+  return { valido: true, valor };
+}
+
+// Suma a mapaPorAlumno (el de obtenerMapaProgresoPorAlumno: clave =
+// auth_user_id → Map "tipo-item_id-trimestre") las filas de
+// progreso_manual de los alumnos con captura manual habilitada, con la
+// clave "registro:<id>" de claveProgresoAlumno() — mismo patrón que
+// agregarProgresoManualAlMapa(), pero agrupado por alumno, que es la
+// forma que espera calcularPromedioTrimestre(). Si la lectura falla,
+// lanza el error (nunca se calcula con datos a medias).
+async function agregarProgresoManualPorAlumno(mapaPorAlumno, alumnos, trimestre) {
+  const alumnosManuales = alumnos.filter(capturaManualHabilitada);
+  if (alumnosManuales.length === 0) return;
+
+  const alumnoPorRegistro = new Map(alumnosManuales.map((alumno) => [String(alumno.id), alumno]));
+  const { data, error } = await obtenerDatos("progreso_manual", {
+    eq: { trimestre },
+    in: { registro_id: [...alumnoPorRegistro.keys()] },
+  });
+  if (error || !data) throw error || new Error("no se pudieron leer las capturas manuales.");
+
+  data.forEach((fila) => {
+    const alumno = alumnoPorRegistro.get(String(fila.registro_id));
+    if (!alumno || String(fila.trimestre) !== String(trimestre)) return;
+    const clave = claveProgresoAlumno(alumno);
+    if (!mapaPorAlumno.has(clave)) mapaPorAlumno.set(clave, new Map());
+    mapaPorAlumno.get(clave).set(fila.tipo + "-" + fila.item_id + "-" + String(fila.trimestre), normalizarFilaProgresoManual(fila));
+  });
+}
+
+// registro_id → fila de calificacion_trimestre del trimestre dado.
+async function leerCalificacionesTrimestre(trimestre, registroIds) {
+  const mapa = new Map();
+  if (registroIds.length === 0) return mapa;
+
+  const { data, error } = await obtenerDatos("calificacion_trimestre", {
+    eq: { trimestre },
+    in: { registro_id: registroIds },
+  });
+  if (error || !data) throw error || new Error("no se pudieron leer las calificaciones guardadas.");
+
+  data.forEach((fila) => mapa.set(String(fila.registro_id), fila));
+  return mapa;
+}
+
+// Lo que "Calcular borradores" guardaría para un alumno, o null si no
+// hay dato (mismo criterio que la tabla de promedios: sin ninguna
+// calificación capturada en el trimestre → "—", nunca 0.0; o
+// calcularPromedioTrimestre() sin ningún tipo con secuencias vencidas).
+// desglose lleva null en el tipo sin dato.
+function calcularFinalAlumno(alumno, itemsPorTipo, mapaProgresoAlumno, trimestre) {
+  if (!mapaProgresoAlumno || !tieneAlgunaCalificacionCapturada(mapaProgresoAlumno)) return null;
+
+  const { sinRedondear } = calcularPromedioTrimestre(alumno.auth_user_id, trimestre, itemsPorTipo, mapaProgresoAlumno, alumno.grupo);
+  if (sinRedondear.promedioFinal == null) return null;
+
+  const calculada = redondearTresDecimales(sinRedondear.promedioFinal);
+  return {
+    calificacion: calificacionFinalDesdeCalculada(calculada),
+    calificacion_calculada: calculada,
+    desglose: {
+      tarea: redondearTresDecimales(sinRedondear.promedioTarea),
+      actividad: redondearTresDecimales(sinRedondear.promedioActividad),
+      proyecto: redondearTresDecimales(sinRedondear.promedioProyecto),
+    },
+  };
+}
+
+// Secuencias del trimestre con algún trabajo todavía sin vencer: no
+// entran al promedio (ver calcularPromedioTrimestre), así que un
+// borrador calculado hoy sería parcial. Se cuentan secuencias distintas
+// (claveSecuenciaDeEntregable), no trabajos.
+function contarSecuenciasSinVencer(itemsPorTipo, grupo) {
+  const sinVencer = new Set();
+  ["tarea", "actividad", "proyecto"].forEach((tipo) => {
+    (itemsPorTipo[tipo] || []).forEach((item) => {
+      if (!itemEstaVencido(tipo, item, grupo)) sinVencer.add(claveSecuenciaDeEntregable(item));
+    });
+  });
+  return sinVencer.size;
+}
+
+// Todo lo que necesita la vista para un grupo y trimestre: solo alumnos
+// activos; progreso + progreso_manual; filas ya guardadas; secuencias
+// sin vencer y el trimestre desbloqueado (para los avisos). Cualquier
+// lectura que falle lanza el error: la vista no ofrece calcular ni
+// publicar sobre datos incompletos.
+async function cargarDatosPublicacionTrimestre(grupo, trimestre) {
+  const [alumnosDelGrupo, entregablesTodos, desbloqueado] = await Promise.all([
+    obtenerAlumnosParaCalificacion(grupo),
+    obtenerEntregablesPorTipo("todos", trimestre),
+    obtenerTrimestreDesbloqueado(),
+  ]);
+
+  const alumnos = alumnosDelGrupo.filter((alumno) => alumno.activo !== false);
+  const entregables = entregablesTodos.filter((item) => item.grupo === "todos" || item.grupo === grupo);
+  const itemsPorTipo = { tarea: [], actividad: [], proyecto: [] };
+  entregables.forEach((item) => itemsPorTipo[item.tipoEntregable]?.push(item));
+
+  const idsConCuenta = alumnos.filter((alumno) => !esAlumnoSinCuenta(alumno)).map((alumno) => alumno.auth_user_id);
+  const [mapaPorAlumno, guardadas] = await Promise.all([
+    obtenerMapaProgresoPorAlumno(trimestre, idsConCuenta, { lanzarError: true }),
+    leerCalificacionesTrimestre(trimestre, alumnos.map((alumno) => alumno.id)),
+  ]);
+  await agregarProgresoManualPorAlumno(mapaPorAlumno, alumnos, trimestre);
+
+  const filas = alumnos.map((alumno) => ({
+    alumno,
+    calculo: calcularFinalAlumno(alumno, itemsPorTipo, mapaPorAlumno.get(claveProgresoAlumno(alumno)), trimestre),
+    guardada: guardadas.get(String(alumno.id)) || null,
+  }));
+
+  return {
+    grupo,
+    trimestre,
+    filas,
+    secuenciasSinVencer: contarSecuenciasSinVencer(itemsPorTipo, grupo),
+    trimestreDesbloqueado: desbloqueado,
+  };
+}
+
+// Estado que ve el docente en cada fila. "sin_dato" gana sobre un
+// borrador viejo: si el alumno ya no tiene dato, ese borrador no se
+// publica (ver filasPublicables).
+function estadoFilaPublicacion({ calculo, guardada }) {
+  if (guardada?.publicada) return "publicada";
+  if (!calculo) return "sin_dato";
+  if (!guardada) return "sin_calcular";
+  return guardada.ajustada_manual ? "ajustada" : "borrador";
+}
+
+// Filas que "Calcular borradores" envía: nunca las publicadas (el
+// trigger de la BD rechazaría el upsert completo con P0001), nunca las
+// "sin dato". Un borrador ajustado a mano conserva su calificación: solo
+// se actualizan calificacion_calculada y desglose (se reenvía su propia
+// calificación para que todas las filas del upsert tengan las mismas
+// columnas).
+function construirFilasParaCalcular(filas, trimestre) {
+  return filas
+    .filter(({ calculo, guardada }) => calculo && !guardada?.publicada)
+    .map(({ alumno, calculo, guardada }) => {
+      const ajustada = guardada?.ajustada_manual === true;
+      return {
+        registro_id: alumno.id,
+        trimestre: Number(trimestre),
+        calificacion: ajustada ? Number(guardada.calificacion) : calculo.calificacion,
+        calificacion_calculada: calculo.calificacion_calculada,
+        ajustada_manual: ajustada,
+        desglose: calculo.desglose,
+      };
+    });
+}
+
+// Borradores que "Publicar grupo" publica: guardados, sin publicar y con
+// dato vigente.
+function filasPublicables(filas) {
+  return filas.filter(({ calculo, guardada }) => calculo && guardada && !guardada.publicada);
+}
+
+function filasPublicadas(filas) {
+  return filas.filter(({ guardada }) => guardada?.publicada);
+}
+
+// Un solo upsert por la UNIQUE (registro_id, trimestre). .select(): sin
+// él, un upsert que la RLS filtra respondería "éxito" sin guardar nada;
+// se exige una fila devuelta por cada fila enviada.
+async function guardarBorradoresCalculados(payload) {
+  if (payload.length === 0) return [];
+  const { data, error } = await clienteSupabase
+    .from("calificacion_trimestre")
+    .upsert(payload, { onConflict: "registro_id,trimestre" })
+    .select();
+  if (error) throw error;
+  if (!data || data.length !== payload.length) {
+    throw new Error("se guardaron " + (data?.length ?? 0) + " de " + payload.length + " borradores.");
+  }
+  return data;
+}
+
+// Edición manual de un borrador. ajustada_manual = true solo si el valor
+// difiere del que da la fórmula (piso incluido); si el docente vuelve a
+// escribir ese mismo valor, deja de contar como ajustada. El filtro
+// publicada = false evita pisar una fila que se publicó desde otra
+// pestaña: en ese caso no se actualiza nada y se avisa.
+async function guardarCalificacionBorrador(guardada, calificacion) {
+  const deLaFormula = calificacionFinalDesdeCalculada(Number(guardada.calificacion_calculada));
+  const { data, error } = await clienteSupabase
+    .from("calificacion_trimestre")
+    .update({ calificacion, ajustada_manual: calificacion !== deLaFormula })
+    .eq("id", guardada.id)
+    .eq("publicada", false)
+    .select();
+  if (error) throw error;
+  if (!data || data.length !== 1) throw new Error("no se guardó: puede que ya esté publicada. Recarga la vista.");
+  return data[0];
+}
+
+// Publica (true) o retira (false) las filas dadas. Solo toca las que
+// están en el estado contrario; si alguna ya había cambiado (otra
+// pestaña), el conteo no cuadra y se avisa para recargar.
+async function cambiarPublicacionCalificaciones(ids, publicar) {
+  if (ids.length === 0) return;
+  const { data, error } = await clienteSupabase
+    .from("calificacion_trimestre")
+    .update({ publicada: publicar })
+    .in("id", ids)
+    .eq("publicada", !publicar)
+    .select("id");
+  if (error) throw error;
+  if (!data || data.length !== ids.length) {
+    throw new Error(
+      "solo se " + (publicar ? "publicaron " : "retiraron ") + (data?.length ?? 0) + " de " + ids.length + ". Recarga la vista."
+    );
+  }
+}
+
+/* ---------- Publicar trimestre: vista ----------
+   Una fila por alumno ACTIVO del grupo: N.º, nombre, promedio calculado
+   (el de hoy, con la fórmula), calificación (campo editable solo en
+   borradores), estado y fecha de publicación. Todo el texto de alumnos
+   va por textContent. Una sola operación de escritura a la vez
+   (operacionPublicacionEnCurso, mismo patrón que el modal Calificar):
+   mientras corre, los botones se deshabilitan y los campos quedan de
+   solo lectura (sin perder lo escrito ni el foco). --------- */
+
+const ESTADOS_PUBLICACION = {
+  sin_dato: { texto: "– Sin dato", clase: "chip-estado-publicacion--neutro" },
+  sin_calcular: { texto: "○ Sin calcular", clase: "chip-estado-publicacion--neutro" },
+  borrador: { texto: "✎ Borrador", clase: "chip-estado-publicacion--borrador" },
+  ajustada: { texto: "✎ Ajustada", clase: "chip-estado-publicacion--ajustada" },
+  publicada: { texto: "✓ Publicada", clase: "chip-estado-publicacion--publicada" },
+};
+
+// datos: lo que devolvió cargarDatosPublicacionTrimestre() para el
+// filtro actual (null mientras carga o si falló). turno descarta una
+// carga vieja si el docente cambia el filtro antes de que termine.
+const estadoPublicacion = { datos: null, turno: 0 };
+let operacionPublicacionEnCurso = false;
+
+function textoGrupoTrimestre(datos) {
+  return textoGrupo(datos.grupo) + " · Trimestre " + datos.trimestre;
+}
+
+function textoSecuenciasSinVencer(cantidad) {
+  return (
+    "⚠ " +
+    cantidad +
+    (cantidad === 1 ? " secuencia de este trimestre aún no vence" : " secuencias de este trimestre aún no vencen") +
+    ": no entran al promedio, así que una calificación calculada hoy sería parcial."
+  );
+}
+
+function textoTrimestreBloqueado(trimestre) {
+  return (
+    "🔒 El Trimestre " +
+    trimestre +
+    " todavía está bloqueado para los alumnos: aunque publiques, no lo verán hasta que lo desbloquees."
+  );
+}
+
+function formatearPromedioReal(valor) {
+  return Number(valor).toFixed(2);
+}
+
+function formatearFechaPublicacion(iso) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("es-MX", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+// Mensaje persistente de la vista (role="status" + aria-live en el HTML).
+// tipo: "info" | "exito" | "error". Un error se queda hasta la siguiente
+// acción: nunca se pierde en un toast que desaparece solo.
+function mostrarMensajePublicacion(texto, tipo = "info") {
+  const mensaje = document.getElementById("evaluacion-publicar-mensaje");
+  if (!mensaje) return;
+  mensaje.textContent = texto;
+  mensaje.classList.toggle("evaluacion-publicar-mensaje--error", tipo === "error");
+  mensaje.classList.toggle("evaluacion-publicar-mensaje--exito", tipo === "exito");
+}
+
+function crearNotaPublicacion(texto) {
+  const nota = document.createElement("span");
+  nota.className = "evaluacion-publicar__nota";
+  nota.textContent = texto;
+  return nota;
+}
+
+function construirCeldaCalificacionPublicacion(fila, estado) {
+  const { alumno, calculo, guardada } = fila;
+  const celda = document.createElement("td");
+
+  if (estado === "publicada") {
+    const valor = document.createElement("strong");
+    valor.className = "evaluacion-publicar__valor";
+    valor.textContent = Number(guardada.calificacion).toFixed(1);
+    celda.appendChild(valor);
+    return celda;
+  }
+
+  if (estado === "borrador" || estado === "ajustada") {
+    const formulario = document.createElement("form");
+    formulario.className = "evaluacion-publicar__form";
+    formulario.noValidate = true;
+    formulario.dataset.registroId = String(alumno.id);
+
+    const idCampo = "publicar-calificacion-" + alumno.id;
+    const etiqueta = document.createElement("label");
+    etiqueta.className = "sr-only";
+    etiqueta.htmlFor = idCampo;
+    etiqueta.textContent = "Calificación final de " + alumno.nombre;
+
+    const campo = document.createElement("input");
+    campo.type = "text";
+    campo.inputMode = "decimal";
+    campo.id = idCampo;
+    campo.className = "evaluacion-publicar__campo";
+    campo.autocomplete = "off";
+    campo.maxLength = 4;
+    campo.value = Number(guardada.calificacion).toFixed(1);
+
+    const boton = document.createElement("button");
+    boton.type = "submit";
+    boton.className = "boton-secundario evaluacion-publicar__guardar";
+    boton.textContent = "Guardar";
+    boton.setAttribute("aria-label", "Guardar la calificación de " + alumno.nombre);
+
+    formulario.append(etiqueta, campo, boton);
+    celda.appendChild(formulario);
+    return celda;
+  }
+
+  if (estado === "sin_calcular") {
+    celda.textContent = "—";
+    celda.appendChild(crearNotaPublicacion(calculo.calificacion.toFixed(1) + " al calcular"));
+    return celda;
+  }
+
+  // sin_dato: si quedó un borrador de antes, se avisa que no se publicará.
+  celda.textContent = "—";
+  if (guardada) {
+    celda.appendChild(crearNotaPublicacion("Borrador anterior: " + Number(guardada.calificacion).toFixed(1) + " (no se publicará)"));
+  }
+  return celda;
+}
+
+function construirFilaPublicacion(fila) {
+  const { alumno, calculo, guardada } = fila;
+  const estado = estadoFilaPublicacion(fila);
+
+  const tr = document.createElement("tr");
+  tr.dataset.registroId = String(alumno.id);
+
+  const celdaNumero = document.createElement("td");
+  celdaNumero.textContent = String(alumno.numero_lista);
+  tr.appendChild(celdaNumero);
+
+  const celdaAlumno = document.createElement("td");
+  const envoltura = document.createElement("div");
+  envoltura.className = "calificacion-tabla__alumno";
+  const nombre = document.createElement("span");
+  nombre.className = "calificacion-tabla__alumno-nombre";
+  nombre.textContent = alumno.nombre;
+  envoltura.appendChild(nombre);
+  if (esAlumnoEntregaManual(alumno)) {
+    const etiqueta = document.createElement("span");
+    etiqueta.className = "calificacion-tabla__alumno-numero";
+    etiqueta.textContent = "Entrega manual";
+    envoltura.appendChild(etiqueta);
+  }
+  celdaAlumno.appendChild(envoltura);
+  tr.appendChild(celdaAlumno);
+
+  const celdaPromedio = document.createElement("td");
+  if (!calculo) {
+    celdaPromedio.textContent = "—";
+  } else {
+    celdaPromedio.textContent = formatearPromedioReal(calculo.calificacion_calculada);
+    if (calculo.calificacion_calculada < CALIFICACION_FINAL_MINIMA) {
+      celdaPromedio.appendChild(crearNotaPublicacion("Se aplica el piso de 5.0"));
+    }
+    // El promedio de hoy ya no es el que se guardó (calificaron algo
+    // después de calcular, o venció otra secuencia).
+    if (guardada && Math.abs(Number(guardada.calificacion_calculada) - calculo.calificacion_calculada) > 0.0005) {
+      const guardado = formatearPromedioReal(guardada.calificacion_calculada);
+      celdaPromedio.appendChild(
+        crearNotaPublicacion(
+          guardada.publicada ? "Se publicó con " + guardado : "Cambió desde el cálculo (guardado: " + guardado + ")"
+        )
+      );
+    }
+  }
+  tr.appendChild(celdaPromedio);
+
+  tr.appendChild(construirCeldaCalificacionPublicacion(fila, estado));
+
+  const celdaEstado = document.createElement("td");
+  const chip = document.createElement("span");
+  chip.className = "chip-estado-publicacion " + ESTADOS_PUBLICACION[estado].clase;
+  chip.textContent = ESTADOS_PUBLICACION[estado].texto;
+  celdaEstado.appendChild(chip);
+  tr.appendChild(celdaEstado);
+
+  const celdaFecha = document.createElement("td");
+  celdaFecha.textContent = guardada?.publicada ? formatearFechaPublicacion(guardada.publicada_en) : "—";
+  tr.appendChild(celdaFecha);
+
+  // "Retirar" por alumno, para corregir a uno solo sin retirar el grupo.
+  // No existe "publicar por fila": se publica siempre por grupo.
+  const celdaAccion = document.createElement("td");
+  if (estado === "publicada") {
+    const botonRetirar = document.createElement("button");
+    botonRetirar.type = "button";
+    botonRetirar.className = "boton-secundario evaluacion-publicar__retirar";
+    botonRetirar.dataset.registroId = String(alumno.id);
+    botonRetirar.textContent = "Retirar";
+    botonRetirar.setAttribute("aria-label", "Retirar la calificación publicada de " + alumno.nombre);
+    celdaAccion.appendChild(botonRetirar);
+  }
+  tr.appendChild(celdaAccion);
+
+  return tr;
+}
+
+function construirTablaPublicacion(datos) {
+  const tabla = document.createElement("table");
+  tabla.className = "tabla-calificacion tabla-publicar";
+
+  const titulo = document.createElement("caption");
+  titulo.className = "sr-only";
+  titulo.textContent = "Calificaciones finales de " + textoGrupoTrimestre(datos);
+  tabla.appendChild(titulo);
+
+  const thead = document.createElement("thead");
+  const filaEncabezado = document.createElement("tr");
+  ["N.º", "Alumno", "Promedio calculado", "Calificación", "Estado", "Publicada el", "Acción"].forEach((texto) => {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = texto;
+    filaEncabezado.appendChild(th);
+  });
+  thead.appendChild(filaEncabezado);
+  tabla.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  datos.filas.forEach((fila) => tbody.appendChild(construirFilaPublicacion(fila)));
+  tabla.appendChild(tbody);
+  return tabla;
+}
+
+function pintarAvisoPublicacion(datos) {
+  const aviso = document.getElementById("evaluacion-publicar-aviso");
+  if (!aviso) return;
+  const lineas = [];
+  if (datos.secuenciasSinVencer > 0) lineas.push(textoSecuenciasSinVencer(datos.secuenciasSinVencer));
+  if (Number(datos.trimestre) > Number(datos.trimestreDesbloqueado)) lineas.push(textoTrimestreBloqueado(datos.trimestre));
+
+  aviso.replaceChildren(
+    ...lineas.map((texto) => {
+      const parrafo = document.createElement("p");
+      parrafo.textContent = texto;
+      return parrafo;
+    })
+  );
+  aviso.hidden = lineas.length === 0;
+}
+
+function pintarResumenPublicacion(datos) {
+  const resumen = document.getElementById("evaluacion-publicar-resumen");
+  if (!resumen) return;
+  const conteo = { sin_dato: 0, sin_calcular: 0, borrador: 0, ajustada: 0, publicada: 0 };
+  datos.filas.forEach((fila) => conteo[estadoFilaPublicacion(fila)]++);
+  // Formato "Etiqueta: N" para no depender de singular/plural.
+  resumen.textContent =
+    "Alumnos activos: " + datos.filas.length +
+    " · Publicadas: " + conteo.publicada +
+    " · Borradores: " + (conteo.borrador + conteo.ajustada) +
+    (conteo.ajustada > 0 ? " (ajustadas: " + conteo.ajustada + ")" : "") +
+    " · Sin calcular: " + conteo.sin_calcular +
+    " · Sin dato: " + conteo.sin_dato;
+}
+
+// Habilita cada acción según los datos cargados y la operación en curso.
+// Los campos de la tabla pasan a solo lectura (no disabled) para no
+// perder el foco ni lo escrito mientras se guarda.
+function actualizarBotonesPublicacion() {
+  const datos = estadoPublicacion.datos;
+  const filas = datos?.filas || [];
+  const bloqueado = operacionPublicacionEnCurso || !datos;
+
+  const botonCalcular = document.getElementById("evaluacion-publicar-boton-calcular");
+  if (botonCalcular) botonCalcular.disabled = bloqueado || construirFilasParaCalcular(filas, datos?.trimestre).length === 0;
+  const botonPublicar = document.getElementById("evaluacion-publicar-boton-publicar");
+  if (botonPublicar) botonPublicar.disabled = bloqueado || filasPublicables(filas).length === 0;
+  const botonRetirar = document.getElementById("evaluacion-publicar-boton-retirar");
+  if (botonRetirar) botonRetirar.disabled = bloqueado || filasPublicadas(filas).length === 0;
+
+  const contenedor = document.getElementById("evaluacion-publicar-contenedor");
+  contenedor?.querySelectorAll("button").forEach((boton) => {
+    boton.disabled = operacionPublicacionEnCurso;
+  });
+  contenedor?.querySelectorAll("input").forEach((campo) => {
+    campo.readOnly = operacionPublicacionEnCurso;
+  });
+}
+
+function bloquearAccionesPublicacion(bloquear) {
+  operacionPublicacionEnCurso = bloquear;
+  actualizarBotonesPublicacion();
+}
+
+async function renderizarVistaPublicacion() {
+  const contenedor = document.getElementById("evaluacion-publicar-contenedor");
+  const aviso = document.getElementById("evaluacion-publicar-aviso");
+  const resumen = document.getElementById("evaluacion-publicar-resumen");
+  if (!contenedor) return;
+
+  const turno = ++estadoPublicacion.turno;
+  estadoPublicacion.datos = null;
+  if (aviso) aviso.hidden = true;
+  if (resumen) resumen.textContent = "";
+  actualizarBotonesPublicacion();
+
+  const { grupo, trimestre } = estadoEvaluacion;
+  if (grupo === "todos") {
+    mostrarSinResultados(contenedor, "Selecciona un grupo específico (3°C o 3°E) para calcular y publicar sus calificaciones.");
+    return;
+  }
+
+  mostrarSinResultados(contenedor, "Cargando…");
+
+  let datos;
+  try {
+    datos = await cargarDatosPublicacionTrimestre(grupo, trimestre);
+  } catch (err) {
+    if (turno !== estadoPublicacion.turno) return;
+    console.warn("No se pudieron cargar las calificaciones finales:", err);
+    mostrarSinResultados(
+      contenedor,
+      "No se pudieron cargar los datos del grupo. Vuelve a abrir la vista; no se calculó ni se publicó nada."
+    );
+    return;
+  }
+  if (turno !== estadoPublicacion.turno) return;
+
+  if (datos.filas.length === 0) {
+    mostrarSinResultados(contenedor, "No hay alumnos activos registrados en este grupo.");
+    return;
+  }
+
+  estadoPublicacion.datos = datos;
+  contenedor.replaceChildren(construirTablaPublicacion(datos));
+  pintarAvisoPublicacion(datos);
+  pintarResumenPublicacion(datos);
+  actualizarBotonesPublicacion();
+}
+
+function buscarFilaPublicacion(registroId) {
+  return estadoPublicacion.datos?.filas.find((fila) => String(fila.alumno.id) === String(registroId)) || null;
+}
+
+// Guardar el campo de UN borrador. Si falla, lo escrito se queda en el
+// campo y el error en el mensaje de la vista.
+async function guardarEdicionBorradorPublicacion(formulario) {
+  if (operacionPublicacionEnCurso) return;
+  const fila = buscarFilaPublicacion(formulario.dataset.registroId);
+  if (!fila?.guardada || fila.guardada.publicada) return;
+
+  const nombre = fila.alumno.nombre;
+  const campo = formulario.querySelector("input");
+  const lectura = leerCalificacionFinal(campo.value);
+  if (!lectura.valido) {
+    campo.setAttribute("aria-invalid", "true");
+    mostrarMensajePublicacion(nombre + ": " + lectura.motivo, "error");
+    campo.focus();
+    return;
+  }
+  campo.removeAttribute("aria-invalid");
+
+  if (lectura.valor === Number(fila.guardada.calificacion)) {
+    campo.value = lectura.valor.toFixed(1);
+    mostrarMensajePublicacion("Sin cambios en la calificación de " + nombre + ".");
+    return;
+  }
+
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
+
+  bloquearAccionesPublicacion(true);
+  mostrarMensajePublicacion("Guardando la calificación de " + nombre + "…");
+  try {
+    fila.guardada = await guardarCalificacionBorrador(fila.guardada, lectura.valor);
+  } catch (err) {
+    console.warn("No se guardó la calificación final:", err);
+    bloquearAccionesPublicacion(false);
+    mostrarMensajePublicacion(
+      "No se guardó la calificación de " + nombre + ": " + (err?.message || "error desconocido") +
+        " Lo que escribiste sigue en el campo.",
+      "error"
+    );
+    campo.focus();
+    return;
+  }
+  bloquearAccionesPublicacion(false);
+
+  const filaNueva = construirFilaPublicacion(fila);
+  formulario.closest("tr")?.replaceWith(filaNueva);
+  if (estadoPublicacion.datos) pintarResumenPublicacion(estadoPublicacion.datos);
+  actualizarBotonesPublicacion();
+  filaNueva.querySelector("input")?.focus();
+  mostrarMensajePublicacion(
+    "Se guardó " + lectura.valor.toFixed(1) + " para " + nombre +
+      (fila.guardada.ajustada_manual ? " (ajustada a mano)." : " (la que da la fórmula)."),
+    "exito"
+  );
+}
+
+// Abre #modal-confirmar-publicacion y resuelve true (Confirmar) o false
+// (Cancelar, ✕, Escape o clic en el fondo). parrafos: textos que se
+// pintan por textContent. El foco inicial va a Cancelar: publicar o
+// retirar llega a los alumnos, así que Enter por inercia no confirma.
+function pedirConfirmacionPublicacion({ titulo, parrafos, textoConfirmar }) {
+  const modal = document.getElementById("modal-confirmar-publicacion");
+  const tituloEl = document.getElementById("modal-confirmar-publicacion-titulo");
+  const texto = document.getElementById("publicacion-confirmar-texto");
+  const botonConfirmar = document.getElementById("publicacion-confirmar-confirmar");
+  const botonCancelar = document.getElementById("publicacion-confirmar-cancelar");
+  const botonCerrar = modal?.querySelector(".modal-detalle__cerrar");
+  if (!modal || !tituloEl || !texto || !botonConfirmar || !botonCancelar) return Promise.resolve(false);
+
+  tituloEl.textContent = titulo;
+  texto.replaceChildren(
+    ...parrafos.map((linea) => {
+      const parrafo = document.createElement("p");
+      parrafo.textContent = linea;
+      return parrafo;
+    })
+  );
+  botonConfirmar.textContent = textoConfirmar;
+
+  return new Promise((resolve) => {
+    let resuelto = false;
+    function terminar(valor) {
+      if (resuelto) return;
+      resuelto = true;
+      botonConfirmar.removeEventListener("click", alConfirmar);
+      botonCancelar.removeEventListener("click", alCancelar);
+      botonCerrar?.removeEventListener("click", alCancelar);
+      modal.removeEventListener("click", alClicFondo);
+      modal.removeEventListener("close", alCerrar);
+      resolve(valor);
+    }
+    function alConfirmar() {
+      terminar(true);
+      cerrarDialogoAnimado(modal);
+    }
+    function alCancelar() {
+      terminar(false);
+      cerrarDialogoAnimado(modal);
+    }
+    function alClicFondo(evento) {
+      if (evento.target === modal) alCancelar();
+    }
+    function alCerrar() {
+      terminar(false);
+    }
+
+    botonConfirmar.addEventListener("click", alConfirmar);
+    botonCancelar.addEventListener("click", alCancelar);
+    botonCerrar?.addEventListener("click", alCancelar);
+    modal.addEventListener("click", alClicFondo);
+    modal.addEventListener("close", alCerrar);
+    modal.showModal();
+    botonCancelar.focus();
+  });
+}
+
+// Conteos que se repiten en las confirmaciones.
+function contarFilasPublicacion(filas) {
+  return {
+    sinDato: filas.filter((fila) => estadoFilaPublicacion(fila) === "sin_dato").length,
+    sinCalcular: filas.filter((fila) => estadoFilaPublicacion(fila) === "sin_calcular").length,
+    publicadas: filasPublicadas(filas).length,
+  };
+}
+
+function pluralAlumnos(cantidad) {
+  return cantidad + (cantidad === 1 ? " alumno" : " alumnos");
+}
+
+// Confirmación previa a "Calcular borradores": cuántos se calculan, qué
+// no cambia y el aviso de secuencias sin vencer.
+function confirmarCalculoPublicacion(datos, payload) {
+  const { sinDato, publicadas } = contarFilasPublicacion(datos.filas);
+  const ajustadas = payload.filter((fila) => fila.ajustada_manual).length;
+  const parrafos = ["Vas a calcular la calificación de " + pluralAlumnos(payload.length) + " de " + textoGrupoTrimestre(datos) + "."];
+  if (publicadas > 0) {
+    parrafos.push(publicadas === 1 ? "1 ya publicada no cambia." : publicadas + " ya publicadas no cambian.");
+  }
+  if (ajustadas > 0) {
+    parrafos.push(
+      (ajustadas === 1 ? "1 ajustada a mano conserva" : ajustadas + " ajustadas a mano conservan") +
+        " su calificación; solo se actualiza el promedio guardado."
+    );
+  }
+  if (sinDato > 0) parrafos.push(pluralAlumnos(sinDato) + " sin dato: " + (sinDato === 1 ? "no se calcula." : "no se calculan."));
+  if (datos.secuenciasSinVencer > 0) parrafos.push(textoSecuenciasSinVencer(datos.secuenciasSinVencer));
+  parrafos.push("Son borradores: los alumnos no los ven hasta que publiques.");
+  return pedirConfirmacionPublicacion({ titulo: "Calcular borradores", parrafos, textoConfirmar: "Calcular" });
+}
+
+async function calcularBorradoresPublicacion() {
+  if (operacionPublicacionEnCurso) return;
+  const datos = estadoPublicacion.datos;
+  if (!datos) return;
+
+  const payload = construirFilasParaCalcular(datos.filas, datos.trimestre);
+  if (payload.length === 0) {
+    mostrarMensajePublicacion("No hay borradores que calcular: los alumnos sin dato no se calculan y los publicados no se tocan.");
+    return;
+  }
+  if (!(await confirmarCalculoPublicacion(datos, payload))) return;
+
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
+
+  bloquearAccionesPublicacion(true);
+  mostrarMensajePublicacion("Calculando la calificación de " + pluralAlumnos(payload.length) + "…");
+  let guardado = false;
+  try {
+    await guardarBorradoresCalculados(payload);
+    guardado = true;
+  } catch (err) {
+    console.warn("No se guardaron los borradores:", err);
+    mostrarMensajePublicacion(
+      "No se guardó ningún borrador: " + (err?.message || "error desconocido") +
+        " Las calificaciones publicadas no cambiaron.",
+      "error"
+    );
+  } finally {
+    bloquearAccionesPublicacion(false);
+  }
+  if (!guardado) return;
+
+  const ajustadas = payload.filter((fila) => fila.ajustada_manual).length;
+  await renderizarVistaPublicacion();
+  mostrarMensajePublicacion(
+    "Se calculó la calificación de " + pluralAlumnos(payload.length) + " de " + textoGrupoTrimestre(datos) + " (borrador)." +
+      (ajustadas > 0 ? " Ajustadas a mano que conservaron su calificación: " + ajustadas + "." : ""),
+    "exito"
+  );
+}
+
+// Publica o retira las filas dadas (ids de calificacion_trimestre) y
+// recarga la vista para mostrar publicada_en tal como lo puso la BD.
+// textos: { enCurso, exito, error } ya armados por el llamador.
+async function ejecutarCambioPublicacion(ids, publicar, textos) {
+  if (demoModeActivo()) {
+    abrirModalDemo();
+    return;
+  }
+
+  bloquearAccionesPublicacion(true);
+  mostrarMensajePublicacion(textos.enCurso);
+  let hecho = false;
+  try {
+    await cambiarPublicacionCalificaciones(ids, publicar);
+    hecho = true;
+  } catch (err) {
+    console.warn("No se pudo cambiar la publicación:", err);
+    mostrarMensajePublicacion(textos.error + ": " + (err?.message || "error desconocido"), "error");
+  } finally {
+    bloquearAccionesPublicacion(false);
+  }
+  // Aun si falló, se recarga: un conteo que no cuadra significa que
+  // algo cambió en otra pestaña, y la tabla debe mostrar lo real. El
+  // mensaje de error se conserva (renderizar no lo toca).
+  await renderizarVistaPublicacion();
+  if (hecho) mostrarMensajePublicacion(textos.exito, "exito");
+}
+
+// "Publicar grupo": solo borradores guardados con dato vigente. Avisa
+// quiénes quedan fuera, las secuencias sin vencer y, si el trimestre
+// todavía está bloqueado, que los alumnos no lo verán hasta desbloquearlo
+// (se permite continuar).
+async function publicarGrupoPublicacion() {
+  if (operacionPublicacionEnCurso) return;
+  const datos = estadoPublicacion.datos;
+  if (!datos) return;
+
+  const publicables = filasPublicables(datos.filas);
+  if (publicables.length === 0) {
+    mostrarMensajePublicacion("No hay borradores que publicar. Calcula primero los borradores del grupo.");
+    return;
+  }
+
+  const { sinDato, sinCalcular } = contarFilasPublicacion(datos.filas);
+  const parrafos = [
+    "Vas a publicar " + textoGrupoTrimestre(datos) + " para " + pluralAlumnos(publicables.length) + ". Ellos podrán verlo.",
+  ];
+  const quedanFuera = (cantidad) => (cantidad === 1 ? "Queda fuera " : "Quedan fuera ") + pluralAlumnos(cantidad);
+  if (sinDato > 0) parrafos.push(quedanFuera(sinDato) + " sin dato (sin calificaciones en este trimestre).");
+  if (sinCalcular > 0) {
+    parrafos.push(quedanFuera(sinCalcular) + " sin calcular: usa “Calcular borradores” si quieres incluirlos.");
+  }
+  if (datos.secuenciasSinVencer > 0) parrafos.push(textoSecuenciasSinVencer(datos.secuenciasSinVencer));
+  if (Number(datos.trimestre) > Number(datos.trimestreDesbloqueado)) parrafos.push(textoTrimestreBloqueado(datos.trimestre));
+
+  const confirmado = await pedirConfirmacionPublicacion({ titulo: "Publicar calificaciones", parrafos, textoConfirmar: "Publicar" });
+  if (!confirmado) return;
+
+  await ejecutarCambioPublicacion(
+    publicables.map((fila) => fila.guardada.id),
+    true,
+    {
+      enCurso: "Publicando " + pluralAlumnos(publicables.length) + "…",
+      exito: "Se publicó " + textoGrupoTrimestre(datos) + " para " + pluralAlumnos(publicables.length) + ".",
+      error: "No se publicó",
+    }
+  );
+}
+
+// "Retirar publicación" de todo el grupo/trimestre: las filas vuelven a
+// borrador (publicada_en se limpia en la BD) y el alumno deja de verlas.
+async function retirarGrupoPublicacion() {
+  if (operacionPublicacionEnCurso) return;
+  const datos = estadoPublicacion.datos;
+  if (!datos) return;
+
+  const publicadas = filasPublicadas(datos.filas);
+  if (publicadas.length === 0) {
+    mostrarMensajePublicacion("No hay calificaciones publicadas en " + textoGrupoTrimestre(datos) + ".");
+    return;
+  }
+
+  const confirmado = await pedirConfirmacionPublicacion({
+    titulo: "Retirar publicación",
+    parrafos: [
+      "Vas a retirar la publicación de " + textoGrupoTrimestre(datos) + " para " + pluralAlumnos(publicadas.length) + ".",
+      "Dejarán de ver su calificación hasta que la vuelvas a publicar. Las calificaciones quedan como borrador, sin cambios.",
+    ],
+    textoConfirmar: "Retirar",
+  });
+  if (!confirmado) return;
+
+  await ejecutarCambioPublicacion(
+    publicadas.map((fila) => fila.guardada.id),
+    false,
+    {
+      enCurso: "Retirando la publicación…",
+      exito: "Se retiró la publicación de " + pluralAlumnos(publicadas.length) + ".",
+      error: "No se retiró la publicación",
+    }
+  );
+}
+
+async function retirarFilaPublicacion(registroId) {
+  if (operacionPublicacionEnCurso) return;
+  const fila = buscarFilaPublicacion(registroId);
+  if (!fila?.guardada?.publicada) return;
+  const nombre = fila.alumno.nombre;
+
+  const confirmado = await pedirConfirmacionPublicacion({
+    titulo: "Retirar calificación",
+    parrafos: [
+      "Vas a retirar la calificación publicada de " + nombre + " (" + Number(fila.guardada.calificacion).toFixed(1) + ").",
+      "Dejará de verla y quedará como borrador para que la corrijas; después publica el grupo otra vez.",
+    ],
+    textoConfirmar: "Retirar",
+  });
+  if (!confirmado) return;
+
+  await ejecutarCambioPublicacion([fila.guardada.id], false, {
+    enCurso: "Retirando la calificación de " + nombre + "…",
+    exito: "Se retiró la calificación de " + nombre + ". Ya puedes corregirla.",
+    error: "No se retiró la calificación de " + nombre,
+  });
+}
+
+function activarAccionesPublicacion() {
+  const botonCalcular = document.getElementById("evaluacion-publicar-boton-calcular");
+  const botonPublicar = document.getElementById("evaluacion-publicar-boton-publicar");
+  const botonRetirar = document.getElementById("evaluacion-publicar-boton-retirar");
+  const contenedor = document.getElementById("evaluacion-publicar-contenedor");
+  if (!botonCalcular || !contenedor) return;
+
+  botonCalcular.addEventListener("click", calcularBorradoresPublicacion);
+  botonPublicar?.addEventListener("click", publicarGrupoPublicacion);
+  botonRetirar?.addEventListener("click", retirarGrupoPublicacion);
+
+  contenedor.addEventListener("submit", (evento) => {
+    const formulario = evento.target.closest(".evaluacion-publicar__form");
+    if (!formulario) return;
+    evento.preventDefault();
+    guardarEdicionBorradorPublicacion(formulario);
+  });
+
+  contenedor.addEventListener("click", (evento) => {
+    const boton = evento.target.closest(".evaluacion-publicar__retirar");
+    if (!boton) return;
+    retirarFilaPublicacion(boton.dataset.registroId);
+  });
+}
+
 // Alterna entre #evaluacion-captura-vista, #evaluacion-promedios-vista y
 // #evaluacion-final-vista (nunca más de una visible) y oculta Tipo/
 // Secuencia mientras promedios o final están activos — esos dos filtros
@@ -21194,23 +22160,36 @@ function activarVistasEvaluacion() {
   const filtroSecuencia = document.getElementById("evaluacion-filtro-secuencia")?.closest(".calificacion-filtro");
   const filtroTrimestre = document.getElementById("evaluacion-filtro-trimestre")?.closest(".calificacion-filtro");
 
+  // Cuarta vista, "Publicar trimestre": opcional en el guard de arriba
+  // para no romper las otras tres si faltara su HTML.
+  const botonVerPublicar = document.getElementById("evaluacion-boton-vista-publicar");
+  const botonVolverPublicar = document.getElementById("evaluacion-publicar-boton-volver");
+  const vistaPublicar = document.getElementById("evaluacion-publicar-vista");
+
   async function mostrarVista(vista) {
     vistaEvaluacionActiva = vista;
     vistaCaptura.hidden = vista !== "captura";
     vistaPromedios.hidden = vista !== "promedios";
     vistaFinal.hidden = vista !== "final";
+    if (vistaPublicar) vistaPublicar.hidden = vista !== "publicar";
     if (filtroTipo) filtroTipo.hidden = vista !== "captura";
     if (filtroSecuencia) filtroSecuencia.hidden = vista !== "captura";
     if (filtroTrimestre) filtroTrimestre.hidden = vista === "final";
 
     if (vista === "promedios") await renderizarTablaPromedios();
     else if (vista === "final") await renderizarTablaFinal();
+    else if (vista === "publicar") {
+      mostrarMensajePublicacion("");
+      await renderizarVistaPublicacion();
+    }
   }
 
   botonVerPromedios.addEventListener("click", () => mostrarVista("promedios"));
   botonVerFinal.addEventListener("click", () => mostrarVista("final"));
   botonVolverPromedios.addEventListener("click", () => mostrarVista("captura"));
   botonVolverFinal.addEventListener("click", () => mostrarVista("captura"));
+  botonVerPublicar?.addEventListener("click", () => mostrarVista("publicar"));
+  botonVolverPublicar?.addEventListener("click", () => mostrarVista("captura"));
 }
 
 // Compartido entre exportarCSVPromedios/exportarCSVFinal: ambas tablas
@@ -21345,6 +22324,7 @@ async function inicializarModuloEvaluacion() {
   activarFormularioCalificar();
   activarBotonesValorRapidoCalificacion();
   activarVistasEvaluacion();
+  activarAccionesPublicacion();
   activarExportarCSVPromedios();
   activarExportarCSVFinal();
   activarImpresionTabla("evaluacion-promedios-boton-imprimir");
@@ -21357,6 +22337,8 @@ async function inicializarModuloEvaluacion() {
       await renderizarTablaPromedios();
     } else if (vistaEvaluacionActiva === "final") {
       await renderizarTablaFinal();
+    } else if (vistaEvaluacionActiva === "publicar") {
+      await renderizarVistaPublicacion();
     } else {
       await renderizarTablaEvaluacion();
     }
@@ -21369,6 +22351,8 @@ async function inicializarModuloEvaluacion() {
       await renderizarTablaPromedios();
     } else if (vistaEvaluacionActiva === "final") {
       await renderizarTablaFinal();
+    } else if (vistaEvaluacionActiva === "publicar") {
+      await renderizarVistaPublicacion();
     } else {
       await renderizarTablaEvaluacion();
     }
