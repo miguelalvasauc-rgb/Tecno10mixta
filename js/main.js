@@ -6010,8 +6010,11 @@ function activarPestanaDesdeHash() {
   // El intento nativo del navegador de hacer scroll a este elemento ya
   // pasó (y probablemente falló: el elemento no existía todavía, o
   // existía pero seguía oculto por la clase de arriba); ahora que ya es
-  // visible, se repite el scroll a mano.
-  objetivo.scrollIntoView({ block: "start" });
+  // visible, se repite el scroll a mano. "instant" y no el default: sin
+  // él hereda el scroll-behavior: smooth del CSS y la animación puede
+  // seguir corriendo después de que sostenerAnclaEnCarga() ya colocó el
+  // destino.
+  objetivo.scrollIntoView({ behavior: "instant", block: "start" });
 }
 
 // Enlace directo a un #ancla: el navegador salta en cuanto puede, pero
@@ -6023,7 +6026,14 @@ function activarPestanaDesdeHash() {
 // manda: cualquier intento suyo de moverse lo detiene al instante, y el
 // foco no se toca. Devuelve la función que avisa que el primer
 // renderizarTodo() ya terminó.
+//
+// El tope de 5 s cuenta desde que la carga ya está lista (render inicial,
+// "load" y fuentes), no desde que abre la página: con Supabase lento el
+// render inicial terminaba después de los 5 s, la tarjeta destino se
+// volvía a dibujar y ya nadie la recolocaba. El tope absoluto de 20 s es
+// solo el respaldo para que nunca quede activo para siempre.
 const TOPE_ANCLA_EN_CARGA_MS = 5000;
+const TOPE_ABSOLUTO_ANCLA_EN_CARGA_MS = 20000;
 const QUIETUD_ANCLA_EN_CARGA_MS = 400;
 
 function sostenerAnclaEnCarga() {
@@ -6035,6 +6045,7 @@ function sostenerAnclaEnCarga() {
   let cargaLista = false;
   let cuadroPendiente = false;
   let temporizadorQuietud;
+  let temporizadorTope;
 
   function colocar() {
     if (parada.signal.aborted) return;
@@ -6073,6 +6084,7 @@ function sostenerAnclaEnCarga() {
     parada.abort();
     observador.disconnect();
     clearTimeout(temporizadorTope);
+    clearTimeout(temporizadorTopeAbsoluto);
     clearTimeout(temporizadorQuietud);
   }
 
@@ -6091,7 +6103,7 @@ function sostenerAnclaEnCarga() {
   });
   observador.observe(document.body);
 
-  const temporizadorTope = setTimeout(terminar, TOPE_ANCLA_EN_CARGA_MS);
+  const temporizadorTopeAbsoluto = setTimeout(terminar, TOPE_ABSOLUTO_ANCLA_EN_CARGA_MS);
 
   ["wheel", "touchstart", "keydown", "mousedown"].forEach((evento) => {
     window.addEventListener(evento, terminar, { capture: true, passive: true, signal: parada.signal });
@@ -6107,7 +6119,9 @@ function sostenerAnclaEnCarga() {
   });
 
   Promise.all([renderListo, paginaCargada, document.fonts.ready]).then(() => {
+    if (parada.signal.aborted) return;
     cargaLista = true;
+    temporizadorTope = setTimeout(terminar, TOPE_ANCLA_EN_CARGA_MS);
     esperarQuietud();
   });
 
