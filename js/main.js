@@ -21437,8 +21437,8 @@ async function cambiarPublicacionCalificaciones(ids, publicar) {
    solo lectura (sin perder lo escrito ni el foco). --------- */
 
 const ESTADOS_PUBLICACION = {
-  sin_dato: { texto: "Sin dato", clase: "chip-estado-publicacion--neutro" },
-  sin_calcular: { texto: "Sin calcular", clase: "chip-estado-publicacion--neutro" },
+  sin_dato: { texto: "– Sin dato", clase: "chip-estado-publicacion--neutro" },
+  sin_calcular: { texto: "○ Sin calcular", clase: "chip-estado-publicacion--neutro" },
   borrador: { texto: "✎ Borrador", clase: "chip-estado-publicacion--borrador" },
   ajustada: { texto: "✎ Ajustada", clase: "chip-estado-publicacion--ajustada" },
   publicada: { texto: "✓ Publicada", clase: "chip-estado-publicacion--publicada" },

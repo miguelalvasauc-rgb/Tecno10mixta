@@ -13614,7 +13614,7 @@ button.badge-estado {
    de estado reutilizan los mismos pares fondo/texto ya validados AA de
    .chip-rango-promedio (verde = publicada, ámbar = ajustada a mano,
    neutro = borrador/sin calcular/sin dato) y nunca dependen solo del
-   color (✓/✎ + palabra). Botones y campo con 44 px de alto mínimo. */
+   color (✓/✎/○/– + palabra). Botones y campo con 44 px de alto mínimo. */
 .evaluacion-publicar-aviso {
   margin: 0 0 1rem;
   padding: 0.85rem 1.25rem;
@@ -13744,9 +13744,14 @@ button.badge-estado {
   font-variant-emoji: text;
 }
 
+/* Sin calcular / Sin dato: ícono + palabra + borde punteado (forma
+   distinta del borde sólido de Borrador), no solo texto gris. */
 .chip-estado-publicacion--neutro {
   background-color: var(--color-superficie-baja);
   color: var(--color-texto-suave);
+  box-shadow: none;
+  outline: 1px dashed var(--color-borde);
+  outline-offset: -1px;
 }
 
 .chip-estado-publicacion--borrador {
@@ -13765,8 +13770,39 @@ button.badge-estado {
   color: #04211D;
 }
 
+/* Sin estas reglas el <dialog> caía en el fondo blanco por defecto del
+   navegador, mientras Cancelar (.boton-secundario) y la × toman el color
+   de letra del tema: en temas oscuros/neón quedaban letra clara sobre
+   blanco. Mismo patrón angosto que #modal-confirmar-fecha. */
+#modal-confirmar-publicacion {
+  width: 92%;
+  max-width: 420px;
+  margin: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra);
+}
+
+#modal-confirmar-publicacion::backdrop {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+#modal-confirmar-publicacion-titulo {
+  margin: 0 1.8rem 0.2rem 0;
+  font-size: var(--tamano-fuente-titulo-modal);
+  color: var(--color-texto);
+}
+
+.modal-confirmar-publicacion__texto {
+  margin: 1rem 0;
+}
+
 .modal-confirmar-publicacion__texto p {
   margin: 0 0 0.6rem;
+  color: var(--color-texto);
   font-variant-emoji: text;
 }
 
