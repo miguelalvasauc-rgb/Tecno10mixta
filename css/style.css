@@ -2626,9 +2626,25 @@ summary {
   border-color: var(--color-estado-progreso);
 }
 
+/* Rediseño Etapa 1: el naranja de progreso ya no es fondo de texto —
+   solo borde y punto. Letra en --color-texto sobre --color-superficie
+   (par validado AA en todos los temas en scripts/validate_palette.js). */
 .tarjeta-trimestre[data-estado="actual"] .tarjeta-trimestre__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: inset 0 0 0 2px var(--color-estado-progreso);
+}
+
+.tarjeta-trimestre[data-estado="actual"] .tarjeta-trimestre__estado::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   background-color: var(--color-estado-progreso);
-  color: #2a1400;
 }
 
 .tarjeta-trimestre[data-estado="finalizado"] .tarjeta-trimestre__estado {
