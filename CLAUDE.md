@@ -97,3 +97,10 @@ Tecno10mixta.
    - No modificar lógica funcional (ej. Supabase Auth) salvo pedido explícito
 5. Si un resultado de 21st.dev viene con clases Tailwind o JSX en el output, señalarlo 
    y traducirlo antes de escribir cualquier archivo — nunca pegar el snippet tal cual.
+
+
+## Delegación de subagentes
+- Reconocimiento (Paso 0, ubicar código, estado actual): usar el subagente `explorer`.
+- Implementación de tareas ya aprobadas, con archivos afectados indicados: usar el subagente `implementer`.
+- Decisiones de diseño, planes y revisión de diffs: se quedan en la sesión principal.
+- Cambios triviales (una línea): hacerlos directo, sin delegar.
