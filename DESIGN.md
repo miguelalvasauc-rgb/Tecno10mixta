@@ -195,7 +195,7 @@ The four roles above were prose-only for most of the project's life: the values 
 | Token | Value | Role |
 |---|---|---|
 | `--tamano-fuente-contador-insignia` | 0.6rem (9.6px) | Circular badge counter (sidebar) |
-| `--tamano-fuente-meta-micro` | 0.6875rem (11px) | Micro-chrome: eyebrows, small dates, tiny badges |
+| `--tamano-fuente-meta-micro` | 0.75rem (12px) | Micro-chrome: eyebrows, small dates, tiny badges |
 | `--tamano-fuente-encabezado-tabla` | 0.72rem (11.5px) | Admin table headers (6 tables) |
 | `--tamano-fuente-label-sm` | 0.75rem (12px) | Badges / micro-copy (`.label-sm`) |
 | `--tamano-fuente-secundario` | 0.8rem (12.8px) | De facto secondary text — the single most-used role on the site |
@@ -228,7 +228,7 @@ Headings use sentence case, never Title Case or full uppercase — the conversat
 
 Mobile-first, built around an 8px spacing rhythm (`--espacio-base: 8px`, gutter `24px`, mobile margin `16px`, desktop margin `40px`), with a `1200px` max content width for standard sections.
 
-Navigation is fully swapped by breakpoint rather than just resized: below `1024px`, a fixed bottom bar (Inicio/Grupo/Progreso/Perfil) owns navigation and the page reserves `64px` of bottom padding for it; at `≥1024px`, a fixed `256px` left sidebar takes over and the page gains `256px` of left padding instead. There is no intermediate hybrid state — it's one or the other.
+Navigation is fully swapped by breakpoint rather than just resized: below `1024px`, a fixed bottom bar (Inicio/Estudiar/Trabajos/Perfil, see Navigation) owns navigation and the page reserves `64px` of bottom padding for it; at `≥1024px`, a fixed `256px` left sidebar takes over and the page gains `256px` of left padding instead. There is no intermediate hybrid state — it's one or the other.
 
 Content grids lean on `auto-fill`/`auto-fit` with a `minmax()` floor (`220–280px` depending on card type) rather than fixed column counts, so trimester cards, task cards, and video cards reflow naturally from one column on phones to a multi-column grid on desktop without explicit breakpoint-by-breakpoint column rules. The one deliberate exception is the "importante" announcement card, which spans 2 grid columns on desktop and collapses to 1 on narrow screens (`≤640px`) — a bento-style emphasis device for urgent avisos.
 
@@ -285,12 +285,24 @@ Buttons, cards, and badges share one tactile, rounded language: soft shadows, pi
 
 ### Navigation
 - **Desktop (`≥1024px`):** fixed `256px` left sidebar, logo desaturated to grayscale as an institutional "seal," nav links `14px`/600-weight with a `3px` left border that lights up (turquoise/secondary color) on the active route.
-- **Mobile (`<1024px`):** fixed bottom bar, 4 icon+label items (`11px` label), active/hover state changes icon+text color only — no border indicator, since there's no room for one at that scale.
+- **Mobile (`<1024px`):** fixed bottom bar (`.barra-inferior`, hidden at `≥1024px` where the sidebar/riel takes over), 4 real `<a>` links in this order: **Inicio** (`index.html`, 🏠), **Estudiar** (📘, `data-enlace="estudiar"`, fallback `href` `trimestre-1.html`), **Trabajos** (📝, `data-enlace="trabajos"`, fallback `href` `trimestre-1-practica.html`), **Perfil** (`cuenta.html`, `id="boton-inferior-perfil"`, `aria-label="Perfil"`). There are no bottom sheets any more: the earlier 5-option bar and its three sheets (`#sheet-inicio`, `#sheet-trimestre`, `#sheet-perfil`) plus `#sheet-backdrop` were removed from all 14 pages (`activarSheetsMovil()` and the `.bottom-sheet`/`.sheet-backdrop` CSS still exist in the code, pending cleanup). The bar's HTML is identical on the 14 pages except for the active option; `admin.html` keeps its own 4-link bar (Inicio, Glosario, FAQ, Padres) and is not part of this pattern.
+  - **Dynamic targets:** `actualizarEnlacesEstudiarTrabajos()` rewrites Estudiar/Trabajos to `trimestre-N.html` / `trimestre-N-practica.html`, where N is the page's own `TRIMESTRE_ACTUAL` if it is 1–3; otherwise the unlocked trimester; otherwise the cached one; otherwise 1.
+  - **Size:** each option is `min-height: 56px` (≥ 44px touch target), label `var(--tamano-fuente-meta-micro)` (`0.75rem`, 12px), and the bar adds `env(safe-area-inset-bottom)` as bottom padding.
+  - **Active option map:** `index.html` → Inicio; `trimestre-1/2/3.html` → Estudiar; `trimestre-1/2/3-practica.html` → Trabajos; `cuenta.html` → Perfil; `faq`, `guia`, `glosario`, `padres`, `progreso`, `sitemap` → none. It is marked in the static HTML with both `aria-current="page"` and `.barra-inferior__item--activo`.
+  - **Active style:** text `var(--color-texto)`, `font-weight: 700` on the label, and a `3px` indicator stripe at the top (`::before`, `background-color: currentColor`); inactive options use `--color-texto-suave`. It never relies on color alone (weight + stripe). `--color-texto` was chosen over the accent because, measured against the bar background (`--color-superficie-baja`) across the 20 themes: `--color-acento` fails AA (< 4.5:1) in 9 themes (claro 2.19, rosa-pastel 2.10, bosque-calido 4.35, menta-tecnologico 2.77, editorial-sepia 3.55, dia-de-muertos 3.57, independencia 2.10, amor-y-amistad 1.67, fin-de-curso 1.27); `--md-secondary` (`#006b5a`, not redefined by any theme) gives only 2.0–2.8:1 in the 11 dark themes; `--color-texto` passes in all 20 (minimum 10.34:1, editorial-sepia).
+  - **Known pending:** the bar's `:hover` (pointer devices only) still uses `--md-secondary`, which has low contrast in dark themes.
+  - **Perfil avatar:** `actualizarAvatarPerfil()` paints the student's initial (`.riel__avatar`, reduced to `1.5rem` inside `.barra-inferior__icono`) or 👤 inside `.barra-inferior__icono`, keeping the "Perfil" text visible; no `innerHTML`. On the desktop riel (`#riel-boton-perfil`) behavior is unchanged.
+  - **Accepted losses until Etapa 3:** the trimester pill on mobile and the shortcuts to sections / Teoría-Práctica selector that lived in the old Trimestre sheet. Theme and text size on mobile now live in `cuenta.html` (below), not in a Perfil sheet; the group and "Estás viendo" state live in their own bar.
+
+### Cuenta page — Personalización and Ayuda
+`cuenta.html` hosts two blocks outside the login/session panels (visible with or without a session), after the session panels (Etapa 1B, group 1):
+- **🎨 Personalización** (`.cuenta-personalizacion`): the theme grid (`#cuenta-tema-grid`, filled by `construirGridTemas()`) plus the text-size A−/A+ control (`[data-control-escala-texto]`, filled by `activarControlEscalaTexto()`; buttons `44×44px`, container `max-width: 20rem`). The help copy switches by session: "Se guarda en tu cuenta…" with a session, "Se guarda en este navegador." without one. This is now the mobile place to change theme and text size.
+- **❓ Ayuda** (`#cuenta-ayuda`, same container class): `.boton-secundario` links to Mi progreso (`progreso.html`), Guía del alumno, Preguntas frecuentes, Glosario, Para padres and Mapa del sitio. The Mi progreso link moved here from `#panel-sesion-activa` so it is not duplicated.
 
 ### Modals
 Native `<dialog>` throughout (detail modal, group-switch modal, profile modal) — `12–16px` radius, ambient shadow, `55%`-black backdrop. Deliberately never overrides `position`, since the browser's own `dialog:modal` centering (`fixed` + `inset:0` + `margin:auto`) already does the job; overriding it breaks the focus-on-open scroll behavior.
 
-The mobile bottom-sheet pattern (`.bottom-sheet`/`.sheet-backdrop`) reuses the same black-scrim principle at lower opacities (`25%`/`50%`) rather than the dialog's `55%` — same idea, lighter touch for a partial-height sheet that shares the screen with visible content instead of fully covering it.
+The `.bottom-sheet`/`.sheet-backdrop` classes (mobile partial-height sheets, black scrim at `25%`/`50%` instead of the dialog's `55%`) are no longer used by any page since Etapa 1B removed the sheets from the bottom bar; their CSS and `activarSheetsMovil()` remain only until the pending cleanup.
 
 ### Accordion (rúbricas / FAQ)
 `<details>/<summary>` native disclosure, no JS state management needed. A turquoise chevron rotates `180deg` on open; rubric levels inside get their own left-border color per level (excelente/bueno/regular/deficiente), reusing the same status-color logic as everywhere else in the system.
