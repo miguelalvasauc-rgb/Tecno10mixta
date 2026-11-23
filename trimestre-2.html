@@ -211,167 +211,26 @@
 
   <!-- ===================== BARRA INFERIOR (móvil <1024px) ===================== -->
   <nav class="barra-inferior" aria-label="Navegación móvil">
-    <button type="button" id="boton-inferior-inicio" class="barra-inferior__item" aria-haspopup="true" aria-expanded="false" aria-controls="sheet-inicio" aria-label="Inicio">
+    <a href="index.html" class="barra-inferior__item">
       <span class="barra-inferior__icono" aria-hidden="true">🏠</span>
       <span class="barra-inferior__texto">Inicio</span>
-    </button>
+    </a>
 
-    <a href="trimestre-2-practica.html#tareas" data-enlace="tareas" class="barra-inferior__item">
+    <a href="trimestre-1.html" data-enlace="estudiar" class="barra-inferior__item barra-inferior__item--activo" aria-current="page">
+      <span class="barra-inferior__icono" aria-hidden="true">📘</span>
+      <span class="barra-inferior__texto">Estudiar</span>
+    </a>
+
+    <a href="trimestre-1-practica.html" data-enlace="trabajos" class="barra-inferior__item">
       <span class="barra-inferior__icono" aria-hidden="true">📝</span>
-      <span class="barra-inferior__texto">Tareas</span>
+      <span class="barra-inferior__texto">Trabajos</span>
     </a>
 
-    <a href="progreso.html" class="barra-inferior__item">
-      <span class="barra-inferior__icono" aria-hidden="true">📊</span>
-      <span class="barra-inferior__texto">Progreso</span>
-    </a>
-
-    <button type="button" id="boton-inferior-trimestre" class="barra-inferior__item" aria-haspopup="true" aria-expanded="false" aria-controls="sheet-trimestre" aria-label="Curso">
-      <span class="barra-inferior__icono-envoltura">
-        <span class="barra-inferior__icono" aria-hidden="true">📘</span>
-        <span class="riel__badge trimestre-badge" aria-hidden="true">2</span>
-      </span>
-      <span class="barra-inferior__texto">Curso</span>
-    </button>
-
-    <button type="button" id="boton-inferior-perfil" class="barra-inferior__item" aria-haspopup="true" aria-expanded="false" aria-controls="sheet-perfil" aria-label="Perfil">
+    <a href="cuenta.html" id="boton-inferior-perfil" aria-label="Perfil" class="barra-inferior__item">
       <span class="barra-inferior__icono" aria-hidden="true">👤</span>
       <span class="barra-inferior__texto">Perfil</span>
-    </button>
+    </a>
   </nav>
-
-  <div id="sheet-backdrop" class="sheet-backdrop" hidden></div>
-
-  <div id="sheet-inicio" class="bottom-sheet" role="group" aria-label="Inicio" hidden>
-    <div class="bottom-sheet__manija" aria-hidden="true"></div>
-    <p class="riel-flyout__titulo">Inicio</p>
-    <div class="riel-flyout__lista nav-anclas">
-      <a href="index.html#avisos" class="riel-flyout__enlace">
-        <span aria-hidden="true">📢</span><span>Avisos</span>
-      </a>
-      <a href="index.html#calendario" class="riel-flyout__enlace">
-        <span aria-hidden="true">📅</span><span>Calendario</span>
-      </a>
-      <a href="index.html#perfil-docente" class="riel-flyout__enlace">
-        <span aria-hidden="true">👤</span><span>Conoce a tu profesor</span>
-      </a>
-      <a href="index.html#horario-clases" class="riel-flyout__enlace">
-        <span aria-hidden="true">🕐</span><span>Horario de clases</span>
-      </a>
-      <a href="index.html#criterios-evaluacion" class="riel-flyout__enlace">
-        <span aria-hidden="true">📊</span><span>Criterios de evaluación</span>
-      </a>
-      <a href="index.html#reglamento-taller" class="riel-flyout__enlace">
-        <span aria-hidden="true">📋</span><span>Reglamento</span>
-      </a>
-      <a href="index.html#lista-materiales" class="riel-flyout__enlace">
-        <span aria-hidden="true">🎒</span><span>Materiales</span>
-      </a>
-      <a href="index.html#contacto" class="riel-flyout__enlace">
-        <span aria-hidden="true">📧</span><span>Contacto</span>
-      </a>
-    </div>
-  </div>
-
-  <div id="sheet-trimestre" class="bottom-sheet" role="group" aria-label="Trimestre" hidden>
-    <div class="bottom-sheet__manija" aria-hidden="true"></div>
-    <div class="riel-flyout__titulo-fila">
-      <p class="riel-flyout__titulo" data-texto-trimestre>Trimestre 2</p>
-      <span class="riel-flyout__pill-activo pill-activo-trimestre" hidden>Activo</span>
-    </div>
-    <div class="riel-flyout__trimestre-tabs" role="tablist" aria-label="Selector de trimestre">
-      <a href="trimestre-1.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="1">1°</a>
-      <a href="trimestre-2.html" class="riel-flyout__trimestre-tab riel-flyout__trimestre-tab--activo" role="tab" aria-selected="true" aria-current="page" data-trimestre-tab="2">2°</a>
-      <a href="trimestre-3.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="3">3°</a>
-    </div>
-    <div class="riel-flyout__modo-selector" role="group" aria-label="Elige Teoría o Práctica" data-modo-defecto="teoria">
-      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="teoria" aria-pressed="false">
-        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">📖</span>
-        <span class="riel-flyout__modo-tarjeta__titulo">Teoría</span>
-        <span class="riel-flyout__modo-tarjeta__conteo">4 secciones</span>
-      </button>
-      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="practica" aria-pressed="false">
-        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">✍️</span>
-        <span class="riel-flyout__modo-tarjeta__titulo">Práctica</span>
-        <span class="riel-flyout__modo-tarjeta__conteo">6 secciones</span>
-      </button>
-    </div>
-    <div class="riel-flyout__lista nav-anclas" data-modo-lista="teoria">
-      <a href="#temario" data-enlace="temario" class="riel-flyout__enlace">
-        <span aria-hidden="true">📘</span><span>Temario</span>
-      </a>
-      <a href="#infografias" data-enlace="infografias" class="riel-flyout__enlace">
-        <span aria-hidden="true">🎨</span><span>Infografías</span>
-      </a>
-      <a href="#presentaciones" data-enlace="presentaciones" class="riel-flyout__enlace">
-        <span aria-hidden="true">📽️</span><span>Presentaciones</span>
-      </a>
-      <a href="#videos" data-enlace="videos" class="riel-flyout__enlace">
-        <span aria-hidden="true">🎬</span><span>Videos</span>
-      </a>
-    </div>
-    <div class="riel-flyout__lista nav-anclas" data-modo-lista="practica" hidden>
-      <a href="trimestre-2-practica.html#proximas-fechas-trimestre" data-enlace="proximas-fechas-trimestre" class="riel-flyout__enlace">
-        <span aria-hidden="true">📅</span><span>Próximas fechas</span>
-      </a>
-      <a href="trimestre-2-practica.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
-        <span aria-hidden="true">📝</span><span>Tareas</span>
-      </a>
-      <a href="trimestre-2-practica.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
-        <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
-      </a>
-      <a href="trimestre-2-practica.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
-        <span aria-hidden="true">📋</span><span>Rúbricas</span>
-      </a>
-      <a href="trimestre-2-practica.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
-        <span aria-hidden="true">🎯</span><span>Actividades</span>
-      </a>
-      <a href="trimestre-2-practica.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
-        <span aria-hidden="true">🚀</span><span>Proyectos</span>
-      </a>
-    </div>
-  </div>
-
-  <div id="sheet-perfil" class="bottom-sheet" role="group" aria-label="Perfil" hidden>
-    <div class="bottom-sheet__manija" aria-hidden="true"></div>
-    <p class="riel-flyout__titulo">Perfil</p>
-    <div class="sheet-perfil__cabecera">
-      <span id="sheet-perfil-avatar"><span aria-hidden="true">👤</span></span>
-      <span class="etiqueta-nivel riel-flyout__nivel perfil-nivel-pill" hidden></span>
-    </div>
-    <a href="progreso.html" class="riel-flyout__enlace">
-      <span aria-hidden="true">📊</span><span>Mi progreso</span>
-    </a>
-    <a href="cuenta.html" class="riel-flyout__enlace">
-      <span aria-hidden="true">🧑‍🎓</span><span>Mi cuenta</span>
-    </a>
-    <a href="guia.html" class="riel-flyout__enlace">
-      <span aria-hidden="true">📖</span><span>Guía del alumno</span>
-    </a>
-    <a href="glosario.html" class="riel-flyout__enlace">
-      <span aria-hidden="true">📚</span><span>Glosario</span>
-    </a>
-    <a href="faq.html" class="riel-flyout__enlace">
-      <span aria-hidden="true">❓</span><span>FAQ</span>
-    </a>
-    <a href="padres.html" class="riel-flyout__enlace">
-      <span aria-hidden="true">👨‍👩‍👧‍👦</span><span>Para Padres</span>
-    </a>
-    <p class="riel-flyout__titulo bottom-sheet__subtitulo">Ajustes</p>
-    <div class="campo-grupo riel-flyout__campo campo-grupo-selector-slot">
-      <label for="selector-grupo-movil">Grupo</label>
-      <select id="selector-grupo-movil" class="selector-grupo-control" aria-label="Filtrar contenido por grupo">
-        <option value="todos">Todos los grupos</option>
-        <option value="3C">3°C</option>
-        <option value="3E">3°E</option>
-      </select>
-    </div>
-    <p class="riel-flyout__texto-grupo texto-grupo-alumno-slot" hidden></p>
-    <button type="button" class="boton-tema riel-flyout__tema" aria-haspopup="dialog" aria-label="Elegir tema">
-      <span class="boton-tema__icono" aria-hidden="true">🌙</span>
-      <span class="boton-tema__texto">Elegir tema</span>
-    </button>
-  </div>
 
   <!-- "Modo Demo" (Fase 5, ampliación a páginas públicas): franja fija
        superior, persistente (SIN autodesaparición, fuera del sistema de

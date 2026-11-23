@@ -12135,7 +12135,6 @@ async function sincronizarTemaConCuenta(temaPreferido) {
 // disparadores reales de las demás páginas.
 function actualizarAvatarPerfil(nombre) {
   document.querySelectorAll("#riel-boton-perfil, #boton-inferior-perfil, #sheet-perfil-avatar").forEach((destino) => {
-    destino.textContent = "";
     const contenido = document.createElement("span");
     contenido.setAttribute("aria-hidden", "true");
     if (nombre) {
@@ -12144,7 +12143,21 @@ function actualizarAvatarPerfil(nombre) {
     } else {
       contenido.textContent = "👤";
     }
-    destino.appendChild(contenido);
+    // En la barra inferior el avatar va DENTRO de .barra-inferior__icono y
+    // el texto "Perfil" se conserva; en el resto, el destino se vacía.
+    const iconoBarra = destino.id === "boton-inferior-perfil"
+      ? destino.querySelector(".barra-inferior__icono")
+      : null;
+    if (iconoBarra) {
+      if (nombre) {
+        iconoBarra.replaceChildren(contenido);
+      } else {
+        iconoBarra.textContent = "👤";
+      }
+    } else {
+      destino.textContent = "";
+      destino.appendChild(contenido);
+    }
   });
 }
 

@@ -10303,6 +10303,7 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
   justify-content: center;
   gap: 0.15rem;
   min-height: 56px;
+  position: relative; /* ancla la raya del estado activo */
   background: none;
   border: none;
   text-decoration: none;
@@ -10326,8 +10327,36 @@ body.modo-demo-toast-visible .barra-progreso-lectura {
    Trimestre, Perfil son <button> con aria-expanded; FAQ/Padres son <a>
    simples y nunca lo tienen). */
 .barra-inferior__item--activo,
+.barra-inferior__item[aria-current="page"],
 .barra-inferior__item[aria-expanded="true"] {
-  color: var(--md-secondary);
+  color: var(--color-texto);
+}
+
+/* Avatar con inicial dentro del ícono de Perfil: más chico que el del riel
+   (32px) para no alterar la altura de la barra. */
+.barra-inferior__icono .riel__avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: var(--tamano-fuente-meta-micro);
+}
+
+/* Opción activa (página actual): texto en negrita + raya de 3px arriba, en
+   el mismo color del ítem (currentColor). Sin transición a propósito. */
+.barra-inferior__item--activo .barra-inferior__texto,
+.barra-inferior__item[aria-current="page"] .barra-inferior__texto {
+  font-weight: 700;
+}
+
+.barra-inferior__item--activo::before,
+.barra-inferior__item[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background-color: currentColor;
 }
 
 @media (hover: hover) and (pointer: fine) {
