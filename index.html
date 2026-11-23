@@ -261,6 +261,9 @@
           proyectos y videos correspondientes a ese periodo.
         </p>
       </div>
+      <div id="inicio-saludo" class="inicio-saludo" hidden></div>
+      <div id="inicio-datos" class="inicio-datos" hidden></div>
+      <div id="mi-semana" class="mi-semana" role="region" aria-label="Mi semana" hidden></div>
     </section>
 
     <!-- ===================== TU PROGRESO ===================== -->
@@ -295,38 +298,6 @@
           <a href="progreso.html" class="panel-progreso__enlace">Ver progreso detallado por trimestre →</a>
         </div>
       </div>
-    </section>
-
-    <!-- ===================== TRIMESTRES ===================== -->
-    <section id="trimestres" class="seccion seccion--alterna" data-indice="Trimestres">
-      <div class="seccion__encabezado">
-        <h2>Elige tu trimestre</h2>
-        <p>Cada trimestre tiene sus propias rúbricas, tareas, actividades, proyectos y videos.</p>
-      </div>
-      <!-- data-estado lo calcula actualizarEstadoTarjetasTrimestre() en
-           js/main.js a partir de ultimoTrimestreVisto (no hay un
-           calendario académico real en los datos de ejemplo). -->
-      <div class="cuadricula-trimestres">
-        <a href="trimestre-1.html" class="tarjeta-trimestre" data-trimestre="1">
-          <span class="tarjeta-trimestre__estado"></span>
-          <span class="tarjeta-trimestre__numero" aria-hidden="true">1</span>
-          <h3>Trimestre 1</h3>
-          <p>Rúbricas, tareas, actividades, proyectos y videos del primer trimestre.</p>
-        </a>
-        <a href="trimestre-2.html" class="tarjeta-trimestre" data-trimestre="2">
-          <span class="tarjeta-trimestre__estado"></span>
-          <span class="tarjeta-trimestre__numero" aria-hidden="true">2</span>
-          <h3>Trimestre 2</h3>
-          <p>Rúbricas, tareas, actividades, proyectos y videos del segundo trimestre.</p>
-        </a>
-        <a href="trimestre-3.html" class="tarjeta-trimestre" data-trimestre="3">
-          <span class="tarjeta-trimestre__estado"></span>
-          <span class="tarjeta-trimestre__numero" aria-hidden="true">3</span>
-          <h3>Trimestre 3</h3>
-          <p>Rúbricas, tareas, actividades, proyectos y videos del tercer trimestre.</p>
-        </a>
-      </div>
-      <p id="mensaje-trimestre-bloqueado" class="mensaje-trimestre-bloqueado" role="status" aria-live="polite"></p>
     </section>
 
     <!-- ===================== AVISOS ===================== -->
@@ -369,31 +340,103 @@
       <div id="consulta-alumno-contenedor" aria-live="polite"></div>
     </section>
 
-    <!-- ===================== ENCUADRE ANUAL ===================== -->
-    <section id="encuadre-anual" class="seccion seccion--alterna" data-indice="Encuadre">
+    <!-- ===================== PROGRESO DEL TRIMESTRE ===================== -->
+    <section id="progreso-trimestre" class="seccion" aria-labelledby="titulo-progreso-trimestre" hidden>
       <div class="seccion__encabezado">
-        <h2>📋 Encuadre Anual 2026-2027</h2>
-        <p>Cómo trabajaremos este ciclo escolar: para alumnos y padres de familia.</p>
+        <h2 id="titulo-progreso-trimestre">Tu progreso del trimestre</h2>
       </div>
+    </section>
 
-      <article class="tarjeta-presentacion borde-acento-estatico">
-        <div class="tarjeta-presentacion__marco">
-          <!-- Placeholder: no se carga el iframe hasta que se hace clic,
-               igual que en renderizarPresentaciones() (js/main.js), para
-               no afectar el rendimiento de la portada. -->
-          <div class="tarjeta-presentacion__placeholder">
-            <button type="button" id="boton-ver-encuadre-anual" class="tarjeta-presentacion__boton-ver">▶ Ver presentación</button>
-          </div>
-        </div>
+    <!-- ===================== TRIMESTRES ===================== -->
+    <section id="trimestres" class="seccion seccion--alterna" data-indice="Trimestres">
+      <div class="seccion__encabezado">
+        <h2>Elige tu trimestre</h2>
+        <p>Cada trimestre tiene sus propias rúbricas, tareas, actividades, proyectos y videos.</p>
+      </div>
+      <!-- data-estado lo calcula actualizarEstadoTarjetasTrimestre() en
+           js/main.js a partir de ultimoTrimestreVisto (no hay un
+           calendario académico real en los datos de ejemplo). -->
+      <div class="cuadricula-trimestres">
+        <a href="trimestre-1.html" class="tarjeta-trimestre" data-trimestre="1">
+          <span class="tarjeta-trimestre__estado"></span>
+          <span class="tarjeta-trimestre__numero" aria-hidden="true">1</span>
+          <h3>Trimestre 1</h3>
+          <p>Rúbricas, tareas, actividades, proyectos y videos del primer trimestre.</p>
+        </a>
+        <a href="trimestre-2.html" class="tarjeta-trimestre" data-trimestre="2">
+          <span class="tarjeta-trimestre__estado"></span>
+          <span class="tarjeta-trimestre__numero" aria-hidden="true">2</span>
+          <h3>Trimestre 2</h3>
+          <p>Rúbricas, tareas, actividades, proyectos y videos del segundo trimestre.</p>
+        </a>
+        <a href="trimestre-3.html" class="tarjeta-trimestre" data-trimestre="3">
+          <span class="tarjeta-trimestre__estado"></span>
+          <span class="tarjeta-trimestre__numero" aria-hidden="true">3</span>
+          <h3>Trimestre 3</h3>
+          <p>Rúbricas, tareas, actividades, proyectos y videos del tercer trimestre.</p>
+        </a>
+      </div>
+      <p id="mensaje-trimestre-bloqueado" class="mensaje-trimestre-bloqueado" role="status" aria-live="polite"></p>
+    </section>
 
-        <div class="tarjeta-presentacion__info">
-          <div>
-            <h3>Encuadre Anual 2026-2027</h3>
-            <p>Forma de trabajo, sistema de sellos, reglamento de cómputo, uso de IA y cómo se calcula el promedio final.</p>
+    <!-- ===================== CALENDARIO ===================== -->
+    <section id="calendario" class="seccion seccion--alterna" data-indice="Calendario">
+      <div class="seccion__encabezado">
+        <h2>Calendario</h2>
+        <p>Fechas importantes del bimestre.</p>
+      </div>
+      <div class="calendario">
+        <div class="calendario__panel">
+          <div class="calendario__nav">
+            <button type="button" id="calendario-mes-anterior" class="calendario__flecha" aria-label="Mes anterior">◀</button>
+            <div id="calendario-cabecera" class="calendario__cabecera"></div>
+            <button type="button" id="calendario-mes-siguiente" class="calendario__flecha" aria-label="Mes siguiente">▶</button>
           </div>
-          <a class="tarjeta-presentacion__abrir" href="https://gamma.app/embed/d2hobcvjqltc3q7" target="_blank" rel="noopener">Abrir presentación completa ↗</a>
+          <div id="calendario-grid" class="calendario__grid" role="grid" aria-label="Calendario mensual de fechas importantes"></div>
+
+          <!-- Leyenda de tipos de día del ciclo escolar (ver
+               CALENDARIO_ESCOLAR_2026_2027 en js/main.js); es independiente
+               del punto de "hay algo entregable" que ya existía. -->
+          <ul class="calendario__leyenda" aria-label="Leyenda de tipos de día del ciclo escolar">
+            <li><span class="calendario__leyenda-color calendario__leyenda-color--inicio-fin" aria-hidden="true"></span>Inicio/Fin de clases</li>
+            <li><span class="calendario__leyenda-color calendario__leyenda-color--vacaciones" aria-hidden="true"></span>Vacaciones</li>
+            <li><span class="calendario__leyenda-color calendario__leyenda-color--cte-intensiva" aria-hidden="true"></span>CTE Fase Intensiva (sin clases)</li>
+            <li><span class="calendario__leyenda-color calendario__leyenda-color--cte-ordinaria" aria-hidden="true"></span>CTE Sesión Ordinaria (sin clases)</li>
+            <li><span class="calendario__leyenda-color calendario__leyenda-color--suspension" aria-hidden="true"></span>Suspensión de labores</li>
+            <li><span class="calendario__leyenda-color calendario__leyenda-color--evaluacion" aria-hidden="true"></span>Evaluación</li>
+          </ul>
         </div>
-      </article>
+        <div class="calendario__eventos">
+          <h3>Próximas fechas</h3>
+
+          <!-- Filtro por tipo de evento: mismo patrón que
+               .materiales-tabs-bloque (Lista de materiales) — pastillas con
+               estado activo/inactivo, oculta items de #lista-eventos con
+               "hidden" sin quitarlos del DOM — ver activarFiltroTipoEventos()
+               en js/main.js. Solo afecta a eventos_calendario, no a tareas/
+               actividades/proyectos. -->
+          <div id="calendario-tabs-tipo" class="calendario-tabs-tipo" role="tablist" aria-label="Filtrar por tipo de evento">
+            <button type="button" class="calendario-tabs-tipo__boton calendario-tabs-tipo__boton--activo"
+                    id="calendario-tab-tipo-todos" role="tab" aria-selected="true" data-tipo="todos">
+              Todos
+            </button>
+            <button type="button" class="calendario-tabs-tipo__boton"
+                    id="calendario-tab-tipo-escuela" role="tab" aria-selected="false" data-tipo="escuela">
+              🏫 Escuela
+            </button>
+            <button type="button" class="calendario-tabs-tipo__boton"
+                    id="calendario-tab-tipo-evaluacion" role="tab" aria-selected="false" data-tipo="evaluacion">
+              📝 Evaluación
+            </button>
+            <button type="button" class="calendario-tabs-tipo__boton"
+                    id="calendario-tab-tipo-general" role="tab" aria-selected="false" data-tipo="general">
+              📌 General
+            </button>
+          </div>
+
+          <ul id="lista-eventos" class="lista-eventos" aria-live="polite"></ul>
+        </div>
+      </div>
     </section>
 
     <!-- ===================== BENTO: PANEL DE INICIO ===================== -->
@@ -405,34 +448,6 @@
          el orden del DOM — ver .bento-portada en css/style.css. Ningún
          id/clase/función JS existente cambió, solo el contenedor. -->
     <div class="bento-portada">
-
-      <!-- Franja completa (4×1) — el <section id="examen-diagnostico">
-           sigue siendo el que actualizarVisibilidadBannerExamenDiagnostico()
-           oculta por completo (.hidden) cuando ya no aplica; con la fila
-           vacía, la fila del grid colapsa sola (auto-size), sin JS extra. -->
-      <section id="examen-diagnostico" class="bento-celda bento-celda--banner">
-        <div class="seccion__encabezado">
-          <h2>📝 Examen de Diagnóstico</h2>
-          <p>Antes de empezar el ciclo, cuéntanos qué sabes y qué te gustaría aprender.</p>
-        </div>
-        <div id="banner-examen-diagnostico" class="tarjeta-examen-diagnostico borde-animado-acento">
-          <div class="tarjeta-examen-diagnostico__texto">
-            <h3>Responde el examen de diagnóstico</h3>
-            <p>Cuestionario sencillo de diagnóstico (15 a 20 minutos) para conocer tus gustos y aprendizajes previos. No requiere estudio previo ni afecta tu calificación.</p>
-          </div>
-          <a href="https://forms.gle/HhGcroSo3gAFbQBn6" target="_blank" rel="noopener"
-             class="tarjeta-examen-diagnostico__boton" id="enlace-examen-diagnostico">
-            Realizar examen ↗
-          </a>
-          <button type="button" id="boton-ya-lo-conteste"
-                  class="tarjeta-examen-diagnostico__descartar" hidden>
-            Ya lo contesté, no volver a mostrar
-          </button>
-          <p id="texto-inicia-sesion-examen" class="tarjeta-examen-diagnostico__aviso" hidden>
-            Inicia sesión para que esto no se te vuelva a recordar.
-          </p>
-        </div>
-      </section>
 
       <!-- Celda corta (1×1) -->
       <section id="horario-clases" class="bento-celda bento-celda--horario">
@@ -462,7 +477,7 @@
             </h3>
             <span id="criterio-info-tareas" class="sr-only">Entregables para realizar en casa y subir a la plataforma.</span>
             <div class="criterio-tarjeta__barra">
-              <div class="criterio-tarjeta__relleno" style="width: 30%;"></div>
+              <div class="criterio-tarjeta__relleno criterio-tarjeta__relleno--30"></div>
             </div>
           </div>
 
@@ -477,7 +492,7 @@
             </h3>
             <span id="criterio-info-actividades" class="sr-only">Trabajo continuo en el taller y sistema de sellos en cuaderno.</span>
             <div class="criterio-tarjeta__barra">
-              <div class="criterio-tarjeta__relleno" style="width: 30%;"></div>
+              <div class="criterio-tarjeta__relleno criterio-tarjeta__relleno--30"></div>
             </div>
           </div>
 
@@ -493,7 +508,7 @@
             </h3>
             <span id="criterio-info-proyectos" class="sr-only">Prácticas integradoras de mayor peso al final del periodo.</span>
             <div class="criterio-tarjeta__barra">
-              <div class="criterio-tarjeta__relleno" style="width: 40%;"></div>
+              <div class="criterio-tarjeta__relleno criterio-tarjeta__relleno--40"></div>
             </div>
           </div>
         </div>
@@ -501,6 +516,34 @@
         <p class="criterios-nota">
           📋 El Examen de Diagnóstico no tiene valor en la calificación; solo sirve para conocer tu punto de partida al inicio del ciclo.
         </p>
+      </section>
+
+      <!-- Franja completa (4×1) — el <section id="examen-diagnostico">
+           sigue siendo el que actualizarVisibilidadBannerExamenDiagnostico()
+           oculta por completo (.hidden) cuando ya no aplica; con la fila
+           vacía, la fila del grid colapsa sola (auto-size), sin JS extra. -->
+      <section id="examen-diagnostico" class="bento-celda bento-celda--banner">
+        <div class="seccion__encabezado">
+          <h2>📝 Examen de Diagnóstico</h2>
+          <p>Antes de empezar el ciclo, cuéntanos qué sabes y qué te gustaría aprender.</p>
+        </div>
+        <div id="banner-examen-diagnostico" class="tarjeta-examen-diagnostico borde-animado-acento">
+          <div class="tarjeta-examen-diagnostico__texto">
+            <h3>Responde el examen de diagnóstico</h3>
+            <p>Cuestionario sencillo de diagnóstico (15 a 20 minutos) para conocer tus gustos y aprendizajes previos. No requiere estudio previo ni afecta tu calificación.</p>
+          </div>
+          <a href="https://forms.gle/HhGcroSo3gAFbQBn6" target="_blank" rel="noopener"
+             class="tarjeta-examen-diagnostico__boton" id="enlace-examen-diagnostico">
+            Realizar examen ↗
+          </a>
+          <button type="button" id="boton-ya-lo-conteste"
+                  class="tarjeta-examen-diagnostico__descartar" hidden>
+            Ya lo contesté, no volver a mostrar
+          </button>
+          <p id="texto-inicia-sesion-examen" class="tarjeta-examen-diagnostico__aviso" hidden>
+            Inicia sesión para que esto no se te vuelva a recordar.
+          </p>
+        </div>
       </section>
 
       <!-- Celda mediana (2×1) con expansión in-place: primeras 4 reglas
@@ -545,64 +588,31 @@
 
     </div>
 
-    <!-- ===================== CALENDARIO ===================== -->
-    <section id="calendario" class="seccion seccion--alterna" data-indice="Calendario">
+    <!-- ===================== ENCUADRE ANUAL ===================== -->
+    <section id="encuadre-anual" class="seccion seccion--alterna" data-indice="Encuadre">
       <div class="seccion__encabezado">
-        <h2>Calendario</h2>
-        <p>Fechas importantes del bimestre.</p>
+        <h2>📋 Encuadre Anual 2026-2027</h2>
+        <p>Cómo trabajaremos este ciclo escolar: para alumnos y padres de familia.</p>
       </div>
-      <div class="calendario">
-        <div class="calendario__panel">
-          <div class="calendario__nav">
-            <button type="button" id="calendario-mes-anterior" class="calendario__flecha" aria-label="Mes anterior">◀</button>
-            <div id="calendario-cabecera" class="calendario__cabecera"></div>
-            <button type="button" id="calendario-mes-siguiente" class="calendario__flecha" aria-label="Mes siguiente">▶</button>
+
+      <article class="tarjeta-presentacion borde-acento-estatico">
+        <div class="tarjeta-presentacion__marco">
+          <!-- Placeholder: no se carga el iframe hasta que se hace clic,
+               igual que en renderizarPresentaciones() (js/main.js), para
+               no afectar el rendimiento de la portada. -->
+          <div class="tarjeta-presentacion__placeholder">
+            <button type="button" id="boton-ver-encuadre-anual" class="tarjeta-presentacion__boton-ver">▶ Ver presentación</button>
           </div>
-          <div id="calendario-grid" class="calendario__grid" role="grid" aria-label="Calendario mensual de fechas importantes"></div>
-
-          <!-- Leyenda de tipos de día del ciclo escolar (ver
-               CALENDARIO_ESCOLAR_2026_2027 en js/main.js); es independiente
-               del punto de "hay algo entregable" que ya existía. -->
-          <ul class="calendario__leyenda" aria-label="Leyenda de tipos de día del ciclo escolar">
-            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-inicio-fin)" aria-hidden="true"></span>Inicio/Fin de clases</li>
-            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-vacaciones)" aria-hidden="true"></span>Vacaciones</li>
-            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-cte-intensiva)" aria-hidden="true"></span>CTE Fase Intensiva (sin clases)</li>
-            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-cte-ordinaria)" aria-hidden="true"></span>CTE Sesión Ordinaria (sin clases)</li>
-            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-suspension)" aria-hidden="true"></span>Suspensión de labores</li>
-            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-evaluacion)" aria-hidden="true"></span>Evaluación</li>
-          </ul>
         </div>
-        <div class="calendario__eventos">
-          <h3>Próximas fechas</h3>
 
-          <!-- Filtro por tipo de evento: mismo patrón que
-               .materiales-tabs-bloque (Lista de materiales) — pastillas con
-               estado activo/inactivo, oculta items de #lista-eventos con
-               "hidden" sin quitarlos del DOM — ver activarFiltroTipoEventos()
-               en js/main.js. Solo afecta a eventos_calendario, no a tareas/
-               actividades/proyectos. -->
-          <div id="calendario-tabs-tipo" class="calendario-tabs-tipo" role="tablist" aria-label="Filtrar por tipo de evento">
-            <button type="button" class="calendario-tabs-tipo__boton calendario-tabs-tipo__boton--activo"
-                    id="calendario-tab-tipo-todos" role="tab" aria-selected="true" data-tipo="todos">
-              Todos
-            </button>
-            <button type="button" class="calendario-tabs-tipo__boton"
-                    id="calendario-tab-tipo-escuela" role="tab" aria-selected="false" data-tipo="escuela">
-              🏫 Escuela
-            </button>
-            <button type="button" class="calendario-tabs-tipo__boton"
-                    id="calendario-tab-tipo-evaluacion" role="tab" aria-selected="false" data-tipo="evaluacion">
-              📝 Evaluación
-            </button>
-            <button type="button" class="calendario-tabs-tipo__boton"
-                    id="calendario-tab-tipo-general" role="tab" aria-selected="false" data-tipo="general">
-              📌 General
-            </button>
+        <div class="tarjeta-presentacion__info">
+          <div>
+            <h3>Encuadre Anual 2026-2027</h3>
+            <p>Forma de trabajo, sistema de sellos, reglamento de cómputo, uso de IA y cómo se calcula el promedio final.</p>
           </div>
-
-          <ul id="lista-eventos" class="lista-eventos" aria-live="polite"></ul>
+          <a class="tarjeta-presentacion__abrir" href="https://gamma.app/embed/d2hobcvjqltc3q7" target="_blank" rel="noopener">Abrir presentación completa ↗</a>
         </div>
-      </div>
+      </article>
     </section>
 
     <!-- ===================== PERFIL DEL DOCENTE ===================== -->

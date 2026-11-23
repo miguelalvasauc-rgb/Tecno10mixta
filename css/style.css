@@ -5801,6 +5801,12 @@ summary {
   border-radius: var(--radio-sm);
   flex-shrink: 0;
 }
+.calendario__leyenda-color--inicio-fin { background-color: var(--dia-inicio-fin); }
+.calendario__leyenda-color--vacaciones { background-color: var(--dia-vacaciones); }
+.calendario__leyenda-color--cte-intensiva { background-color: var(--dia-cte-intensiva); }
+.calendario__leyenda-color--cte-ordinaria { background-color: var(--dia-cte-ordinaria); }
+.calendario__leyenda-color--suspension { background-color: var(--dia-suspension); }
+.calendario__leyenda-color--evaluacion { background-color: var(--dia-evaluacion); }
 
 .lista-eventos {
   list-style: none;
@@ -7664,8 +7670,8 @@ summary {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-areas:
-    "banner     banner     banner     banner"
     "horario    horario    criterios  criterios"
+    "banner     banner     banner     banner"
     "reglamento reglamento reglamento reglamento";
   gap: 1.25rem;
   max-width: 1180px;
@@ -7799,9 +7805,9 @@ summary {
   .bento-portada {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "banner"
       "horario"
       "criterios"
+      "banner"
       "reglamento";
     padding: 2rem 1.25rem;
   }
@@ -8032,6 +8038,8 @@ summary {
   background-color: var(--color-turquesa);
   border-radius: 999px;
 }
+.criterio-tarjeta__relleno--30 { width: 30%; }
+.criterio-tarjeta__relleno--40 { width: 40%; }
 
 /* Desglose por tipo de entregable de la card "Avance del ciclo" (Dashboard,
    ver construirTarjetaAvanceCiclo() en js/main.js) — texto alineado a la
