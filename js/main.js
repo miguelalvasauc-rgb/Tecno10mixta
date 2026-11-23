@@ -4471,10 +4471,14 @@ function fechaLocalDesdeISO(iso) {
   return new Date(y, m - 1, d);
 }
 
+// Date -> "YYYY-MM-DD" con los campos locales (sin pasar por UTC).
+function isoDesdeFechaLocal(fecha) {
+  return fecha.getFullYear() + "-" + String(fecha.getMonth() + 1).padStart(2, "0") + "-" + String(fecha.getDate()).padStart(2, "0");
+}
+
 // Día calendario local de hoy como "YYYY-MM-DD".
 function hoyLocalISO() {
-  const h = new Date();
-  return h.getFullYear() + "-" + String(h.getMonth() + 1).padStart(2, "0") + "-" + String(h.getDate()).padStart(2, "0");
+  return isoDesdeFechaLocal(new Date());
 }
 
 // Días calendario entre hoy local y iso: 0 = hoy, 1 = mañana, negativo = pasado.
@@ -7547,6 +7551,128 @@ async function calcularAvanceGeneralAlumno(perfil, estaCompletado = itemEstaComp
   return (await calcularAvanceGeneralAlumnoDetallado(perfil, estaCompletado)).avance;
 }
 
+// Los 7 días (lunes a domingo, "YYYY-MM-DD") de la semana que contiene hoy.
+function semanaActualISO() {
+  const hoy = fechaLocalDesdeISO(hoyLocalISO());
+  const aLunes = (hoy.getDay() + 6) % 7;
+  const dias = [];
+  for (let i = 0; i < 7; i++) {
+    dias.push(isoDesdeFechaLocal(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() - aLunes + i)));
+  }
+  return dias;
+}
+
+// Tira "Mi semana" de la portada: lunes a viernes siempre; sábado y domingo
+// solo si tienen entregas. conFecha = pendientes no entregados con fecha.
+function renderizarMiSemana(perfil, conFecha, grupo) {
+  const cont = document.getElementById("mi-semana");
+  if (!cont) return;
+  if (!perfil || (grupo !== "3C" && grupo !== "3E")) {
+    cont.replaceChildren();
+    cont.hidden = true;
+    return;
+  }
+
+  const conteo = new Map();
+  conFecha.forEach(({ iso }) => conteo.set(iso, (conteo.get(iso) || 0) + 1));
+  const hoyISO = hoyLocalISO();
+  const semana = semanaActualISO();
+  const icono = ESTADOS_ENTREGA_INICIO.pendiente.icono;
+
+  const titulo = document.createElement("h2");
+  titulo.id = "mi-semana-titulo";
+  titulo.className = "mi-semana__titulo";
+  titulo.textContent = "Mi semana";
+
+  const lista = document.createElement("ol");
+  lista.className = "mi-semana__dias";
+  let hayEntregas = false;
+  semana.forEach((iso, i) => {
+    const n = conteo.get(iso) || 0;
+    const finSemana = i >= 5;
+    if (finSemana && n === 0) return;
+    if (n > 0) hayEntregas = true;
+    const esHoy = iso === hoyISO;
+
+    const li = document.createElement("li");
+    li.className = "mi-semana__dia" + (finSemana ? " mi-semana__dia--fin-semana" : "") + (esHoy ? " mi-semana__dia--hoy" : "");
+    if (esHoy) li.setAttribute("aria-current", "date");
+
+    const corto = diaSemanaCorto(iso);
+    const nombre = document.createElement("span");
+    nombre.className = "mi-semana__dia-nombre";
+    nombre.setAttribute("aria-hidden", "true");
+    nombre.textContent = corto.dia;
+    const numero = document.createElement("span");
+    numero.className = "mi-semana__dia-numero";
+    numero.setAttribute("aria-hidden", "true");
+    numero.textContent = corto.numero;
+    li.append(nombre, numero);
+
+    if (n > 0) {
+      const punto = document.createElement("span");
+      punto.className = "mi-semana__punto";
+      punto.setAttribute("aria-hidden", "true");
+      punto.textContent = icono;
+      li.appendChild(punto);
+    }
+
+    const sr = document.createElement("span");
+    sr.className = "sr-only";
+    sr.textContent =
+      (esHoy ? "hoy, " : "") + fechaEnPalabras(iso) + ", " +
+      (n === 0 ? "sin entregas" : n === 1 ? "1 entrega" : n + " entregas");
+    li.appendChild(sr);
+    lista.appendChild(li);
+  });
+
+  cont.replaceChildren(titulo, lista);
+  if (hayEntregas) {
+    const leyenda = document.createElement("p");
+    leyenda.className = "mi-semana__leyenda";
+    leyenda.setAttribute("aria-hidden", "true");
+    const punto = document.createElement("span");
+    punto.className = "mi-semana__punto";
+    punto.setAttribute("aria-hidden", "true");
+    punto.textContent = icono;
+    leyenda.append(punto, document.createTextNode("Entrega pendiente"));
+    cont.appendChild(leyenda);
+  } else {
+    const vacio = document.createElement("p");
+    vacio.className = "mi-semana__vacio";
+    vacio.textContent = "Sin entregas esta semana";
+    cont.appendChild(vacio);
+  }
+  cont.hidden = false;
+}
+
+// Tarjeta "Tu progreso del trimestre" (trimestre activo) de la portada.
+// El docente no tiene progreso propio: la sección queda oculta.
+function renderizarTarjetaProgresoTrimestre(perfil, entradaActiva, trimestreActivo) {
+  const seccion = document.getElementById("progreso-trimestre");
+  if (!seccion) return;
+  const texto = document.getElementById("progreso-trimestre-texto");
+  const barra = document.getElementById("progreso-trimestre-barra");
+  const relleno = document.getElementById("progreso-trimestre-relleno");
+  if (!texto || !barra || !relleno) return;
+  if (!perfil || perfil.rol === "docente" || !entradaActiva) {
+    seccion.hidden = true;
+    return;
+  }
+
+  const { total, completadas } = entradaActiva;
+  const porcentaje = total === 0 ? 0 : Math.round((completadas / total) * 100);
+  texto.textContent =
+    total === 0
+      ? "Trimestre " + trimestreActivo + ": todavía no hay tareas, actividades ni proyectos registrados."
+      : "Trimestre " + trimestreActivo + ": " + completadas + " de " + total + " completadas (" + porcentaje + " %)";
+  barra.setAttribute("aria-valuenow", String(completadas));
+  barra.setAttribute("aria-valuemax", String(total));
+  barra.setAttribute("aria-valuetext", completadas + " de " + total + " completadas");
+  relleno.style.width = porcentaje + "%";
+  seccion.hidden = false;
+}
+
 // Panel de "Progreso" de la portada: solo existe en index.html (los
 // contenedores se buscan por id y, si no están, la función no hace
 // nada), y solo muestra datos si hay un alumno identificado (ver sección
@@ -7561,7 +7687,11 @@ async function renderizarProgreso() {
   const perfil = obtenerPerfilActivo();
   sinPerfil.hidden = Boolean(perfil);
   conPerfil.hidden = !perfil;
-  if (!perfil) return;
+  if (!perfil) {
+    renderizarMiSemana(null, [], null);
+    renderizarTarjetaProgresoTrimestre(null, null, null);
+    return;
+  }
 
   // Misma data (tareas/actividades/proyectos por trimestre, ya filtrados
   // por el grupo del alumno, con sus contadores) que ya arma
@@ -7596,21 +7726,26 @@ async function renderizarProgreso() {
   // progreso.html — trimestreDesbloqueado es el trimestre realmente
   // activo, ultimoTrimestreVisto solo sirve para los enlaces del sidebar.
   const pendientesEl = document.getElementById("progreso-pendientes");
+  const trimestreActivo = String(trimestreDesbloqueado);
+  const entradaActiva = porTrimestre.find((p) => p.trimestre === trimestreActivo);
+  const pendientes = entradaActiva
+    ? [
+        ...entradaActiva.tareas.map((item) => ({ tipo: "tarea", item })),
+        ...entradaActiva.actividades.map((item) => ({ tipo: "actividad", item })),
+        ...entradaActiva.proyectos.map((item) => ({ tipo: "proyecto", item })),
+      ].filter(({ tipo, item }) => !itemEstaCompletado(tipo, item.id, trimestreActivo))
+    : [];
+
+  // Alumno: su grupo de perfil. Docente: el del selector "Estás viendo".
+  const grupoEntregas = grupoEntregasInicio(perfil);
+  const conFecha = obtenerPendientesOrdenados(pendientes, grupoEntregas);
+
+  // Tira "Mi semana" y tarjeta de progreso del trimestre (solo escritura síncrona).
+  renderizarMiSemana(perfil, conFecha, grupoEntregas);
+  renderizarTarjetaProgresoTrimestre(perfil, entradaActiva, trimestreActivo);
+
   if (pendientesEl) {
     pendientesEl.innerHTML = "";
-    const trimestreActivo = String(trimestreDesbloqueado);
-    const entradaActiva = porTrimestre.find((p) => p.trimestre === trimestreActivo);
-    const pendientes = entradaActiva
-      ? [
-          ...entradaActiva.tareas.map((item) => ({ tipo: "tarea", item })),
-          ...entradaActiva.actividades.map((item) => ({ tipo: "actividad", item })),
-          ...entradaActiva.proyectos.map((item) => ({ tipo: "proyecto", item })),
-        ].filter(({ tipo, item }) => !itemEstaCompletado(tipo, item.id, trimestreActivo))
-      : [];
-
-    // Alumno: su grupo de perfil. Docente: el del selector "Estás viendo".
-    const grupoEntregas = grupoEntregasInicio(perfil);
-    const conFecha = obtenerPendientesOrdenados(pendientes, grupoEntregas);
     pendientesEl.appendChild(construirTarjetaAhora(conFecha, trimestreActivo, grupoEntregas));
     pendientesEl.appendChild(construirListaDespues(conFecha, trimestreActivo, grupoEntregas));
     pendientesEl.appendChild(construirFilaSemaforo(calcularEstadoSemaforo(conFecha, grupoEntregas)));

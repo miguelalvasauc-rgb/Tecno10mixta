@@ -263,7 +263,7 @@
       </div>
       <div id="inicio-saludo" class="inicio-saludo" hidden></div>
       <div id="inicio-datos" class="inicio-datos" hidden></div>
-      <div id="mi-semana" class="mi-semana" role="region" aria-label="Mi semana" hidden></div>
+      <div id="mi-semana" class="mi-semana" role="region" aria-labelledby="mi-semana-titulo" hidden></div>
     </section>
 
     <!-- ===================== TU PROGRESO ===================== -->
@@ -344,6 +344,12 @@
     <section id="progreso-trimestre" class="seccion" aria-labelledby="titulo-progreso-trimestre" hidden>
       <div class="seccion__encabezado">
         <h2 id="titulo-progreso-trimestre">Tu progreso del trimestre</h2>
+      </div>
+      <div class="tarjeta-progreso-trimestre">
+        <p id="progreso-trimestre-texto" class="resumen-progreso__texto"></p>
+        <div id="progreso-trimestre-barra" class="barra-progreso" role="progressbar" aria-valuemin="0" aria-labelledby="titulo-progreso-trimestre">
+          <div id="progreso-trimestre-relleno" class="barra-progreso__relleno"></div>
+        </div>
       </div>
     </section>
 

@@ -2126,8 +2126,9 @@ summary {
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 0.75rem;
-  height: 0.75rem;
+  /* rem: crece con --escala-texto; deja aire al ícono (0.75rem) dentro. */
+  width: 1.25rem;
+  height: 1.25rem;
   border-radius: 50%;
   background-color: var(--color-estado-progreso);
   box-shadow: 0 0 0 2px var(--color-primario-texto);
@@ -2142,6 +2143,15 @@ summary {
 #inicio .mi-semana__vacio {
   margin: 0;
   font-size: var(--tamano-fuente-cuerpo);
+  color: var(--color-primario-texto);
+}
+
+#inicio .mi-semana__leyenda {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0;
+  font-size: var(--tamano-fuente-secundario);
   color: var(--color-primario-texto);
 }
 
