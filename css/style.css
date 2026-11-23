@@ -1947,6 +1947,517 @@ summary {
 }
 
 /* =========================================================
+   Etapa 2 · Inicio
+   Componentes nuevos de la pantalla de Inicio (index.html). El marcado lo
+   genera js/main.js (grupo 3) con EXACTAMENTE estas clases. Solo
+   .tarjeta-ahora lleva acento turquesa; todo lo demás es neutro. Sin
+   colores nuevos: solo tokens existentes. Tamaños en rem (escalan con
+   --escala-texto vía font-size de html), ninguno por debajo de 0.75rem.
+   ========================================================= */
+
+/* ---------- Encabezado de bienvenida (solo #inicio) ---------- */
+#inicio.hero {
+  padding: 1.25rem 1rem 1.5rem;
+  text-align: left;
+  /* Encabezado corto: degradado navy plano y quieto (sin el resplandor
+     radial de acento ni el drift de .hero), para que todo el texto se mida
+     solo contra --color-primario / --color-primario-suave. */
+  background: linear-gradient(120deg, var(--color-primario) 0%, var(--color-primario-suave) 50%, var(--color-primario) 100%);
+  background-size: 100% 100%;
+  animation: none;
+}
+
+#inicio .hero__contenido,
+#inicio .inicio-saludo,
+#inicio .inicio-datos,
+#inicio .mi-semana {
+  max-width: 45rem;
+  margin-inline: auto;
+}
+
+/* Sin acento turquesa en el encabezado: la etiqueta pasa a chip neutro. */
+#inicio .etiqueta-badge {
+  background-color: transparent;
+  color: var(--color-primario-texto);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primario-texto) 40%, transparent);
+  letter-spacing: normal;
+}
+
+#inicio .inicio-saludo {
+  margin-top: 0.5rem;
+  font-family: var(--font-encabezados);
+  font-size: var(--tamano-fuente-avatar-hero);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--color-primario-texto);
+  overflow-wrap: anywhere;
+}
+
+#inicio .inicio-saludo[hidden] {
+  display: none;
+}
+
+#inicio .inicio-saludo__titulo {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
+#inicio .inicio-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+#inicio .inicio-datos[hidden] {
+  display: none;
+}
+
+#inicio .inicio-dato {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radio-full);
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primario-texto) 40%, transparent);
+  color: var(--color-primario-texto);
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+/* Grupo fijo de alumno: trazo completo del borde (sin depender del color). */
+#inicio .inicio-dato--candado {
+  box-shadow: inset 0 0 0 2px var(--color-primario-texto);
+}
+
+#inicio .inicio-dato__icono {
+  flex: none;
+  line-height: 1;
+}
+
+/* ---------- Tira "Mi semana" ---------- */
+#inicio .mi-semana {
+  margin-top: 1rem;
+}
+
+#inicio .mi-semana[hidden] {
+  display: none;
+}
+
+#inicio .mi-semana__titulo {
+  margin: 0 0 0.5rem;
+  font-size: var(--tamano-fuente-cuerpo);
+  font-weight: 700;
+  color: var(--color-primario-texto);
+}
+
+#inicio .mi-semana__dias {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(2.75rem, 100%), 1fr));
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#inicio .mi-semana__dia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.4rem 0.2rem;
+  border-radius: var(--radio-md);
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primario-texto) 30%, transparent);
+  color: var(--color-primario-texto);
+  text-align: center;
+}
+
+#inicio .mi-semana__dia-nombre {
+  font-size: var(--tamano-fuente-secundario);
+  line-height: 1.1;
+  color: var(--color-primario-texto);
+}
+
+#inicio .mi-semana__dia-numero {
+  font-size: var(--tamano-fuente-cuerpo-lg);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* Sáb/dom: solo existen cuando hay entrega; trazo punteado. */
+#inicio .mi-semana__dia--fin-semana {
+  box-shadow: none;
+  border: 1px dashed color-mix(in srgb, var(--color-primario-texto) 55%, transparent);
+  padding: calc(0.4rem - 1px) calc(0.2rem - 1px);
+}
+
+/* Hoy: relleno invertido + trazo grueso + peso extra (forma y luminosidad,
+   no solo color). JS agrega además aria-current="date". */
+#inicio .mi-semana__dia--hoy,
+#inicio .mi-semana__dia--hoy.mi-semana__dia--fin-semana {
+  background-color: var(--color-primario-texto);
+  box-shadow: inset 0 0 0 2px var(--color-primario-texto);
+  border-color: var(--color-primario-texto);
+  color: var(--color-primario);
+}
+
+#inicio .mi-semana__dia--hoy .mi-semana__dia-nombre {
+  color: var(--color-primario);
+  font-weight: 800;
+}
+
+#inicio .mi-semana__dia--hoy .mi-semana__dia-numero {
+  font-weight: 800;
+}
+
+/* Entrega: punto naranja (solo forma/borde; nunca color de texto). El anillo
+   claro (--color-primario-texto) lo separa del fondo navy; sobre el relleno
+   claro de "hoy" el anillo pasa a --color-primario. El ícono, si lo hay, va como hijo del punto o junto a él. */
+#inicio .mi-semana__punto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background-color: var(--color-estado-progreso);
+  box-shadow: 0 0 0 2px var(--color-primario-texto);
+  font-size: var(--tamano-fuente-meta-micro);
+  line-height: 1;
+}
+
+#inicio .mi-semana__dia--hoy .mi-semana__punto {
+  box-shadow: 0 0 0 2px var(--color-primario);
+}
+
+#inicio .mi-semana__vacio {
+  margin: 0;
+  font-size: var(--tamano-fuente-cuerpo);
+  color: var(--color-primario-texto);
+}
+
+/* ---------- Tarjeta "Lo que te toca ahora" (única destacada) ---------- */
+.tarjeta-ahora {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem 1.25rem 1.5rem;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-top: 4px solid var(--color-nivel-bueno-franja);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra);
+  color: var(--color-texto);
+}
+
+.tarjeta-ahora[hidden] {
+  display: none;
+}
+
+.tarjeta-ahora__encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+}
+
+.tarjeta-ahora__titulo {
+  margin: 0;
+  font-family: var(--font-encabezados);
+  font-size: var(--tamano-fuente-titular);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-texto);
+  overflow-wrap: anywhere;
+}
+
+.tarjeta-ahora__estado {
+  display: inline-flex;
+  flex: none;
+}
+
+/* Badge de estado reutilizado (.badge-estado[data-estado]): ícono + palabra.
+   "Por hacer" = pendiente, "Entregado" = entregada, "Vencido" = atrasada,
+   "Vence hoy" = vence-hoy. Letra oscura/neutra, tono solo en fondo o borde. */
+.tarjeta-ahora__estado .badge-estado,
+.fila-despues__estado .badge-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--tamano-fuente-secundario);
+  white-space: nowrap;
+}
+
+.tarjeta-ahora__fecha {
+  margin: 0;
+  font-size: var(--tamano-fuente-cuerpo-lg);
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.tarjeta-ahora__faltan {
+  margin: 0;
+  font-size: var(--tamano-fuente-cuerpo);
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.tarjeta-ahora__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.tarjeta-ahora__acciones > .boton-primario,
+.tarjeta-ahora__acciones > .boton-secundario {
+  flex: 1 1 11rem;
+  align-self: stretch;
+}
+
+.tarjeta-ahora__aviso {
+  margin: 0;
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto-suave);
+}
+
+.tarjeta-ahora__aviso[hidden],
+.tarjeta-ahora__faltan[hidden] {
+  display: none;
+}
+
+@media (min-width: 40em) {
+  .tarjeta-ahora {
+    padding: 1.5rem 1.75rem 1.75rem;
+  }
+
+  .tarjeta-ahora__acciones > .boton-primario,
+  .tarjeta-ahora__acciones > .boton-secundario {
+    flex: 0 0 auto;
+  }
+}
+
+/* ---------- Lista "Después" (neutra) ---------- */
+.lista-despues__titulo {
+  margin: 0 0 0.5rem;
+  font-size: var(--tamano-fuente-cuerpo);
+  font-weight: 700;
+  color: var(--color-texto-suave);
+}
+
+.lista-despues {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista-despues[hidden] {
+  display: none;
+}
+
+.fila-despues {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  color: var(--color-texto);
+  text-decoration: none;
+}
+
+.fila-despues:hover {
+  border-color: var(--color-texto-suave);
+}
+
+.fila-despues:focus-visible {
+  outline: 3px solid var(--color-focus-outline);
+  outline-offset: 2px;
+  /* Anillo interior en --color-texto: el naranja solo no llega a 3:1 en
+     superficies claras; el conjunto sí se distingue en todos los temas. */
+  box-shadow: 0 0 0 2px var(--color-texto);
+}
+
+.fila-despues__fecha {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  min-width: 2.5rem;
+  line-height: 1.1;
+}
+
+.fila-despues__dia {
+  font-size: var(--tamano-fuente-secundario);
+  color: var(--color-texto-suave);
+}
+
+.fila-despues__numero {
+  font-size: var(--tamano-fuente-cuerpo-lg);
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.fila-despues__titulo {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--tamano-fuente-cuerpo);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.fila-despues__estado {
+  display: inline-flex;
+  flex: none;
+}
+
+.fila-despues__flecha {
+  flex: none;
+  font-size: var(--tamano-fuente-cuerpo-lg);
+  color: var(--color-texto-suave);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fila-despues {
+    transition: border-color 0.2s ease;
+  }
+}
+
+/* ---------- "Tu progreso del trimestre" (neutra) ---------- */
+.tarjeta-progreso-trimestre {
+  padding: 1.25rem;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra);
+  color: var(--color-texto);
+}
+
+.tarjeta-progreso-trimestre[hidden] {
+  display: none;
+}
+
+.tarjeta-progreso-trimestre .resumen-progreso__texto {
+  margin: 0 0 0.5rem;
+  font-size: var(--tamano-fuente-cuerpo);
+  color: var(--color-texto);
+}
+
+.tarjeta-progreso-trimestre .barra-progreso {
+  height: 0.75rem;
+  margin-top: 0;
+}
+
+/* ---------- Elige tu trimestre: fila de 3 botones compactos ---------- */
+#trimestres .cuadricula-trimestres {
+  grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+#trimestres .tarjeta-trimestre {
+  justify-content: center;
+  min-height: 2.75rem;
+  gap: 0.35rem;
+  padding: 0.875rem 0.5rem;
+  box-shadow: none;
+}
+
+#trimestres .tarjeta-trimestre p {
+  display: none;
+}
+
+#trimestres .tarjeta-trimestre__numero {
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: var(--tamano-fuente-cuerpo-lg);
+}
+
+#trimestres .tarjeta-trimestre h3 {
+  margin: 0;
+  font-size: var(--tamano-fuente-secundario);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+#trimestres .tarjeta-trimestre__estado {
+  position: static;
+  order: 3;
+  font-size: var(--tamano-fuente-meta-micro);
+}
+
+/* Sin acento turquesa fuera de .tarjeta-ahora: se anulan el borde animado,
+   el glow y el borde turquesa del hover. "Actual" conserva su borde naranja
+   de estado. */
+#trimestres .tarjeta-trimestre::before,
+#trimestres .tarjeta-trimestre::after {
+  content: none;
+}
+
+#trimestres .tarjeta-trimestre:hover,
+#trimestres .tarjeta-trimestre:focus-visible {
+  border-color: var(--color-texto-suave);
+}
+
+#trimestres .tarjeta-trimestre[data-estado="actual"],
+#trimestres .tarjeta-trimestre[data-estado="actual"]:hover,
+#trimestres .tarjeta-trimestre[data-estado="actual"]:focus-visible {
+  border-color: var(--color-estado-progreso);
+}
+
+/* Bloqueado (data-estado="proximamente"): en vez de la opacidad 0.7 global
+   (que dejaba el texto bajo AA) se marca con trazo punteado, cursor, título
+   en texto suave y círculo atenuado. */
+#trimestres .tarjeta-trimestre[data-estado="proximamente"] {
+  opacity: 1;
+  border-style: dashed;
+  cursor: not-allowed;
+}
+
+#trimestres .tarjeta-trimestre[data-estado="proximamente"] h3 {
+  color: var(--color-texto-suave);
+}
+
+#trimestres .tarjeta-trimestre[data-estado="proximamente"] .tarjeta-trimestre__numero {
+  opacity: 0.6;
+}
+
+/* ---------- Neutralizar destacados turquesa dentro de Inicio ---------- */
+#progreso .mision-de-hoy {
+  border-color: var(--color-borde);
+}
+
+#progreso .mision-de-hoy__etiqueta {
+  color: var(--color-texto-suave);
+}
+
+#progreso .mision-de-hoy__boton {
+  background-color: transparent;
+  color: var(--color-texto);
+  box-shadow: inset 0 0 0 2px var(--color-borde);
+}
+
+@media (max-width: 480px) {
+  #inicio .inicio-saludo {
+    font-size: var(--tamano-fuente-titular);
+  }
+}
+
+/* =========================================================
    PATRONES DE FONDO (8 temas nuevos, ver módulo "Apariencia" del panel
    docente). Controlados por config_sitio.patrones_fondo_activos: JS
    (obtenerPatronesFondoActivos(), ver DOMContentLoaded en js/main.js)
