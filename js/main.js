@@ -4459,6 +4459,64 @@ function resolverValorFechaPorGrupo(valorFecha, grupo) {
   return valorFecha[grupo] || null;
 }
 
+// ---- Helpers de fecha en hora LOCAL (sin UTC) ----
+// Nunca usar new Date("YYYY-MM-DD") sin hora: se interpreta como UTC y en
+// México retrocede un día. Reutilizables (Inicio, y luego Progreso).
+const DIAS_SEMANA_ES = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+const MESES_ES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+
+// "YYYY-MM-DD" -> Date a medianoche local.
+function fechaLocalDesdeISO(iso) {
+  const [y, m, d] = String(iso).split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+// Día calendario local de hoy como "YYYY-MM-DD".
+function hoyLocalISO() {
+  const h = new Date();
+  return h.getFullYear() + "-" + String(h.getMonth() + 1).padStart(2, "0") + "-" + String(h.getDate()).padStart(2, "0");
+}
+
+// Días calendario entre hoy local y iso: 0 = hoy, 1 = mañana, negativo = pasado.
+// Math.round absorbe las 23/25 h de los cambios de horario.
+function diasHastaISO(iso) {
+  const ahora = new Date();
+  const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+  return Math.round((fechaLocalDesdeISO(iso) - hoy) / 86400000);
+}
+
+// "jueves 3 de diciembre" (sin toLocaleDateString: evita la coma).
+function fechaEnPalabras(iso) {
+  const f = fechaLocalDesdeISO(iso);
+  return DIAS_SEMANA_ES[f.getDay()] + " " + f.getDate() + " de " + MESES_ES[f.getMonth()];
+}
+
+// { dia: "jue", numero: "3" } para la columna de fecha de la lista Después.
+function diaSemanaCorto(iso) {
+  const f = fechaLocalDesdeISO(iso);
+  return { dia: DIAS_SEMANA_ES[f.getDay()].slice(0, 3), numero: String(f.getDate()) };
+}
+
+// Estados de entrega de la portada: ícono (decorativo) + palabra, para no
+// depender solo del color. Claves = valores de .badge-estado[data-estado].
+const ESTADOS_ENTREGA_INICIO = {
+  completada: { icono: "✅", palabra: "Entregado" },
+  pendiente: { icono: "📝", palabra: "Por hacer" },
+  "vence-hoy": { icono: "⏰", palabra: "Vence hoy" },
+  atrasada: { icono: "⚠️", palabra: "Vencido" },
+};
+
+// Estado de un ítem para la tarjeta/lista de la portada.
+function estadoEntregaInicio(tipo, item, trimestre, grupo) {
+  if (itemEstaCompletado(tipo, item.id, trimestre)) return "completada";
+  const iso = fechaLimiteISO(tipo, item, grupo);
+  if (!iso) return "pendiente";
+  const dias = diasHastaISO(iso);
+  if (dias < 0) return "atrasada";
+  if (dias === 0) return "vence-hoy";
+  return "pendiente";
+}
+
 // Resuelve el valor de fechaEntrega/fecha de un ítem a texto ya formateado.
 // Por defecto resuelve contra grupoActual (el selector de grupo de la
 // portada), pero acepta un "grupoParaResolver" explícito para los casos
@@ -4607,8 +4665,8 @@ function enlacePendiente(trimestre, tipo, id) {
 // Pendientes con fecha límite resuelta, ordenados ascendente (el más
 // próximo primero) — capa de datos pura reutilizada por el semáforo +
 // "próxima entrega" de progreso.html (construirSemaforoPendientes) y por
-// "Misión de hoy"/"Próximas entregas" del panel de Progreso de la
-// portada (construirDashboardPendientes). El llamador ya debe pasar
+// tarjeta "Lo que te toca ahora"/"Después" del panel de Progreso de la
+// portada (construirTarjetaAhora/construirListaDespues). El llamador ya debe pasar
 // solo pendientes sin completar; esta función no filtra completado.
 function obtenerPendientesOrdenados(pendientes, grupo) {
   return pendientes
@@ -7509,7 +7567,7 @@ async function renderizarProgreso() {
   // por el grupo del alumno, con sus contadores) que ya arma
   // calcularProgresoDetalladoPorTrimestre() para progreso.html — antes se
   // recalculaba aquí con un bucle propio que descartaba los arreglos de
-  // items, así que el semáforo/"Misión de hoy"/"Próximas entregas" de
+  // items, así que el semáforo/tarjeta "Lo que te toca ahora"/"Después" de
   // abajo no podían armarse sin recalcular todo de nuevo. Reutilizarla
   // tal cual evita esa duplicación.
   const { porTrimestre, totalGeneral, completadasGeneral } = await calcularProgresoDetalladoPorTrimestre(perfil);
@@ -7532,7 +7590,7 @@ async function renderizarProgreso() {
     mensaje.textContent = MENSAJES_MOTIVACIONALES[completadasGeneral % MENSAJES_MOTIVACIONALES.length];
   }
 
-  // Semáforo + "Misión de hoy" + "Próximas entregas" + "Accesos rápidos"
+  // Tarjeta "Lo que te toca ahora" + "Después" + semáforo + "Accesos rápidos"
   // del trimestre DESBLOQUEADO (no de los 3): mismo criterio que ya usa
   // renderizarProgresoDetallado() para su propio semáforo en
   // progreso.html — trimestreDesbloqueado es el trimestre realmente
@@ -7550,9 +7608,12 @@ async function renderizarProgreso() {
         ].filter(({ tipo, item }) => !itemEstaCompletado(tipo, item.id, trimestreActivo))
       : [];
 
-    const conFecha = obtenerPendientesOrdenados(pendientes, perfil.grupo);
-    pendientesEl.appendChild(construirFilaSemaforo(calcularEstadoSemaforo(conFecha, perfil.grupo)));
-    pendientesEl.appendChild(construirDashboardPendientes(conFecha, trimestreActivo, perfil.grupo));
+    // Alumno: su grupo de perfil. Docente: el del selector "Estás viendo".
+    const grupoEntregas = grupoEntregasInicio(perfil);
+    const conFecha = obtenerPendientesOrdenados(pendientes, grupoEntregas);
+    pendientesEl.appendChild(construirTarjetaAhora(conFecha, trimestreActivo, grupoEntregas));
+    pendientesEl.appendChild(construirListaDespues(conFecha, trimestreActivo, grupoEntregas));
+    pendientesEl.appendChild(construirFilaSemaforo(calcularEstadoSemaforo(conFecha, grupoEntregas)));
     pendientesEl.appendChild(construirAccesosRapidos(trimestreActivo));
   }
 
@@ -7709,8 +7770,8 @@ const TEXTO_SEMAFORO = {
 // Solo el punto+texto del semáforo (sin "próxima entrega"): pieza mínima
 // reutilizada tal cual por construirSemaforoPendientes() (que le agrega
 // el bloque de próxima entrega debajo) y por el panel de Progreso de la
-// portada (que en vez de eso agrega ahí mismo "Misión de hoy"/"Próximas
-// entregas" como bloques propios — ver construirDashboardPendientes()).
+// portada (que en vez de eso agrega ahí mismo la tarjeta "Lo que te toca
+// ahora" y la lista "Después" — ver construirTarjetaAhora()).
 function construirFilaSemaforo(estado) {
   const tarjeta = document.createElement("div");
   tarjeta.className = "semaforo-progreso";
@@ -7790,84 +7851,181 @@ function construirSemaforoPendientes(pendientes, trimestre, grupo) {
   return tarjeta;
 }
 
-// "Misión de hoy" (el pendiente más urgente, destacado) + "Próximas
-// entregas" (hasta 4, la MISMA lista ordenada — el primer elemento es el
-// mismo ítem que "Misión de hoy", sin recalcularlo aparte) para el panel
-// de Progreso de la portada. conFecha ya viene ordenado ascendente por
-// obtenerPendientesOrdenados().
-function construirDashboardPendientes(conFecha, trimestre, grupo) {
-  const contenedor = document.createDocumentFragment();
+// Grupo con el que se resuelven las fechas de la tarjeta "Lo que te toca
+// ahora"/"Después": el alumno usa el de su perfil; el docente, el que
+// eligió en el selector "Estás viendo" (grupoActual, el mismo que usa la
+// barra de grupo). "todos"/sin grupo → la tarjeta pide elegir uno.
+function grupoEntregasInicio(perfil) {
+  return perfil.rol === "docente" ? grupoActual : perfil.grupo;
+}
 
-  if (conFecha.length === 0) {
-    const vacio = document.createElement("p");
-    vacio.className = "progreso-sin-pendientes";
-    vacio.textContent = "🎉 No tienes pendientes en este trimestre. ¡Sigue así!";
-    contenedor.appendChild(vacio);
-    return contenedor;
+// Tarjeta "Lo que te toca ahora": el pendiente más urgente (conFecha[0],
+// ya ordenado ascendente por obtenerPendientesOrdenados()) como única
+// tarjeta destacada de la portada. Sin pendientes muestra "Estás al día"
+// sin badge, fecha, aviso ni botón Entregar. El estado combina ícono +
+// palabra (ESTADOS_ENTREGA_INICIO) para no depender solo del color.
+function construirTarjetaAhora(conFecha, trimestre, grupo) {
+  const tarjeta = document.createElement("article");
+  tarjeta.className = "tarjeta-ahora";
+  tarjeta.setAttribute("aria-labelledby", "tarjeta-ahora-rotulo");
+
+  const encabezado = document.createElement("div");
+  encabezado.className = "tarjeta-ahora__encabezado";
+
+  const rotulo = document.createElement("h3");
+  rotulo.id = "tarjeta-ahora-rotulo";
+  rotulo.className = "lista-despues__titulo";
+  rotulo.textContent = "Lo que te toca ahora";
+  encabezado.appendChild(rotulo);
+
+  const titulo = document.createElement("p");
+  titulo.className = "tarjeta-ahora__titulo";
+
+  const fecha = document.createElement("p");
+  fecha.className = "tarjeta-ahora__fecha";
+
+  const faltan = document.createElement("p");
+  faltan.className = "tarjeta-ahora__faltan";
+
+  const aviso = document.createElement("p");
+  aviso.className = "tarjeta-ahora__aviso";
+  aviso.textContent = "Si ya enviaste, se actualiza en un momento.";
+
+  if (grupo !== "3C" && grupo !== "3E") {
+    // Docente con "Todos" (o sin grupo): no hay entregas de un grupo concreto.
+    titulo.textContent = "Elige un grupo (3°C o 3°E) para ver sus entregas";
+    fecha.hidden = true;
+    faltan.hidden = true;
+    aviso.hidden = true;
+    tarjeta.append(encabezado, titulo, fecha, faltan, aviso);
+    return tarjeta;
   }
 
-  const primero = conFecha[0];
+  if (conFecha.length === 0) {
+    titulo.textContent = "Estás al día";
+    fecha.hidden = true;
+    faltan.hidden = true;
+    aviso.hidden = true;
+    tarjeta.append(encabezado, titulo, fecha, faltan, aviso);
+    return tarjeta;
+  }
 
-  const mision = document.createElement("div");
-  mision.className = "mision-de-hoy";
+  const { tipo, item, iso } = conFecha[0];
+  const dias = diasHastaISO(iso);
 
-  const etiqueta = document.createElement("p");
-  etiqueta.className = "mision-de-hoy__etiqueta";
-  etiqueta.textContent = "🎯 Misión de hoy";
+  const estadoEl = document.createElement("span");
+  estadoEl.className = "tarjeta-ahora__estado";
+  estadoEl.appendChild(construirBadgeEntregaInicio(estadoEntregaInicio(tipo, item, trimestre, grupo)));
+  encabezado.appendChild(estadoEl);
 
-  const tituloMision = document.createElement("p");
-  tituloMision.className = "mision-de-hoy__titulo";
-  tituloMision.textContent = primero.item.titulo;
+  titulo.textContent = item.titulo;
 
-  const fechaMision = document.createElement("p");
-  fechaMision.className = "mision-de-hoy__fecha";
-  fechaMision.textContent = "Vence: " + formatearFecha(primero.iso);
+  if (dias === 0) fecha.textContent = "Vence hoy";
+  else if (dias === 1) fecha.textContent = "Vence mañana";
+  else if (dias > 1) fecha.textContent = "Vence el " + fechaEnPalabras(iso);
+  else fecha.textContent = "Venció el " + fechaEnPalabras(iso);
 
-  const boton = document.createElement("a");
-  boton.className = "mision-de-hoy__boton";
-  boton.href = enlacePendiente(trimestre, primero.tipo, primero.item.id);
-  boton.textContent = ETIQUETAS_ENLACE_ITEM[primero.tipo];
+  if (dias > 1) faltan.textContent = "Faltan " + dias + " días";
+  else if (dias === 1) faltan.textContent = "Falta 1 día";
+  else faltan.hidden = true;
 
-  mision.append(etiqueta, tituloMision, fechaMision, boton);
-  contenedor.appendChild(mision);
+  const acciones = document.createElement("div");
+  acciones.className = "tarjeta-ahora__acciones";
 
-  const proximas = document.createElement("div");
-  proximas.className = "proximas-entregas";
+  const entregar = document.createElement("a");
+  entregar.className = "boton-primario";
+  entregar.href = "trimestre-" + trimestre + "-practica.html#entrega";
+  entregar.textContent = "Entregar";
 
-  const tituloProximas = document.createElement("p");
-  tituloProximas.className = "proximas-entregas__titulo";
-  tituloProximas.textContent = "Próximas entregas";
-  proximas.appendChild(tituloProximas);
+  const instrucciones = document.createElement("a");
+  instrucciones.className = "boton-secundario";
+  instrucciones.href = enlacePendiente(trimestre, tipo, item.id);
+  instrucciones.textContent = "Instrucciones y rúbrica";
+
+  acciones.append(entregar, instrucciones);
+  tarjeta.append(encabezado, titulo, fecha, faltan, acciones, aviso);
+  return tarjeta;
+}
+
+// Badge de estado (ícono aria-hidden + palabra) reutilizando
+// .badge-estado[data-estado]. Usado por la tarjeta y por las filas Después.
+function construirBadgeEntregaInicio(estado) {
+  const { icono, palabra } = ESTADOS_ENTREGA_INICIO[estado];
+  const badge = document.createElement("span");
+  badge.className = "badge-estado";
+  badge.dataset.estado = estado;
+  const iconoEl = document.createElement("span");
+  iconoEl.setAttribute("aria-hidden", "true");
+  iconoEl.textContent = icono;
+  badge.append(iconoEl, " " + palabra);
+  return badge;
+}
+
+// Lista "Después": los siguientes hasta 4 pendientes tras el de la tarjeta
+// (conFecha.slice(1, 5), mismo conFecha). Badge solo si vence hoy o está
+// vencido; el resto queda neutro. Sin filas devuelve un fragmento vacío
+// (ni siquiera se pinta el título).
+function construirListaDespues(conFecha, trimestre, grupo) {
+  const fragmento = document.createDocumentFragment();
+  const siguientes = conFecha.slice(1, 5);
+  if (siguientes.length === 0) return fragmento;
+
+  const titulo = document.createElement("h3");
+  titulo.className = "lista-despues__titulo";
+  titulo.textContent = "Después";
 
   const lista = document.createElement("ul");
-  lista.className = "panel-progreso__lista";
-  conFecha.slice(0, 4).forEach(({ tipo, item, iso }) => {
-    const fila = document.createElement("li");
-    fila.className = "panel-progreso__item";
+  lista.className = "lista-despues";
 
-    const tituloItem = document.createElement("span");
-    tituloItem.className = "panel-progreso__item-titulo";
-    tituloItem.textContent = item.titulo;
-    fila.appendChild(tituloItem);
+  siguientes.forEach(({ tipo, item, iso }) => {
+    const li = document.createElement("li");
+    const fila = document.createElement("a");
+    fila.className = "fila-despues";
+    fila.href = enlacePendiente(trimestre, tipo, item.id);
 
-    const badge = document.createElement("span");
-    badge.className = "badge-estado";
-    badge.dataset.estado = itemEstaVencido(tipo, item, grupo) ? "atrasada" : "pendiente";
-    badge.textContent = formatearFecha(iso);
-    fila.appendChild(badge);
+    const { dia, numero } = diaSemanaCorto(iso);
+    const bloqueFecha = document.createElement("span");
+    bloqueFecha.className = "fila-despues__fecha";
+    bloqueFecha.setAttribute("aria-hidden", "true");
+    const diaEl = document.createElement("span");
+    diaEl.className = "fila-despues__dia";
+    diaEl.textContent = dia;
+    const numeroEl = document.createElement("span");
+    numeroEl.className = "fila-despues__numero";
+    numeroEl.textContent = numero;
+    bloqueFecha.append(diaEl, numeroEl);
 
-    const enlace = document.createElement("a");
-    enlace.href = enlacePendiente(trimestre, tipo, item.id);
-    enlace.className = "panel-progreso__item-enlace";
-    enlace.textContent = ETIQUETAS_ENLACE_ITEM[tipo];
-    fila.appendChild(enlace);
+    const lectura = document.createElement("span");
+    lectura.className = "sr-only";
+    lectura.textContent =
+      (diasHastaISO(iso) < 0 ? "Venció el " : "Vence el ") + fechaEnPalabras(iso) + ". ";
 
-    lista.appendChild(fila);
+    const tituloEl = document.createElement("span");
+    tituloEl.className = "fila-despues__titulo";
+    tituloEl.textContent = item.titulo;
+
+    fila.append(bloqueFecha, lectura, tituloEl);
+
+    const estado = estadoEntregaInicio(tipo, item, trimestre, grupo);
+    if (estado === "atrasada" || estado === "vence-hoy") {
+      const estadoEl = document.createElement("span");
+      estadoEl.className = "fila-despues__estado";
+      estadoEl.appendChild(construirBadgeEntregaInicio(estado));
+      fila.appendChild(estadoEl);
+    }
+
+    const flecha = document.createElement("span");
+    flecha.className = "fila-despues__flecha";
+    flecha.setAttribute("aria-hidden", "true");
+    flecha.textContent = "→";
+    fila.appendChild(flecha);
+
+    li.appendChild(fila);
+    lista.appendChild(li);
   });
-  proximas.appendChild(lista);
-  contenedor.appendChild(proximas);
 
-  return contenedor;
+  fragmento.append(titulo, lista);
+  return fragmento;
 }
 
 // Accesos rápidos del panel de Progreso de la portada: Temario vive en
@@ -7924,7 +8082,7 @@ async function renderizarProgresoDetallado() {
   // Detalle itemizado por trimestre: SOLO existe en progreso.html. Este
   // guard debe correr ANTES de tocar mensaje/resumen-general, no después:
   // ambos ids también los llena renderizarProgreso() en la portada (que
-  // además le agrega el semáforo/"Misión de hoy"/"Próximas entregas"/
+  // además le agrega el semáforo/tarjeta "Lo que te toca ahora"/"Después"/
   // "Accesos rápidos" propios de índex.html) — si esta función siguiera
   // de largo aquí, su innerHTML = "" de más abajo podría BORRAR ese
   // contenido en la carrera entre los dos renderizarTodo() (Promise.all

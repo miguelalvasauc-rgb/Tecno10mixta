@@ -2332,6 +2332,53 @@ summary {
   color: var(--color-texto-suave);
 }
 
+/* Móvil: en una sola línea el badge (nowrap) + fecha + flecha dejaban al
+   título con ~20px a 360px. El badge baja a una segunda línea a todo el
+   ancho (con texto muy grande no cabe bajo el título solo). .sr-only es
+   absolute: no toma celda. */
+@media (max-width: 39.99em) {
+  .fila-despues {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "fecha titulo flecha"
+      "estado estado estado";
+    column-gap: 0.75rem;
+  }
+
+  .fila-despues__fecha {
+    grid-area: fecha;
+  }
+
+  .fila-despues__titulo {
+    grid-area: titulo;
+  }
+
+  .fila-despues__estado {
+    grid-area: estado;
+    justify-self: start;
+    margin-top: 0.35rem;
+  }
+
+  .fila-despues__flecha {
+    grid-area: flecha;
+  }
+}
+
+/* Móvil: .progreso-tarjeta (1.75rem 2rem) y .tarjeta-ahora (1.25rem) anidan
+   relleno; a 360px con texto "Muy grande" los títulos de .fila-despues
+   quedaban en ~78px y se partían a media palabra. Se reduce el relleno solo
+   en la portada (#progreso). */
+@media (max-width: 39.99em) {
+  #progreso .progreso-tarjeta {
+    padding: 0.75rem;
+  }
+
+  #progreso .tarjeta-ahora {
+    padding: 1rem;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .fila-despues {
     transition: border-color 0.2s ease;
