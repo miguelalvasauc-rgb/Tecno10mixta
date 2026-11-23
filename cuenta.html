@@ -378,9 +378,6 @@
         <div id="panel-sesion-activa" class="cuenta-panel" hidden>
           <p id="cuenta-sesion-texto"></p>
           <div class="cuenta-sesion-acciones">
-            <a href="progreso.html" class="boton-secundario">
-              Ver e imprimir mi progreso →
-            </a>
             <!-- Solo visible si la sesión activa pertenece a una cuenta
                  con rol='docente' (mismo RPC es_docente() que ya usa el
                  guard real de admin.html) — ver activarPanelSesionCuenta()
@@ -437,18 +434,6 @@
               <button type="submit" class="boton-primario">Cambiar contraseña</button>
             </form>
           </div>
-
-          <!-- Reutiliza construirGridTemas() (js/main.js) — mismo grid de
-               10 tarjetas que abre #modal-tema desde el riel/barra
-               inferior, aquí insertado directo en la página (sin dialog
-               alrededor) por activarPanelSesionCuenta(). -->
-          <div class="cuenta-personalizacion">
-            <h3>🎨 Personalización</h3>
-            <p class="cuenta-personalizacion__ayuda">
-              Elige el tema visual del sitio. Se guarda en tu cuenta y se aplica en cualquier dispositivo donde inicies sesión.
-            </p>
-            <div id="cuenta-tema-grid" class="tema-tarjeta__grid"></div>
-          </div>
         </div>
 
         <!-- Recuperación de contraseña (Fase 4), paso 2: NO es un tab —
@@ -487,6 +472,40 @@
           <div id="restablecer-exito" class="cuenta-mensaje" role="status" hidden>
             <p>✅ Tu contraseña se actualizó correctamente.</p>
             <a href="index.html" class="boton-secundario">Ir a Inicio</a>
+          </div>
+        </div>
+
+        <!-- Reutiliza construirGridTemas() (js/main.js) — mismo grid de
+             10 tarjetas que abre #modal-tema desde el riel/barra
+             inferior, aquí insertado directo en la página (sin dialog
+             alrededor) por activarPanelSesionCuenta(). Visible con y sin
+             sesión; el texto de ayuda alterna según la sesión. -->
+        <div class="cuenta-personalizacion">
+          <h3>🎨 Personalización</h3>
+          <p class="cuenta-personalizacion__ayuda">
+            Elige el tema visual del sitio.
+            <span id="cuenta-tema-ayuda-sesion" hidden>Se guarda en tu cuenta y se aplica en cualquier dispositivo donde inicies sesión.</span>
+            <span id="cuenta-tema-ayuda-local">Se guarda en este navegador.</span>
+          </p>
+          <div id="cuenta-tema-grid" class="tema-tarjeta__grid"></div>
+          <!-- Contenedor marcador: activarControlEscalaTexto() (js/main.js)
+               lo rellena con el mismo control A−/A+ del riel y las hojas. -->
+          <div data-control-escala-texto></div>
+        </div>
+
+        <!-- Ayuda y Mi progreso: visible con y sin sesión (fuera de los
+             paneles que activa/oculta el JS). El acceso a progreso.html
+             vive aquí y ya no dentro de #panel-sesion-activa, para no
+             duplicarlo cuando hay sesión. -->
+        <div class="cuenta-personalizacion" id="cuenta-ayuda">
+          <h3>❓ Ayuda</h3>
+          <div class="cuenta-sesion-acciones">
+            <a href="progreso.html" class="boton-secundario">Mi progreso</a>
+            <a href="guia.html" class="boton-secundario">Guía del alumno</a>
+            <a href="faq.html" class="boton-secundario">Preguntas frecuentes</a>
+            <a href="glosario.html" class="boton-secundario">Glosario</a>
+            <a href="padres.html" class="boton-secundario">Para padres</a>
+            <a href="sitemap.html" class="boton-secundario">Mapa del sitio</a>
           </div>
         </div>
       </div>

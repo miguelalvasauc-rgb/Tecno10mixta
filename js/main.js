@@ -10973,6 +10973,11 @@ function activarControlEscalaTexto() {
   document.querySelectorAll(".riel-flyout__tema").forEach((botonTema) => {
     botonTema.insertAdjacentElement("afterend", construirControlEscalaTexto());
   });
+  // Contenedores marcador (p. ej. Personalización en cuenta.html): mismo
+  // generador, así comparten localStorage y estado con los demás controles.
+  document.querySelectorAll("[data-control-escala-texto]").forEach((marcador) => {
+    marcador.replaceChildren(construirControlEscalaTexto());
+  });
   aplicarEscalaTexto(escalaTextoActual);
 }
 
@@ -11179,6 +11184,30 @@ function reescribirEnlacesTrimestreMenu() {
     const activo = tab.dataset.trimestreTab === destino;
     tab.classList.toggle("riel-flyout__trimestre-tab--activo", activo);
     tab.setAttribute("aria-selected", String(activo));
+  });
+}
+
+// Enlaces data-enlace="estudiar" (→ trimestre-N.html) y
+// data-enlace="trabajos" (→ trimestre-N-practica.html), ambos sin ancla.
+// N = el trimestre de la página si es de trimestre; si no, el trimestre
+// DESBLOQUEADO (memoria, luego caché de localStorage), y "1" de respaldo.
+// A diferencia de trimestreDestinoMenu(), NO usa ultimoTrimestreVisto, así
+// que se actualiza siempre que se conoce el desbloqueado, haya o no
+// historial. Solo lee memoria/localStorage; se llama al arrancar (con
+// caché) y otra vez al resolver promesaTrimestreDesbloqueado.
+function actualizarEnlacesEstudiarTrabajos() {
+  const esTrimestreValido = (numero) => Number.isInteger(numero) && numero >= 1 && numero <= 3;
+
+  let numero = Number(TRIMESTRE_ACTUAL);
+  if (!esTrimestreValido(numero)) numero = trimestreDesbloqueado;
+  if (!esTrimestreValido(numero)) numero = Number(localStorage.getItem(CLAVE_CACHE_TRIMESTRE_DESBLOQUEADO));
+  if (!esTrimestreValido(numero)) numero = 1;
+
+  document.querySelectorAll('[data-enlace="estudiar"]').forEach((enlace) => {
+    enlace.href = "trimestre-" + numero + ".html";
+  });
+  document.querySelectorAll('[data-enlace="trabajos"]').forEach((enlace) => {
+    enlace.href = "trimestre-" + numero + "-practica.html";
   });
 }
 
@@ -12764,6 +12793,24 @@ async function activarPanelSesionCuenta() {
   if (!panelSesion) return;
 
   const { data: { session } } = await clienteSupabase.auth.getSession();
+
+  // Sección "🎨 Personalización": visible con y sin sesión (ya no vive
+  // dentro de #panel-sesion-activa). Mismo grid de 10 tarjetas que
+  // #modal-tema (ver construirGridTemas, sección 7), insertado directo
+  // en la página. alSeleccionar reutiliza seleccionarTema tal cual —
+  // ya llama a la RPC actualizar_tema_preferido solo si hay sesión (sin
+  // sesión solo guarda en localStorage). El texto de ayuda alterna entre
+  // las dos variantes según haya sesión.
+  const ayudaConSesion = document.getElementById("cuenta-tema-ayuda-sesion");
+  const ayudaSinSesion = document.getElementById("cuenta-tema-ayuda-local");
+  if (ayudaConSesion) ayudaConSesion.hidden = !session;
+  if (ayudaSinSesion) ayudaSinSesion.hidden = !!session;
+  const gridTemaCuenta = document.getElementById("cuenta-tema-grid");
+  if (gridTemaCuenta) {
+    await construirGridTemas(gridTemaCuenta, temaActual, seleccionarTema);
+    actualizarUIGridSegunEvento(gridTemaCuenta);
+  }
+
   if (!session) return;
 
   const tabs = document.querySelector(".cuenta-tabs");
@@ -12778,17 +12825,6 @@ async function activarPanelSesionCuenta() {
   const textoSesion = document.getElementById("cuenta-sesion-texto");
   if (textoSesion) {
     textoSesion.textContent = "Sesión iniciada como: " + (perfil?.nombre || "tu cuenta");
-  }
-
-  // Sección "🎨 Personalización": mismo grid de 10 tarjetas que
-  // #modal-tema (ver construirGridTemas, sección 7), insertado directo
-  // en la página. alSeleccionar reutiliza seleccionarTema tal cual —
-  // ya llama a la RPC actualizar_tema_preferido, que es exactamente lo
-  // que esta sección necesita.
-  const gridTemaCuenta = document.getElementById("cuenta-tema-grid");
-  if (gridTemaCuenta) {
-    await construirGridTemas(gridTemaCuenta, temaActual, seleccionarTema);
-    actualizarUIGridSegunEvento(gridTemaCuenta);
   }
 
   const botonCerrar = document.getElementById("boton-cerrar-sesion-cuenta");
@@ -25470,6 +25506,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Destino del menú de Trimestre con lo que ya hay en localStorage, sin
   // esperar las consultas a Supabase de abajo (ver trimestreDestinoMenu).
   reescribirEnlacesTrimestreMenu();
+  actualizarEnlacesEstudiarTrabajos();
 
   // Un evento forzado (Navidad, ver Fase 4) gana siempre sobre el tema
   // personal — ni siquiera se lee localStorage/Supabase de temaActual en
@@ -25518,6 +25555,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   trimestreDesbloqueado = await promesaTrimestreDesbloqueado;
 
   actualizarEnlacesTrimestreEnSidebar();
+  // Siempre (con o sin historial): ya se conoce el trimestre desbloqueado.
+  actualizarEnlacesEstudiarTrabajos();
   actualizarEstadoTarjetasTrimestre();
 
   // Espera la sesión de Supabase antes del primer render: itemEstaCompletado,

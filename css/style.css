@@ -10661,6 +10661,23 @@ a.boton-secundario {
   color: var(--color-texto-suave);
 }
 
+/* Control de tamaño de texto dentro de Personalización: .riel-flyout__campo
+   no define display aquí (solo flex-direction/gap, pensados para el flyout),
+   así que se declara el layout propio, con separación del grid de temas y
+   botones de 44px de área táctil. */
+.cuenta-personalizacion .control-escala-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-width: 20rem;
+  margin: 1rem 0 0;
+}
+
+.cuenta-personalizacion .control-escala-texto__boton {
+  width: 44px;
+  height: 44px;
+}
+
 /* ---------- Panel de "Progreso" (portada) ---------- */
 .panel-progreso__invitacion {
   display: flex;
