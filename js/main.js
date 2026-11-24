@@ -7665,7 +7665,7 @@ function renderizarTarjetaProgresoTrimestre(perfil, entradaActiva, trimestreActi
   texto.textContent =
     total === 0
       ? "Trimestre " + trimestreActivo + ": todavía no hay tareas, actividades ni proyectos registrados."
-      : "Trimestre " + trimestreActivo + ": " + completadas + " de " + total + " completadas (" + porcentaje + " %)";
+      : "Trimestre " + trimestreActivo + ": " + completadas + " de " + total + " completadas (" + porcentaje + "\u00a0%)";
   barra.setAttribute("aria-valuenow", String(completadas));
   barra.setAttribute("aria-valuemax", String(total));
   barra.setAttribute("aria-valuetext", completadas + " de " + total + " completadas");
@@ -7687,6 +7687,9 @@ async function renderizarProgreso() {
   const perfil = obtenerPerfilActivo();
   sinPerfil.hidden = Boolean(perfil);
   conPerfil.hidden = !perfil;
+  // Subtítulo "Identifícate…" de la portada: sobra con sesión iniciada.
+  const subtitulo = document.getElementById("progreso-subtitulo");
+  if (subtitulo) subtitulo.hidden = Boolean(perfil);
   if (!perfil) {
     renderizarMiSemana(null, [], null);
     renderizarTarjetaProgresoTrimestre(null, null, null);
@@ -7748,7 +7751,11 @@ async function renderizarProgreso() {
     pendientesEl.innerHTML = "";
     pendientesEl.appendChild(construirTarjetaAhora(conFecha, trimestreActivo, grupoEntregas));
     pendientesEl.appendChild(construirListaDespues(conFecha, trimestreActivo, grupoEntregas));
-    pendientesEl.appendChild(construirFilaSemaforo(calcularEstadoSemaforo(conFecha, grupoEntregas)));
+    // Docente con "Todos" o sin grupo no tiene entregas de un grupo concreto
+    // (mismo criterio que construirTarjetaAhora).
+    if (grupoEntregas === "3C" || grupoEntregas === "3E") {
+      pendientesEl.appendChild(construirFilaSemaforo(calcularEstadoSemaforo(conFecha, grupoEntregas)));
+    }
     pendientesEl.appendChild(construirAccesosRapidos(trimestreActivo));
   }
 
@@ -7757,8 +7764,14 @@ async function renderizarProgreso() {
     resumen.innerHTML = "";
     const texto = document.createElement("p");
     texto.className = "resumen-progreso__texto";
-    texto.textContent =
-      completadasGeneral + " de " + totalGeneral + " tareas, actividades y proyectos completados";
+    // En la portada el resumen acumulado vive bajo la tarjeta del trimestre
+    // activo: se aclara que suma todos los desbloqueados. En progreso.html
+    // (que también pasa por aquí antes de renderizarProgresoDetallado())
+    // se conserva el texto original.
+    const enPortada = Boolean(document.getElementById("progreso-trimestre"));
+    texto.textContent = enPortada
+      ? "Entre todos tus trimestres desbloqueados: " + completadasGeneral + " de " + totalGeneral + " completadas"
+      : completadasGeneral + " de " + totalGeneral + " tareas, actividades y proyectos completados";
 
     const barra = document.createElement("div");
     barra.className = "barra-progreso";

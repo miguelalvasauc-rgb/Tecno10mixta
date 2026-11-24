@@ -274,11 +274,14 @@
          encabezado suelto + una tarjeta de contenido (.progreso-tarjeta),
          no una .bento-celda. Ningún id/clase/función JS cambió, solo el
          contenedor — renderizarProgreso() sigue buscando estos mismos
-         ids por getElementById(). -->
+         ids por getElementById().
+         Etapa 2 grupo 4A: el resumen general, los bloques por trimestre y
+         el enlace "Ver progreso detallado" se movieron al <details> de
+         #progreso-trimestre. -->
     <section id="progreso" class="seccion" data-indice="Progreso">
       <div class="seccion__encabezado">
         <h2>Tu progreso</h2>
-        <p>Identifícate para llevar tu propio conteo de tareas y actividades completadas.</p>
+        <p id="progreso-subtitulo">Identifícate para llevar tu propio conteo de tareas y actividades completadas.</p>
       </div>
 
       <div class="progreso-tarjeta">
@@ -293,9 +296,6 @@
                rápidos del trimestre desbloqueado (dashboard-lite, Fase 8):
                ver renderizarProgreso() en js/main.js. -->
           <div id="progreso-pendientes" class="progreso-pendientes" aria-live="polite"></div>
-          <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
-          <div id="progreso-por-trimestre" class="panel-progreso__bloques" aria-live="polite"></div>
-          <a href="progreso.html" class="panel-progreso__enlace">Ver progreso detallado por trimestre →</a>
         </div>
       </div>
     </section>
@@ -351,6 +351,17 @@
           <div id="progreso-trimestre-relleno" class="barra-progreso__relleno"></div>
         </div>
       </div>
+      <!-- Resumen acumulado movido aquí en la Etapa 2 grupo 4A (antes vivía
+           en #progreso-con-perfil); renderizarProgreso() lo sigue
+           encontrando por getElementById(). -->
+      <details class="progreso-detalle">
+        <summary class="progreso-detalle__resumen">Ver detalle de tu progreso</summary>
+        <div class="progreso-detalle__cuerpo">
+          <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
+          <div id="progreso-por-trimestre" class="panel-progreso__bloques" aria-live="polite"></div>
+          <a href="progreso.html" class="panel-progreso__enlace">Ver progreso detallado por trimestre →</a>
+        </div>
+      </details>
     </section>
 
     <!-- ===================== TRIMESTRES ===================== -->

@@ -2420,6 +2420,51 @@ summary {
   margin-top: 0;
 }
 
+/* Plegable "Ver detalle de tu progreso" bajo la tarjeta del trimestre:
+   mismo patrón que .retro-alumno__calculo (▸/▾ propio, 44 px táctil);
+   el foco visible lo da la regla global summary:focus-visible. */
+.progreso-detalle {
+  margin-top: 0.75rem;
+}
+
+.progreso-detalle__resumen {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 44px;
+  list-style: none;
+  cursor: pointer;
+  color: var(--color-texto);
+  font-weight: 600;
+}
+
+.progreso-detalle__resumen::-webkit-details-marker {
+  display: none;
+}
+
+.progreso-detalle__resumen::before {
+  content: "▸";
+  content: "▸" / "";
+}
+
+.progreso-detalle[open] > .progreso-detalle__resumen::before {
+  content: "▾";
+  content: "▾" / "";
+}
+
+.progreso-detalle__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding-top: 0.5rem;
+}
+
+.progreso-detalle__cuerpo .resumen-progreso {
+  margin-bottom: 0;
+}
+
 /* ---------- Elige tu trimestre: fila de 3 botones compactos ---------- */
 #trimestres .cuadricula-trimestres {
   grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
