@@ -12,6 +12,15 @@
           "css/style.css"
         ],
         "createdAt": "2026-07-28T06:48:35.010Z"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-11-24T03:55:37.399Z",
+        "reason": "Confirmado por Hiram: #evidencia-preview-imagen y #popup-bienvenida-imagen-el son contenedores ocultos que el JS rellena"
       }
     ]
   }

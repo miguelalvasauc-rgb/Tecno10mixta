@@ -213,167 +213,26 @@
 
   <!-- ===================== BARRA INFERIOR (móvil <1024px) ===================== -->
   <nav class="barra-inferior" aria-label="Navegación móvil">
-    <button type="button" id="boton-inferior-inicio" class="barra-inferior__item" aria-haspopup="true" aria-expanded="false" aria-controls="sheet-inicio" aria-label="Inicio">
+    <a href="index.html" class="barra-inferior__item barra-inferior__item--activo" aria-current="page">
       <span class="barra-inferior__icono" aria-hidden="true">🏠</span>
       <span class="barra-inferior__texto">Inicio</span>
-    </button>
+    </a>
 
-    <a href="trimestre-1-practica.html#tareas" data-enlace="tareas" class="barra-inferior__item">
+    <a href="trimestre-1.html" data-enlace="estudiar" class="barra-inferior__item">
+      <span class="barra-inferior__icono" aria-hidden="true">📘</span>
+      <span class="barra-inferior__texto">Estudiar</span>
+    </a>
+
+    <a href="trimestre-1-practica.html" data-enlace="trabajos" class="barra-inferior__item">
       <span class="barra-inferior__icono" aria-hidden="true">📝</span>
-      <span class="barra-inferior__texto">Tareas</span>
+      <span class="barra-inferior__texto">Trabajos</span>
     </a>
 
-    <a href="progreso.html" class="barra-inferior__item">
-      <span class="barra-inferior__icono" aria-hidden="true">📊</span>
-      <span class="barra-inferior__texto">Progreso</span>
-    </a>
-
-    <button type="button" id="boton-inferior-trimestre" class="barra-inferior__item" aria-haspopup="true" aria-expanded="false" aria-controls="sheet-trimestre" aria-label="Curso">
-      <span class="barra-inferior__icono-envoltura">
-        <span class="barra-inferior__icono" aria-hidden="true">📘</span>
-        <span class="riel__badge trimestre-badge" aria-hidden="true">1</span>
-      </span>
-      <span class="barra-inferior__texto">Curso</span>
-    </button>
-
-    <button type="button" id="boton-inferior-perfil" class="barra-inferior__item" aria-haspopup="true" aria-expanded="false" aria-controls="sheet-perfil" aria-label="Perfil">
+    <a href="cuenta.html" id="boton-inferior-perfil" aria-label="Perfil" class="barra-inferior__item">
       <span class="barra-inferior__icono" aria-hidden="true">👤</span>
       <span class="barra-inferior__texto">Perfil</span>
-    </button>
+    </a>
   </nav>
-
-  <div id="sheet-backdrop" class="sheet-backdrop" hidden></div>
-
-  <div id="sheet-inicio" class="bottom-sheet" role="group" aria-label="Inicio" hidden>
-    <div class="bottom-sheet__manija" aria-hidden="true"></div>
-    <p class="riel-flyout__titulo">Inicio</p>
-    <div class="riel-flyout__lista nav-anclas">
-      <a href="#avisos" class="riel-flyout__enlace">
-        <span aria-hidden="true">📢</span><span>Avisos</span>
-      </a>
-      <a href="#calendario" class="riel-flyout__enlace">
-        <span aria-hidden="true">📅</span><span>Calendario</span>
-      </a>
-      <a href="#perfil-docente" class="riel-flyout__enlace">
-        <span aria-hidden="true">👤</span><span>Conoce a tu profesor</span>
-      </a>
-      <a href="#horario-clases" class="riel-flyout__enlace">
-        <span aria-hidden="true">🕐</span><span>Horario de clases</span>
-      </a>
-      <a href="#criterios-evaluacion" class="riel-flyout__enlace">
-        <span aria-hidden="true">📊</span><span>Criterios de evaluación</span>
-      </a>
-      <a href="#reglamento-taller" class="riel-flyout__enlace">
-        <span aria-hidden="true">📋</span><span>Reglamento</span>
-      </a>
-      <a href="#lista-materiales" class="riel-flyout__enlace">
-        <span aria-hidden="true">🎒</span><span>Materiales</span>
-      </a>
-      <a href="#contacto" class="riel-flyout__enlace">
-        <span aria-hidden="true">📧</span><span>Contacto</span>
-      </a>
-    </div>
-  </div>
-
-  <div id="sheet-trimestre" class="bottom-sheet" role="group" aria-label="Trimestre" hidden>
-    <div class="bottom-sheet__manija" aria-hidden="true"></div>
-    <div class="riel-flyout__titulo-fila">
-      <p class="riel-flyout__titulo" data-texto-trimestre>Trimestre 1</p>
-      <span class="riel-flyout__pill-activo pill-activo-trimestre" hidden>Activo</span>
-    </div>
-    <div class="riel-flyout__trimestre-tabs" role="tablist" aria-label="Selector de trimestre">
-      <a href="trimestre-1.html" class="riel-flyout__trimestre-tab riel-flyout__trimestre-tab--activo" role="tab" aria-selected="true" data-trimestre-tab="1">1°</a>
-      <a href="trimestre-2.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="2">2°</a>
-      <a href="trimestre-3.html" class="riel-flyout__trimestre-tab" role="tab" aria-selected="false" data-trimestre-tab="3">3°</a>
-    </div>
-    <div class="riel-flyout__modo-selector" role="group" aria-label="Elige Teoría o Práctica" data-modo-defecto="practica">
-      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="teoria" aria-pressed="false">
-        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">📖</span>
-        <span class="riel-flyout__modo-tarjeta__titulo">Teoría</span>
-        <span class="riel-flyout__modo-tarjeta__conteo">4 secciones</span>
-      </button>
-      <button type="button" class="riel-flyout__modo-tarjeta" data-modo-tarjeta="practica" aria-pressed="false">
-        <span class="riel-flyout__modo-tarjeta__icono" aria-hidden="true">✍️</span>
-        <span class="riel-flyout__modo-tarjeta__titulo">Práctica</span>
-        <span class="riel-flyout__modo-tarjeta__conteo">6 secciones</span>
-      </button>
-    </div>
-    <div class="riel-flyout__lista nav-anclas" data-modo-lista="teoria" hidden>
-      <a href="trimestre-1.html#temario" data-enlace="temario" class="riel-flyout__enlace">
-        <span aria-hidden="true">📘</span><span>Temario</span>
-      </a>
-      <a href="trimestre-1.html#infografias" data-enlace="infografias" class="riel-flyout__enlace">
-        <span aria-hidden="true">🎨</span><span>Infografías</span>
-      </a>
-      <a href="trimestre-1.html#presentaciones" data-enlace="presentaciones" class="riel-flyout__enlace">
-        <span aria-hidden="true">📽️</span><span>Presentaciones</span>
-      </a>
-      <a href="trimestre-1.html#videos" data-enlace="videos" class="riel-flyout__enlace">
-        <span aria-hidden="true">🎬</span><span>Videos</span>
-      </a>
-    </div>
-    <div class="riel-flyout__lista nav-anclas" data-modo-lista="practica">
-      <a href="trimestre-1-practica.html#proximas-fechas-trimestre" data-enlace="proximas-fechas-trimestre" class="riel-flyout__enlace">
-        <span aria-hidden="true">📅</span><span>Próximas fechas</span>
-      </a>
-      <a href="trimestre-1-practica.html#tareas" data-enlace="tareas" class="riel-flyout__enlace">
-        <span aria-hidden="true">📝</span><span>Tareas</span>
-      </a>
-      <a href="trimestre-1-practica.html#entrega" data-enlace="entrega" class="riel-flyout__enlace">
-        <span aria-hidden="true">📤</span><span>Entrega de trabajos</span>
-      </a>
-      <a href="trimestre-1-practica.html#rubricas" data-enlace="rubricas" class="riel-flyout__enlace">
-        <span aria-hidden="true">📋</span><span>Rúbricas</span>
-      </a>
-      <a href="trimestre-1-practica.html#actividades" data-enlace="actividades" class="riel-flyout__enlace">
-        <span aria-hidden="true">🎯</span><span>Actividades</span>
-      </a>
-      <a href="trimestre-1-practica.html#proyectos" data-enlace="proyectos" class="riel-flyout__enlace">
-        <span aria-hidden="true">🚀</span><span>Proyectos</span>
-      </a>
-    </div>
-  </div>
-
-  <div id="sheet-perfil" class="bottom-sheet" role="group" aria-label="Perfil" hidden>
-    <div class="bottom-sheet__manija" aria-hidden="true"></div>
-    <p class="riel-flyout__titulo">Perfil</p>
-    <div class="sheet-perfil__cabecera">
-      <span id="sheet-perfil-avatar"><span aria-hidden="true">👤</span></span>
-      <span class="etiqueta-nivel riel-flyout__nivel perfil-nivel-pill" hidden></span>
-    </div>
-    <a href="progreso.html" class="riel-flyout__enlace">
-      <span aria-hidden="true">📊</span><span>Mi progreso</span>
-    </a>
-    <a href="cuenta.html" class="riel-flyout__enlace">
-      <span aria-hidden="true">🧑‍🎓</span><span>Mi cuenta</span>
-    </a>
-    <a href="guia.html" class="riel-flyout__enlace">
-      <span aria-hidden="true">📖</span><span>Guía del alumno</span>
-    </a>
-    <a href="glosario.html" class="riel-flyout__enlace">
-      <span aria-hidden="true">📚</span><span>Glosario</span>
-    </a>
-    <a href="faq.html" class="riel-flyout__enlace">
-      <span aria-hidden="true">❓</span><span>FAQ</span>
-    </a>
-    <a href="padres.html" class="riel-flyout__enlace">
-      <span aria-hidden="true">👨‍👩‍👧‍👦</span><span>Para Padres</span>
-    </a>
-    <p class="riel-flyout__titulo bottom-sheet__subtitulo">Ajustes</p>
-    <div class="campo-grupo riel-flyout__campo campo-grupo-selector-slot">
-      <label for="selector-grupo-movil">Grupo</label>
-      <select id="selector-grupo-movil" class="selector-grupo-control" aria-label="Filtrar contenido por grupo">
-        <option value="todos">Todos los grupos</option>
-        <option value="3C">3°C</option>
-        <option value="3E">3°E</option>
-      </select>
-    </div>
-    <p class="riel-flyout__texto-grupo texto-grupo-alumno-slot" hidden></p>
-    <button type="button" class="boton-tema riel-flyout__tema" aria-haspopup="dialog" aria-label="Elegir tema">
-      <span class="boton-tema__icono" aria-hidden="true">🌙</span>
-      <span class="boton-tema__texto">Elegir tema</span>
-    </button>
-  </div>
 
   <!-- "Modo Demo" (Fase 5, ampliación a páginas públicas): franja fija
        superior, persistente (SIN autodesaparición, fuera del sistema de
@@ -402,21 +261,27 @@
           proyectos y videos correspondientes a ese periodo.
         </p>
       </div>
+      <div id="inicio-saludo" class="inicio-saludo" hidden></div>
+      <div id="inicio-datos" class="inicio-datos" hidden></div>
+      <div id="mi-semana" class="mi-semana" role="region" aria-labelledby="mi-semana-titulo" hidden></div>
     </section>
 
     <!-- ===================== TU PROGRESO ===================== -->
     <!-- Salió del bento (Fase 9): la celda era muy angosta para el
-         dashboard-lite completo (semáforo + Misión de hoy + Próximas
-         entregas + Accesos rápidos, ver renderizarProgreso() en
+         dashboard-lite completo (tarjeta Lo que te toca ahora + Después +
+         semáforo + Accesos rápidos, ver renderizarProgreso() en
          js/main.js). Mismo patrón que #encuadre-anual más abajo:
          encabezado suelto + una tarjeta de contenido (.progreso-tarjeta),
          no una .bento-celda. Ningún id/clase/función JS cambió, solo el
          contenedor — renderizarProgreso() sigue buscando estos mismos
-         ids por getElementById(). -->
+         ids por getElementById().
+         Etapa 2 grupo 4A: el resumen general, los bloques por trimestre y
+         el enlace "Ver progreso detallado" se movieron al <details> de
+         #progreso-trimestre. -->
     <section id="progreso" class="seccion" data-indice="Progreso">
       <div class="seccion__encabezado">
         <h2>Tu progreso</h2>
-        <p>Identifícate para llevar tu propio conteo de tareas y actividades completadas.</p>
+        <p id="progreso-subtitulo">Identifícate para llevar tu propio conteo de tareas y actividades completadas.</p>
       </div>
 
       <div class="progreso-tarjeta">
@@ -427,47 +292,12 @@
 
         <div id="progreso-con-perfil" class="panel-progreso" hidden>
           <p id="progreso-mensaje" class="panel-progreso__mensaje"></p>
-          <!-- Semáforo + Misión de hoy + Próximas entregas + Accesos
+          <!-- Tarjeta "Lo que te toca ahora" + Después + semáforo + Accesos
                rápidos del trimestre desbloqueado (dashboard-lite, Fase 8):
                ver renderizarProgreso() en js/main.js. -->
           <div id="progreso-pendientes" class="progreso-pendientes" aria-live="polite"></div>
-          <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
-          <div id="progreso-por-trimestre" class="panel-progreso__bloques" aria-live="polite"></div>
-          <a href="progreso.html" class="panel-progreso__enlace">Ver progreso detallado por trimestre →</a>
         </div>
       </div>
-    </section>
-
-    <!-- ===================== TRIMESTRES ===================== -->
-    <section id="trimestres" class="seccion seccion--alterna" data-indice="Trimestres">
-      <div class="seccion__encabezado">
-        <h2>Elige tu trimestre</h2>
-        <p>Cada trimestre tiene sus propias rúbricas, tareas, actividades, proyectos y videos.</p>
-      </div>
-      <!-- data-estado lo calcula actualizarEstadoTarjetasTrimestre() en
-           js/main.js a partir de ultimoTrimestreVisto (no hay un
-           calendario académico real en los datos de ejemplo). -->
-      <div class="cuadricula-trimestres">
-        <a href="trimestre-1.html" class="tarjeta-trimestre" data-trimestre="1">
-          <span class="tarjeta-trimestre__estado"></span>
-          <span class="tarjeta-trimestre__numero" aria-hidden="true">1</span>
-          <h3>Trimestre 1</h3>
-          <p>Rúbricas, tareas, actividades, proyectos y videos del primer trimestre.</p>
-        </a>
-        <a href="trimestre-2.html" class="tarjeta-trimestre" data-trimestre="2">
-          <span class="tarjeta-trimestre__estado"></span>
-          <span class="tarjeta-trimestre__numero" aria-hidden="true">2</span>
-          <h3>Trimestre 2</h3>
-          <p>Rúbricas, tareas, actividades, proyectos y videos del segundo trimestre.</p>
-        </a>
-        <a href="trimestre-3.html" class="tarjeta-trimestre" data-trimestre="3">
-          <span class="tarjeta-trimestre__estado"></span>
-          <span class="tarjeta-trimestre__numero" aria-hidden="true">3</span>
-          <h3>Trimestre 3</h3>
-          <p>Rúbricas, tareas, actividades, proyectos y videos del tercer trimestre.</p>
-        </a>
-      </div>
-      <p id="mensaje-trimestre-bloqueado" class="mensaje-trimestre-bloqueado" role="status" aria-live="polite"></p>
     </section>
 
     <!-- ===================== AVISOS ===================== -->
@@ -510,31 +340,120 @@
       <div id="consulta-alumno-contenedor" aria-live="polite"></div>
     </section>
 
-    <!-- ===================== ENCUADRE ANUAL ===================== -->
-    <section id="encuadre-anual" class="seccion seccion--alterna" data-indice="Encuadre">
+    <!-- ===================== PROGRESO DEL TRIMESTRE ===================== -->
+    <section id="progreso-trimestre" class="seccion" aria-labelledby="titulo-progreso-trimestre" hidden>
       <div class="seccion__encabezado">
-        <h2>📋 Encuadre Anual 2026-2027</h2>
-        <p>Cómo trabajaremos este ciclo escolar: para alumnos y padres de familia.</p>
+        <h2 id="titulo-progreso-trimestre">Tu progreso del trimestre</h2>
       </div>
-
-      <article class="tarjeta-presentacion borde-acento-estatico">
-        <div class="tarjeta-presentacion__marco">
-          <!-- Placeholder: no se carga el iframe hasta que se hace clic,
-               igual que en renderizarPresentaciones() (js/main.js), para
-               no afectar el rendimiento de la portada. -->
-          <div class="tarjeta-presentacion__placeholder">
-            <button type="button" id="boton-ver-encuadre-anual" class="tarjeta-presentacion__boton-ver">▶ Ver presentación</button>
-          </div>
+      <div class="tarjeta-progreso-trimestre">
+        <p id="progreso-trimestre-texto" class="resumen-progreso__texto"></p>
+        <div id="progreso-trimestre-barra" class="barra-progreso" role="progressbar" aria-valuemin="0" aria-labelledby="titulo-progreso-trimestre">
+          <div id="progreso-trimestre-relleno" class="barra-progreso__relleno"></div>
         </div>
-
-        <div class="tarjeta-presentacion__info">
-          <div>
-            <h3>Encuadre Anual 2026-2027</h3>
-            <p>Forma de trabajo, sistema de sellos, reglamento de cómputo, uso de IA y cómo se calcula el promedio final.</p>
-          </div>
-          <a class="tarjeta-presentacion__abrir" href="https://gamma.app/embed/d2hobcvjqltc3q7" target="_blank" rel="noopener">Abrir presentación completa ↗</a>
+      </div>
+      <!-- Resumen acumulado movido aquí en la Etapa 2 grupo 4A (antes vivía
+           en #progreso-con-perfil); renderizarProgreso() lo sigue
+           encontrando por getElementById(). -->
+      <details class="progreso-detalle">
+        <summary class="progreso-detalle__resumen">Ver detalle de tu progreso</summary>
+        <div class="progreso-detalle__cuerpo">
+          <div id="progreso-resumen-general" class="resumen-progreso" aria-live="polite"></div>
+          <div id="progreso-por-trimestre" class="panel-progreso__bloques" aria-live="polite"></div>
+          <a href="progreso.html" class="panel-progreso__enlace">Ver progreso detallado por trimestre →</a>
         </div>
-      </article>
+      </details>
+    </section>
+
+    <!-- ===================== TRIMESTRES ===================== -->
+    <section id="trimestres" class="seccion seccion--alterna" data-indice="Trimestres">
+      <div class="seccion__encabezado">
+        <h2>Elige tu trimestre</h2>
+        <p>Cada trimestre tiene sus propias rúbricas, tareas, actividades, proyectos y videos.</p>
+      </div>
+      <!-- data-estado lo calcula actualizarEstadoTarjetasTrimestre() en
+           js/main.js a partir de ultimoTrimestreVisto (no hay un
+           calendario académico real en los datos de ejemplo). -->
+      <div class="cuadricula-trimestres">
+        <a href="trimestre-1.html" class="tarjeta-trimestre" data-trimestre="1">
+          <span class="tarjeta-trimestre__estado"></span>
+          <span class="tarjeta-trimestre__numero" aria-hidden="true">1</span>
+          <h3>Trimestre 1</h3>
+          <p>Rúbricas, tareas, actividades, proyectos y videos del primer trimestre.</p>
+        </a>
+        <a href="trimestre-2.html" class="tarjeta-trimestre" data-trimestre="2">
+          <span class="tarjeta-trimestre__estado"></span>
+          <span class="tarjeta-trimestre__numero" aria-hidden="true">2</span>
+          <h3>Trimestre 2</h3>
+          <p>Rúbricas, tareas, actividades, proyectos y videos del segundo trimestre.</p>
+        </a>
+        <a href="trimestre-3.html" class="tarjeta-trimestre" data-trimestre="3">
+          <span class="tarjeta-trimestre__estado"></span>
+          <span class="tarjeta-trimestre__numero" aria-hidden="true">3</span>
+          <h3>Trimestre 3</h3>
+          <p>Rúbricas, tareas, actividades, proyectos y videos del tercer trimestre.</p>
+        </a>
+      </div>
+      <p id="mensaje-trimestre-bloqueado" class="mensaje-trimestre-bloqueado" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- ===================== CALENDARIO ===================== -->
+    <section id="calendario" class="seccion seccion--alterna" data-indice="Calendario">
+      <div class="seccion__encabezado">
+        <h2>Calendario</h2>
+        <p>Fechas importantes del bimestre.</p>
+      </div>
+      <div class="calendario">
+        <div class="calendario__panel">
+          <div class="calendario__nav">
+            <button type="button" id="calendario-mes-anterior" class="calendario__flecha" aria-label="Mes anterior">◀</button>
+            <div id="calendario-cabecera" class="calendario__cabecera"></div>
+            <button type="button" id="calendario-mes-siguiente" class="calendario__flecha" aria-label="Mes siguiente">▶</button>
+          </div>
+          <div id="calendario-grid" class="calendario__grid" role="grid" aria-label="Calendario mensual de fechas importantes"></div>
+
+          <!-- Leyenda de tipos de día del ciclo escolar (ver
+               CALENDARIO_ESCOLAR_2026_2027 en js/main.js); es independiente
+               del punto de "hay algo entregable" que ya existía. -->
+          <ul class="calendario__leyenda" aria-label="Leyenda de tipos de día del ciclo escolar">
+            <li><span class="calendario__leyenda-color calendario__leyenda-color--inicio-fin" aria-hidden="true"></span>Inicio/Fin de clases</li>
+            <li><span class="calendario__leyenda-color calendario__leyenda-color--vacaciones" aria-hidden="true"></span>Vacaciones</li>
+            <li><span class="calendario__leyenda-color calendario__leyenda-color--cte-intensiva" aria-hidden="true"></span>CTE Fase Intensiva (sin clases)</li>
+            <li><span class="calendario__leyenda-color calendario__leyenda-color--cte-ordinaria" aria-hidden="true"></span>CTE Sesión Ordinaria (sin clases)</li>
+            <li><span class="calendario__leyenda-color calendario__leyenda-color--suspension" aria-hidden="true"></span>Suspensión de labores</li>
+            <li><span class="calendario__leyenda-color calendario__leyenda-color--evaluacion" aria-hidden="true"></span>Evaluación</li>
+          </ul>
+        </div>
+        <div class="calendario__eventos">
+          <h3>Próximas fechas</h3>
+
+          <!-- Filtro por tipo de evento: mismo patrón que
+               .materiales-tabs-bloque (Lista de materiales) — pastillas con
+               estado activo/inactivo, oculta items de #lista-eventos con
+               "hidden" sin quitarlos del DOM — ver activarFiltroTipoEventos()
+               en js/main.js. Solo afecta a eventos_calendario, no a tareas/
+               actividades/proyectos. -->
+          <div id="calendario-tabs-tipo" class="calendario-tabs-tipo" role="tablist" aria-label="Filtrar por tipo de evento">
+            <button type="button" class="calendario-tabs-tipo__boton calendario-tabs-tipo__boton--activo"
+                    id="calendario-tab-tipo-todos" role="tab" aria-selected="true" data-tipo="todos">
+              Todos
+            </button>
+            <button type="button" class="calendario-tabs-tipo__boton"
+                    id="calendario-tab-tipo-escuela" role="tab" aria-selected="false" data-tipo="escuela">
+              🏫 Escuela
+            </button>
+            <button type="button" class="calendario-tabs-tipo__boton"
+                    id="calendario-tab-tipo-evaluacion" role="tab" aria-selected="false" data-tipo="evaluacion">
+              📝 Evaluación
+            </button>
+            <button type="button" class="calendario-tabs-tipo__boton"
+                    id="calendario-tab-tipo-general" role="tab" aria-selected="false" data-tipo="general">
+              📌 General
+            </button>
+          </div>
+
+          <ul id="lista-eventos" class="lista-eventos" aria-live="polite"></ul>
+        </div>
+      </div>
     </section>
 
     <!-- ===================== BENTO: PANEL DE INICIO ===================== -->
@@ -546,34 +465,6 @@
          el orden del DOM — ver .bento-portada en css/style.css. Ningún
          id/clase/función JS existente cambió, solo el contenedor. -->
     <div class="bento-portada">
-
-      <!-- Franja completa (4×1) — el <section id="examen-diagnostico">
-           sigue siendo el que actualizarVisibilidadBannerExamenDiagnostico()
-           oculta por completo (.hidden) cuando ya no aplica; con la fila
-           vacía, la fila del grid colapsa sola (auto-size), sin JS extra. -->
-      <section id="examen-diagnostico" class="bento-celda bento-celda--banner">
-        <div class="seccion__encabezado">
-          <h2>📝 Examen de Diagnóstico</h2>
-          <p>Antes de empezar el ciclo, cuéntanos qué sabes y qué te gustaría aprender.</p>
-        </div>
-        <div id="banner-examen-diagnostico" class="tarjeta-examen-diagnostico borde-animado-acento">
-          <div class="tarjeta-examen-diagnostico__texto">
-            <h3>Responde el examen de diagnóstico</h3>
-            <p>Cuestionario sencillo de diagnóstico (15 a 20 minutos) para conocer tus gustos y aprendizajes previos. No requiere estudio previo ni afecta tu calificación.</p>
-          </div>
-          <a href="https://forms.gle/HhGcroSo3gAFbQBn6" target="_blank" rel="noopener"
-             class="tarjeta-examen-diagnostico__boton" id="enlace-examen-diagnostico">
-            Realizar examen ↗
-          </a>
-          <button type="button" id="boton-ya-lo-conteste"
-                  class="tarjeta-examen-diagnostico__descartar" hidden>
-            Ya lo contesté, no volver a mostrar
-          </button>
-          <p id="texto-inicia-sesion-examen" class="tarjeta-examen-diagnostico__aviso" hidden>
-            Inicia sesión para que esto no se te vuelva a recordar.
-          </p>
-        </div>
-      </section>
 
       <!-- Celda corta (1×1) -->
       <section id="horario-clases" class="bento-celda bento-celda--horario">
@@ -603,7 +494,7 @@
             </h3>
             <span id="criterio-info-tareas" class="sr-only">Entregables para realizar en casa y subir a la plataforma.</span>
             <div class="criterio-tarjeta__barra">
-              <div class="criterio-tarjeta__relleno" style="width: 30%;"></div>
+              <div class="criterio-tarjeta__relleno criterio-tarjeta__relleno--30"></div>
             </div>
           </div>
 
@@ -618,7 +509,7 @@
             </h3>
             <span id="criterio-info-actividades" class="sr-only">Trabajo continuo en el taller y sistema de sellos en cuaderno.</span>
             <div class="criterio-tarjeta__barra">
-              <div class="criterio-tarjeta__relleno" style="width: 30%;"></div>
+              <div class="criterio-tarjeta__relleno criterio-tarjeta__relleno--30"></div>
             </div>
           </div>
 
@@ -634,7 +525,7 @@
             </h3>
             <span id="criterio-info-proyectos" class="sr-only">Prácticas integradoras de mayor peso al final del periodo.</span>
             <div class="criterio-tarjeta__barra">
-              <div class="criterio-tarjeta__relleno" style="width: 40%;"></div>
+              <div class="criterio-tarjeta__relleno criterio-tarjeta__relleno--40"></div>
             </div>
           </div>
         </div>
@@ -642,6 +533,34 @@
         <p class="criterios-nota">
           📋 El Examen de Diagnóstico no tiene valor en la calificación; solo sirve para conocer tu punto de partida al inicio del ciclo.
         </p>
+      </section>
+
+      <!-- Franja completa (4×1) — el <section id="examen-diagnostico">
+           sigue siendo el que actualizarVisibilidadBannerExamenDiagnostico()
+           oculta por completo (.hidden) cuando ya no aplica; con la fila
+           vacía, la fila del grid colapsa sola (auto-size), sin JS extra. -->
+      <section id="examen-diagnostico" class="bento-celda bento-celda--banner">
+        <div class="seccion__encabezado">
+          <h2>📝 Examen de Diagnóstico</h2>
+          <p>Antes de empezar el ciclo, cuéntanos qué sabes y qué te gustaría aprender.</p>
+        </div>
+        <div id="banner-examen-diagnostico" class="tarjeta-examen-diagnostico borde-animado-acento">
+          <div class="tarjeta-examen-diagnostico__texto">
+            <h3>Responde el examen de diagnóstico</h3>
+            <p>Cuestionario sencillo de diagnóstico (15 a 20 minutos) para conocer tus gustos y aprendizajes previos. No requiere estudio previo ni afecta tu calificación.</p>
+          </div>
+          <a href="https://forms.gle/HhGcroSo3gAFbQBn6" target="_blank" rel="noopener"
+             class="tarjeta-examen-diagnostico__boton" id="enlace-examen-diagnostico">
+            Realizar examen ↗
+          </a>
+          <button type="button" id="boton-ya-lo-conteste"
+                  class="tarjeta-examen-diagnostico__descartar" hidden>
+            Ya lo contesté, no volver a mostrar
+          </button>
+          <p id="texto-inicia-sesion-examen" class="tarjeta-examen-diagnostico__aviso" hidden>
+            Inicia sesión para que esto no se te vuelva a recordar.
+          </p>
+        </div>
       </section>
 
       <!-- Celda mediana (2×1) con expansión in-place: primeras 4 reglas
@@ -686,64 +605,31 @@
 
     </div>
 
-    <!-- ===================== CALENDARIO ===================== -->
-    <section id="calendario" class="seccion seccion--alterna" data-indice="Calendario">
+    <!-- ===================== ENCUADRE ANUAL ===================== -->
+    <section id="encuadre-anual" class="seccion seccion--alterna" data-indice="Encuadre">
       <div class="seccion__encabezado">
-        <h2>Calendario</h2>
-        <p>Fechas importantes del bimestre.</p>
+        <h2>📋 Encuadre Anual 2026-2027</h2>
+        <p>Cómo trabajaremos este ciclo escolar: para alumnos y padres de familia.</p>
       </div>
-      <div class="calendario">
-        <div class="calendario__panel">
-          <div class="calendario__nav">
-            <button type="button" id="calendario-mes-anterior" class="calendario__flecha" aria-label="Mes anterior">◀</button>
-            <div id="calendario-cabecera" class="calendario__cabecera"></div>
-            <button type="button" id="calendario-mes-siguiente" class="calendario__flecha" aria-label="Mes siguiente">▶</button>
+
+      <article class="tarjeta-presentacion borde-acento-estatico">
+        <div class="tarjeta-presentacion__marco">
+          <!-- Placeholder: no se carga el iframe hasta que se hace clic,
+               igual que en renderizarPresentaciones() (js/main.js), para
+               no afectar el rendimiento de la portada. -->
+          <div class="tarjeta-presentacion__placeholder">
+            <button type="button" id="boton-ver-encuadre-anual" class="tarjeta-presentacion__boton-ver">▶ Ver presentación</button>
           </div>
-          <div id="calendario-grid" class="calendario__grid" role="grid" aria-label="Calendario mensual de fechas importantes"></div>
-
-          <!-- Leyenda de tipos de día del ciclo escolar (ver
-               CALENDARIO_ESCOLAR_2026_2027 en js/main.js); es independiente
-               del punto de "hay algo entregable" que ya existía. -->
-          <ul class="calendario__leyenda" aria-label="Leyenda de tipos de día del ciclo escolar">
-            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-inicio-fin)" aria-hidden="true"></span>Inicio/Fin de clases</li>
-            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-vacaciones)" aria-hidden="true"></span>Vacaciones</li>
-            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-cte-intensiva)" aria-hidden="true"></span>CTE Fase Intensiva (sin clases)</li>
-            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-cte-ordinaria)" aria-hidden="true"></span>CTE Sesión Ordinaria (sin clases)</li>
-            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-suspension)" aria-hidden="true"></span>Suspensión de labores</li>
-            <li><span class="calendario__leyenda-color" style="background-color: var(--dia-evaluacion)" aria-hidden="true"></span>Evaluación</li>
-          </ul>
         </div>
-        <div class="calendario__eventos">
-          <h3>Próximas fechas</h3>
 
-          <!-- Filtro por tipo de evento: mismo patrón que
-               .materiales-tabs-bloque (Lista de materiales) — pastillas con
-               estado activo/inactivo, oculta items de #lista-eventos con
-               "hidden" sin quitarlos del DOM — ver activarFiltroTipoEventos()
-               en js/main.js. Solo afecta a eventos_calendario, no a tareas/
-               actividades/proyectos. -->
-          <div id="calendario-tabs-tipo" class="calendario-tabs-tipo" role="tablist" aria-label="Filtrar por tipo de evento">
-            <button type="button" class="calendario-tabs-tipo__boton calendario-tabs-tipo__boton--activo"
-                    id="calendario-tab-tipo-todos" role="tab" aria-selected="true" data-tipo="todos">
-              Todos
-            </button>
-            <button type="button" class="calendario-tabs-tipo__boton"
-                    id="calendario-tab-tipo-escuela" role="tab" aria-selected="false" data-tipo="escuela">
-              🏫 Escuela
-            </button>
-            <button type="button" class="calendario-tabs-tipo__boton"
-                    id="calendario-tab-tipo-evaluacion" role="tab" aria-selected="false" data-tipo="evaluacion">
-              📝 Evaluación
-            </button>
-            <button type="button" class="calendario-tabs-tipo__boton"
-                    id="calendario-tab-tipo-general" role="tab" aria-selected="false" data-tipo="general">
-              📌 General
-            </button>
+        <div class="tarjeta-presentacion__info">
+          <div>
+            <h3>Encuadre Anual 2026-2027</h3>
+            <p>Forma de trabajo, sistema de sellos, reglamento de cómputo, uso de IA y cómo se calcula el promedio final.</p>
           </div>
-
-          <ul id="lista-eventos" class="lista-eventos" aria-live="polite"></ul>
+          <a class="tarjeta-presentacion__abrir" href="https://gamma.app/embed/d2hobcvjqltc3q7" target="_blank" rel="noopener">Abrir presentación completa ↗</a>
         </div>
-      </div>
+      </article>
     </section>
 
     <!-- ===================== PERFIL DEL DOCENTE ===================== -->
